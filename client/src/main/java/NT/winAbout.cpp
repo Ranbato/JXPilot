@@ -218,9 +218,9 @@ void CCredits::BuildBitmap(CDC * dc)
     COLORREF myColor;
 
     CRect rect(0, 0, CR_WIDTH, creditsHeight);
-//      dc->FillSolidRect(&rect, objs[RED].color);
-    COLORREF oldColor = dc->GetTextColor();
-    dc->SetBkColor(RGB(0, 0, 0));
+//      dc.FillSolidRect(&rect, objs[RED].color);
+    COLORREF oldColor = dc.GetTextColor();
+    dc.SetBkColor(RGB(0, 0, 0));
     myColor = RGB(255, 255, 255);
 
     LOGFONT lf;
@@ -234,7 +234,7 @@ void CCredits::BuildBitmap(CDC * dc)
     AfxMessageBox(e);
 #endif
     haveFont = font.CreateFontIndirect(&lf);
-    CFont *oldfont = dc->SelectObject(&font);
+    CFont *oldfont = dc.SelectObject(&font);
 //      myColor = objs[RED].color;
 
     for (i = 0; i < credits.GetLength();) {
@@ -242,8 +242,8 @@ void CCredits::BuildBitmap(CDC * dc)
 	    if (cs.GetLength())	// anything in the buffer?
 	    {			// yes, flush it
 		TRACE("color=%08x cs=%s\n", myColor, (PCSTR) cs);
-		dc->SetTextColor(myColor);
-		dc->TextOut(col * 10 + 2,
+		dc.SetTextColor(myColor);
+		dc.TextOut(col * 10 + 2,
 			    row * LINEHEIGHT + crRect.Height(), cs);
 		cs = "";
 	    }
@@ -266,8 +266,8 @@ void CCredits::BuildBitmap(CDC * dc)
 	    cs += credits[i++];
 	}
     }
-    dc->SetTextColor(oldColor);
-    dc->SelectObject(oldfont);
+    dc.SetTextColor(oldColor);
+    dc.SelectObject(oldfont);
     font.DeleteObject();
 }
 

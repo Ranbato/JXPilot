@@ -73,7 +73,7 @@ struct recordable_drawing rd;
  * Store the name of the file where the user
  * wants recordings to be written to.
  */
-void Record_init(char *filename)
+void Record_init(String filename)
 {
     rd = Xdrawing;
     // if (filename != NULL && filename[0] != '\0') {

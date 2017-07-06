@@ -170,16 +170,16 @@ int Join(Connect_param_t *conpar)
     signal(SIGHUP, SIG_IGN);
     signal(SIGPIPE, SIG_IGN);
 
-    if (Client_init(conpar->server_name, conpar->server_version) == -1)
+    if (Client_init(conpar.server_name, conpar.server_version) == -1)
 	return -1;
 
-    if (Net_init(conpar->server_addr, conpar->login_port) == -1) {
+    if (Net_init(conpar.server_addr, conpar.login_port) == -1) {
 	Client_cleanup();
 	return -1;
     }
-    if (Net_verify(conpar->user_name,
-		   conpar->nick_name,
-		   conpar->disp_name) == -1) {
+    if (Net_verify(conpar.user_name,
+		   conpar.nick_name,
+		   conpar.disp_name) == -1) {
 	Net_cleanup();
 	Client_cleanup();
 	return -1;

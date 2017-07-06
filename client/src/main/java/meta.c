@@ -37,7 +37,7 @@ list_iter_t server_it;
 /*
  * Convert a string to lowercase.
  */
-void string_to_lower(char *s)
+void string_to_lower(String s)
 {
     for (; *s; s++)
 	*s = tolower(*s);
@@ -47,10 +47,10 @@ void string_to_lower(char *s)
  * From a hostname return the part after the last dot.
  * E.g.: Vincent.CS.Berkeley.EDU will return EDU.
  */
-char *Get_domain_from_hostname(char *host_name)
+String Get_domain_from_hostname(String host_name)
 {
     static char last_domain[] = "\x7E\x7E";
-    char *dom;
+    String dom;
 
     if ((dom = strrchr(host_name, '.')) != NULL) {
 	if (dom[1] == '\0') {
@@ -94,36 +94,36 @@ int Welcome_sort_server_list(void)
     }
     while ((vp = List_pop_front(old_list)) != NULL) {
 	sip_old = (server_info_t *) vp;
-	string_to_lower(sip_old->hostname);
-	if (!strncmp(sip_old->hostname, "xpilot", 6)) {
-	    sip_old->hostname[0] = 'X';
-	    sip_old->hostname[1] = 'P';
+	string_to_lower(sip_old.hostname);
+	if (!strncmp(sip_old.hostname, "xpilot", 6)) {
+	    sip_old.hostname[0] = 'X';
+	    sip_old.hostname[1] = 'P';
 	}
-	sip_old->domain = Get_domain_from_hostname(sip_old->hostname);
+	sip_old.domain = Get_domain_from_hostname(sip_old.hostname);
 	for (it = List_begin(new_list); it != List_end(new_list);
 	     LI_FORWARD(it)) {
 	    sip_new = SI_DATA(it);
-	    delta = sip_new->users - sip_old->users;
+	    delta = sip_new.users - sip_old.users;
 	    if (delta < 0)
 		break;
 	    else if (delta > 0)
 		continue;
-	    delta = sip_old->pingtime - sip_new->pingtime;
+	    delta = sip_old.pingtime - sip_new.pingtime;
 	    if (delta < 0)
 		break;
 	    else if (delta > 0)
 		continue;
-	    delta = strcmp(sip_old->domain, sip_new->domain);
+	    delta = strcmp(sip_old.domain, sip_new.domain);
 	    if (delta < 0)
 		break;
 	    else if (delta > 0)
 		continue;
-	    delta = strcmp(sip_old->hostname, sip_new->hostname);
+	    delta = strcmp(sip_old.hostname, sip_new.hostname);
 	    if (delta < 0)
 		break;
 	    else if (delta > 0)
 		continue;
-	    if (sip_old->port < sip_new->port)
+	    if (sip_old.port < sip_new.port)
 		break;
 	}
 	if (!List_insert(new_list, it, sip_old)) {
@@ -139,16 +139,16 @@ int Welcome_sort_server_list(void)
     for (it = List_begin(new_list); it != List_end(new_list);
 	 LI_FORWARD(it)) {
 	sip_new = SI_DATA(it);
-	printf("%2d %5s %-31s %u", sip_new->users, sip_new->domain,
-	       sip_new->hostname, sip_new->port);
-	if (sip_new->pingtime == PING_UNKNOWN)
+	printf("%2d %5s %-31s %u", sip_new.users, sip_new.domain,
+	       sip_new.hostname, sip_new.port);
+	if (sip_new.pingtime == PING_UNKNOWN)
 	    printf("%8s", "unknown");
-	else if (sip_new->pingtime == PING_NORESP)
+	else if (sip_new.pingtime == PING_NORESP)
 	    printf("%8s", "no resp");
-	else if (sip_new->pingtime == PING_SLOW)
+	else if (sip_new.pingtime == PING_SLOW)
 	    printf("%8s", "s-l-o-w");
 	else
-	    printf("%8u", sip_new->pingtime);
+	    printf("%8u", sip_new.pingtime);
 	printf("\n");
     }
     printf("\n");
@@ -179,17 +179,17 @@ int Add_server_info(server_info_t * sip)
 	 LI_FORWARD(it)) {
 	it_sip = SI_DATA(it);
 	/* sort on IP. */
-	if (it_sip->ip < sip->ip)
+	if (it_sip.ip < sip.ip)
 	    continue;
 
-	if (it_sip->ip == sip->ip) {
+	if (it_sip.ip == sip.ip) {
 	    /* same server when same IP + port. */
-	    if (it_sip->port < sip->port)
+	    if (it_sip.port < sip.port)
 		continue;
 
-	    if (it_sip->port == sip->port) {
+	    if (it_sip.port == sip.port) {
 		/* work around bug in meta: keep server with highest uptime. */
-		if (it_sip->uptime > sip->uptime) {
+		if (it_sip.uptime > sip.uptime) {
 		    return -1;
 		} else {
 		    it = List_erase(server_list, it);
@@ -205,7 +205,7 @@ int Add_server_info(server_info_t * sip)
 
     /* print for debugging */
     D(printf("list size = %d after %08x, %d\n",
-	     List_size(server_list), sip->ip, sip->port));
+	     List_size(server_list), sip.ip, sip.port));
 
     return 0;
 }
@@ -214,11 +214,11 @@ int Add_server_info(server_info_t * sip)
  * Variant on strtok which does not skip empty fields.
  * Two delimiters after another returns the empty string ("").
  */
-char *my_strtok(char *buf, const char *sep)
+String my_strtok(String buf, String sep)
 {
-    static char *oldbuf;
-    char *ptr;
-    char *start;
+    static String oldbuf;
+    String ptr;
+    String start;
 
 
     if (buf)
@@ -242,14 +242,14 @@ char *my_strtok(char *buf, const char *sep)
  * put the fields in a structure.
  * The structure is put on a sorted list.
  */
-void Add_meta_line(char *meta_line)
+void Add_meta_line(String meta_line)
 {
-    char *fields[NUM_META_DATA_FIELDS];
+    String fields[NUM_META_DATA_FIELDS];
     int i;
     int num = 0;
-    char *p;
+    String p;
     unsigned ip0, ip1, ip2, ip3 = 0;
-    char *text = xp_strdup(meta_line);
+    String text = xp_strdup(meta_line);
     server_info_t *sip;
 
     if (!text) {
@@ -280,38 +280,38 @@ void Add_meta_line(char *meta_line)
 	return;
     }
     memset(sip, 0, sizeof(*sip));
-    sip->pingtime = PING_UNKNOWN;
-    sip->version = fields[0];
-    sip->hostname = fields[1];
-    sip->users_str = fields[3];
-    sip->mapname = fields[4];
-    sip->mapsize = fields[5];
-    sip->author = fields[6];
-    sip->status = fields[7];
-    sip->bases_str = fields[8];
-    sip->fps_str = fields[9];
-    sip->playlist = fields[10];
-    sip->sound = fields[11];
-    sip->teambases_str = fields[13];
-    sip->timing = fields[14];
-    sip->ip_str = fields[15];
-    sip->freebases = fields[16];
-    sip->queue_str = fields[17];
-    if (sscanf(fields[i = 2], "%u", &sip->port) != 1 ||
-	sscanf(fields[i = 3], "%u", &sip->users) != 1 ||
-	sscanf(fields[i = 8], "%u", &sip->bases) != 1 ||
-	sscanf(fields[i = 9], "%u", &sip->fps) != 1 ||
-	sscanf(fields[i = 12], "%u", &sip->uptime) != 1 ||
-	sscanf(fields[i = 13], "%u", &sip->teambases) != 1 ||
+    sip.pingtime = PING_UNKNOWN;
+    sip.version = fields[0];
+    sip.hostname = fields[1];
+    sip.users_str = fields[3];
+    sip.mapname = fields[4];
+    sip.mapsize = fields[5];
+    sip.author = fields[6];
+    sip.status = fields[7];
+    sip.bases_str = fields[8];
+    sip.fps_str = fields[9];
+    sip.playlist = fields[10];
+    sip.sound = fields[11];
+    sip.teambases_str = fields[13];
+    sip.timing = fields[14];
+    sip.ip_str = fields[15];
+    sip.freebases = fields[16];
+    sip.queue_str = fields[17];
+    if (sscanf(fields[i = 2], "%u", &sip.port) != 1 ||
+	sscanf(fields[i = 3], "%u", &sip.users) != 1 ||
+	sscanf(fields[i = 8], "%u", &sip.bases) != 1 ||
+	sscanf(fields[i = 9], "%u", &sip.fps) != 1 ||
+	sscanf(fields[i = 12], "%u", &sip.uptime) != 1 ||
+	sscanf(fields[i = 13], "%u", &sip.teambases) != 1 ||
 	sscanf(fields[i = 15], "%u.%u.%u.%u", &ip0, &ip1, &ip2, &ip3) != 4
 	|| (ip0 | ip1 | ip2 | ip3) > 255
-	|| sscanf(fields[i = 17], "%u", &sip->queue) != 1) {
+	|| sscanf(fields[i = 17], "%u", &sip.queue) != 1) {
 	printf("error %d in: %s\n", i, meta_line);
 	free(sip);
 	free(text);
 	return;
     } else {
-	sip->ip = (ip0 << 24) | (ip1 << 16) | (ip2 << 8) | ip3;
+	sip.ip = (ip0 << 24) | (ip1 << 16) | (ip2 << 8) | ip3;
 	if (Add_server_info(sip) == -1) {
 	    free(sip);
 	    free(text);
@@ -360,7 +360,7 @@ void Meta_connect(int *connections_ptr, int *maxfd_ptr)
 void Meta_dns_lookup(void)
 {
     int i;
-    char *addr;
+    String addr;
 
     for (i = 0; i < NUM_METAS; i++) {
 	if (metas[i].sock.fd == -2) {
@@ -386,7 +386,7 @@ void Ping_servers(void)
     server_info_t *it_sip;
     sockbuf_t sbuf, rbuf;
     int ms;
-    char *reply_ip;
+    String reply_ip;
     int reply_port;
     unsigned reply_magic;
     unsigned char reply_serial, reply_status;
@@ -453,16 +453,16 @@ void Ping_servers(void)
 		it = List_begin(server_list);
 	    }
 	    it_sip = SI_DATA(it);
-	    sock_send_dest(&sock, it_sip->ip_str, it_sip->port,
+	    sock_send_dest(&sock, it_sip.ip_str, it_sip.port,
 			   sbuf.buf, sbuf.len);
-	    gettimeofday(&it_sip->start, NULL);
+	    gettimeofday(&it_sip.start, NULL);
 	    /* if it has never been pinged (pung?) mark it now
 	     * as "not responding" instead of just blank.
 	     */
-	    if (it_sip->pingtime == PING_UNKNOWN)
-		it_sip->pingtime = PING_NORESP;
+	    if (it_sip.pingtime == PING_UNKNOWN)
+		it_sip.pingtime = PING_NORESP;
 
-	    it_sip->serial = serial;
+	    it_sip.serial = serial;
 	    outstanding++;
 	    LI_FORWARD(it);
 	}
@@ -494,24 +494,24 @@ void Ping_servers(void)
 	for (that = List_begin(server_list);
 	     that != List_end(server_list); LI_FORWARD(that)) {
 	    it_sip = SI_DATA(that);
-	    if (!strcmp(it_sip->ip_str, reply_ip)
-		&& reply_port == it_sip->port) {
+	    if (!strcmp(it_sip.ip_str, reply_ip)
+		&& reply_port == it_sip.port) {
 		int n;
 
-		if (reply_serial != it_sip->serial)
+		if (reply_serial != it_sip.serial)
 		    /* replied to an old ping, alive but
 		     * slower than 'interval' at least
 		     */
-		    it_sip->pingtime = Math.min(it_sip->pingtime, PING_SLOW);
+		    it_sip.pingtime = Math.min(it_sip.pingtime, PING_SLOW);
 		else {
-		    n = (end.tv_sec - it_sip->start.tv_sec) * 1000 +
-			(end.tv_usec - it_sip->start.tv_usec) / 1000;
+		    n = (end.tv_sec - it_sip.start.tv_sec) * 1000 +
+			(end.tv_usec - it_sip.start.tv_usec) / 1000;
 
 		    /* kps - current value is more useful than minimum value */
 #if 0
-		    it_sip->pingtime = Math.min(it_sip->pingtime, n);
+		    it_sip.pingtime = Math.min(it_sip.pingtime, n);
 #else
-		    it_sip->pingtime = n;
+		    it_sip.pingtime = n;
 #endif
 		}
 		break;
@@ -549,9 +549,9 @@ void Delete_server_list(void)
 void Delete_server_info(server_info_t * sip)
 {
     if (sip) {
-	if (sip->version) {
-	    free(sip->version);
-	    sip->version = NULL;
+	if (sip.version) {
+	    free(sip.version);
+	    sip.version = NULL;
 	}
 	free(sip);
     }
@@ -560,7 +560,7 @@ void Delete_server_info(server_info_t * sip)
 /*
  * User pressed the Internet button.
  */
-int Get_meta_data(char *errorstr)
+int Get_meta_data(String errorstr)
 {
     int i;
     int max = -1;
@@ -576,7 +576,7 @@ int Get_meta_data(char *errorstr)
     fd_set rset_in, wset_in;
     fd_set rset_out, wset_out;
     struct timeval tv;
-    char *newline;
+    String newline;
  
     /*
      * Buffer to hold data from a socket connection to a Meta.
@@ -584,8 +584,8 @@ int Get_meta_data(char *errorstr)
      * The end points to where the next new data should be loaded.
      */
     struct MetaData {
-	char *ptr;
-	char *end;
+	String ptr;
+	String end;
 	char buf[4096];
     };
     struct MetaData md[NUM_METAS];
@@ -705,7 +705,7 @@ int Get_meta_data(char *errorstr)
 		    /* process data up to the last line ending in a '\n'.
 		     */
 		    while ((newline
-			    = (char *) memchr(md[i].ptr, '\n',
+			    = (String ) memchr(md[i].ptr, '\n',
 					      md[i].end - md[i].ptr))
 			   != NULL) {
 			*newline = '\0';

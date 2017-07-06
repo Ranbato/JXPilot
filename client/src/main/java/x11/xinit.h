@@ -74,7 +74,7 @@ extern void Handle_X_options(void);
 /*
  * Prototypes for xinit.c
  */
-extern const char* Item_get_text(int i);
+extern const String  Item_get_text(int i);
 extern int Init_top(void);
 extern void Expose_info_window(void);
 extern void Expose_button_window(int color, Window w);
@@ -83,7 +83,7 @@ extern void Talk_resize(void);
 extern void Talk_cursor(bool visible);
 extern void Talk_map_window(bool map);
 extern int Talk_do_event(XEvent *event);
-extern int Talk_paste(char* data, size_t len, bool overwrite);
+extern int Talk_paste(String  data, size_t len, bool overwrite);
 extern int Talk_place_cursor(XButtonEvent *xbutton, bool pending);
 extern void Talk_window_cut(XButtonEvent *xbutton);
 extern bool Talk_cut_area_hit(XButtonEvent *xbutton);
@@ -94,19 +94,19 @@ extern void Draw_score_table(void);
 extern void Resize(Window w, unsigned width, unsigned height);
 
 extern int DrawShadowText(Display*, Window, GC,
-			  int x_border, int start_y, const char *str,
+			  int x_border, int start_y, String str,
 			  unsigned long fg, unsigned long bg);
 extern void ShadowDrawString(Display*, Window, GC,
-			     int x, int start_y, const char *str,
+			     int x, int start_y, String str,
 			     unsigned long fg, unsigned long bg);
 /*
  * about.c
  */
-extern int About_callback(int, void *, const char **);
-extern int Keys_callback(int, void *, const char **);
+extern int About_callback(int, void *, String *);
+extern int Keys_callback(int, void *, String *);
 extern void Keys_destroy(void);
 extern void About(Window w);
-extern int Motd_callback(int, void *, const char **);
+extern int Motd_callback(int, void *, String *);
 extern void Motd_destroy(void);
 extern void Expose_about_window(void);
 extern void Scale_dashes(void);

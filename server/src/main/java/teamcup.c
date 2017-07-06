@@ -105,7 +105,7 @@ static void teamcup_open_score_file(void)
     teamcup_log("Player present:\n");
     for (i = 0; i < NumPlayers; i++) {
 	pl = Player_by_index(i);
-        teamcup_log("Team %d: %s\n",pl->team,pl->name);
+        teamcup_log("Team %d: %s\n",pl.team,pl.name);
     }
 
 }
@@ -141,7 +141,7 @@ void teamcup_game_over(void)
     teamcup_close_score_file();
 }
 
-void teamcup_log(const char *fmt, ...)
+void teamcup_log(String fmt, ...)
 {
     va_list ap;
 
@@ -206,13 +206,13 @@ void teamcup_round_end(int winning_team)
 
 	list[best] = NumPlayers;
 	pl = Player_by_index(best);
-	teamcup_log("%d\t%.0f\t%2d/%d\t%s\n", pl->team, Get_Score(pl),
-		    pl->kills, pl->deaths, pl->name);
+	teamcup_log("%d\t%.0f\t%2d/%d\t%s\n", pl.team, Get_Score(pl),
+		    pl.kills, pl.deaths, pl.name);
 
-	if (team_score[pl->team] == double_max)
-	    team_score[pl->team] = 0.0;
-	team_score[pl->team] +=  Get_Score(pl);
-	team_players[pl->team]++;
+	if (team_score[pl.team] == double_max)
+	    team_score[pl.team] = 0.0;
+	team_score[pl.team] +=  Get_Score(pl);
+	team_players[pl.team]++;
     }
 
     for (i = 0; i < MAX_TEAMS; i++) {

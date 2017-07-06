@@ -29,7 +29,7 @@
 Window helpwin;
 static int helppage = 0, helpsel, helpscreens = 3;
 
-const char *iconlabel[36] = {
+String iconlabel[36] = {
     "Space",
     "Block", "Block", "Block", "Block", "Block",
     "Decor", "Decor", "Decor", "Decor", "Decor",

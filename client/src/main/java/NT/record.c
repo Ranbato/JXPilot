@@ -48,7 +48,7 @@ bool			recording = false;	/* Are we recording or not. */
 static bool		record_start = false;	/* Should we start recording
 						 * at the next frame. */
 static int		record_frame_count = 0;	/* How many recorded frames. */
-static const char	*record_dashes;		/* Which dash list to use. */
+static String record_dashes;		/* Which dash list to use. */
 static int		record_num_dashes;	/* How big is dashes list. */
 static int		record_dash_dirty = 0;	/* Has dashes list changed? */
 
@@ -116,7 +116,7 @@ static void RWriteULong(uint32_t value)
     putc((int)value, recordFP);
 }
 
-static void RWriteString(char *str)
+static void RWriteString(String str)
 {
     size_t			len = strlen(str);
     int				i;
@@ -265,11 +265,11 @@ static void RWriteTile(Pixmap tile)
     int				x, y, i;
     XImage			*img;
 
-    for (lptr = list; lptr != NULL; lptr = lptr->next) {
-	if (lptr->tile == tile) {
+    for (lptr = list; lptr != NULL; lptr = lptr.next) {
+	if (lptr.tile == tile) {
 	    /* tile already sent before. */
 	    RWriteByte(RC_TILE);
-	    RWriteByte(lptr->tile_id);
+	    RWriteByte(lptr.tile_id);
 	    return;
 	}
     }
@@ -282,23 +282,23 @@ static void RWriteTile(Pixmap tile)
 	RWriteByte(0);
 	return;
     }
-    lptr->next = list;
-    lptr->tile = tile;
-    lptr->tile_id = next_tile_id;
+    lptr.next = list;
+    lptr.tile = tile;
+    lptr.tile_id = next_tile_id;
     list = lptr;
 
     if (!(img = Image_from_pixmap(tile))) {
 	RWriteByte(RC_TILE);
 	RWriteByte(0);
-	lptr->tile_id = 0;
+	lptr.tile_id = 0;
 	return;
     }
     RWriteByte(RC_NEW_TILE);
-    RWriteByte(lptr->tile_id);
-    RWriteUShort((unsigned)img->width);
-    RWriteUShort((unsigned)img->height);
-    for (y = 0; y < img->height; y++) {
-	for (x = 0; x < img->width; x++) {
+    RWriteByte(lptr.tile_id);
+    RWriteUShort((unsigned)img.width);
+    RWriteUShort((unsigned)img.height);
+    for (y = 0; y < img.height; y++) {
+	for (x = 0; x < img.width; x++) {
 	    unsigned long pixel = XGetPixel(img, x, y);
 	    for (i = 0; i < maxColors - 1; i++) {
 		if (pixel == colors[i].pixel)
@@ -560,8 +560,8 @@ static int RDrawLines(Display *display, Drawable drawable, GC gc,
 	RWriteGC(gc, RSTROKEGC | RTILEGC);
 	RWriteUShort((unsigned)npoints);
 	for (i = 0; i < npoints; i++, xp++) {
-	    RWriteShort(xp->x);
-	    RWriteShort(xp->y);
+	    RWriteShort(xp.x);
+	    RWriteShort(xp.y);
 	}
 	RWriteByte(mode);
     }
@@ -601,7 +601,7 @@ static int RDrawRectangle(Display *display, Drawable drawable, GC gc,
 
 static int RDrawString(Display *display, Drawable drawable, GC gc,
 		       int x, int y,
-		       const char *string, int length)
+		       String string, int length)
 {
     XDrawString(display, drawable, gc, x, y, string, length);
     if (drawable == drawPixmap) {
@@ -613,7 +613,7 @@ static int RDrawString(Display *display, Drawable drawable, GC gc,
 	RWriteShort(x);
 	RWriteShort(y);
 	XGetGCValues(display, gc, GCFont, &values);
-	RWriteByte((values.font == messageFont->fid) ? 1 : 0);
+	RWriteByte((values.font == messageFont.fid) ? 1 : 0);
 	RWriteUShort((unsigned)length);
 	for (i = 0; i < length; i++)
 	    putc(string[i], recordFP);
@@ -653,8 +653,8 @@ static int RFillPolygon(Display *display, Drawable drawable, GC gc,
 	RWriteGC(gc, GCForeground | RTILEGC);
 	RWriteUShort((unsigned)npoints);
 	for (i = 0; i < npoints; i++, xp++) {
-	    RWriteShort(xp->x);
-	    RWriteShort(xp->y);
+	    RWriteShort(xp.x);
+	    RWriteShort(xp.y);
 	}
 	RWriteByte(shape);
 	RWriteByte(mode);
@@ -758,7 +758,7 @@ static int RDrawSegments(Display *display, Drawable drawable, GC gc,
 }
 
 static int RSetDashes(Display *display, GC gc,
-		      int dash_offset, const char *dash_list, int n)
+		      int dash_offset, String dash_list, int n)
 {
     XSetDashes(display, gc, dash_offset, dash_list, n);
     record_dashes = dash_list;	/* supposedly static memory */
@@ -775,8 +775,8 @@ static int RSetDashes(Display *display, GC gc,
  * by means of defining function types and casting with them.
  */
 typedef int (*draw_string_proto_t)(Display *, Drawable, GC,
-				   int, int, const char *, int);
-typedef int (*set_dashes_proto_t)(Display *, GC, int, const char *, int);
+				   int, int, String , int);
+typedef int (*set_dashes_proto_t)(Display *, GC, int, String , int);
 
 /*
  * X windows drawing
@@ -900,7 +900,7 @@ void Record_cleanup(void)
  * Store the name of the file where the user
  * wants recordings to be written to.
  */
-void Record_init(const char *filename)
+void Record_init(String filename)
 {
     rd = Xdrawing;
     assert(filename != NULL);
@@ -909,7 +909,7 @@ void Record_init(const char *filename)
 }
 
 
-static bool setRecordFile(xp_option_t *opt, const char *value)
+static bool setRecordFile(xp_option_t *opt, String value)
 {
     UNUSED_PARAM(opt);
 
@@ -921,7 +921,7 @@ static bool setRecordFile(xp_option_t *opt, const char *value)
     return true;
 }
 
-static const char *getRecordFile(xp_option_t *opt)
+static String getRecordFile(xp_option_t *opt)
 {
     UNUSED_PARAM(opt);
     return record_filename;

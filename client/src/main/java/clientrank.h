@@ -38,9 +38,9 @@ void Init_saved_scores(void);
 void Print_saved_scores(void);
 void Paint_baseInfoOnMap(int x, int y);
 
-void Add_rank_Kill(char *nick);
-void Add_rank_Death(char *nick);
-int Get_kills(char *nick);
-int Get_deaths(char *nick);
+void Add_rank_Kill(String nick);
+void Add_rank_Death(String nick);
+int Get_kills(String nick);
+int Get_deaths(String nick);
 
 #endif

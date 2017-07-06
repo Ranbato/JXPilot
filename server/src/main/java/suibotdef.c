@@ -54,12 +54,12 @@
  * Prototypes for methods of the suibot.
  */
 static void Robot_suibot_round_tick(void);
-static void Robot_suibot_create(player_t *pl, char *str);
+static void Robot_suibot_create(player_t *pl, String str);
 static void Robot_suibot_go_home(player_t *pl);
 static void Robot_suibot_play(player_t *pl);
 static void Robot_suibot_set_war(player_t *pl, int victim_id);
 static int Robot_suibot_war_on_player(player_t *pl);
-static void Robot_suibot_message(player_t *pl, const char *str);
+static void Robot_suibot_message(player_t *pl, String str);
 static void Robot_suibot_destroy(player_t *pl);
 static void Robot_suibot_invite(player_t *pl, player_t *inviter);
        int Robot_suibot_setup(robot_type_t *type_ptr);
@@ -124,13 +124,13 @@ static void Robot_move_randomly(player_t *pl);
  */
 static robot_default_data_t *Robot_suibot_get_data(player_t *pl)
 {
-    return (robot_default_data_t *)pl->robot_data_ptr->private_data;
+    return (robot_default_data_t *)pl.robot_data_ptr.private_data;
 }
 
 /*
  * Create the suibot.
  */
-static void Robot_suibot_create(player_t *pl, char *str)
+static void Robot_suibot_create(player_t *pl, String str)
 {
     robot_default_data_t *my_data;
 
@@ -139,17 +139,17 @@ static void Robot_suibot_create(player_t *pl, char *str)
 	End_game();
     }
 
-    pl->turnspeed = 0; /* we play with "mouse" */
-    pl->turnresistance = 0;
+    pl.turnspeed = 0; /* we play with "mouse" */
+    pl.turnresistance = 0;
 
-    my_data->robot_mode      = RM_TAKE_OFF;
-    my_data->robot_count     = 0;
-    my_data->robot_lock      = LOCK_NONE;
-    my_data->robot_lock_id   = 0;
+    my_data.robot_mode      = RM_TAKE_OFF;
+    my_data.robot_count     = 0;
+    my_data.robot_lock      = LOCK_NONE;
+    my_data.robot_lock_id   = 0;
 
-    my_data->longterm_mode	= 0;
+    my_data.longterm_mode	= 0;
 
-    pl->robot_data_ptr->private_data = (void *)my_data;
+    pl.robot_data_ptr.private_data = (void *)my_data;
 }
 
 /*
@@ -159,8 +159,8 @@ static void Robot_suibot_go_home(player_t *pl)
 {
     robot_default_data_t *my_data = Robot_suibot_get_data(pl);
 
-    my_data->robot_mode      = RM_TAKE_OFF;
-    my_data->longterm_mode   = 0;
+    my_data.robot_mode      = RM_TAKE_OFF;
+    my_data.longterm_mode   = 0;
 }
 
 /*
@@ -171,10 +171,10 @@ static void Robot_suibot_set_war(player_t *pl, int victim_id)
     robot_default_data_t *my_data = Robot_suibot_get_data(pl);
 
     if (victim_id == NO_ID)
-	my_data->robot_lock.clear( LOCK_PLAYER);
+	my_data.robot_lock.clear( LOCK_PLAYER);
     else {
-	my_data->robot_lock_id = victim_id;
-	my_data->robot_lock.get( LOCK_PLAYER);
+	my_data.robot_lock_id = victim_id;
+	my_data.robot_lock.get( LOCK_PLAYER);
     }
 }
 
@@ -185,8 +185,8 @@ static int Robot_suibot_war_on_player(player_t *pl)
 {
     robot_default_data_t *my_data = Robot_suibot_get_data(pl);
 
-    if (my_data->robot_lock.get( LOCK_PLAYER))
-	return my_data->robot_lock_id;
+    if (my_data.robot_lock.get( LOCK_PLAYER))
+	return my_data.robot_lock_id;
     else
 	return NO_ID;
 }
@@ -194,7 +194,7 @@ static int Robot_suibot_war_on_player(player_t *pl)
 /*
  * A default robot receives a message.
  */
-static void Robot_suibot_message(player_t *pl, const char *message)
+static void Robot_suibot_message(player_t *pl, String message)
 {
     UNUSED_PARAM(pl); UNUSED_PARAM(message);
 }
@@ -204,7 +204,7 @@ static void Robot_suibot_message(player_t *pl, const char *message)
  */
 static void Robot_suibot_destroy(player_t *pl)
 {
-    XFREE(pl->robot_data_ptr->private_data);
+    XFREE(pl.robot_data_ptr.private_data);
 }
 
 /*
@@ -217,7 +217,7 @@ static void Robot_suibot_invite(player_t *pl, player_t *inviter)
     double limit;
     bool we_accept = true;
 
-    if (pl->alliance != ALLIANCE_NOT_SET) {
+    if (pl.alliance != ALLIANCE_NOT_SET) {
 	/* if there is a human in our alliance, they should decide
 	   let robots refuse in this case */
 	for (i = 0; i < NumPlayers; i++) {
@@ -233,11 +233,11 @@ static void Robot_suibot_invite(player_t *pl, player_t *inviter)
 	    return;
 	}
     }
-    limit = Math.max(Math.abs( Get_Score(pl) / MAX((my_data->attack / 10), 10)),
-		my_data->defense);
-    if (inviter->alliance == ALLIANCE_NOT_SET) {
+    limit = Math.max(Math.abs( Get_Score(pl) / MAX((my_data.attack / 10), 10)),
+		my_data.defense);
+    if (inviter.alliance == ALLIANCE_NOT_SET) {
 	/* don't accept players we are at war with */
-	if (inviter->id == war_id)
+	if (inviter.id == war_id)
 	    we_accept = false;
 	/* don't accept players who are not active */
 	if (!Player_is_active(inviter))
@@ -248,12 +248,12 @@ static void Robot_suibot_invite(player_t *pl, player_t *inviter)
     }
     else {
 	double avg_score = 0;
-	int member_count = Get_alliance_member_count(inviter->alliance);
+	int member_count = Get_alliance_member_count(inviter.alliance);
 
 	for (i = 0; i < NumPlayers; i++) {
 	    player_t *pl_i = Player_by_index(i);
-	    if (pl_i->alliance == inviter->alliance) {
-		if (pl_i->id == war_id) {
+	    if (pl_i.alliance == inviter.alliance) {
+		if (pl_i.id == war_id) {
 		    we_accept = false;
 		    break;
 		}
@@ -276,12 +276,12 @@ static inline int decide_travel_dir(player_t *pl)
 {
     double gdir;
 
-    if (pl->velocity <= 0.2) {
-	Point2D grav = World_gravity(pl->pos);
+    if (pl.velocity <= 0.2) {
+	Point2D grav = World_gravity(pl.pos);
 
 	gdir = findDir(grav.x, grav.y);
     } else
-	gdir = findDir(pl->vel.x, pl->vel.y);
+	gdir = findDir(pl.vel.x, pl.vel.y);
 
     return MOD2((int) (gdir + 0.5), RES);
 }
@@ -298,8 +298,8 @@ static void Robot_take_off_from_base(player_t *pl)
   Thrust(pl, true);
 
 
-  if((rfrac())<0.1 ){
-    my_data->robot_mode = RM_ATTACK;
+  if((Math.random())<0.1 ){
+    my_data.robot_mode = RM_ATTACK;
   }
 }
 
@@ -312,36 +312,36 @@ static void Robot_set_pointing_direction(player_t *pl,double direction)
   robot_default_data_t	*my_data = Robot_suibot_get_data(pl);
   int turnvel;     
 
-    if(pl->turnspeed != 0 | pl->turnresistance != 0) End_game();
+    if(pl.turnspeed != 0 | pl.turnresistance != 0) End_game();
 
 
-   turnvel = (direction - pl->float_dir);
-   pl->turnvel = turnvel;
+   turnvel = (direction - pl.float_dir);
+   pl.turnvel = turnvel;
 }
 
 /*KS: describe func here.....*/
 /* void Obj_pos_set(object *obj, int cx, int cy); */
 
 /* void Obj_pos_set(object *obj, int cx, int cy){ */
-/*     struct _objposition		*pos = (struct _objposition *)&obj->pos; */
+/*     struct _objposition		*pos = (struct _objposition *)&obj.pos; */
 
 
 
-/*     pos->cx = cx; */
-/*     pos->x = CLICK_TO_PIXEL(cx); */
-/*     pos->bx = pos->x / BLOCK_SZ; */
-/*     pos->cy = cy; */
-/*     pos->y = CLICK_TO_PIXEL(cy); */
-/*     pos->by = pos->y / BLOCK_SZ; */
-/*     obj->prevpos.x = obj->pos.x; */
-/*     obj->prevpos.y = obj->pos.y; */
+/*     pos.cx = cx; */
+/*     pos.x = CLICK_TO_PIXEL(cx); */
+/*     pos.bx = pos.x / BLOCK_SZ; */
+/*     pos.cy = cy; */
+/*     pos.y = CLICK_TO_PIXEL(cy); */
+/*     pos.by = pos.y / BLOCK_SZ; */
+/*     obj.prevpos.x = obj.pos.x; */
+/*     obj.prevpos.y = obj.pos.y; */
 
 /* } */
 
 struct collans {
     int line;
     int point;
-    clvec_t moved;
+    Click  moved;
 };
 
 static bool Wall_in_between_points(int cx1, int cy1, int cx2, int cy2);
@@ -388,10 +388,10 @@ static bool Get_object_proximity(player_t *pl, object_t *shot, double sqmaxdist,
    double time_until_closest, shortest_hit_time;
 
   /* calculate relative positions and velocities */
-  delta_velx=( shot->vel.x -  pl->vel.x );
-  delta_vely=( shot->vel.y -  pl->vel.y );
-  delta_x=   WRAP_DCX( shot->pos.cx - pl->pos.cx );
-  delta_y=   WRAP_DCY( shot->pos.cy - pl->pos.cy );
+  delta_velx=( shot.vel.x -  pl.vel.x );
+  delta_vely=( shot.vel.y -  pl.vel.y );
+  delta_x=   WRAP_DCX( shot.pos.cx - pl.pos.cx );
+  delta_y=   WRAP_DCY( shot.pos.cy - pl.pos.cy );
 
   /* prevent possible division by 0 */
   if(delta_velx == 0 && delta_vely == 0)
@@ -416,8 +416,8 @@ static bool Get_object_proximity(player_t *pl, object_t *shot, double sqmaxdist,
   if(sqdistance>sqmaxdist)
     return false;
 
-  object_proximity->hit_time=time_until_closest;
-  object_proximity->sqdistance=sqdistance;
+  object_proximity.hit_time=time_until_closest;
+  object_proximity.sqdistance=sqdistance;
 
   return true;
 
@@ -450,7 +450,7 @@ bool Robot_evade_shot(player_t *pl){
     double time_shot_closest, shortest_hit_time;
     double delta_velx, delta_vely, delta_x, delta_y, sqdistance;
     double sqship_sz;
-    Cell_get_objects(pl->pos, (int)(Visibility_distance / BLOCK_SZ),
+    Cell_get_objects(pl.pos, (int)(Visibility_distance / BLOCK_SZ),
 		     max_objs, &obj_list, &obj_count); 
 
     /*This is the viewable area for players:
@@ -459,7 +459,7 @@ bool Robot_evade_shot(player_t *pl){
     hori_blocks = (view_width + (BLOCK_SZ - 1)) / (2 * BLOCK_SZ);
     vert_blocks = (view_height + (BLOCK_SZ - 1)) / (2 * BLOCK_SZ);
     if (NumObjs >= options.cellGetObjectsThreshold)
-        Cell_get_objects(pl->pos, Math.max(hori_blocks, vert_blocks),
+        Cell_get_objects(pl.pos, Math.max(hori_blocks, vert_blocks),
                          num_object_shuffle, &obj_list, &obj_count);*/
 
     
@@ -476,14 +476,14 @@ bool Robot_evade_shot(player_t *pl){
 	shot = obj_list[j];
 	
 	/* Get rid of most objects */
-	if (!shot->type.get( killing_shots ))
+	if (!shot.type.get( killing_shots ))
 	    continue;
 	
 	/* calculate relative positions and velocities */
-	delta_velx=( shot->vel.x -  pl->vel.x );
-	delta_vely=( shot->vel.y -  pl->vel.y );
-	delta_x=   WRAP_DCX( shot->pos.cx - pl->pos.cx );
-	delta_y=   WRAP_DCY( shot->pos.cy - pl->pos.cy );
+	delta_velx=( shot.vel.x -  pl.vel.x );
+	delta_vely=( shot.vel.y -  pl.vel.y );
+	delta_x=   WRAP_DCX( shot.pos.cx - pl.pos.cx );
+	delta_y=   WRAP_DCY( shot.pos.cy - pl.pos.cy );
 	
 	/* prevent possible division by 0 */
 	if(delta_velx == 0 && delta_vely == 0) 
@@ -514,10 +514,10 @@ bool Robot_evade_shot(player_t *pl){
 	
 	/* ignore shots that will hit a wall before it hits us */
 	if(Wall_in_between_points(
-	       shot->pos.cx ,
-	       shot->pos.cy ,
-	       shot->pos.cx + time_shot_closest * shot->vel.x,
-	       shot->pos.cy + time_shot_closest * shot->vel.y
+	       shot.pos.cx ,
+	       shot.pos.cy ,
+	       shot.pos.cx + time_shot_closest * shot.vel.x,
+	       shot.pos.cy + time_shot_closest * shot.vel.y
 	       ))
 	    continue;
 	
@@ -553,10 +553,10 @@ bool Robot_evade_shot(player_t *pl){
     /* get vector from center of ship to shot at hit time */
     /* this is orthogonal to delta_vel(x,y) */
     shot = obj_list[closest_shot];
-    delta_velx=( shot->vel.x -  pl->vel.x );
-    delta_vely=( shot->vel.y -  pl->vel.y );
-    delta_x=   WRAP_DCX( shot->pos.cx - pl->pos.cx );
-    delta_y=   WRAP_DCY( shot->pos.cy - pl->pos.cy );
+    delta_velx=( shot.vel.x -  pl.vel.x );
+    delta_vely=( shot.vel.y -  pl.vel.y );
+    delta_x=   WRAP_DCX( shot.pos.cx - pl.pos.cx );
+    delta_y=   WRAP_DCY( shot.pos.cy - pl.pos.cy );
 
 
 double hit_dx, hit_dy;
@@ -582,10 +582,10 @@ double direction_evade1;
 
     /* Change evade by 180° if wall will be in the way in the chosen direction */
     if(Wall_in_between_points(
-                  pl->pos.cx + time_shot_closest * (pl->vel.x +  pl->power * cos(direction_evade1) / pl->mass),
-                  pl->pos.cy + time_shot_closest * (pl->vel.y +  pl->power * sin(direction_evade1) / pl->mass),
-                  pl->pos.cx ,
-                  pl->pos.cy 
+                  pl.pos.cx + time_shot_closest * (pl.vel.x +  pl.power * cos(direction_evade1) / pl.mass),
+                  pl.pos.cy + time_shot_closest * (pl.vel.y +  pl.power * sin(direction_evade1) / pl.mass),
+                  pl.pos.cx ,
+                  pl.pos.cy
                   )){
 	direction_evade1+=RES;
 	//	printf("Wall!\n");
@@ -606,23 +606,23 @@ void Robot_move_randomly(player_t *pl){
   double direction;
 
   /* Move randomly */
-  if(rfrac()<0.25) 
-    pl->turnvel = ((rfrac()*RES)- RES / 2)*0.3;
+  if(Math.random()<0.25)
+    pl.turnvel = ((Math.random()*RES)- RES / 2)*0.3;
 
-  if(pl->velocity > options.maxUnshieldedWallBounceSpeed){ /* not too fast...*/
+  if(pl.velocity > options.maxUnshieldedWallBounceSpeed){ /* not too fast...*/
                             
-    direction= findDir(-pl->vel.x,-pl->vel.y);
+    direction= findDir(-pl.vel.x,-pl.vel.y);
     Robot_set_pointing_direction(pl, direction);
     Thrust(pl, true);
     return;
   }
   
   /* Fire, too */
-  if((rfrac())>0.98 ){
+  if((Math.random())>0.98 ){
         Fire_normal_shots(pl);  
   }
   /* Sometimes thrust */
-  if((rfrac())>0.65 )
+  if((Math.random())>0.65 )
     {  
       Thrust(pl, true); 
     } 
@@ -642,11 +642,11 @@ double Robot_ram_object(player_t *pl,object_t *object){
     int i=0;
     int j=0;
 
-    velx = ( object->vel.x -  pl->vel.x ) * CLICK;
-    vely = ( object->vel.y -  pl->vel.y ) * CLICK;
+    velx = ( object.vel.x -  pl.vel.x ) * CLICK;
+    vely = ( object.vel.y -  pl.vel.y ) * CLICK;
     /* multiply with CLICK to get clicks/time, but keep as float */
-    x    = WRAP_DCX( object->pos.cx - pl->pos.cx );
-    y    = WRAP_DCY( object->pos.cy - pl->pos.cy );
+    x    = WRAP_DCX( object.pos.cx - pl.pos.cx );
+    y    = WRAP_DCY( object.pos.cy - pl.pos.cy );
     
 
 
@@ -654,7 +654,7 @@ double Robot_ram_object(player_t *pl,object_t *object){
 #define DD false /* debug */
     
     /* use squares of length, so sqrt doesnt need to be calculated */
-    sqr_a   = Math.pow(pl->power / pl->mass * CLICK,2.0);       /* acceleration */
+    sqr_a   = Math.pow(pl.power / pl.mass * CLICK,2.0);       /* acceleration */
     sqr_b   = Math.pow(velx)+sqr(vely,2.0);  /* velocity     */
     sqr_c   = Math.pow(x)+sqr(y,2.0);        /* distance     */
     b_dot_c = velx*x + vely*y;      /* dot product b·c */
@@ -665,14 +665,14 @@ double Robot_ram_object(player_t *pl,object_t *object){
 /*       double tmp_y = (int)(y + vely * time); */
       
 /*       double tmp_length= */
-/* 	abs(LENGTH(tmp_x,tmp_y)- 0.5 * (CLICK * pl->power / pl->mass) * Math.pow(time),2.0); */
+/* 	abs(LENGTH(tmp_x,tmp_y)- 0.5 * (CLICK * pl.power / pl.mass) * Math.pow(time),2.0); */
 /*       if(tmp_length < 3000) */
 /* 	printf("time %.2f  length %.2f\n",time,tmp_length); */
 /*     } */
 
     time = 1;
-    //time=sqrt(2*LENGTH(x,y)/(pl->power/pl->mass));
-    /* exact: time=sqrt(2*LENGTH(x,y)/pl->power*pl->mass);*/
+    //time=sqrt(2*LENGTH(x,y)/(pl.power/pl.mass));
+    /* exact: time=sqrt(2*LENGTH(x,y)/pl.power*pl.mass);*/
     delta_time=5000; /* set high value so convercence criterion isnt met */
     
     if(DD){printf("time %.3f\n",time);}
@@ -712,7 +712,7 @@ double Robot_ram_object(player_t *pl,object_t *object){
 
 //	if( abs(delta_time)< 0.001* abs(time))
       if(abs(function) < 10)
-//	if(abs(LENGTH(tmp_x,tmp_y)- 0.5 * (CLICK * pl->power/pl->mass) * Math.pow(time)) < 10 ,2.0)
+//	if(abs(LENGTH(tmp_x,tmp_y)- 0.5 * (CLICK * pl.power/pl.mass) * Math.pow(time)) < 10 ,2.0)
 	    break;
     }
     
@@ -731,10 +731,10 @@ double Robot_ram_object(player_t *pl,object_t *object){
     }
 /*
 
-    velx=( object->vel.x -  pl->vel.x );
-    vely=( object->vel.y -  pl->vel.y );
-    x=   WRAP_DCX( object->pos.cx - pl->pos.cx );
-    y=   WRAP_DCY( object->pos.cy - pl->pos.cy );
+    velx=( object.vel.x -  pl.vel.x );
+    vely=( object.vel.y -  pl.vel.y );
+    x=   WRAP_DCX( object.pos.cx - pl.pos.cx );
+    y=   WRAP_DCY( object.pos.cy - pl.pos.cy );
 */
     /* prevent possible division by 0 */
 /*    if(velx == 0 || vely == 0) 
@@ -799,17 +799,17 @@ void Robot_attack_player(player_t *pl, player_t *opponent){/*attack_player*/
     /* check if we can fire or have to wait because of repeat rate */
     /* same check as in Fire_normal_shots(pl)                      */
     if (frame_time 
-	<= pl->shot_time + options.fireRepeatRate 
+	<= pl.shot_time + options.fireRepeatRate
 	- timeStep + 1e-3){
 	Robot_ram_object(pl, OBJ_PTR(opponent));
 	return;
     }
     
     
-    dcx   = WRAP_DCX(opponent->pos.cx - pl->pos.cx);
-    dcy   = WRAP_DCY(opponent->pos.cy - pl->pos.cy);
-    velx  = (opponent->vel.x - pl->vel.x) * CLICK;
-    vely  = (opponent->vel.y - pl->vel.y) * CLICK;
+    dcx   = WRAP_DCX(opponent.pos.cx - pl.pos.cx);
+    dcy   = WRAP_DCY(opponent.pos.cy - pl.pos.cy);
+    velx  = (opponent.vel.x - pl.vel.x) * CLICK;
+    vely  = (opponent.vel.y - pl.vel.y) * CLICK;
 
     
     /*Find direction, where a shot will hit a ship with constant velocity*/
@@ -846,7 +846,7 @@ void Robot_attack_player(player_t *pl, player_t *opponent){/*attack_player*/
 	    /* try to get closer */
 	    Robot_ram_object(pl, OBJ_PTR(opponent));
 	    
-	    if(rfrac() >0.5){ Fire_normal_shots(pl);}
+	    if(Math.random() >0.5){ Fire_normal_shots(pl);}
 	    return;
 	}
 	
@@ -860,9 +860,9 @@ void Robot_attack_player(player_t *pl, player_t *opponent){/*attack_player*/
     
     /* slightly bias shooting towads where a player thrusts */
     
-    if(false && rfrac() > 0.75){
-	dcx = dcx + opponent->acc.x * t * Math.pow(sqr(rfrac()),2.0);
-	dcy = dcy + opponent->acc.y * t * Math.pow(sqr(rfrac()),2.0);
+    if(false && Math.random() > 0.75){
+	dcx = dcx + opponent.acc.x * t * Math.pow(sqr(Math.random()),2.0);
+	dcy = dcy + opponent.acc.y * t * Math.pow(sqr(Math.random()),2.0);
 	
 	/* actually, it should be acc * Math.pow(time,2.0); 
 	 * but this is much too much for even relatively
@@ -874,8 +874,8 @@ void Robot_attack_player(player_t *pl, player_t *opponent){/*attack_player*/
     if(D2)
       printf("no: dir= %i\n",direction);
     
-    if(rfrac() > 0.8) /* spread shots */
-      direction += ((rfrac()-0.5 )*10);
+    if(Math.random() > 0.8) /* spread shots */
+      direction += ((Math.random()-0.5 )*10);
     
         Robot_set_pointing_direction(pl, direction);
         Thrust(pl, true); 
@@ -910,14 +910,14 @@ static void Robotdef_fire_laser(player_t *pl)
     robot_default_data_t *my_data = Robot_suibot_get_data(pl);
     double x2, y2, x3, y3, x4, y4, x5, y5;
     double ship_dist, dir3, dir4, dir5;
-    clpos_t m_gun;
+    Click  m_gun;
     player_t *ship;
 
-    if (my_data->robot_lock.get( LOCK_PLAYER)
-	&& Player_is_active(Player_by_id(my_data->robot_lock_id)))
-	ship = Player_by_id(my_data->robot_lock_id);
-    else if (pl->lock.tagged.get( LOCK_PLAYER))
-	ship = Player_by_id(pl->lock.pl_id);
+    if (my_data.robot_lock.get( LOCK_PLAYER)
+	&& Player_is_active(Player_by_id(my_data.robot_lock_id)))
+	ship = Player_by_id(my_data.robot_lock_id);
+    else if (pl.lock.tagged.get( LOCK_PLAYER))
+	ship = Player_by_id(pl.lock.pl_id);
     else
 	return;
 
@@ -925,13 +925,13 @@ static void Robotdef_fire_laser(player_t *pl)
     if (!Player_is_active(ship))
 	return;
 
-    m_gun = Ship_get_m_gun_clpos(pl->ship, pl->dir);
-    x2 = CLICK_TO_PIXEL(pl->pos.cx) + pl->vel.x
+    m_gun = Ship_get_m_gun_clpos(pl.ship, pl.dir);
+    x2 = CLICK_TO_PIXEL(pl.pos.cx) + pl.vel.x
 	+ CLICK_TO_PIXEL(m_gun.cx);
-    y2 = CLICK_TO_PIXEL(pl->pos.cy) + pl->vel.y
+    y2 = CLICK_TO_PIXEL(pl.pos.cy) + pl.vel.y
 	+ CLICK_TO_PIXEL(m_gun.cy);
-    x3 = CLICK_TO_PIXEL(ship->pos.cx) + ship->vel.x;
-    y3 = CLICK_TO_PIXEL(ship->pos.cy) + ship->vel.y;
+    x3 = CLICK_TO_PIXEL(ship.pos.cx) + ship.vel.x;
+    y3 = CLICK_TO_PIXEL(ship.pos.cy) + ship.vel.y;
 
     ship_dist = Wrap_length(PIXEL_TO_CLICK(x3 - x2),
 			    PIXEL_TO_CLICK(y3 - y2)) / CLICK;
@@ -942,7 +942,7 @@ static void Robotdef_fire_laser(player_t *pl)
     dir3 = Wrap_findDir(x3 - x2, y3 - y2);
     Robot_set_pointing_direction(pl, dir3);
 
-	pl->used.get( HAS_LASER);
+	pl.used.get( HAS_LASER);
 }
 
 static bool Detect_ship(player_t *pl, player_t *ship)
@@ -958,15 +958,15 @@ static bool Detect_ship(player_t *pl, player_t *ship)
 	return false;
 
     /* trivial */
-    if (pl->visibility[GetInd(ship->id)].canSee)
+    if (pl.visibility[GetInd(ship.id)].canSee)
 	return true;
 
     /*
      * can't see it, so it must be cloaked
      * maybe we can detect it's presence from other clues?
      */
-    distance = Wrap_length(ship->pos.cx - pl->pos.cx,
-			   ship->pos.cy - pl->pos.cy) / CLICK;
+    distance = Wrap_length(ship.pos.cx - pl.pos.cx,
+			   ship.pos.cy - pl.pos.cy) / CLICK;
     /* can't detect ships beyond visual range */
     if (distance > Visibility_distance)
 	return false;
@@ -975,15 +975,15 @@ static bool Detect_ship(player_t *pl, player_t *ship)
 	&& options.cloakedExhaust)
 	return true;
 
-    if (ship->used.get( HAS_SHOT)
-	|| ship->used.get( HAS_LASER)
+    if (ship.used.get( HAS_SHOT)
+	|| ship.used.get( HAS_LASER)
 	|| Player_is_refueling(ship)
 	|| Player_is_repairing(ship)
 	|| Player_uses_connector(ship)
 	|| Player_uses_tractor_beam(ship))
 	return true;
 
-    if (ship->have.get( HAS_BALL))
+    if (ship.have.get( HAS_BALL))
 	return true;
 
     /* the sky seems clear.. */
@@ -1005,7 +1005,7 @@ static int Rank_item_value(player_t *pl, enum Item itemtype)
 
     if (itemtype == ITEM_AUTOPILOT)
 	return ROBOT_IGNORE_ITEM;		/* never useful for robots */
-    if (pl->item[itemtype] >= world->items[itemtype].limit)
+    if (pl.item[itemtype] >= world.items[itemtype].limit)
 	return ROBOT_IGNORE_ITEM;		/* already full */
     if ((IsDefensiveItem(itemtype)
 	 && CountDefensiveItems(pl) >= options.maxDefensiveItems)
@@ -1013,16 +1013,16 @@ static int Rank_item_value(player_t *pl, enum Item itemtype)
 	 && CountOffensiveItems(pl) >= options.maxOffensiveItems))
 	return ROBOT_IGNORE_ITEM;
     if (itemtype == ITEM_FUEL) {
-	if (pl->fuel.sum >= pl->fuel.max * 0.90)
+	if (pl.fuel.sum >= pl.fuel.max * 0.90)
 	    return ROBOT_IGNORE_ITEM;		/* already (almost) full */
-	else if ((pl->fuel.sum < (world->rules->mode.get( TIMING))
-		  ? my_data->fuel_l1
-		  : my_data->fuel_l2))
+	else if ((pl.fuel.sum < (world.rules.mode.get( TIMING))
+		  ? my_data.fuel_l1
+		  : my_data.fuel_l2))
 	    return ROBOT_MUST_HAVE_ITEM;		/* ahh fuel at last */
 	else
 	    return ROBOT_HANDY_ITEM;
     }
-    if (world->rules->mode.get( TIMING)) {
+    if (world.rules.mode.get( TIMING)) {
 	switch (itemtype) {
 	case ITEM_FUEL:		/* less refuel stops */
 	case ITEM_REARSHOT:	/* shoot competitors behind you */
@@ -1056,7 +1056,7 @@ static int Rank_item_value(player_t *pl, enum Item itemtype)
 	case ITEM_EMERGENCY_SHIELD:
 	case ITEM_DEFLECTOR:
 	case ITEM_ARMOR:
-	    if (pl->have.get( HAS_SHIELD))
+	    if (pl.have.get( HAS_SHIELD))
 		return ROBOT_HANDY_ITEM;
 	    else
 		return ROBOT_MUST_HAVE_ITEM;
@@ -1114,11 +1114,11 @@ static void Robot_suibot_play(player_t *pl)
   const int maxdist =  1200; /* maximum distance from which to try to pop ball*/
   double ball_dist;
   
-  pl->turnspeed = 0;
-  pl->turnacc = 0;
-  pl->power = MAX_PLAYER_POWER;
+  pl.turnspeed = 0;
+  pl.turnacc = 0;
+  pl.power = MAX_PLAYER_POWER;
   
-  if(my_data->robot_mode == RM_TAKE_OFF){
+  if(my_data.robot_mode == RM_TAKE_OFF){
     Robot_take_off_from_base(pl);
     return;
   }
@@ -1130,17 +1130,17 @@ static void Robot_suibot_play(player_t *pl)
   /* Try not to crash into walls */
 
 
-  if(pl->velocity > options.maxUnshieldedWallBounceSpeed){
+  if(pl.velocity > options.maxUnshieldedWallBounceSpeed){
       double time;
-      time= (pl->velocity 
-	     - options.maxUnshieldedWallBounceSpeed)/(pl->power / pl->mass);
+      time= (pl.velocity
+	     - options.maxUnshieldedWallBounceSpeed)/(pl.power / pl.mass);
       time=time*0.05;
       
-      if(Wall_in_between_points(pl->pos.cx, 
-				pl->pos.cy,
-				pl->pos.cx + pl->vel.x * time,
-				pl->pos.cy + pl->vel.y * time)) {
-      direction= (int)findDir(-pl->vel.x, -pl->vel.y);
+      if(Wall_in_between_points(pl.pos.cx,
+				pl.pos.cy,
+				pl.pos.cx + pl.vel.x * time,
+				pl.pos.cy + pl.vel.y * time)) {
+      direction= (int)findDir(-pl.vel.x, -pl.vel.y);
       Robot_set_pointing_direction(pl, direction);
       printf("avoiding wall\n");
       Thrust(pl, true);
@@ -1156,10 +1156,10 @@ static void Robot_suibot_play(player_t *pl)
    player_t *ship = Player_by_index(ship_i); 
     ship_dist = 
       CLICK_TO_PIXEL((int)
-	(Wrap_length((pl->pos.cx - ship->pos.cx),
-	       (pl->pos.cy - ship->pos.cy))));
+	(Wrap_length((pl.pos.cx - ship.pos.cx),
+	       (pl.pos.cy - ship.pos.cy))));
     
-    if(ship->have.get( HAS_BALL ))
+    if(ship.have.get( HAS_BALL ))
       ship_dist = ship_dist/3.0;
     /* 
      * Player with ball is considered as "much closer" 
@@ -1170,13 +1170,13 @@ static void Robot_suibot_play(player_t *pl)
      * while some other player is really really close
      */
     
-    if ((ship->id != pl->id)
+    if ((ship.id != pl.id)
 	&& Player_is_alive(ship)
 	&& ship_dist < ship_dist_closest 
-	&& (pl->team != ship->team) 
-      	&& ((!ship->used.get( HAS_SHIELD))
-	    || Wrap_length(ship->pos.cx - pl->pos.cx,
-			   ship->pos.cy - pl->pos.cy) < 8000)
+	&& (pl.team != ship.team)
+      	&& ((!ship.used.get( HAS_SHIELD))
+	    || Wrap_length(ship.pos.cx - pl.pos.cx,
+			   ship.pos.cy - pl.pos.cy) < 8000)
 	)
       {
 	ship_dist_closest = ship_dist;
@@ -1188,14 +1188,14 @@ static void Robot_suibot_play(player_t *pl)
       char msg[MSG_LEN];
       /* if not true, there's a bug */ 
       warn(" Robotdef.c: opponent very close, but variable empty!\n");
-      sprintf (msg,"Bug: Chasing a non-existant opponent! [%s]",pl->name);
+      sprintf (msg,"Bug: Chasing a non-existant opponent! [%s]",pl.name);
       Set_message(msg);
       return;
   }
   
-  if(ship_dist_closest <  maxdist && closest_opponent->used.get( HAS_SHIELD)){
-      direction = Wrap_cfindDir(-closest_opponent->pos.cx + pl->pos.cx,
-				-closest_opponent->pos.cy + pl->pos.cy);
+  if(ship_dist_closest <  maxdist && closest_opponent.used.get( HAS_SHIELD)){
+      direction = Wrap_cfindDir(-closest_opponent.pos.cx + pl.pos.cx,
+				-closest_opponent.pos.cy + pl.pos.cy);
       Robot_set_pointing_direction(pl, (int)(abs(direction+0.5)));
       Thrust(pl, true); 
       return;
@@ -1219,15 +1219,15 @@ static void Robot_suibot_play(player_t *pl)
  closest_ball_dist= 2* maxdist;
  closest_ball=NULL;
  
- Cell_get_objects(pl->pos, (int)(Visibility_distance / BLOCK_SZ),
+ Cell_get_objects(pl.pos, (int)(Visibility_distance / BLOCK_SZ),
 		  max_objs, &obj_list, &obj_count);
  
  for (i = 0; i < obj_count; i++) { /*for .. obj_count*/
    object = obj_list[i];
-   if (object->type == OBJ_BALL) {
+   if (object.type == OBJ_BALL) {
      ball= BALL_PTR(object);
-     ball_dist = Wrap_length(pl->pos.cx - ball->pos.cx,
-			     pl->pos.cy - ball->pos.cy) / CLICK;
+     ball_dist = Wrap_length(pl.pos.cx - ball.pos.cx,
+			     pl.pos.cy - ball.pos.cy) / CLICK;
      if (ball_dist < closest_ball_dist) {
        closest_ball_dist = ball_dist;
        closest_ball = ball;
@@ -1237,19 +1237,19 @@ static void Robot_suibot_play(player_t *pl)
  ball =  closest_ball;
  
  if(ball){
-   if (Wall_in_between_points((pl->pos.cx),(pl->pos.cy),(ball->pos.cx),
-			      (ball->pos.cy)))
+   if (Wall_in_between_points((pl.pos.cx),(pl.pos.cy),(ball.pos.cx),
+			      (ball.pos.cy)))
      ball_dist = 2*  World.hypotenuse; 
  }
  
 
  if(ship_dist_closest <  maxdist
     && ship_dist_closest < (2.5 * ball_dist)
-    && (Wall_in_between_points((pl->pos.cx),
-			       (pl->pos.cy),
-			       (closest_opponent->pos.cx),
-			       (closest_opponent->pos.cy)) == 0)
-    && (!pl->have.get( HAS_BALL))	
+    && (Wall_in_between_points((pl.pos.cx),
+			       (pl.pos.cy),
+			       (closest_opponent.pos.cx),
+			       (closest_opponent.pos.cy)) == 0)
+    && (!pl.have.get( HAS_BALL))
      ) {
    Robot_attack_player(pl,closest_opponent);
    return;
@@ -1257,8 +1257,8 @@ static void Robot_suibot_play(player_t *pl)
 
  if( ball 
      && ball_dist < maxdist 
-     && Wrap_length(ball->pos.cx - ball->ball_treasure->pos.cx,
-     		    ball->pos.cy - ball->ball_treasure->pos.cy
+     && Wrap_length(ball.pos.cx - ball.ball_treasure.pos.cx,
+     		    ball.pos.cy - ball.ball_treasure.pos.cy
 	 ) > 10000
      ){
      Robot_ram_object(pl, OBJ_PTR(ball));
@@ -1273,20 +1273,20 @@ static void Robot_suibot_play(player_t *pl)
     Robots should be able to get free anyways now.
  */
 
- if((pl->last_wall_touch + 11) >= frame_loops) {
-     direction= (int)findDir(pl->vel.x,pl->vel.y);
+ if((pl.last_wall_touch + 11) >= frame_loops) {
+     direction= (int)findDir(pl.vel.x,pl.vel.y);
      Robot_set_pointing_direction(pl, direction);
      
      Thrust(pl, false);
      return;
  }
  
- if((pl->last_wall_touch + 14) >= frame_loops){
-     direction= (int)findDir(pl->vel.x,pl->vel.y);
+ if((pl.last_wall_touch + 14) >= frame_loops){
+     direction= (int)findDir(pl.vel.x,pl.vel.y);
      Robot_set_pointing_direction(pl, direction);
-     if(!Wall_in_between_points(pl->pos.cx, pl->pos.cy, 
-				pl->pos.cx + pl->vel.x * 10,
-				pl->pos.cy + pl->vel.y * 10)){
+     if(!Wall_in_between_points(pl.pos.cx, pl.pos.cy,
+				pl.pos.cx + pl.vel.x * 10,
+				pl.pos.cy + pl.vel.y * 10)){
 	 Thrust(pl, true);
      }
  }
@@ -1315,10 +1315,10 @@ static void Robot_suibot_round_tick(void)
 
 
     /* limit distance to allowable enemies. */
-    Max_enemy_distance = world->hypotenuse;
-    if (world->hypotenuse > Visibility_distance)
-	Max_enemy_distance =  world->hypotenuse;
+    Max_enemy_distance = world.hypotenuse;
+    if (world.hypotenuse > Visibility_distance)
+	Max_enemy_distance =  world.hypotenuse;
 /*	min_enemy_distance
-	    + (((world->hypotenuse - min_enemy_distance)
+	    + (((world.hypotenuse - min_enemy_distance)
 		* (NUM_IDS - NumRobots)) / NUM_IDS);*/
 }

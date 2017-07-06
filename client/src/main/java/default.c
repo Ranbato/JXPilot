@@ -29,7 +29,7 @@
 
 static double	hudScale;	/* Scale for HUD drawing */
 
-static bool Set_nickName(xp_option_t *opt, const char *value)
+static bool Set_nickName(xp_option_t *opt, String value)
 {
     UNUSED_PARAM(opt);
     assert(value);
@@ -63,9 +63,9 @@ static bool Set_nickName(xp_option_t *opt, const char *value)
     return true;
 }
 
-static bool Set_userName(xp_option_t *opt, const char *value)
+static bool Set_userName(xp_option_t *opt, String value)
 {
-    char *cp = getenv("XPILOTUSER");
+    String cp = getenv("XPILOTUSER");
 
     UNUSED_PARAM(opt);
     assert(value);
@@ -96,9 +96,9 @@ static bool Set_userName(xp_option_t *opt, const char *value)
     return true;
 }
 
-static bool Set_hostName(xp_option_t *opt, const char *value)
+static bool Set_hostName(xp_option_t *opt, String value)
 {
-    char *cp = getenv("XPILOTHOST");
+    String cp = getenv("XPILOTHOST");
 
     UNUSED_PARAM(opt);
     assert(value);
@@ -127,19 +127,19 @@ static bool Set_hostName(xp_option_t *opt, const char *value)
     return true;
 }
 
-static const char *Get_nickName(xp_option_t *opt)
+static String Get_nickName(xp_option_t *opt)
 {
     UNUSED_PARAM(opt);
     return connectParam.nick_name;
 }
 
-static const char *Get_userName(xp_option_t *opt)
+static String Get_userName(xp_option_t *opt)
 {
     UNUSED_PARAM(opt);
     return connectParam.user_name;
 }
 
-static const char *Get_hostName(xp_option_t *opt)
+static String Get_hostName(xp_option_t *opt)
 {
     UNUSED_PARAM(opt);
     return connectParam.host_name;
@@ -156,7 +156,7 @@ static bool Set_team(xp_option_t *opt, int value)
     return true;
 }
 
-static bool Set_texturePath(xp_option_t *opt, const char *value)
+static bool Set_texturePath(xp_option_t *opt, String value)
 {
     UNUSED_PARAM(opt);
     XFREE(texturePath);
@@ -165,7 +165,7 @@ static bool Set_texturePath(xp_option_t *opt, const char *value)
 	realTexturePath = xp_safe_strdup(value);
     return true;
 }
-static const char *Get_texturePath(xp_option_t *opt)
+static String Get_texturePath(xp_option_t *opt)
 {
     UNUSED_PARAM(opt);
     return texturePath;
@@ -175,8 +175,8 @@ static const char *Get_texturePath(xp_option_t *opt)
 /*
  * Ship shape option handling.
  */
-static char *shipShapeSetting = NULL;
-static char *shipShapeFile = NULL;
+static String shipShapeSetting = NULL;
+static String shipShapeFile = NULL;
 
 /*
  * This function trys to set the shipShape variable.
@@ -189,7 +189,7 @@ static void tryToSetShipShape(void)
 {
     bool is_shape = false, valid;
     FILE *fp;
-    char *ptr, *str, line[1024], *ss_candidate = NULL;
+    String ptr, *str, line[1024], *ss_candidate = NULL;
 
     /*
      * Let's allow overriding shipshape with another. E.g the first
@@ -272,7 +272,7 @@ static void tryToSetShipShape(void)
 /*
  * Shipshape options.
  */
-static bool Set_shipShape(xp_option_t *opt, const char *value)
+static bool Set_shipShape(xp_option_t *opt, String value)
 {
     UNUSED_PARAM(opt);
     XFREE(shipShapeSetting);
@@ -282,13 +282,13 @@ static bool Set_shipShape(xp_option_t *opt, const char *value)
     return true;
 }
 
-static const char *Get_shipShape(xp_option_t *opt)
+static String Get_shipShape(xp_option_t *opt)
 {
     UNUSED_PARAM(opt);
     return shipShapeSetting;
 }
 
-static bool Set_shipShapeFile(xp_option_t *opt, const char *value)
+static bool Set_shipShapeFile(xp_option_t *opt, String value)
 {
     UNUSED_PARAM(opt);
     XFREE(shipShapeFile);
@@ -298,7 +298,7 @@ static bool Set_shipShapeFile(xp_option_t *opt, const char *value)
     return true;
 }
 
-static const char *Get_shipShapeFile(xp_option_t *opt)
+static String Get_shipShapeFile(xp_option_t *opt)
 {
     UNUSED_PARAM(opt);
     return shipShapeFile;
@@ -436,8 +436,8 @@ static bool Set_outlineWorld(xp_option_t *opt, bool val)
     instruments.outlineWorld = val;
     if (oldServer && Setup) {
 	/* don't bother to check if recalculations are really needed. */
-	Map_restore(0, 0, Setup->x, Setup->y);
-	Map_blue(0, 0, Setup->x, Setup->y);
+	Map_restore(0, 0, Setup.x, Setup.y);
+	Map_blue(0, 0, Setup.x, Setup.y);
     }
     return true;
 }
@@ -448,8 +448,8 @@ static bool Set_filledWorld(xp_option_t *opt, bool val)
     instruments.filledWorld = val;
     if (oldServer && Setup) {
 	/* don't bother to check if recalculations are really needed. */
-	Map_restore(0, 0, Setup->x, Setup->y);
-	Map_blue(0, 0, Setup->x, Setup->y);
+	Map_restore(0, 0, Setup.x, Setup.y);
+	Map_blue(0, 0, Setup.x, Setup.y);
     }
     return true;
 }
@@ -462,9 +462,9 @@ static bool Set_texturedWalls(xp_option_t *opt, bool val)
     if (Setup) {
 	if (oldServer) {
 	    /* don't bother to check if recalculations are really needed. */
-	    Map_restore(0, 0, Setup->x, Setup->y);
-	    Map_blue(0, 0, Setup->x, Setup->y);
-	} else Mapdata_setup(Setup->data_url);
+	    Map_restore(0, 0, Setup.x, Setup.y);
+	    Map_blue(0, 0, Setup.x, Setup.y);
+	} else Mapdata_setup(Setup.data_url);
     }
     return true;
 }
@@ -503,14 +503,14 @@ static bool Set_dirPrediction(xp_option_t *opt, bool val)
 int protocolVersion = POLYGON_VERSION;
 static char protocolVersionStr[32];
 
-static bool Set_protocolVersion(xp_option_t *opt, const char *value)
+static bool Set_protocolVersion(xp_option_t *opt, String value)
 {
     if (sscanf(value, "%x", &protocolVersion) <= 0)
 	return false;
     return true;
 }
 
-static const char *Get_protocolVersion(xp_option_t *opt)
+static String Get_protocolVersion(xp_option_t *opt)
 {
     snprintf(protocolVersionStr, sizeof protocolVersionStr, "%04x",
 	     protocolVersion);

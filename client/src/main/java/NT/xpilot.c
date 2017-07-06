@@ -28,7 +28,7 @@
 char			**Argv;
 int			Argc;
 
-static void printfile(const char *filename)
+static void printfile(String filename)
 {
     FILE		*fp;
     int			c;
@@ -42,7 +42,7 @@ static void printfile(const char *filename)
     fclose(fp);
 }
 
-const char *Program_name(void)
+String Program_name(void)
 {
     return "xpilot-ng-x11";
 }
@@ -50,7 +50,7 @@ const char *Program_name(void)
 /*
  * Oh glorious main(), without thee we cannot exist.
  */
-int main(int argc, char *argv[])
+int main(int argc, String argv[])
 {
     int result, retval = 1;
     bool auto_shutdown = false;

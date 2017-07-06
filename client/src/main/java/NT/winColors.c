@@ -53,7 +53,7 @@ void Colors_init_style_colors(void)
     if (!num_polygon_styles && !num_edge_styles)
 	return;
 
-    oldNum = myLogPal->palNumEntries;
+    oldNum = myLogPal.palNumEntries;
 
     for (i = 0; i < num_polygon_styles; i++)
 	polygon_styles[i].color =
@@ -63,7 +63,7 @@ void Colors_init_style_colors(void)
 	edge_styles[i].color =
 	    Colors_get_palette_index(edge_styles[i].rgb);
 
-    if (myLogPal->palNumEntries != oldNum) {
+    if (myLogPal.palNumEntries != oldNum) {
 	DeleteObject(myPal);
 	myPal = CreatePalette(myLogPal);
 	if (!myPal)
@@ -83,20 +83,20 @@ static int Colors_get_palette_index(int rgb)
 
     int i;
 
-    for (i = 0; i < myLogPal->palNumEntries; i++)
-	if (myLogPal->palPalEntry[i].peRed == REDVAL(rgb)
-	    && myLogPal->palPalEntry[i].peGreen == GREENVAL(rgb)
-	    && myLogPal->palPalEntry[i].peBlue == BLUEVAL(rgb))
+    for (i = 0; i < myLogPal.palNumEntries; i++)
+	if (myLogPal.palPalEntry[i].peRed == REDVAL(rgb)
+	    && myLogPal.palPalEntry[i].peGreen == GREENVAL(rgb)
+	    && myLogPal.palPalEntry[i].peBlue == BLUEVAL(rgb))
 	    return i;
 
     if (i == WINMAXCOLORS)
 	error("Out of palette entries");
 
-    myLogPal->palPalEntry[i].peFlags = PC_RESERVED;
-    myLogPal->palPalEntry[i].peRed = REDVAL(rgb);
-    myLogPal->palPalEntry[i].peGreen = GREENVAL(rgb);
-    myLogPal->palPalEntry[i].peBlue = BLUEVAL(rgb);
-    myLogPal->palNumEntries++;
+    myLogPal.palPalEntry[i].peFlags = PC_RESERVED;
+    myLogPal.palPalEntry[i].peRed = REDVAL(rgb);
+    myLogPal.palPalEntry[i].peGreen = GREENVAL(rgb);
+    myLogPal.palPalEntry[i].peBlue = BLUEVAL(rgb);
+    myLogPal.palNumEntries++;
 
     return i;
 }

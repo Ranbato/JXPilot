@@ -84,16 +84,16 @@ static void Paint_background_dots(void)
 {
     double dx, dy;
     int xi, yi;
-    ipos_t min, max, count;
+    Point  min, max, count;
 
     if (backgroundPointDist == 0)
 	return;
 
-    count.x = Setup->width / (BLOCK_SZ * backgroundPointDist);
-    count.y = Setup->height / (BLOCK_SZ * backgroundPointDist);
+    count.x = Setup.width / (BLOCK_SZ * backgroundPointDist);
+    count.y = Setup.height / (BLOCK_SZ * backgroundPointDist);
 
-    dx = (double)Setup->width / count.x;
-    dy = (double)Setup->height / count.y;
+    dx = (double)Setup.width / count.x;
+    dy = (double)Setup.height / count.y;
 
     min.x = (int)(world.x / dx);
     if (world.x > 0)
@@ -116,19 +116,19 @@ static void Paint_background_dots(void)
 
 
 
-static void Compute_bounds(ipos_t *min, ipos_t *max, const Rectangle *b)
+static void Compute_bounds(Point  *min, Point  *max, const Rectangle *b)
 {
-    min->x = (world.x - (b->x + b->w)) / Setup->width;
-    if (world.x > b->x + b->w) min->x++;
-    max->x = (world.x + ext_view_width - b->x) / Setup->width;
-    if (world.x + ext_view_width < b->x) max->x--;
-    min->y = (world.y - (b->y + b->h)) / Setup->height;
-    if (world.y > b->y + b->h) min->y++;
-    max->y = (world.y + ext_view_height - b->y) / Setup->height;
-    if (world.y + ext_view_height < b->y) max->y--;
-    if (!Setup->mode.get( WRAP_PLAY)) {
-	if (min->x <= max->x) min->x = max->x = 0;
-	if (min->y <= max->y) min->y = max->y = 0;
+    min.x = (world.x - (b.x + b.w)) / Setup.width;
+    if (world.x > b.x + b.w) min.x++;
+    max.x = (world.x + ext_view_width - b.x) / Setup.width;
+    if (world.x + ext_view_width < b.x) max.x--;
+    min.y = (world.y - (b.y + b.h)) / Setup.height;
+    if (world.y > b.y + b.h) min.y++;
+    max.y = (world.y + ext_view_height - b.y) / Setup.height;
+    if (world.y + ext_view_height < b.y) max.y--;
+    if (!Setup.mode.get( WRAP_PLAY)) {
+	if (min.x <= max.x) min.x = max.x = 0;
+	if (min.y <= max.y) min.y = max.y = 0;
     }
 }
 
@@ -136,7 +136,7 @@ static void Compute_bounds(ipos_t *min, ipos_t *max, const Rectangle *b)
 void Paint_objects(void)
 {
     int i, xoff, yoff;
-    ipos_t min, max;
+    Point  min, max;
 
     for (i = 0; i < num_polygons; i++) {
 
@@ -156,8 +156,8 @@ void Paint_objects(void)
         for (xoff = min.x; xoff <= max.x; xoff++) {
             for (yoff = min.y; yoff <= max.y; yoff++) {
                 Gui_paint_fuel
-                    (fuels[i].bounds.x + xoff * Setup->width,
-                     fuels[i].bounds.y + yoff * Setup->height,
+                    (fuels[i].bounds.x + xoff * Setup.width,
+                     fuels[i].bounds.y + yoff * Setup.height,
                      fuels[i].fuel);
             }
         }
@@ -170,8 +170,8 @@ void Paint_objects(void)
         for (xoff = min.x; xoff <= max.x; xoff++) {
             for (yoff = min.y; yoff <= max.y; yoff++) {
                 Gui_paint_base
-                    (bases[i].bounds.x + xoff * Setup->width,
-                     bases[i].bounds.y + yoff * Setup->height,
+                    (bases[i].bounds.x + xoff * Setup.width,
+                     bases[i].bounds.y + yoff * Setup.height,
                      bases[i].id, bases[i].team,
                      bases[i].type);
             }
@@ -185,8 +185,8 @@ void Paint_objects(void)
         for (xoff = min.x; xoff <= max.x; xoff++) {
             for (yoff = min.y; yoff <= max.y; yoff++) {
                 Gui_paint_setup_check
-                    (checks[i].bounds.x + xoff * Setup->width,
-                     checks[i].bounds.y + yoff * Setup->height,
+                    (checks[i].bounds.x + xoff * Setup.width,
+                     checks[i].bounds.y + yoff * Setup.height,
                      (i == nextCheckPoint));
             }
         }
@@ -243,15 +243,15 @@ void Paint_world(void)
     unsigned char	*mapptr, *mapbase;
     static double	oldHRLimit = -1.0;
 
-    if (!Setup->mode.get( WRAP_PLAY)) {
+    if (!Setup.mode.get( WRAP_PLAY)) {
 	if (world.x <= 0)
-	    Gui_paint_border(0, 0, 0, Setup->height);
-	if (world.x + ext_view_width >= Setup->width)
-	    Gui_paint_border(Setup->width, 0, Setup->width, Setup->height);
+	    Gui_paint_border(0, 0, 0, Setup.height);
+	if (world.x + ext_view_width >= Setup.width)
+	    Gui_paint_border(Setup.width, 0, Setup.width, Setup.height);
 	if (world.y <= 0)
-	    Gui_paint_border(0, 0, Setup->width, 0);
-	if (world.y + ext_view_height >= Setup->height)
-	    Gui_paint_border(0, Setup->height, Setup->width, Setup->height);
+	    Gui_paint_border(0, 0, Setup.width, 0);
+	if (world.y + ext_view_height >= Setup.height)
+	    Gui_paint_border(0, Setup.height, Setup.width, Setup.height);
     }
 
     if ((ext_view_width > MAX_VIEW_SIZE || ext_view_height > MAX_VIEW_SIZE)) {
@@ -296,39 +296,39 @@ void Paint_world(void)
     yb = ((world.y < 0) ? (world.y - (BLOCK_SZ - 1)) : world.y) / BLOCK_SZ;
     xe = (world.x + ext_view_width) / BLOCK_SZ;
     ye = (world.y + ext_view_height) / BLOCK_SZ;
-    if (!Setup->mode.get( WRAP_PLAY)) {
+    if (!Setup.mode.get( WRAP_PLAY)) {
 	if (xb < 0)
 	    xb = 0;
 	if (yb < 0)
 	    yb = 0;
-	if (xe >= Setup->x)
-	    xe = Setup->x - 1;
-	if (ye >= Setup->y)
-	    ye = Setup->y - 1;
+	if (xe >= Setup.x)
+	    xe = Setup.x - 1;
+	if (ye >= Setup.y)
+	    ye = Setup.y - 1;
     }
 
     y = yb * BLOCK_SZ;
-    yi = mod(yb, Setup->y);
-    mapbase = Setup->map_data + yi;
+    yi = mod(yb, Setup.y);
+    mapbase = Setup.map_data + yi;
 
     for (ryb = yb; ryb <= ye; ryb++, yi++, y += BLOCK_SZ, mapbase++) {
 
-	if (yi == Setup->y) {
-	    if (!Setup->mode.get( WRAP_PLAY))
+	if (yi == Setup.y) {
+	    if (!Setup.mode.get( WRAP_PLAY))
 		break;
 	    yi = 0;
-	    mapbase = Setup->map_data;
+	    mapbase = Setup.map_data;
 	}
 
 	x = xb * BLOCK_SZ;
-	xi = mod(xb, Setup->x);
-	mapptr = mapbase + xi * Setup->y;
+	xi = mod(xb, Setup.x);
+	mapptr = mapbase + xi * Setup.y;
 
 	for (rxb = xb; rxb <= xe; rxb++, xi++, x += BLOCK_SZ,
-	     mapptr += Setup->y) {
+	     mapptr += Setup.y) {
 
-	    if (xi == Setup->x) {
-		if (!Setup->mode.get( WRAP_PLAY))
+	    if (xi == Setup.x) {
+		if (!Setup.mode.get( WRAP_PLAY))
 		    break;
 		xi = 0;
 		mapptr = mapbase;

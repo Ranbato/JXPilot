@@ -36,7 +36,7 @@ struct {
 
 
 /* SDL client does not use MFC crap */
-void _Trace(char *fmt, ...)
+void _Trace(String fmt, ...)
 {
 	va_list ap;
 	va_start(ap, fmt);
@@ -44,5 +44,5 @@ void _Trace(char *fmt, ...)
     va_end(ap);
 }
 
-void Progress(char *fmt, ...) {}
+void Progress(String fmt, ...) {}
 void MarkPlayersForRedraw(void) {}

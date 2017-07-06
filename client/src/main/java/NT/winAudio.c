@@ -34,7 +34,7 @@
 #include <mmsystem.h>
 
 #define	SNDQSIZE	32
-static char *SndQ = NULL;
+static String SndQ = NULL;
 static long SndSize = 0;
 static BOOL SndFlag = FALSE;
 static HANDLE hPlayEvent = 0;
@@ -43,7 +43,7 @@ static DWORD Win32PlaySounds(LPVOID Arg)
 {
     while (1) {
 	if (WAIT_OBJECT_0 == WaitForSingleObject(hPlayEvent, 100000)) {
-	    char *pFileName = SndQ;
+	    String pFileName = SndQ;
 	    ResetEvent(hPlayEvent);
 	    SndQ = NULL;
 	    PlaySound(pFileName, NULL,
@@ -53,7 +53,7 @@ static DWORD Win32PlaySounds(LPVOID Arg)
     return 0;
 }
 
-static long Win32GetFileSize(const char *filename)
+static long Win32GetFileSize(String filename)
 {
     int fd = _open(filename, O_BINARY | O_RDONLY);
     long fileSize = -1L;
@@ -64,7 +64,7 @@ static long Win32GetFileSize(const char *filename)
     return fileSize;
 }
 
-int audioDeviceInit(char *display)
+int audioDeviceInit(String display)
 {
     DWORD ThreadId;
     HANDLE hThread;
@@ -87,7 +87,7 @@ void audioDeviceEvents()
 {
 }
 
-void audioDevicePlay(char *filename, int type, int volume, void **private)
+void audioDevicePlay(String filename, int type, int volume, void **private)
 {
     if (SndQ == NULL) {
 	SndQ = filename;

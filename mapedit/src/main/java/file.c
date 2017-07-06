@@ -55,22 +55,22 @@ char oldmap[90] = {
 /* Arguments :                                                             */
 /* Purpose :                                                               */
 /***************************************************************************/
-static char *GetMapDir(void)
+static String GetMapDir(void)
 {
-    static char *mapdir;
-    char *src, *dst;
+    static String mapdir;
+    String src, *dst;
 
     if (!mapdir) {
 #if defined(MAPDIR)
-	mapdir = (char *) malloc(sizeof(MAPDIR) + 1);
+	mapdir = (String ) malloc(sizeof(MAPDIR) + 1);
 	strcpy(mapdir, MAPDIR);
 #elif defined(LIBDIR)
-	mapdir = (char *) malloc(sizeof(LIBDIR) + 10);
+	mapdir = (String ) malloc(sizeof(LIBDIR) + 10);
 	strcpy(mapdir, LIBDIR);
 	strcat(mapdir, "/maps");
 #else
 	static char default_mapdir[] = "/usr/local/games/lib/xpilot/maps";
-	mapdir = (char *) malloc(sizeof(default_mapdir) + 1);
+	mapdir = (String ) malloc(sizeof(default_mapdir) + 1);
 	strcpy(mapdir, default_mapdir);
 #endif
 	/* remove duplicate slashes. */
@@ -137,7 +137,7 @@ int SaveOk(HandlerInfo_t info)
     }
 
     SaveMap(filepromptname);
-    T_PopupClose(info.form->window);
+    T_PopupClose(info.form.window);
     map.changed = 0;
     return 0;
 }
@@ -148,11 +148,11 @@ int SaveOk(HandlerInfo_t info)
 /*   file                                                                  */
 /* Purpose :                                                               */
 /***************************************************************************/
-int SaveMap(char *file)
+int SaveMap(String file)
 {
     FILE *ofile = NULL;
     int n, i, j;
-    char *tmpstr;
+    String tmpstr;
     time_t tim;
 
     if (strlen(file) == 0) {
@@ -160,7 +160,7 @@ int SaveMap(char *file)
     }
     ofile = fopen(file, "w");
     if (ofile == NULL) {
-	tmpstr = (char *) malloc(strlen(file) + 20);
+	tmpstr = (String ) malloc(strlen(file) + 20);
 	sprintf(tmpstr, "Error saving file: %s", file);
 	T_PopupAlert(1, tmpstr, NULL, NULL, NULL, NULL);
 	free(tmpstr);
@@ -260,7 +260,7 @@ int LoadOk(HandlerInfo_t info)
     if (LoadMap(filepromptname)) {
 	return 1;
     }
-    T_PopupClose(info.form->window);
+    T_PopupClose(info.form.window);
     map.view_x = map.view_y = 0;
     map.view_zoom = DEFAULT_MAP_ZOOM;
     map.changed = 0;
@@ -275,59 +275,59 @@ int LoadOk(HandlerInfo_t info)
 /*   file                                                                  */
 /* Purpose :                                                               */
 /***************************************************************************/
-int LoadMap(char *file)
+int LoadMap(String file)
 {
     FILE *ifile = NULL;
     int ich;
     int corrupted = 0;
-    char *filename, *tmpstr;
+    String filename, *tmpstr;
     int i, j;
-    char *mapdir = GetMapDir();
+    String mapdir = GetMapDir();
 
 
     if (strlen(file) == 0)
 	return 1;
 
-    filename = (char *) malloc(strlen(file) + 1);
+    filename = (String ) malloc(strlen(file) + 1);
     strcpy(filename, file);
     ifile = fopen(filename, "r");	/* "FILE" */
 
     if (ifile == NULL) {
 	free(filename);
-	filename = (char *) malloc(strlen(file) + 4);
+	filename = (String ) malloc(strlen(file) + 4);
 	sprintf(filename, "%s.xp", file);
 	ifile = fopen(filename, "r");	/* "FILE.xp" */
 
 	if (ifile == NULL) {
 	    free(filename);
-	    filename = (char *) malloc(strlen(file) + 5);
+	    filename = (String ) malloc(strlen(file) + 5);
 	    sprintf(filename, "%s.map", file);
 	    ifile = fopen(filename, "r");	/* "FILE.map" */
 
 	    if (ifile == NULL) {
 		free(filename);
 		filename =
-		    (char *) malloc(strlen(file) + strlen(mapdir) + 2);
+		    (String ) malloc(strlen(file) + strlen(mapdir) + 2);
 		sprintf(filename, "%s/%s", mapdir, file);
 		ifile = fopen(filename, "r");	/* "MAPDIR/FILE" */
 
 		if (ifile == NULL) {
 		    free(filename);
 		    filename =
-			(char *) malloc(strlen(file) + strlen(mapdir) + 5);
+			(String ) malloc(strlen(file) + strlen(mapdir) + 5);
 		    sprintf(filename, "%s/%s.xp", mapdir, file);
 		    ifile = fopen(filename, "r");	/* "MAPDIR/FILE.xp" */
 
 		    if (ifile == NULL) {
 			free(filename);
 			filename =
-			    (char *) malloc(strlen(file) + strlen(mapdir) +
+			    (String ) malloc(strlen(file) + strlen(mapdir) +
 					    6);
 			sprintf(filename, "%s/%s.map", mapdir, file);
 			ifile = fopen(filename, "r");	/* "MAPDIR/FILE.map" */
 
 			if (ifile == NULL) {
-			    tmpstr = (char *) malloc(strlen(file) + 21);
+			    tmpstr = (String ) malloc(strlen(file) + 21);
 			    sprintf(tmpstr, "Couldn't find file: %s",
 				    file);
 			    T_PopupAlert(1, tmpstr, NULL, NULL, NULL,
@@ -342,7 +342,7 @@ int LoadMap(char *file)
     }
     if (map.comments)
 	free(map.comments);
-    map.comments = (char *) NULL;
+    map.comments = (String ) NULL;
     map.mapName[0] = map.mapAuthor[0] = map.gravity[0] = map.shipMass[0] =
 	'\0';
     map.maxRobots[0] = map.worldLives[0] = '\0';
@@ -388,15 +388,15 @@ int LoadMap(char *file)
 /*   file                                                                  */
 /* Purpose : Load a version 2 map                                          */
 /***************************************************************************/
-int LoadXbmFile(char *file)
+int LoadXbmFile(String file)
 {
     FILE *fp;
     max_str_t line;
-    char *tmpstr, *tmp;
+    String tmpstr, *tmp;
     int bits, x = 0, y = 0;
 
     if ((fp = fopen(file, "r")) == NULL) {
-	tmpstr = (char *) malloc(strlen(file) + 21);
+	tmpstr = (String ) malloc(strlen(file) + 21);
 	sprintf(tmpstr, "Couldn't find file: %s", file);
 	T_PopupAlert(1, tmpstr, NULL, NULL, NULL, NULL);
 	free(tmpstr);
@@ -466,17 +466,17 @@ int LoadXbmFile(char *file)
 /*   file                                                                  */
 /* Purpose : Load a version 2 map                                          */
 /***************************************************************************/
-int LoadOldMap(char *file)
+int LoadOldMap(String file)
 {
     FILE *fp;
     max_str_t line, filenm;
     int x, y, shortline, corrupted;
     int fchr = 32, rule;
-    char *tmpstr;
+    String tmpstr;
 
     strcpy(filenm, file);
     if ((fp = fopen(filenm, "r")) == NULL) {
-	tmpstr = (char *) malloc(strlen(file) + 21);
+	tmpstr = (String ) malloc(strlen(file) + 21);
 	sprintf(tmpstr, "Couldn't find file: %s", file);
 	T_PopupAlert(1, tmpstr, NULL, NULL, NULL, NULL);
 	free(tmpstr);
@@ -484,11 +484,11 @@ int LoadOldMap(char *file)
     }
     /* read in map x and y size */
     fgets(line, sizeof(max_str_t), fp);
-    tmpstr = (char *) strstr(line, "x");
+    tmpstr = (String ) strstr(line, "x");
     tmpstr++;
     map.height = atoi(tmpstr);
     strncpy(map.height_str, tmpstr, strlen(tmpstr) - 1);
-    tmpstr = (char *) strstr(line, "x");
+    tmpstr = (String ) strstr(line, "x");
     (*tmpstr) = '\0';
     map.width = atoi(line);
     strcpy(map.width_str, line);
@@ -573,40 +573,40 @@ char skipspace(FILE * ifile)
 }
 
 /***************************************************************************/
-/* char *getMultilineValue                                                 */
+/* String getMultilineValue                                                 */
 /* Arguments :                                                             */
 /*   delimiter                                                             */
 /*    ifile                                                                */
 /* Purpose :                                                               */
 /***************************************************************************/
-char *getMultilineValue(char *delimiter, FILE * ifile)
+String getMultilineValue(String delimiter, FILE * ifile)
 {
-    char *s = (char *) malloc(32768);
+    String s = (String ) malloc(32768);
     int i = 0;
     int slen = 32768;
-    char *bol;
+    String bol;
     int ich;
 
     bol = s;
     while (1) {
 	ich = getc(ifile);
 	if (ich == EOF) {
-	    s = (char *) realloc(s, i + 1);
+	    s = (String ) realloc(s, i + 1);
 	    s[i] = '\0';
 	    return s;
 	}
 	if (i == slen) {
-	    char *t = s;
+	    String t = s;
 
-	    s = (char *) realloc(s, slen += 32768);
+	    s = (String ) realloc(s, slen += 32768);
 	    bol += s - t;
 	}
 	if (ich == '\n') {
 	    s[i] = 0;
 	    if (delimiter && !strcmp(bol, delimiter)) {
-		char *t = s;
+		String t = s;
 
-		s = (char *) realloc(s, bol - s + 1);
+		s = (String ) realloc(s, bol - s + 1);
 		s[bol - t] = '\0';
 		return s;
 	    }
@@ -618,7 +618,7 @@ char *getMultilineValue(char *delimiter, FILE * ifile)
 
 #define                  EXPAND                        \
 if (i == slen) {                   \
-   s = (char *) realloc(s, slen *= 2);      \
+   s = (String ) realloc(s, slen *= 2);      \
 }
 /***************************************************************************/
 /* ParseLine                                                               */
@@ -629,8 +629,8 @@ if (i == slen) {                   \
 int ParseLine(FILE * ifile)
 {
     int ich;
-    char *value, *head, *name, *s = (char *) malloc(128);
-    char *tmp, *commentline;
+    String value, *head, *name, *s = (String ) malloc(128);
+    String tmp, *commentline;
     int slen = 128;
     int i = 0;
     int override = 0;
@@ -721,7 +721,7 @@ int ParseLine(FILE * ifile)
     s[i++] = '\0';
     name = s;
 
-    s = (char *) malloc(slen = 128);
+    s = (String ) malloc(slen = 128);
     i = 0;
     do {
 	EXPAND;
@@ -757,7 +757,7 @@ int ParseLine(FILE * ifile)
 	return 1;
     }
     if (multiline)
-	value = (char *) getMultilineValue(value, ifile);
+	value = (String ) getMultilineValue(value, ifile);
     i = AddOption(name, value);
 
     free(name);
@@ -772,10 +772,10 @@ int ParseLine(FILE * ifile)
 /*    value                                                                */
 /* Purpose :                                                               */
 /***************************************************************************/
-int AddOption(char *name, char *value)
+int AddOption(String name, String value)
 {
     int option, i;
-    char *tmp;
+    String tmp;
 
     for (i = 0; i < strlen(name); i++) {
 	if (isupper(name[i]))
@@ -843,7 +843,7 @@ int AddOption(char *name, char *value)
 /*   val                                                                   */
 /* Purpose :                                                               */
 /***************************************************************************/
-int YesNo(char *val)
+int YesNo(String val)
 {
     if ((tolower(val[0]) == 'y') || (tolower(val[0]) == 't'))
 	return 1;
@@ -851,18 +851,18 @@ int YesNo(char *val)
 }
 
 /***************************************************************************/
-/* char *StrToNum                                                          */
+/* String StrToNum                                                          */
 /* Arguments :                                                             */
 /*   string                                                                */
 /*   len                                                                   */
 /*   type                                                                  */
 /* Purpose :                                                               */
 /***************************************************************************/
-char *StrToNum(char *string, int len, int type)
+String StrToNum(String string, int len, int type)
 {
-    char *returnval;
+    String returnval;
 
-    returnval = (char *) malloc(len + 1);
+    returnval = (String ) malloc(len + 1);
     returnval[0] = '\0';
 
     if (type == FLOAT || type == INT) {
@@ -888,7 +888,7 @@ char *StrToNum(char *string, int len, int type)
 
 	string++;
     }
-    return (char *) returnval;
+    return (String ) returnval;
 }
 
 /***************************************************************************/
@@ -897,7 +897,7 @@ char *StrToNum(char *string, int len, int type)
 /*   value                                                                 */
 /* Purpose :                                                               */
 /***************************************************************************/
-int LoadMapData(char *value)
+int LoadMapData(String value)
 {
     int x = 0, y = 0;
 

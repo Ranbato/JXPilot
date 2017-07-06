@@ -28,8 +28,8 @@
 /*
  * Globals.
  */
-ipos_t	world;
-ipos_t	realWorld;
+Point 	world;
+Point 	realWorld;
 
 bool	players_exposed;
 short	ext_view_width;		/* Width of extended visible area */
@@ -97,15 +97,15 @@ void Paint_frame_start(void)
     world.x = selfPos.x - (ext_view_width / 2);
     world.y = selfPos.y - (ext_view_height / 2);
     realWorld = world;
-    if (Setup->mode.get( WRAP_PLAY)) {
-	if (world.x < 0 && world.x + ext_view_width < Setup->width)
-	    world.x += Setup->width;
-	else if (world.x > 0 && world.x + ext_view_width >= Setup->width)
-	    realWorld.x -= Setup->width;
-	if (world.y < 0 && world.y + ext_view_height < Setup->height)
-	    world.y += Setup->height;
-	else if (world.y > 0 && world.y + ext_view_height >= Setup->height)
-	    realWorld.y -= Setup->height;
+    if (Setup.mode.get( WRAP_PLAY)) {
+	if (world.x < 0 && world.x + ext_view_width < Setup.width)
+	    world.x += Setup.width;
+	else if (world.x > 0 && world.x + ext_view_width >= Setup.width)
+	    realWorld.x -= Setup.width;
+	if (world.y < 0 && world.y + ext_view_height < Setup.height)
+	    world.y += Setup.height;
+	else if (world.y > 0 && world.y + ext_view_height >= Setup.height)
+	    realWorld.y -= Setup.height;
     }
 
     if (start_loops != end_loops)
@@ -122,7 +122,7 @@ void Paint_frame_start(void)
 
 	/* TODO: move this somewhere else */
 	/* check once per second if we are playing */
-	if (newSecond && self && !strchr("PW", self->mychar))
+	if (newSecond && self && !strchr("PW", self.mychar))
 	    played_this_round = true;
     }
 
@@ -155,11 +155,11 @@ static void Determine_team_order(struct team_score *team_order[],
     for (i = 0; i < MAX_TEAMS; i++) {
 	if (team[i].playing) {
 	    for (j = 0; j < num_playing_teams; j++) {
-		if (team[i].score > team_order[j]->score
-		    || (team[i].score == team_order[j]->score
-			&& ((Setup->mode.get( LIMITED_LIVES))
-			    ? (team[i].life > team_order[j]->life)
-			    : (team[i].life < team_order[j]->life)))) {
+		if (team[i].score > team_order[j].score
+		    || (team[i].score == team_order[j].score
+			&& ((Setup.mode.get( LIMITED_LIVES))
+			    ? (team[i].life > team_order[j].life)
+			    : (team[i].life < team_order[j].life)))) {
 		    for (k = i; k > j; k--)
 			team_order[k] = team_order[k - 1];
 		    break;
@@ -178,21 +178,21 @@ static void Determine_order(other_t **order, struct team_score team[])
 
     for (i = 0; i < num_others; i++) {
 	other = &Others[i];
-	if (Setup->mode.get( TIMING)) {
+	if (Setup.mode.get( TIMING)) {
 	    /*
 	     * Sort the score table on position in race.
 	     * Put paused and waiting players last as well as tanks.
 	     */
-	    if (strchr("PTW", other->mychar))
+	    if (strchr("PTW", other.mychar))
 		j = i;
 	    else {
 		for (j = 0; j < i; j++) {
-		    if (order[j]->timing < other->timing)
+		    if (order[j].timing < other.timing)
 			break;
-		    if (strchr("PTW", order[j]->mychar))
+		    if (strchr("PTW", order[j].mychar))
 			break;
-		    if (order[j]->timing == other->timing) {
-			if (order[j]->timing_loops > other->timing_loops)
+		    if (order[j].timing == other.timing) {
+			if (order[j].timing_loops > other.timing_loops)
 			    break;
 		    }
 		}
@@ -200,7 +200,7 @@ static void Determine_order(other_t **order, struct team_score team[])
 	}
 	else {
 	    for (j = 0; j < i; j++) {
-		if (order[j]->score < other->score)
+		if (order[j].score < other.score)
 		    break;
 	    }
 	}
@@ -208,22 +208,22 @@ static void Determine_order(other_t **order, struct team_score team[])
 	    order[k] = order[k - 1];
 	order[j] = other;
 
-	if (Setup->mode.get( TEAM_PLAY|TIMING) == TEAM_PLAY) {
-	    switch (other->mychar) {
+	if (Setup.mode.get( TEAM_PLAY|TIMING) == TEAM_PLAY) {
+	    switch (other.mychar) {
 	    case 'P':
 	    case 'W':
 	    case 'T':
 		break;
 	    case ' ':
 	    case 'R':
-		if (Setup->mode.get( LIMITED_LIVES))
-		    team[other->team].life += other->life + 1;
+		if (Setup.mode.get( LIMITED_LIVES))
+		    team[other.team].life += other.life + 1;
 		else
-		    team[other->team].life += other->life;
+		    team[other.team].life += other.life;
 		/*FALLTHROUGH*/
 	    default:
-		team[other->team].playing++;
-		team[other->team].score += other->score;
+		team[other.team].playing++;
+		team[other.team].score += other.score;
 		break;
 	    }
 	}
@@ -248,7 +248,7 @@ static int Team_heading(int entrynum, int teamnum,
     strcpy(tmp.user_name, tmp.nick_name);
     strcpy(tmp.host_name, "");
 #if 0
-    if (Setup->mode.get( LIMITED_LIVES) && teamlives == 0)
+    if (Setup.mode.get( LIMITED_LIVES) && teamlives == 0)
 	tmp.mychar = 'D';
     else
 	tmp.mychar = ' ';
@@ -273,10 +273,10 @@ static int Team_score_table(int entrynum, int teamnum,
 	other = order[i];
 
 	if (teamnum == TEAM_PAUSEHACK) {
-	    if (other->mychar != 'P')
+	    if (other.mychar != 'P')
 		continue;
 	} else {
-	    if (other->team != teamnum || other->mychar == 'P')
+	    if (other.team != teamnum || other.mychar == 'P')
 		continue;
 	}
 
@@ -316,13 +316,13 @@ void Paint_score_table(void)
 	error("No memory for score");
 	return;
     }
-    if (Setup->mode.get( TEAM_PLAY|TIMING) == TEAM_PLAY) {
+    if (Setup.mode.get( TEAM_PLAY|TIMING) == TEAM_PLAY) {
 	memset(&team[0], 0, sizeof team);
 	memset(&pausers, 0, sizeof pausers);
     }
     Determine_order(order, team);
     Paint_score_start();
-    if (!(Setup->mode.get( TEAM_PLAY|TIMING) == TEAM_PLAY)) {
+    if (!(Setup.mode.get( TEAM_PLAY|TIMING) == TEAM_PLAY)) {
 	for (i = 0; i < num_others; i++) {
 	    other = order[i];
 	    j = other - Others;
@@ -341,8 +341,8 @@ void Paint_score_table(void)
 	for (i = 0; i < num_playing_teams; i++) {
 	    entrynum = Team_heading(entrynum,
 				    team_order[i] - &team[0],
-				    team_order[i]->life,
-				    team_order[i]->score);
+				    team_order[i].life,
+				    team_order[i].score);
 	}
 #endif
     }

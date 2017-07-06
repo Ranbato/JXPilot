@@ -68,7 +68,7 @@ void Groups_init(void)
     current_group = 0;
 }
 
-void P_edgestyle(const char *id, int width, int color, int style)
+void P_edgestyle(String id, int width, int color, int style)
 {
     if (num_estyles > 255) {
 	warn("Too many edgestyles");
@@ -82,7 +82,7 @@ void P_edgestyle(const char *id, int width, int color, int style)
     num_estyles++;
 }
 
-void P_polystyle(const char *id, int color, int texture_id, int defedge_id,
+void P_polystyle(String id, int color, int texture_id, int defedge_id,
 		 int flags)
 {
     if (num_pstyles > 255) {
@@ -104,7 +104,7 @@ void P_polystyle(const char *id, int color, int texture_id, int defedge_id,
 }
 
 
-void P_bmpstyle(const char *id, const char *filename, int flags)
+void P_bmpstyle(String id, String filename, int flags)
 {
     if (num_bstyles > 255) {
 	warn("Too many bitmap styles");
@@ -118,16 +118,16 @@ void P_bmpstyle(const char *id, const char *filename, int flags)
 }
 
 /* current vertex */
-static clpos_t P_cv;
+static Click  P_cv;
 
-void P_start_polygon(clpos_t pos, int style)
+void P_start_polygon(Click  pos, int style)
 {
     poly_t t;
 
     if (!World_contains_clpos(pos)) {
 	warn("Polygon start point (%d, %d) is not inside the map"
 	     "(0 <= x < %d, 0 <= y < %d)",
-	     pos.cx, pos.cy, world->cwidth, world->cheight);
+	     pos.cx, pos.cy, world.cwidth, world.cheight);
 	exit(1);
     }
     if (style == -1) {
@@ -154,7 +154,7 @@ void P_start_polygon(clpos_t pos, int style)
 }
 
 
-void P_offset(clpos_t offset, int edgestyle)
+void P_offset(Click  offset, int edgestyle)
 {
     int i, offcx = offset.cx, offcy = offset.cy;
 
@@ -196,9 +196,9 @@ void P_offset(clpos_t offset, int edgestyle)
     }
 }
 
-void P_vertex(clpos_t pos, int edgestyle)
+void P_vertex(Click  pos, int edgestyle)
 {
-    clpos_t offset;
+    Click  offset;
 
     offset.cx = pos.cx - P_cv.cx;
     offset.cy = pos.cy - P_cv.cy;
@@ -206,7 +206,7 @@ void P_vertex(clpos_t pos, int edgestyle)
     P_offset(offset, edgestyle);
 }
 
-void P_style(const char *state, int style)
+void P_style(String state, int style)
 {
     if (style == -1) {
 	warn("<Style> needs a style id.");
@@ -275,12 +275,12 @@ int P_start_target(int target_ind)
 {
     target_t *targ = Target_by_index(target_ind);
 
-    targ->group = Create_group(TARGET,
-			       targ->team,
+    targ.group = Create_group(TARGET,
+			       targ.team,
 			       Target_hitmask(targ),
 			       NULL,
 			       target_ind);
-    return targ->group;
+    return targ.group;
 }
 
 void P_end_target(void)
@@ -292,12 +292,12 @@ int P_start_cannon(int cannon_ind)
 {
     cannon_t *cannon = Cannon_by_index(cannon_ind);
 
-    cannon->group = Create_group(CANNON,
-				 cannon->team,
+    cannon.group = Create_group(CANNON,
+				 cannon.team,
 				 Cannon_hitmask(cannon),
 				 Cannon_hitfunc,
 				 cannon_ind);
-    return cannon->group;
+    return cannon.group;
 }
 
 void P_end_cannon(void)
@@ -309,12 +309,12 @@ int P_start_wormhole(int wormhole_ind)
 {
     wormhole_t *wormhole = Wormhole_by_index(wormhole_ind);
 
-    wormhole->group = Create_group(WORMHOLE,
+    wormhole.group = Create_group(WORMHOLE,
 				   TEAM_NOT_SET,
 				   Wormhole_hitmask(wormhole),
 				   Wormhole_hitfunc,
 				   wormhole_ind);
-    return wormhole->group;
+    return wormhole.group;
 }
 
 void P_end_wormhole(void)
@@ -326,12 +326,12 @@ int P_start_friction_area(int fa_ind)
 {
     friction_area_t *fa = FrictionArea_by_index(fa_ind);
 
-    fa->group = Create_group(FRICTION,
+    fa.group = Create_group(FRICTION,
 			     TEAM_NOT_SET,
 			     0,
 			     Friction_area_hitfunc,
 			     fa_ind);
-    return fa->group;
+    return fa.group;
 }
 
 void P_end_friction_area(void)
@@ -349,7 +349,7 @@ void P_end_decor(void)
     is_decor = 0;
 }
 
-int P_get_bmp_id(const char *s)
+int P_get_bmp_id(String s)
 {
     int i;
 
@@ -361,7 +361,7 @@ int P_get_bmp_id(const char *s)
 }
 
 
-int P_get_edge_id(const char *s)
+int P_get_edge_id(String s)
 {
     int i;
 
@@ -373,7 +373,7 @@ int P_get_edge_id(const char *s)
 }
 
 
-int P_get_poly_id(const char *s)
+int P_get_poly_id(String s)
 {
     int i;
 

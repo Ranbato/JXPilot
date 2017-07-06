@@ -96,17 +96,17 @@ extern double		timePerFrame;
 extern double		ecmSizeFactor;
 extern double		coriolisCosine, coriolisSine;
 
-extern shape_t ball_wire, wormhole_wire, filled_wire;
+extern Shape  ball_wire, wormhole_wire, filled_wire;
 
-static inline Point2D World_gravity(clpos_t pos)
+static inline Point2D World_gravity(Click  pos)
 {
-    return world->gravity[CLICK_TO_BLOCK(pos.cx)][CLICK_TO_BLOCK(pos.cy)];
+    return world.gravity[CLICK_TO_BLOCK(pos.cx)][CLICK_TO_BLOCK(pos.cy)];
 }
 
 static inline double SHOT_MULT(object_t *obj)
 {
-    if (Mods_get(obj->mods, ModsNuclear)
-	&& Mods_get(obj->mods, ModsCluster))
+    if (Mods_get(obj.mods, ModsNuclear)
+	&& Mods_get(obj.mods, ModsCluster))
 	return options.nukeClusterDamage;
     return 1.0;
 }
@@ -126,7 +126,7 @@ void Alloc_cells(void);
 void Cell_init_object(object_t *obj);
 void Cell_add_object(object_t *obj);
 void Cell_remove_object(object_t *obj);
-void Cell_get_objects(clpos_t pos, int r, int max, object_t ***list, int *count);
+void Cell_get_objects(Click  pos, int r, int max, object_t ***list, int *count);
 
 /*
  * Prototypes for collision.c
@@ -156,7 +156,7 @@ void Move_player(player_t *pl);
 void Turn_player(player_t *pl, bool push);
 int is_inside(int x, int y, hitmask_t hitmask, const object_t *obj);
 int shape_is_inside(int cx, int cy, hitmask_t hitmask, const object_t *obj,
-		    shape_t *s, int dir);
+		    Shape  *s, int dir);
 int Polys_to_client(unsigned char **);
 void Ball_line_init(void);
 void Player_crash(player_t *pl, int crashtype, int mapobj_ind, int pt);
@@ -178,17 +178,17 @@ void World_free(void);
 bool Grok_map(void);
 bool Grok_map_options(void);
 
-int World_place_base(clpos_t pos, int dir, int team, int order);
-int World_place_cannon(clpos_t pos, int dir, int team);
-int World_place_check(clpos_t pos, int ind);
-int World_place_fuel(clpos_t pos, int team);
-int World_place_grav(clpos_t pos, double force, int type);
-int World_place_target(clpos_t pos, int team);
-int World_place_treasure(clpos_t pos, int team, bool empty, int ball_style);
-int World_place_wormhole(clpos_t pos, wormtype_t type);
-int World_place_item_concentrator(clpos_t pos);
-int World_place_asteroid_concentrator(clpos_t pos);
-int World_place_friction_area(clpos_t pos, double fric);
+int World_place_base(Click  pos, int dir, int team, int order);
+int World_place_cannon(Click  pos, int dir, int team);
+int World_place_check(Click  pos, int ind);
+int World_place_fuel(Click  pos, int team);
+int World_place_grav(Click  pos, double force, int type);
+int World_place_target(Click  pos, int team);
+int World_place_treasure(Click  pos, int team, bool empty, int ball_style);
+int World_place_wormhole(Click  pos, wormtype_t type);
+int World_place_item_concentrator(Click  pos);
+int World_place_asteroid_concentrator(Click  pos);
+int World_place_friction_area(Click  pos, double fric);
 
 void Wormhole_line_init(void);
 
@@ -196,7 +196,7 @@ void Compute_gravity(void);
 double Wrap_findDir(double dx, double dy);
 double Wrap_cfindDir(int dx, int dy);
 double Wrap_length(int dx, int dy);
-int Find_closest_team(clpos_t pos);
+int Find_closest_team(Click  pos);
 
 
 /*
@@ -217,7 +217,7 @@ void Xpmap_blocks_to_polygons(void);
  * Prototypes for xp2map.c
  */
 bool isXp2MapFile(FILE* ifile);
-bool parseXp2MapFile(char* fname, optOrigin opt_origin);
+bool parseXp2MapFile(String  fname, optOrigin opt_origin);
 
 
 /*
@@ -239,26 +239,26 @@ void Add_fuel(pl_fuel_t *ft, double fuel);
 
 static inline void Player_add_fuel(player_t *pl, double amount)
 {
-    Add_fuel(&(pl->fuel), amount);
+    Add_fuel(&(pl.fuel), amount);
 }
 
 void Place_item(player_t *pl, int type);
 int Choose_random_item(void);
 void Tractor_beam(player_t *pl);
-void General_tractor_beam(int id, clpos_t pos,
+void General_tractor_beam(int id, Click  pos,
 			  int items, player_t *victim, bool pressor);
 void Place_mine(player_t *pl);
 void Place_moving_mine(player_t *pl);
 void Place_general_mine(int id, int team, int status,
-			clpos_t pos, Point2D vel, modifiers_t mods);
+			Click  pos, Point2D vel, modifiers_t mods);
 void Detonate_mines(player_t *pl);
-char *Describe_shot(int type, int status, modifiers_t mods, int hit);
+String Describe_shot(int type, int status, modifiers_t mods, int hit);
 void Fire_ecm(player_t *pl);
-void Fire_general_ecm(int id, int team, clpos_t pos);
+void Fire_general_ecm(int id, int team, Click  pos);
 void Update_connector_force(ballobject_t *ball);
 void Fire_shot(player_t *pl, int type, int dir);
 void Fire_general_shot(int id, int team,
-		       clpos_t pos, int type, int dir,
+		       Click  pos, int type, int dir,
 		       modifiers_t mods, int target_id);
 void Fire_normal_shots(player_t *pl);
 void Fire_main_shot(player_t *pl, int type, int dir);
@@ -275,13 +275,13 @@ void Hitmasks_init(void);
 void Delete_shot(int ind);
 void Do_deflector(player_t *pl);
 void Do_transporter(player_t *pl);
-void Do_general_transporter(int id, clpos_t pos,
+void Do_general_transporter(int id, Click  pos,
 			    player_t *victim, int *item, double *amount);
 void do_lose_item(player_t *pl);
 void Update_torpedo(torpobject_t *torp);
 void Update_missile(missileobject_t *shot);
 void Update_mine(mineobject_t *mine);
-void Make_item(clpos_t pos,
+void Make_item(Click  pos,
 	       Point2D vel,
 	       int item, int num_per_pack, int status);
 void Throw_items(player_t *pl);
@@ -301,7 +301,7 @@ void Obj_repel(object_t *obj1, object_t *obj2, int repel_dist);
 /*void Add_fuel(pl_fuel_t *ft, double fuel);*/
 void Update_tanks(pl_fuel_t *ft);
 void Tank_handle_detach(player_t *pl);
-void Make_debris(clpos_t  pos,
+void Make_debris(Click   pos,
 		 Point2D vel,
 		 int      owner_id,
 		 int      owner_team,
@@ -314,7 +314,7 @@ void Make_debris(clpos_t  pos,
 		 int      min_dir,    int    max_dir,
 		 double   min_speed,  double max_speed,
 		 double   min_life,   double max_life);
-void Make_wreckage(clpos_t  pos,
+void Make_wreckage(Click   pos,
 		   Point2D vel,
 		   int      owner_id,
 		   int      owner_team,
@@ -339,9 +339,9 @@ void Asteroid_line_init(void);
 /*
  * Prototypes for command.c
  */
-void Handle_player_command(player_t *pl, char *cmd);
-player_t *Get_player_by_name(const char *str,
-			     int *errcode, const char **errorstr_p);
+void Handle_player_command(player_t *pl, String cmd);
+player_t *Get_player_by_name(String str,
+			     int *errcode, String *errorstr_p);
 void Send_info_about_player(player_t *pl);
 void Set_swapper_state(player_t *pl);
 
@@ -372,12 +372,12 @@ void Tune_asteroid_prob(void);
  */
 void End_game(void);
 int Pick_team(int pick_for_type);
-void Server_info(char *str, size_t max_size);
-void Log_game(const char *heading);
-const char *Describe_game_status(void);
+void Server_info(String str, size_t max_size);
+void Log_game(String heading);
+String Describe_game_status(void);
 void Game_Over(void);
-void Server_shutdown(const char *user_name, int delay, const char *reason);
-void Server_log_admin_message(player_t *pl, const char *str);
+void Server_shutdown(String user_name, int delay, String reason);
+void Server_log_admin_message(player_t *pl, String str);
 int plock_server(bool on);
 void Main_loop(void);
 
@@ -388,17 +388,17 @@ void Main_loop(void);
 void Contact_cleanup(void);
 int Contact_init(void);
 void Contact(int fd, void *arg);
-void Queue_kick(const char *nick);
+void Queue_kick(String nick);
 void Queue_loop(void);
-int Queue_advance_player(char *name, char *msg, size_t size);
-int Queue_show_list(char *msg, size_t size);
+int Queue_advance_player(String name, String msg, size_t size);
+int Queue_show_list(String msg, size_t size);
 void Set_deny_hosts(void);
 
 /*
  * Prototypes for metaserver.c
  */
-void Meta_send(char *mesg, size_t len);
-int Meta_from(char *addr, int port);
+void Meta_send(String mesg, size_t len);
+int Meta_from(String addr, int port);
 void Meta_gone(void);
 void Meta_init(void);
 void Meta_update(bool change);
@@ -408,10 +408,10 @@ void Meta_update_max_size_tuner(void);
  * Prototypes for frame.c
  */
 void Frame_update(void);
-void Set_message(const char *message);
-void Set_player_message(player_t *pl, const char *message);
-void Set_message_f(const char *format, ...);
-void Set_player_message_f(player_t *pl, const char *format, ...);
+void Set_message(String message);
+void Set_player_message(player_t *pl, String message);
+void Set_message_f(String format, ...);
+void Set_player_message_f(player_t *pl, String format, ...);
 
 /*
  * Prototypes for update.c
@@ -428,24 +428,24 @@ void Thrust(player_t *pl, bool on);
 /*
  * Prototypes for parser.c
  */
-int Parser_list_option(int *ind, char *buf);
+int Parser_list_option(int *ind, String buf);
 bool Parser(int argc, char **argv);
-int Tune_option(char *name, char *val);
-int Get_option_value(const char *name, char *value, size_t size);
+int Tune_option(String name, String val);
+int Get_option_value(String name, String value, size_t size);
 
 /*
  * Prototypes for fileparser.c
  */
-bool parseDefaultsFile(const char *filename);
-bool parsePasswordFile(const char *filename);
-bool parseMapFile(const char *filename);
-void expandKeyword(const char *keyword);
+bool parseDefaultsFile(String filename);
+bool parsePasswordFile(String filename);
+bool parseMapFile(String filename);
+void expandKeyword(String keyword);
 
 /*
  * Prototypes for laser.c
  */
 void Fire_laser(player_t *pl);
-void Fire_general_laser(int id, int team, clpos_t pos,
+void Fire_general_laser(int id, int team, Click  pos,
 			int dir, modifiers_t mods);
 void Laser_pulse_hits_player(player_t *pl, pulseobject_t *pulse);
 
@@ -472,19 +472,19 @@ void Object_free_ind(int ind);
 void Object_free_ptr(object_t *obj);
 void Alloc_shots(int number);
 void Free_shots(void);
-const char *Object_typename(object_t *obj);
+String Object_typename(object_t *obj);
 
 /*
  * Prototypes for polygon.c
  */
-void P_edgestyle(const char *id, int width, int color, int style);
-void P_polystyle(const char *id, int color, int texture_id, int defedge_id,
+void P_edgestyle(String id, int width, int color, int style);
+void P_polystyle(String id, int color, int texture_id, int defedge_id,
 		 int flags);
-void P_bmpstyle(const char *id, const char *filename, int flags);
-void P_start_polygon(clpos_t pos, int style);
-void P_offset(clpos_t offset, int edgestyle);
-void P_vertex(clpos_t pos, int edgestyle);
-void P_style(const char *state, int style);
+void P_bmpstyle(String id, String filename, int flags);
+void P_start_polygon(Click  pos, int style);
+void P_offset(Click  offset, int edgestyle);
+void P_vertex(Click  pos, int edgestyle);
+void P_style(String state, int style);
 void P_end_polygon(void);
 int P_start_ballarea(void);
 void P_end_ballarea(void);
@@ -500,16 +500,16 @@ void P_start_decor(void);
 void P_end_decor(void);
 int P_start_friction_area(int fa_ind);
 void P_end_friction_area(void);
-int P_get_bmp_id(const char *s);
-int P_get_edge_id(const char *s);
-int P_get_poly_id(const char *s);
+int P_get_bmp_id(String s);
+int P_get_edge_id(String s);
+int P_get_poly_id(String s);
 /*void P_grouphack(int type, void (*f)(int group, void *mapobj));*/
 void P_set_hitmask(int group, hitmask_t hitmask);
 
 /*
  * Prototypes for showtime.c
  */
-char *showtime(void);
+String showtime(void);
 
 /*
  * Prototypes for srecord.c

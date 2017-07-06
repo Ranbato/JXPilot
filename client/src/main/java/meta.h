@@ -60,7 +60,7 @@
  * of char pointers to reduce the amount of code.
  */
 struct ServerInfo {
-    char *version,
+    String version,
 	*hostname,
 	*users_str,
 	*mapname,
@@ -113,16 +113,16 @@ struct Meta {
 
 void  Delete_server_list(void);
 void  Delete_server_info(server_info_t * sip);
-void  string_to_lower(char *s);
-char *Get_domain_from_hostname(char *host_name);
+void  string_to_lower(String s);
+String Get_domain_from_hostname(String host_name);
 int   Welcome_sort_server_list(void);
 int   Add_server_info(server_info_t * sip);
-char *my_strtok(char *buf, const char *sep);
-void  Add_meta_line(char *meta_line);
+String my_strtok(String buf, String sep);
+void  Add_meta_line(String meta_line);
 void  Meta_connect(int *connections_ptr, int *maxfd_ptr);
 void  Meta_dns_lookup(void);
 void  Ping_servers(void);
-int   Get_meta_data(char *errorstr);
+int   Get_meta_data(String errorstr);
 
 #endif
 

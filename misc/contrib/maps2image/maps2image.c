@@ -31,11 +31,11 @@
 /* Private routines
  * ================
  */
-PRIVATE void one2eight(char data, char *image);
-PRIVATE int build_char(char ch, char *image, int x, int y, int pos);
-PRIVATE void add_title(char *image, int x, int y, char *filename);
-PRIVATE char *convert_map(int width, int height, FILE *fl);
-PRIVATE void build_image(char *image, int x, int y, FILE *fl);
+PRIVATE void one2eight(char data, String image);
+PRIVATE int build_char(char ch, String image, int x, int y, int pos);
+PRIVATE void add_title(String image, int x, int y, String filename);
+PRIVATE String convert_map(int width, int height, FILE *fl);
+PRIVATE void build_image(String image, int x, int y, FILE *fl);
 
 
 /* Private variables
@@ -283,11 +283,11 @@ PUBLIC int main(int ac, char **av)
 
 
 /**************************************************************************
- * PRIVATE void build_image(char *image, int x, int y, FILE *fl)
+ * PRIVATE void build_image(String image, int x, int y, FILE *fl)
  *   Read a map and create the image for it. The image is placed
  *   at location (x, y)
  */
-PRIVATE void build_image(char *image, int x, int y, FILE *fl)
+PRIVATE void build_image(String image, int x, int y, FILE *fl)
 {
 	int	width = 0;
 	int	height = 0;
@@ -345,11 +345,11 @@ PRIVATE void build_image(char *image, int x, int y, FILE *fl)
 
 
 /**************************************************************************
- * PRIVATE void add_title(char *image, int x, int y, char *filename)
+ * PRIVATE void add_title(String image, int x, int y, String filename)
  *   Create the title for the map below the map image. The title
  *   is just the file name without the .map at the end.
  */
-PRIVATE void add_title(char *image, int x, int y, char *filename)
+PRIVATE void add_title(String image, int x, int y, String filename)
 {
 	char	*p = strrchr(filename, '/');
 	int	pos;
@@ -395,10 +395,10 @@ PRIVATE void add_title(char *image, int x, int y, char *filename)
 
 
 /**************************************************************************
- * PRIVATE int build_char(char ch, char *image, int x, int y, int pos)
+ * PRIVATE int build_char(char ch, String image, int x, int y, int pos)
  *
  */
-PRIVATE int build_char(char ch, char *image, int x, int y, int pos)
+PRIVATE int build_char(char ch, String image, int x, int y, int pos)
 {
 	int	i, j, n;
 	char	*p;
@@ -419,7 +419,7 @@ PRIVATE int build_char(char ch, char *image, int x, int y, int pos)
 		return pos;		/* Don't overwrite the bounding box */
 
 	p = image + pos;
-	data = (char *) font[i].data;
+	data = (String ) font[i].data;
 	for (n = 0; n <= FONTY; n++)
 	{
 		for (j = 0; j < FONTX; j++)
@@ -433,10 +433,10 @@ PRIVATE int build_char(char ch, char *image, int x, int y, int pos)
 
 
 /**************************************************************************
- * PRIVATE void one2eight(char data, char *image)
+ * PRIVATE void one2eight(char data, String image)
  *   Convert one byte (8 bits) to a sequence of 8 bytes.
  */
-PRIVATE void one2eight(char data, char *image)
+PRIVATE void one2eight(char data, String image)
 {
 	int	mask = 0x80;
 	int	i;
@@ -452,10 +452,10 @@ PRIVATE void one2eight(char data, char *image)
 
 
 /**************************************************************************
- * PRIVATE char *convert_map(int width, int height, FILE *fl)
+ * PRIVATE String convert_map(int width, int height, FILE *fl)
  *   Create an image from map data.
  */
-PRIVATE char *convert_map(int width, int height, FILE *fl)
+PRIVATE String convert_map(int width, int height, FILE *fl)
 {
 	char	buffer[10240];
 	char	*p;
@@ -474,7 +474,7 @@ PRIVATE char *convert_map(int width, int height, FILE *fl)
 	value ^= invert;
 
 	y = 0;
-	memset((char *) output, invert, mapsize * mapsize);
+	memset((String ) output, invert, mapsize * mapsize);
 
 	/*
 	 *   If the map is smaller than the image we are producing, we

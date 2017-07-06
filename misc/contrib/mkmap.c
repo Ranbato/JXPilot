@@ -21,9 +21,9 @@ static int wd = 200;
 static int ht = 200;
 static int seed = -1;
 static int edgewrap = 0;
-static char *author = "Paul Gardner (mkmap)";
-static char *mapname = "Random (%d)";
-static char *fn = "a.map";
+static String author = "Paul Gardner (mkmap)";
+static String mapname = "Random (%d)";
+static String fn = "a.map";
 static int verbose = 1;
 
 /* probabilities are 1 in ... */
@@ -38,7 +38,7 @@ static int smear_prob = 1;
 #define GRAV_RAD 3
 #define WORM_RAD 3
 
-static char *progname;
+static String progname;
 static int sz;
 static char **map;
 static char **tmpmap;
@@ -173,7 +173,7 @@ int x, y, type;
 typedef struct
 {
 	int type;
-	char *name;
+	String name;
 	char symbol;
 	int density;
 	int nmin, nmax;
@@ -275,7 +275,7 @@ printf( "Selecting %d sites out of %d for '%c'.\n", N, M, terr2symbol(type) );
 }
 
 static void bad_option( arg )
-char *arg;
+String arg;
 {
 	fprintf( stderr, "%s: Option %s?\n", progname, arg );
 	exit( 1 );
@@ -338,16 +338,16 @@ char **argv;
 	srandom( seed );
 
 	sz = wd * ht;
-	map = (char **)calloc( ht, sizeof(char *) );
+	map = (char **)calloc( ht, sizeof(String ) );
 	for ( y=0 ; y<ht ; y++ )
 	{
-		map[y] = (char *)malloc( wd );
+		map[y] = (String )malloc( wd );
 		memset( map[y], SPACE, wd );
 	}
-	tmpmap = (char **)calloc( ht, sizeof(char *) );
+	tmpmap = (char **)calloc( ht, sizeof(String ) );
 	for ( y=0 ; y<ht ; y++ )
 	{
-		tmpmap[y] = (char *)malloc( wd );
+		tmpmap[y] = (String )malloc( wd );
 		memset( tmpmap[y], SPACE, wd );
 	}
 

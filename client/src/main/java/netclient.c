@@ -175,19 +175,19 @@ static int Uncompress_map(void)
     int		i,
 		count;
 
-    if (Setup->map_order != SETUP_MAP_ORDER_XY) {
-	warn("Unknown map ordering in setup (%d)", Setup->map_order);
+    if (Setup.map_order != SETUP_MAP_ORDER_XY) {
+	warn("Unknown map ordering in setup (%d)", Setup.map_order);
 	return -1;
     }
 
     /* Point to last compressed map byte */
-    cmp = Setup->map_data + Setup->map_data_len - 1;
+    cmp = Setup.map_data + Setup.map_data_len - 1;
 
     /* Point to last uncompressed map byte */
-    ump = Setup->map_data + Setup->x * Setup->y - 1;
+    ump = Setup.map_data + Setup.x * Setup.y - 1;
 
-    while (cmp >= Setup->map_data) {
-	for (p = cmp; p > Setup->map_data; p--) {
+    while (cmp >= Setup.map_data) {
+	for (p = cmp; p > Setup.map_data; p--) {
 	    if ((p[-1] & SETUP_COMPRESSED) == 0)
 		break;
 	}
@@ -209,17 +209,17 @@ static int Uncompress_map(void)
 	    cmp--;
 	    if (ump < cmp) {
 		warn("Map uncompression error (%d,%d)",
-		     cmp - Setup->map_data, ump - Setup->map_data);
+		     cmp - Setup.map_data, ump - Setup.map_data);
 		return -1;
 	    }
 	}
     }
     if (ump != cmp) {
 	warn("map uncompress error (%d,%d)",
-	     cmp - Setup->map_data, ump - Setup->map_data);
+	     cmp - Setup.map_data, ump - Setup.map_data);
 	return -1;
     }
-    Setup->map_order = SETUP_MAP_UNCOMPRESSED;
+    Setup.map_order = SETUP_MAP_UNCOMPRESSED;
     return 0;
 }
 
@@ -241,7 +241,7 @@ int Net_setup(void)
 	error("No memory for setup data");
 	return -1;
     }
-    ptr = (char *) Setup;
+    ptr = (String ) Setup;
     while (todo > 0) {
 	if (cbuf.ptr != cbuf.buf)
 	    Sockbuf_advance(&cbuf, cbuf.ptr - cbuf.buf);
@@ -253,23 +253,23 @@ int Net_setup(void)
 		if (oldServer) {
 		    n = Packet_scanf(&cbuf,
 				     "%ld" "%ld%hd" "%hd%hd" "%hd%hd" "%s%s",
-				     &Setup->map_data_len,
-				     &Setup->mode, &Setup->lives,
-				     &Setup->x, &Setup->y,
-				     &Setup->frames_per_second,
-				     &Setup->map_order, Setup->name,
-				     Setup->author);
-		    Setup->width = Setup->x * BLOCK_SZ;
-		    Setup->height = Setup->y * BLOCK_SZ;
+				     &Setup.map_data_len,
+				     &Setup.mode, &Setup.lives,
+				     &Setup.x, &Setup.y,
+				     &Setup.frames_per_second,
+				     &Setup.map_order, Setup.name,
+				     Setup.author);
+		    Setup.width = Setup.x * BLOCK_SZ;
+		    Setup.height = Setup.y * BLOCK_SZ;
 		} else {
 		    n = Packet_scanf(&cbuf,
 				     "%ld" "%ld%hd" "%hd%hd" "%hd%s" "%s%S",
-				     &Setup->map_data_len,
-				     &Setup->mode, &Setup->lives,
-				     &Setup->width, &Setup->height,
-				     &Setup->frames_per_second,
-				     Setup->name, Setup->author,
-				     Setup->data_url);
+				     &Setup.map_data_len,
+				     &Setup.mode, &Setup.lives,
+				     &Setup.width, &Setup.height,
+				     &Setup.frames_per_second,
+				     Setup.name, Setup.author,
+				     Setup.data_url);
 		}
 		if (n <= 0) {
 		    warn("Can't read setup info from reliable data buffer");
@@ -279,30 +279,30 @@ int Net_setup(void)
 		/*
 		 * Do some consistency checks on the server setup structure.
 		 */
-		if (Setup->map_data_len <= 0
-		    || Setup->width <= 0
-		    || Setup->height <= 0
-		    || (oldServer && Setup->map_data_len >
-			Setup->x * Setup->y)) {
+		if (Setup.map_data_len <= 0
+		    || Setup.width <= 0
+		    || Setup.height <= 0
+		    || (oldServer && Setup.map_data_len >
+			Setup.x * Setup.y)) {
 		    warn("Got bad map specs from server (%d,%d,%d)",
-			 Setup->map_data_len, Setup->width, Setup->height);
+			 Setup.map_data_len, Setup.width, Setup.height);
 		    return -1;
 		}
-		if (oldServer && Setup->map_order != SETUP_MAP_ORDER_XY
-		    && Setup->map_order != SETUP_MAP_UNCOMPRESSED) {
-		    warn("Unknown map order type (%d)", Setup->map_order);
+		if (oldServer && Setup.map_order != SETUP_MAP_ORDER_XY
+		    && Setup.map_order != SETUP_MAP_UNCOMPRESSED) {
+		    warn("Unknown map order type (%d)", Setup.map_order);
 		    return -1;
 		}
-		size = sizeof(setup_t) + Setup->map_data_len;
+		size = sizeof(setup_t) + Setup.map_data_len;
 		if (oldServer)
-		    size = sizeof(setup_t) + Setup->x * Setup->y;
+		    size = sizeof(setup_t) + Setup.x * Setup.y;
 		if ((Setup = (setup_t *) realloc(ptr, size)) == NULL) {
 		    error("No memory for setup and map");
 		    return -1;
 		}
-		ptr = (char *) Setup;
-		done = (char *) &Setup->map_data[0] - ptr;
-		todo = Setup->map_data_len;
+		ptr = (String ) Setup;
+		done = (String ) &Setup.map_data[0] - ptr;
+		todo = Setup.map_data_len;
 	    } else {
 		assert(len > 0);
 		memcpy(&ptr[done], cbuf.ptr, (size_t)len);
@@ -357,7 +357,7 @@ int Net_setup(void)
 	    }
 	}
     }
-    if (oldServer && Setup->map_order != SETUP_MAP_UNCOMPRESSED) {
+    if (oldServer && Setup.map_order != SETUP_MAP_UNCOMPRESSED) {
 	if (Uncompress_map() == -1) return -1;
     }
 
@@ -372,7 +372,7 @@ int Net_setup(void)
  * this info from the ENTER_GAME_pack.
  */
 #define	MAX_VERIFY_RETRIES	5
-int Net_verify(char *user_name, char *nick_name, char *disp)
+int Net_verify(String user_name, String nick_name, String disp)
 {
     int		n,
 		type,
@@ -459,7 +459,7 @@ int Net_verify(char *user_name, char *nick_name, char *disp)
  * 3) cbuf is used to copy the reliable data stream
  *    into from the raw and unreliable rbuf packets.
  */
-int Net_init(char *server, int port)
+int Net_init(String server, int port)
 {
     int			i;
     size_t		size;
@@ -1015,20 +1015,20 @@ static int Net_read(frame_buf_t *frame)
     long	loop;
     u_byte	ch;
 
-    frame->loops = 0;
+    frame.loops = 0;
     for (;;) {
-	Sockbuf_clear(&frame->sbuf);
-	if (Sockbuf_read(&frame->sbuf) == -1) {
+	Sockbuf_clear(&frame.sbuf);
+	if (Sockbuf_read(&frame.sbuf) == -1) {
 	    error("Net input error");
 	    return -1;
 	}
-	if (frame->sbuf.len <= 0) {
-	    Sockbuf_clear(&frame->sbuf);
+	if (frame.sbuf.len <= 0) {
+	    Sockbuf_clear(&frame.sbuf);
 	    return 0;
 	}
 	/*IFWINDOWS( Trace("Net_read: read %d bytes type=%d\n",
-	  frame->sbuf.len, frame->sbuf.ptr[0]) ); */
-	if (frame->sbuf.ptr[0] != PKT_START)
+	  frame.sbuf.len, frame.sbuf.ptr[0]) ); */
+	if (frame.sbuf.ptr[0] != PKT_START)
 	    /*
 	     * Don't know which type of packet this is
 	     * and if it contains a frame at all (not likely).
@@ -1037,18 +1037,18 @@ static int Net_read(frame_buf_t *frame)
 	    return 1;
 
 	/* Peek at the frame loop number. */
-	n = Packet_scanf(&frame->sbuf, "%c%ld", &ch, &loop);
+	n = Packet_scanf(&frame.sbuf, "%c%ld", &ch, &loop);
 	/*IFWINDOWS( Trace("Net_read: frame # %d\n", loop) );*/
-	frame->sbuf.ptr = frame->sbuf.buf;
+	frame.sbuf.ptr = frame.sbuf.buf;
 	if (n <= 0) {
 	    if (n == -1) {
-		Sockbuf_clear(&frame->sbuf);
+		Sockbuf_clear(&frame.sbuf);
 		return -1;
 	    }
 	    continue;
 	}
 	else if (loop > last_loops) {
-	    frame->loops = loop;
+	    frame.loops = loop;
 	    return 2;
 	} else {
 	    /*
@@ -1059,7 +1059,7 @@ static int Net_read(frame_buf_t *frame)
 	     */
 	}
     }
-    /*IFWINDOWS( Trace("Net_read: wbuf->len=%d\n", wbuf.len) );*/
+    /*IFWINDOWS( Trace("Net_read: wbuf.len=%d\n", wbuf.len) );*/
 }
 
 /*
@@ -1083,14 +1083,14 @@ int Net_input(void)
 	frame = &Frames[i];
 	if (!frame)
 	    continue;
-	if (frame->loops != 0) {
+	if (frame.loops != 0) {
 	    /*
 	     * Already contains a frame.
 	     */
-	    if (frame->loops < oldest_frame->loops || oldest_frame->loops == 0)
+	    if (frame.loops < oldest_frame.loops || oldest_frame.loops == 0)
 		oldest_frame = frame;
 	}
-	else if (frame->sbuf.len > 0 && frame->sbuf.ptr == frame->sbuf.buf) {
+	else if (frame.sbuf.len > 0 && frame.sbuf.ptr == frame.sbuf.buf) {
 	    /*
 	     * Contains an unidentifiable packet.
 	     * No more input until this one is processed.
@@ -1121,20 +1121,20 @@ int Net_input(void)
 		 * Check for duplicate packets.
 		 */
 		for (j = i - 1; j >= 0; j--) {
-		    if (frame->loops == Frames[j].loops)
+		    if (frame.loops == Frames[j].loops)
 			break;
 		}
 		if (j >= 0) {
 		    /*
 		     * Duplicate.  Drop it.
 		     */
-		    Net_measurement(frame->loops, PACKET_DROP);
-		    Sockbuf_clear(&frame->sbuf);
-		    frame->loops = 0;
+		    Net_measurement(frame.loops, PACKET_DROP);
+		    Sockbuf_clear(&frame.sbuf);
+		    frame.loops = 0;
 		    i--;	/* correct for for loop increment. */
 		    continue;
 		}
-		if (frame->loops < oldest_frame->loops)
+		if (frame.loops < oldest_frame.loops)
 		    oldest_frame = frame;
 	    }
 	}
@@ -1149,7 +1149,7 @@ int Net_input(void)
 	    /*
 	     * Drop oldest packet.
 	     */
-	    if (oldest_frame->loops < frame->loops) {
+	    if (oldest_frame.loops < frame.loops) {
 		/*
 		 * Switch buffers to prevent gaps.
 		 */
@@ -1157,9 +1157,9 @@ int Net_input(void)
 		*oldest_frame = *frame;
 		*frame = tmpframe;
 	    }
-	    Net_measurement(frame->loops, PACKET_DROP);
-	    Sockbuf_clear(&frame->sbuf);
-	    frame->loops = 0;
+	    Net_measurement(frame.loops, PACKET_DROP);
+	    Sockbuf_clear(&frame.sbuf);
+	    frame.loops = 0;
 	    oldest_frame = &Frames[0];
 	    /*
 	     * Reset loop index.
@@ -1176,8 +1176,8 @@ int Net_input(void)
     num_buffered_packets = 1; /* Could be 0, but returns before using this */
     for (i = 1; i < receive_window_size; i++, last_frame++) {
 	frame = &Frames[i];
-	if (frame->loops == 0) {
-	    if (frame->sbuf.len > 0) {
+	if (frame.loops == 0) {
+	    if (frame.sbuf.len > 0) {
 		/*
 		 * This is an unidentifiable packet.
 		 * Process it last, because it arrived last.
@@ -1193,19 +1193,19 @@ int Net_input(void)
 	}
 	else {
 	    num_buffered_packets++;
-	    if (frame->loops < oldest_frame->loops
-		|| oldest_frame->loops == 0)
+	    if (frame.loops < oldest_frame.loops
+		|| oldest_frame.loops == 0)
 		oldest_frame = frame;
 	}
     }
 
-    if (oldest_frame->sbuf.len <= 0) {
+    if (oldest_frame.sbuf.len <= 0) {
 	/*
 	 * Couldn't find a non-empty packet.
 	 */
-	if (oldest_frame->loops > 0) {
+	if (oldest_frame.loops > 0) {
 	    warn("bug %s,%d", __FILE__, __LINE__);
-	    oldest_frame->loops = 0;
+	    oldest_frame.loops = 0;
 	}
 	return 0;
     }
@@ -1214,7 +1214,7 @@ int Net_input(void)
      * Let the packet processing routines know which
      * packet they should process.
      */
-    rbuf = oldest_frame->sbuf;
+    rbuf = oldest_frame.sbuf;
 
     /*
      * Process the packet.
@@ -1229,9 +1229,9 @@ int Net_input(void)
 	*oldest_frame = *last_frame;
 	*last_frame = tmpframe;
     }
-    Sockbuf_clear(&last_frame->sbuf);
-    last_frame->loops = 0;
-    rbuf = last_frame->sbuf;
+    Sockbuf_clear(&last_frame.sbuf);
+    last_frame.loops = 0;
+    rbuf = last_frame.sbuf;
 
     if (n == -1)
 	return -1;
@@ -1899,7 +1899,7 @@ int Receive_fastradar(void)
     n = (*rbuf.ptr++ & 0xFF);
     if (rbuf.ptr - rbuf.buf + (n * 3) > rbuf.len)
 	return 0;
-    ptr = (unsigned char *) rbuf.ptr;
+    ptr = (unsigned String ) rbuf.ptr;
     for (i = 0; i < n; i++) {
 	x = *ptr++;
 	y = *ptr++;
@@ -2349,9 +2349,9 @@ int Send_keyboard(u_byte *keyboard_vector)
     return 0;
 }
 
-int Send_shape(char *str)
+int Send_shape(String str)
 {
-    shipshape_t		*w;
+    ShipShape 		*w;
     char		buf[MSG_LEN], ext[MSG_LEN];
 
     w = Convert_shape_str(str);
@@ -2462,7 +2462,7 @@ int Receive_talk_ack(void)
 }
 
 
-int Net_talk(char *str)
+int Net_talk(String str)
 {
     strlcpy(talk_str, str, sizeof talk_str);
     if (talk_str[0] == '\\')	/* it's a clientcommand! */

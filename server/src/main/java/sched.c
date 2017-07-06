@@ -276,7 +276,7 @@ void sched(void)
 		    else {
 			struct io_handler *ioh;
 			ioh = &record_handlers[*playback_sched++ - 1];
-			(*(ioh->func))(ioh->fd, ioh->arg);
+			(*(ioh.func))(ioh.fd, ioh.arg);
 		    }
 		}
 		playback_sched++;
@@ -313,7 +313,7 @@ void sched(void)
 		    /* RECORDING STUFF END */
 
 		    ioh = &input_handlers[i - min_fd];
-		    (*(ioh->func))(ioh->fd, ioh->arg);
+		    (*(ioh.func))(ioh.fd, ioh.arg);
 
 		    /* RECORDING STUFF */
 		    record = rrecord;
@@ -513,7 +513,7 @@ static void to_fill(void)
 	    if (!top) {
 		break;
 	    }
-	    top->next = to_free_list;
+	    top.next = to_free_list;
 	    to_free_list = top;
 	    to_cur_free++;
 	} while (to_cur_free < to_max_free);
@@ -531,9 +531,9 @@ static struct to_handler *to_alloc(void)
     }
 
     top = to_free_list;
-    to_free_list = top->next;
+    to_free_list = top.next;
     to_cur_free--;
-    top->next = 0;
+    top.next = 0;
 
     return top;
 }
@@ -541,7 +541,7 @@ static struct to_handler *to_alloc(void)
 static void to_free(struct to_handler *top)
 {
     if (to_cur_free < to_max_free) {
-	top->next = to_free_list;
+	top.next = to_free_list;
 	to_free_list = top;
 	to_cur_free++;
     }
@@ -556,22 +556,22 @@ static void to_free(struct to_handler *top)
 void install_timeout(void (*func)(void *), int offset, void *arg)
 {
     struct to_handler *top = to_alloc();
-    top->func = func;
-    top->when = current_time + offset;
-    top->arg = arg;
-    if (!to_busy_list || to_busy_list->when >= top->when) {
-	top->next = NULL;
+    top.func = func;
+    top.when = current_time + offset;
+    top.arg = arg;
+    if (!to_busy_list || to_busy_list.when >= top.when) {
+	top.next = NULL;
 	to_busy_list = top;
     }
     else {
 	struct to_handler *prev = to_busy_list;
-	struct to_handler *lp = prev->next;
-	while (lp && lp->when < top->when) {
+	struct to_handler *lp = prev.next;
+	while (lp && lp.when < top.when) {
 	    prev = lp;
-	    lp = lp->next;
+	    lp = lp.next;
 	}
-	top->next = lp;
-	prev->next = top;
+	top.next = lp;
+	prev.next = top;
     }
 }
 
@@ -580,11 +580,11 @@ void remove_timeout(void (*func)(void *), void *arg)
     struct to_handler *prev = 0;
     struct to_handler *lp = to_busy_list;
     while (lp) {
-	if (lp->func == func && lp->arg == arg) {
+	if (lp.func == func && lp.arg == arg) {
 	    struct to_handler *top = lp;
-	    lp = lp->next;
+	    lp = lp.next;
 	    if (prev) {
-		prev->next = lp;
+		prev.next = lp;
 	    } else {
 		to_busy_list = lp;
 	    }
@@ -592,18 +592,18 @@ void remove_timeout(void (*func)(void *), void *arg)
 	}
 	else {
 	    prev = lp;
-	    lp = lp->next;
+	    lp = lp.next;
 	}
     }
 }
 
 static void timeout_chime(void)
 {
-    while (to_busy_list && to_busy_list->when <= current_time) {
+    while (to_busy_list && to_busy_list.when <= current_time) {
 	struct to_handler *top = to_busy_list;
-	void (*func)(void *) = top->func;
-	void *arg = top->arg;
-	to_busy_list = top->next;
+	void (*func)(void *) = top.func;
+	void *arg = top.arg;
+	to_busy_list = top.next;
 	to_free(top);
 	(*func)(arg);
     }
@@ -648,7 +648,7 @@ void sched(void)
 		    else {
 			struct io_handler *ioh;
 			ioh = &record_handlers[*playback_sched++ - 1];
-			(*(ioh->func))(ioh->fd, ioh->arg);
+			(*(ioh.func))(ioh.fd, ioh.arg);
 		    }
 		}
 		playback_sched++;
@@ -693,7 +693,7 @@ void sched(void)
 			    record = 1;
 			}
 			ioh = &input_handlers[i - min_fd];
-			(*(ioh->func))(ioh->fd, ioh->arg);
+			(*(ioh.func))(ioh.fd, ioh.arg);
 			record = rrecord;
 			playback = rplayback;
 			if (--n == 0)
@@ -760,7 +760,7 @@ void sched(void)
 		if (FD_ISSET(i, &readmask)) {
 		    struct io_handler *ioh;
 		    ioh = &input_handlers[i - min_fd];
-		    (*(ioh->func))(ioh->fd, ioh->arg);
+		    (*(ioh.func))(ioh.fd, ioh.arg);
 		    if (--n == 0) {
 			break;
 		    }

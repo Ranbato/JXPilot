@@ -36,7 +36,7 @@ int		sound_player_init(player_t *);
 void		sound_player_on(player_t *pl, int on);
 void		sound_play_player(player_t *, int);
 void		sound_play_all(int);
-void		sound_play_sensors(clpos_t, int);
+void		sound_play_sensors(Click , int);
 void		sound_play_queued(player_t * pl);
 void		sound_close(player_t * pl);
 

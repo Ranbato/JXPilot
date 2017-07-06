@@ -32,8 +32,8 @@ static int next_p2(int t)
 
 int sdl_window_init(sdl_window_t *win, int x, int y, int w, int h)
 {
-    glGenTextures(1, &win->tx_id);
-    win->surface = NULL;
+    glGenTextures(1, &win.tx_id);
+    win.surface = NULL;
     if (sdl_window_resize(win, w, h)) {
 	warn("failed to resize window");
 	return -1;
@@ -44,8 +44,8 @@ int sdl_window_init(sdl_window_t *win, int x, int y, int w, int h)
 
 void sdl_window_move(sdl_window_t *win, int x, int y)
 {
-    win->x = x;
-    win->y = y;
+    win.x = x;
+    win.y = y;
 }
 
 int sdl_window_resize(sdl_window_t *win, int width, int height)
@@ -59,23 +59,23 @@ int sdl_window_resize(sdl_window_t *win, int width, int height)
 	return -1;
     }
 
-    if (win->surface != NULL) {
-	SDL_FreeSurface(win->surface);
+    if (win.surface != NULL) {
+	SDL_FreeSurface(win.surface);
     }
 
-    win->surface = surface;
-    win->w = width;
-    win->h = height;
+    win.surface = surface;
+    win.w = width;
+    win.h = height;
     return 0;
 }
 
 void sdl_window_refresh(sdl_window_t *win)
 {
-    glBindTexture(GL_TEXTURE_2D, win->tx_id);
+    glBindTexture(GL_TEXTURE_2D, win.tx_id);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 
-		 win->surface->w, win->surface->h, 
+		 win.surface.w, win.surface.h,
                  0, GL_RGBA, GL_UNSIGNED_BYTE, 
-		 win->surface->pixels);
+		 win.surface.pixels);
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, 
                     GL_NEAREST);
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, 
@@ -84,7 +84,7 @@ void sdl_window_refresh(sdl_window_t *win)
 
 void sdl_window_paint(sdl_window_t *win)
 {
-    glBindTexture(GL_TEXTURE_2D, win->tx_id);
+    glBindTexture(GL_TEXTURE_2D, win.tx_id);
     glEnable(GL_TEXTURE_2D);
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -92,14 +92,14 @@ void sdl_window_paint(sdl_window_t *win)
 
     glBegin(GL_QUADS);
     glTexCoord2f(0, 0); 
-    glVertex2i(win->x, win->y);
-    glTexCoord2f((GLfloat)win->w / win->surface->w, 0); 
-    glVertex2i(win->x + win->w , win->y);
-    glTexCoord2f((GLfloat)win->w / win->surface->w, 
-		 (GLfloat)win->h / win->surface->h);
-    glVertex2i(win->x + win->w , win->y + win->h);
-    glTexCoord2f(0, (GLfloat)win->h / win->surface->h);
-    glVertex2i(win->x, win->y + win->h);
+    glVertex2i(win.x, win.y);
+    glTexCoord2f((GLfloat)win.w / win.surface.w, 0);
+    glVertex2i(win.x + win.w , win.y);
+    glTexCoord2f((GLfloat)win.w / win.surface.w,
+		 (GLfloat)win.h / win.surface.h);
+    glVertex2i(win.x + win.w , win.y + win.h);
+    glTexCoord2f(0, (GLfloat)win.h / win.surface.h);
+    glVertex2i(win.x, win.y + win.h);
     glEnd();
 
     glDisable(GL_BLEND);
@@ -108,8 +108,8 @@ void sdl_window_paint(sdl_window_t *win)
 
 void sdl_window_destroy(sdl_window_t *win)
 {
-    glDeleteTextures(1, &win->tx_id);
-    if (win->surface != NULL)
-	SDL_FreeSurface(win->surface);
+    glDeleteTextures(1, &win.tx_id);
+    if (win.surface != NULL)
+	SDL_FreeSurface(win.surface);
 }
 

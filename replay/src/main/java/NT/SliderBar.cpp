@@ -68,25 +68,25 @@ void CSliderBar::OnSize(UINT nType, int cx, int cy)
 
 void CSliderBar::OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar) 
 {
-	CXPreplayDoc	*pDoc = ((CXPreplayDoc *)GetParentFrame()->GetActiveDocument());
+	CXPreplayDoc	*pDoc = ((CXPreplayDoc *)GetParentFrame().GetActiveDocument());
 
-	if(pDoc->rc.cur->number != m_slider.GetPos())
+	if(pDoc.rc.cur.number != m_slider.GetPos())
 	{
-		if(pDoc->rc.cur->number > m_slider.GetPos())
+		if(pDoc.rc.cur.number > m_slider.GetPos())
 		{
-			while(pDoc->rc.cur->number != m_slider.GetPos())
+			while(pDoc.rc.cur.number != m_slider.GetPos())
 			{
-				pDoc->rc.cur = pDoc->rc.cur->prev;
+				pDoc.rc.cur = pDoc.rc.cur.prev;
 			}
 		}
 		else
 		{
-			while(pDoc->rc.cur->number != m_slider.GetPos())
+			while(pDoc.rc.cur.number != m_slider.GetPos())
 			{
-				pDoc->rc.cur = pDoc->rc.cur->next;
+				pDoc.rc.cur = pDoc.rc.cur.next;
 			}
 		}
-		GetParentFrame()->GetActiveView()->Invalidate(FALSE);
+		GetParentFrame().GetActiveView().Invalidate(FALSE);
 	}
 
 	CDialogBar::OnHScroll(nSBCode, nPos, pScrollBar);

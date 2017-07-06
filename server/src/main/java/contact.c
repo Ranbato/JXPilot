@@ -36,12 +36,12 @@ sock_t			contactSocket;
 
 static sockbuf_t	ibuf;
 
-static bool Owner(int request, char *user_name, char *host_addr,
+static bool Owner(int request, String user_name, String host_addr,
 		  int host_port, int pass);
-static int Queue_player(char *real, char *nick, char *disp, int team,
-			char *addr, char *host, unsigned version, int port,
+static int Queue_player(String real, String nick, String disp, int team,
+			String addr, String host, unsigned version, int port,
 			int *qpos);
-static int Check_address(char *addr);
+static int Check_address(String addr);
 
 void Contact_cleanup(void)
 {
@@ -89,7 +89,7 @@ static int Kick_robot_players(int team)
 	return 0;
 
     if (team == TEAM_NOT_SET) {
-	if (world->rules->mode.get( TEAM_PLAY) && options.reserveRobotTeam) {
+	if (world.rules.mode.get( TEAM_PLAY) && options.reserveRobotTeam) {
 	    /* kick robot with lowest score from any team but robot team */
 	    double low_score = Float.MAX_VALUE;
 	    player_t *low_pl = NULL;
@@ -97,7 +97,7 @@ static int Kick_robot_players(int team)
 	    for (i = 0; i < NumPlayers; i++) {
 		player_t *pl_i = Player_by_index(i);
 
-		if (!Player_is_robot(pl_i) || pl_i->team == options.robotTeam)
+		if (!Player_is_robot(pl_i) || pl_i.team == options.robotTeam)
 		    continue;
 		if (Get_Score(pl_i) < low_score) {
 		    low_pl = pl_i;
@@ -115,7 +115,7 @@ static int Kick_robot_players(int team)
 	    return 1;
 	}
     } else {
-	if (world->teams[team].NumRobots > 0) {
+	if (world.teams[team].NumRobots > 0) {
 	    /* kick robot with lowest score from this team */
 	    double low_score = Float.MAX_VALUE;
 	    player_t *low_pl = NULL;
@@ -123,7 +123,7 @@ static int Kick_robot_players(int team)
 	    for (i = 0; i < NumPlayers; i++) {
 		player_t *pl_i = Player_by_index(i);
 
-		if (!Player_is_robot(pl_i) || pl_i->team != team)
+		if (!Player_is_robot(pl_i) || pl_i.team != team)
 		    continue;
 		if (Get_Score(pl_i) < low_score) {
 		    low_pl = pl_i;
@@ -151,21 +151,21 @@ static int do_kick(int team, int nonlast)
     for (i = NumPlayers - 1; i >= 0; i--) {
 	player_t *pl_i = Player_by_index(i);
 
-	if (pl_i->conn != NULL
+	if (pl_i.conn != NULL
 	    && Player_is_paused(pl_i)
-	    && (team == TEAM_NOT_SET || (pl_i->team == team &&
-					 pl_i->home_base != NULL))
-	    && !(pl_i->privs & PRIV_NOAUTOKICK)
-	    && (!nonlast || !(pl_i->privs & PRIV_AUTOKICKLAST))) {
+	    && (team == TEAM_NOT_SET || (pl_i.team == team &&
+					 pl_i.home_base != NULL))
+	    && !(pl_i.privs & PRIV_NOAUTOKICK)
+	    && (!nonlast || !(pl_i.privs & PRIV_AUTOKICKLAST))) {
 
 	    if (team == TEAM_NOT_SET) {
 		Set_message_f("The paused \"%s\" was kicked because the "
-			      "game is full.", pl_i->name);
-		Destroy_connection(pl_i->conn, "no pause with full game");
+			      "game is full.", pl_i.name);
+		Destroy_connection(pl_i.conn, "no pause with full game");
 	    } else {
 		Set_message_f("The paused \"%s\" was kicked because team %d "
-			      "is full.", pl_i->name, team);
-		Destroy_connection(pl_i->conn, "no pause with full team");
+			      "is full.", pl_i.name, team);
+		Destroy_connection(pl_i.conn, "no pause with full team");
 	    }
 	    num_unpaused++;
 	}
@@ -187,7 +187,7 @@ static int Kick_paused_players(int team)
 }
 
 
-static int Reply(char *host_addr, int port)
+static int Reply(String host_addr, int port)
 {
     int i, result = -1;
     const int max_send_retries = 3;
@@ -204,9 +204,9 @@ static int Reply(char *host_addr, int port)
 }
 
 
-static int Check_names(char *nick_name, char *user_name, char *host_name)
+static int Check_names(String nick_name, String user_name, String host_name)
 {
-    char *ptr;
+    String ptr;
     int i;
 
     /*
@@ -231,8 +231,8 @@ static int Check_names(char *nick_name, char *user_name, char *host_name)
     for (i = 0; i < NumPlayers; i++) {
 	player_t *pl_i = Player_by_index(i);
 
-	if (strcasecmp(pl_i->name, nick_name) == 0) {
-	    D(printf("%s %s\n", pl_i->name, nick_name));
+	if (strcasecmp(pl_i.name, nick_name) == 0) {
+	    D(printf("%s %s\n", pl_i.name, nick_name));
 	    return E_IN_USE;
 	}
     }
@@ -492,11 +492,11 @@ void Contact(int fd, void *arg)
 		status = E_NOT_FOUND;
 	    else {
 		Set_message_f("\"%s\" upset the gods and was kicked out "
-			      "of the game.", pl_found->name);
-		if (pl_found->conn == NULL)
+			      "of the game.", pl_found.name);
+		if (pl_found.conn == NULL)
 		    Delete_player(pl_found);
 		else
-		    Destroy_connection(pl_found->conn, "kicked out");
+		    Destroy_connection(pl_found.conn, "kicked out");
 		updateScores = true;
 	    }
 	}
@@ -516,7 +516,7 @@ void Contact(int fd, void *arg)
 	 *
 	 */
 
-	char *opt, *val;
+	String opt, *val;
 
 	if (Packet_scanf(&ibuf, "%S", str) <= 0
 		 || (opt = strtok(str, ":")) == NULL
@@ -629,32 +629,32 @@ struct queued_player	*qp_list;
 static void Queue_remove(struct queued_player *qp, struct queued_player *prev)
 {
     if (qp == qp_list)
-	qp_list = qp->next;
+	qp_list = qp.next;
     else
-	prev->next = qp->next;
+	prev.next = qp.next;
     free(qp);
     NumQueuedPlayers--;
 }
 
-void Queue_kick(const char *nick)
+void Queue_kick(String nick)
 {
     unsigned int magic;
     struct queued_player *qp = qp_list, *prev = NULL;
 
     while (qp) {
-	if (!strcasecmp(qp->nick_name, nick))
+	if (!strcasecmp(qp.nick_name, nick))
 	    break;
 	prev = qp;
-	qp = qp->next;
+	qp = qp.next;
     }
 
     if (!qp)
 	return;
 
-    magic = Version_to_magic(qp->version);
+    magic = Version_to_magic(qp.version);
     Sockbuf_clear(&ibuf);
     Packet_printf(&ibuf, "%u%c%c", magic, ENTER_GAME_pack, E_IN_USE);
-    Reply(qp->host_addr, qp->port);
+    Reply(qp.host_addr, qp.port);
     Queue_remove(qp, prev);
 
     return;
@@ -662,17 +662,17 @@ void Queue_kick(const char *nick)
 
 static void Queue_ack(struct queued_player *qp, int qpos)
 {
-    unsigned my_magic = Version_to_magic(qp->version);
+    unsigned my_magic = Version_to_magic(qp.version);
 
     Sockbuf_clear(&ibuf);
-    if (qp->login_port == -1)
+    if (qp.login_port == -1)
 	Packet_printf(&ibuf, "%u%c%c%hu",
 		      my_magic, ENTER_QUEUE_pack, SUCCESS, qpos);
     else
 	Packet_printf(&ibuf, "%u%c%c%hu",
-		      my_magic, ENTER_GAME_pack, SUCCESS, qp->login_port);
-    Reply(qp->host_addr, qp->port);
-    qp->last_ack_sent = main_loops;
+		      my_magic, ENTER_GAME_pack, SUCCESS, qp.login_port);
+    Reply(qp.host_addr, qp.port);
+    qp.last_ack_sent = main_loops;
 }
 
 void Queue_loop(void)
@@ -681,23 +681,23 @@ void Queue_loop(void)
     int qpos = 0, login_port;
     static long last_unqueued_loops;
 
-    for (qp = qp_list; qp && qp->login_port > 0; ) {
-	next = qp->next;
+    for (qp = qp_list; qp && qp.login_port > 0; ) {
+	next = qp.next;
 
-	if (qp->last_ack_recv + 30 * FPS < main_loops) {
+	if (qp.last_ack_recv + 30 * FPS < main_loops) {
 	    Queue_remove(qp, prev);
 	    qp = next;
 	    continue;
 	}
-	if (qp->last_ack_sent + 2 < main_loops) {
-	    login_port = Check_connection(qp->user_name, qp->nick_name,
-					  qp->disp_name, qp->host_addr);
+	if (qp.last_ack_sent + 2 < main_loops) {
+	    login_port = Check_connection(qp.user_name, qp.nick_name,
+					  qp.disp_name, qp.host_addr);
 	    if (login_port == -1) {
 		Queue_remove(qp, prev);
 		qp = next;
 		continue;
 	    }
-	    if (qp->last_ack_sent + 2 + (FPS >> 2) < main_loops) {
+	    if (qp.last_ack_sent + 2 + (FPS >> 2) < main_loops) {
 		Queue_ack(qp, 0);
 
 		/* don't do too much at once. */
@@ -712,7 +712,7 @@ void Queue_loop(void)
     /* here's a player in the queue without a login port. */
     if (qp) {
 
-	if (qp->last_ack_recv + 30 * FPS < main_loops) {
+	if (qp.last_ack_recv + 30 * FPS < main_loops) {
 	    Queue_remove(qp, prev);
 	    return;
 	}
@@ -731,36 +731,36 @@ void Queue_loop(void)
 		    NumPlayers - NumPseudoPlayers + login_in_progress < lim))){
 
 		/* find a team for this fellow. */
-		if (world->rules->mode.get( TEAM_PLAY)) {
+		if (world.rules.mode.get( TEAM_PLAY)) {
 		    /* see if he has a reasonable suggestion. */
-		    if (qp->team >= 0 && qp->team < MAX_TEAMS) {
+		    if (qp.team >= 0 && qp.team < MAX_TEAMS) {
 			if (game_lock ||
-			    (qp->team == options.robotTeam
+			    (qp.team == options.robotTeam
 			     && options.reserveRobotTeam) ||
-			    (world->teams[qp->team].NumMembers
-			     >= world->teams[qp->team].NumBases &&
-			     !Kick_robot_players(qp->team) &&
-			     !Kick_paused_players(qp->team)))
-			    qp->team = TEAM_NOT_SET;
+			    (world.teams[qp.team].NumMembers
+			     >= world.teams[qp.team].NumBases &&
+			     !Kick_robot_players(qp.team) &&
+			     !Kick_paused_players(qp.team)))
+			    qp.team = TEAM_NOT_SET;
 		    }
-		    if (qp->team == TEAM_NOT_SET) {
-			qp->team = Pick_team(PL_TYPE_HUMAN);
-			if (qp->team == TEAM_NOT_SET && !game_lock) {
+		    if (qp.team == TEAM_NOT_SET) {
+			qp.team = Pick_team(PL_TYPE_HUMAN);
+			if (qp.team == TEAM_NOT_SET && !game_lock) {
 			    if (NumRobots
-				> world->teams[options.robotTeam].NumRobots) {
+				> world.teams[options.robotTeam].NumRobots) {
 				Kick_robot_players(TEAM_NOT_SET);
-				qp->team = Pick_team(PL_TYPE_HUMAN);
+				qp.team = Pick_team(PL_TYPE_HUMAN);
 			    }
 			}
 		    }
 		}
 
 		/* now get him a decent login port. */
-		qp->login_port = Setup_connection(qp->user_name, qp->nick_name,
-						  qp->disp_name, qp->team,
-						  qp->host_addr, qp->host_name,
-						  qp->version);
-		if (qp->login_port == -1) {
+		qp.login_port = Setup_connection(qp.user_name, qp.nick_name,
+						  qp.disp_name, qp.team,
+						  qp.host_addr, qp.host_name,
+						  qp.version);
+		if (qp.login_port == -1) {
 		    Queue_remove(qp, prev);
 		    return;
 		}
@@ -777,16 +777,16 @@ void Queue_loop(void)
     }
 
     for (; qp; ) {
-	next = qp->next;
+	next = qp.next;
 
 	qpos++;
 
-	if (qp->last_ack_recv + 30 * FPS < main_loops) {
+	if (qp.last_ack_recv + 30 * FPS < main_loops) {
 	    Queue_remove(qp, prev);
 	    return;
 	}
 
-	if (qp->last_ack_sent + 3 * FPS <= main_loops) {
+	if (qp.last_ack_sent + 3 * FPS <= main_loops) {
 	    Queue_ack(qp, qpos);
 	    return;
 	}
@@ -796,8 +796,8 @@ void Queue_loop(void)
     }
 }
 
-static int Queue_player(char *user, char *nick, char *disp, int team,
-			char *addr, char *host, unsigned version, int port,
+static int Queue_player(String user, String nick, String disp, int team,
+			String addr, String host, unsigned version, int port,
 			int *qpos)
 {
     int status = SUCCESS, num_queued = 0, num_same_hosts = 0;
@@ -807,21 +807,21 @@ static int Queue_player(char *user, char *nick, char *disp, int team,
     if ((status = Check_names(nick, user, host)) != SUCCESS)
 	return status;
 
-    for (qp = qp_list; qp; prev = qp, qp = qp->next) {
+    for (qp = qp_list; qp; prev = qp, qp = qp.next) {
 	num_queued++;
-	if (qp->login_port == -1)
+	if (qp.login_port == -1)
 	    ++*qpos;
 
 	/* same nick? */
-	if (!strcasecmp(nick, qp->nick_name)) {
+	if (!strcasecmp(nick, qp.nick_name)) {
 	    /* same screen? */
-	    if (!strcmp(addr, qp->host_addr)
-		&& !strcmp(user, qp->user_name)
-		&& !strcmp(disp, qp->disp_name)) {
-		qp->last_ack_recv = main_loops;
-		qp->port = port;
-		qp->version = version;
-		qp->team = team;
+	    if (!strcmp(addr, qp.host_addr)
+		&& !strcmp(user, qp.user_name)
+		&& !strcmp(disp, qp.disp_name)) {
+		qp.last_ack_recv = main_loops;
+		qp.port = port;
+		qp.version = version;
+		qp.team = team;
 		/*
 		 * Still on the queue, so don't send an ack
 		 * since it will get one soon from Queue_loop().
@@ -832,7 +832,7 @@ static int Queue_player(char *user, char *nick, char *disp, int team,
 	}
 
 	/* same computer? */
-	if (!strcmp(addr, qp->host_addr)) {
+	if (!strcmp(addr, qp.host_addr)) {
 	    if (++num_same_hosts > 1)
 		return E_IN_USE;
 	}
@@ -850,23 +850,23 @@ static int Queue_player(char *user, char *nick, char *disp, int team,
     if (!qp)
 	return E_SOCKET;
     ++*qpos;
-    strlcpy(qp->user_name, user, sizeof(qp->user_name));
-    strlcpy(qp->nick_name, nick, sizeof(qp->nick_name));
-    strlcpy(qp->disp_name, disp, sizeof(qp->disp_name));
-    strlcpy(qp->host_name, host, sizeof(qp->host_name));
-    strlcpy(qp->host_addr, addr, sizeof(qp->host_addr));
-    qp->port = port;
-    qp->team = team;
-    qp->version = version;
-    qp->login_port = -1;
-    qp->last_ack_sent = main_loops;
-    qp->last_ack_recv = main_loops;
+    strlcpy(qp.user_name, user, sizeof(qp.user_name));
+    strlcpy(qp.nick_name, nick, sizeof(qp.nick_name));
+    strlcpy(qp.disp_name, disp, sizeof(qp.disp_name));
+    strlcpy(qp.host_name, host, sizeof(qp.host_name));
+    strlcpy(qp.host_addr, addr, sizeof(qp.host_addr));
+    qp.port = port;
+    qp.team = team;
+    qp.version = version;
+    qp.login_port = -1;
+    qp.last_ack_sent = main_loops;
+    qp.last_ack_recv = main_loops;
 
-    qp->next = 0;
+    qp.next = 0;
     if (!qp_list)
 	qp_list = qp;
     else
-	prev->next = qp;
+	prev.next = qp;
     NumQueuedPlayers++;
 
     return SUCCESS;
@@ -876,7 +876,7 @@ static int Queue_player(char *user, char *nick, char *disp, int team,
 /*
  * Move a player higher up in the list of waiting players.
  */
-int Queue_advance_player(char *name, char *qmsg, size_t size)
+int Queue_advance_player(String name, String qmsg, size_t size)
 {
     struct queued_player *qp, *prev, *first = NULL;
 
@@ -885,32 +885,32 @@ int Queue_advance_player(char *name, char *qmsg, size_t size)
 	return -1;
     }
 
-    for (prev = NULL, qp = qp_list; qp != NULL; prev = qp, qp = qp->next) {
+    for (prev = NULL, qp = qp_list; qp != NULL; prev = qp, qp = qp.next) {
 
-	if (!strcasecmp(qp->nick_name, name)) {
+	if (!strcasecmp(qp.nick_name, name)) {
 	    if (!prev)
 		strlcpy(qmsg, "Already first.", size);
-	    else if (qp->login_port != -1)
+	    else if (qp.login_port != -1)
 		strlcpy(qmsg, "Already entering game.", size);
 	    else {
 		/* Remove "qp" from list. */
-		prev->next = qp->next;
+		prev.next = qp.next;
 
 		/* Now test if others are entering game. */
 		if (first) {
 		    /* Yes, so move "qp" after last entering player. */
-		    qp->next = first->next;
-		    first->next = qp;
+		    qp.next = first.next;
+		    first.next = qp;
 		} else {
 		    /* No, so move "qp" to top of list. */
-		    qp->next = qp_list;
+		    qp.next = qp_list;
 		    qp_list = qp;
 		}
 		strlcpy(qmsg, "Done.", size);
 	    }
 	    return 0;
 	}
-	else if (qp->login_port != -1)
+	else if (qp.login_port != -1)
 	    first = qp;
     }
 
@@ -920,7 +920,7 @@ int Queue_advance_player(char *name, char *qmsg, size_t size)
 }
 
 
-int Queue_show_list(char *qmsg, size_t size)
+int Queue_show_list(String qmsg, size_t size)
 {
     int count = 1;
     size_t len;
@@ -935,9 +935,9 @@ int Queue_show_list(char *qmsg, size_t size)
     len = strlen(qmsg);
     assert(size - len > 0);
     do {
-	snprintf(qmsg + len, size - len, "%d. %s  ", count++, qp->nick_name);
+	snprintf(qmsg + len, size - len, "%d. %s  ", count++, qp.nick_name);
 	len = strlen(qmsg);
-	qp = qp->next;
+	qp = qp.next;
     } while (qp != NULL && len + 32 < size);
 
     /* strip last 2 spaces. */
@@ -950,7 +950,7 @@ int Queue_show_list(char *qmsg, size_t size)
 /*
  * Returns true if <name> has owner status of this server.
  */
-static bool Owner(int request, char *user_name, char *host_addr,
+static bool Owner(int request, String user_name, String host_addr,
 		  int host_port, int pass)
 {
     if (pass || request == CREDENTIALS_pack) {
@@ -975,7 +975,7 @@ struct addr_plus_mask {
 static struct addr_plus_mask	*addr_mask_list;
 static int			num_addr_mask;
 
-static int Check_address(char *str)
+static int Check_address(String str)
 {
     unsigned long addr;
     int i;
@@ -994,7 +994,7 @@ static int Check_address(char *str)
 
 void Set_deny_hosts(void)
 {
-    char *list, *tok, *slash;
+    String list, *tok, *slash;
     int n = 0;
     unsigned long addr, mask;
     static char list_sep[] = ",;: \t\n";

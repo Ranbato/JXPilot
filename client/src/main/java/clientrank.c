@@ -215,9 +215,9 @@ static void Rank_score(void)
 
 static void Init_scorenode(ScoreNode * node, const char nick[])
 {
-    strcpy(node->nick, nick);
-    node->kills = 0;
-    node->deaths = 0;
+    strcpy(node.nick, nick);
+    node.kills = 0;
+    node.deaths = 0;
 }
 
 /*
@@ -254,7 +254,7 @@ void Init_saved_scores(void)
 	Time_Sort();
 }
 
-static int Get_saved_score(char *nick)
+static int Get_saved_score(String nick)
 {
     int oldest = 0;
     int i;
@@ -272,7 +272,7 @@ static int Get_saved_score(char *nick)
 }
 
 
-static int Find_player(char *nick)
+static int Find_player(String nick)
 {
     int i;
     for (i = 0; i < 10; i++) {
@@ -288,7 +288,7 @@ static int Find_player(char *nick)
 }
 
 
-void Add_rank_Kill(char *nick)
+void Add_rank_Kill(String nick)
 {
     int i = Find_player(nick);
 
@@ -296,7 +296,7 @@ void Add_rank_Kill(char *nick)
     scores[recent[i]].timestamp = time(0);
 }
 
-void Add_rank_Death(char *nick)
+void Add_rank_Death(String nick)
 {
     int i = Find_player(nick);
 
@@ -304,14 +304,14 @@ void Add_rank_Death(char *nick)
     scores[recent[i]].timestamp = time(0);
 }
 
-int Get_kills(char *nick)
+int Get_kills(String nick)
 {
     int i = Find_player(nick);
 
     return scores[recent[i]].kills;
 }
 
-int Get_deaths(char *nick)
+int Get_deaths(String nick)
 {
     int i = Find_player(nick);
 

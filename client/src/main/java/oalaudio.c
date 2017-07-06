@@ -59,21 +59,21 @@ static sound_t soundinfo[MAX_SOUNDS];
 static ALuint  source[MAX_SOUNDS];
 
 
-static void sample_parse_info(char *filename, sample_t *sample)
+static void sample_parse_info(String filename, sample_t *sample)
 {
-    char *token;
+    String token;
     
-    sample->gain = 1.0;
-    sample->loop = 0;
+    sample.gain = 1.0;
+    sample.loop = 0;
 
     strtok(filename, ",");
     if (!(token = strtok(NULL, ","))) return;
-    sample->gain = atof(token);
+    sample.gain = atof(token);
     if (!(token = strtok(NULL, ","))) return;
-    sample->loop = atoi(token);
+    sample.loop = atoi(token);
 }
 
-static sample_t *sample_load(char *filename)
+static sample_t *sample_load(String filename)
 {
     ALenum    err;
     ALsizei   size, freq;
@@ -90,7 +90,7 @@ static sample_t *sample_load(char *filename)
 
     /* create buffer */
     alGetError(); /* clear */
-    alGenBuffers(1, &sample->buffer);
+    alGenBuffers(1, &sample.buffer);
     if((err = alGetError()) != AL_NO_ERROR) {
 	error("failed to create a sample buffer %x %s", 
 	      err, alGetString(err));
@@ -105,15 +105,15 @@ static sample_t *sample_load(char *filename)
     if ((err = alGetError()) != AL_NO_ERROR) {
 	error("failed to load sound file %s: %x %s", 
 	      filename, err, alGetString(err));
-	alDeleteBuffers(1, &sample->buffer);
+	alDeleteBuffers(1, &sample.buffer);
 	free(sample);
 	return NULL;
     }
-    alBufferData(sample->buffer, format, data, size, freq);
+    alBufferData(sample.buffer, format, data, size, freq);
     if((err = alGetError()) != AL_NO_ERROR) {
 	error("failed to load buffer data %x %s\n", 
 	      err, alGetString(err));
-	alDeleteBuffers(1, &sample->buffer);
+	alDeleteBuffers(1, &sample.buffer);
 	free(sample);
 	return NULL;
     }
@@ -127,14 +127,14 @@ static void sample_free(sample_t *sample)
     if (sample) {
 /* alDeleteBuffers hangs on linux sometimes */
 #ifdef _WINDOWS 
-	if (sample->buffer)
-	    alDeleteBuffers(1, &sample->buffer);
+	if (sample.buffer)
+	    alDeleteBuffers(1, &sample.buffer);
 #endif
 	free(sample);
     }
 }
 
-int audioDeviceInit(char *display)
+int audioDeviceInit(String display)
 {
     int    i;
     ALenum err;
@@ -163,7 +163,7 @@ int audioDeviceInit(char *display)
     return 0;
 }
 
-void audioDevicePlay(char *filename, int type, int volume, void **priv)
+void audioDevicePlay(String filename, int type, int volume, void **priv)
 {
     sound_t  *iter, *next;
     sample_t *sample = (sample_t *)(*priv);
@@ -179,42 +179,42 @@ void audioDevicePlay(char *filename, int type, int volume, void **priv)
 
     /* if the sample is a looping one, first try to find a matching
      * sound from the list of looping sounds already playing. */
-    if (sample->loop) {
-	for (iter = looping; iter; iter = iter->next) {
-	    if (iter->sample == sample
-		&& Math.abs(iter->volume - volume) < VOL_THRESHOLD) {
-		alSourcef(iter->source, AL_GAIN, 
-			  sample->gain * volume / 100.0f);
-		iter->volume = volume;
-		iter->updated = loops;
+    if (sample.loop) {
+	for (iter = looping; iter; iter = iter.next) {
+	    if (iter.sample == sample
+		&& Math.abs(iter.volume - volume) < VOL_THRESHOLD) {
+		alSourcef(iter.source, AL_GAIN,
+			  sample.gain * volume / 100.0f);
+		iter.volume = volume;
+		iter.updated = loops;
 		return;
 	    }
 	}
     }
 
-    if (ring->next == ring) 
+    if (ring.next == ring)
 	return; /* only one sound left in the ring */
 
     /* Pick the next sound from the ring and play the sample with it.
      * If it is a looping sound move it away from the ring to the
      * looping list. Else move it to the end of the ring. */
-    next = ring->next;    
-    if (sample->loop) {
-	ring->next = next->next;
-	next->next = looping;
+    next = ring.next;
+    if (sample.loop) {
+	ring.next = next.next;
+	next.next = looping;
 	looping = next;
     } else {
 	ring = next;
     }
     
-    next->sample  = sample;
-    next->volume  = volume;
-    next->updated = loops;
+    next.sample  = sample;
+    next.volume  = volume;
+    next.updated = loops;
 	
-    alSourcef(next->source, AL_GAIN, sample->gain * volume / 100.0f);
-    alSourcei(next->source, AL_BUFFER, sample->buffer);
-    alSourcei(next->source, AL_LOOPING, sample->loop);
-    alSourcePlay(next->source);
+    alSourcef(next.source, AL_GAIN, sample.gain * volume / 100.0f);
+    alSourcei(next.source, AL_BUFFER, sample.buffer);
+    alSourcei(next.source, AL_LOOPING, sample.loop);
+    alSourcePlay(next.source);
 }
 
 void audioDeviceEvents(void)
@@ -229,17 +229,17 @@ void audioDeviceUpdate(void)
      * that haven't been updated during this frame. The stopped
      * sounds are moved back to the ring. */
     for (prev = NULL, iter = looping; iter;) {
-	if (iter->updated < loops - 1) {
-	    alSourceStop(iter->source);
-	    if (prev) prev->next = iter->next;
-	    else looping = iter->next;
+	if (iter.updated < loops - 1) {
+	    alSourceStop(iter.source);
+	    if (prev) prev.next = iter.next;
+	    else looping = iter.next;
 	    tmp = iter;
-	    iter = iter->next;
-	    tmp->next = ring->next;
-	    ring->next = tmp;
+	    iter = iter.next;
+	    tmp.next = ring.next;
+	    ring.next = tmp;
 	} else {
 	    prev = iter;
-	    iter = iter->next;
+	    iter = iter.next;
 	}
     }
 }

@@ -44,20 +44,20 @@ public static final Point [] ASTEROID_SHAPE_1 = new Point[] {
 public static final int NUM_WRECKAGE_SHAPES = 3;
 public static final int NUM_WRECKAGE_POINTS = 12;
 
-public static final int WRECKAGE_SHAPE_0 = 
-      {-9, 6}, {-2, 8}, { 5, 2}, { 9, 3}, {10, 0}, { 5,-1}, \
-      { 3, 0}, {-2,-9}, {-5,-6}, {-3,-2}, {-7,-1}, {-5, 2}
+public static final Point[] WRECKAGE_SHAPE_0 = new Point[] {
+      new Point( -9, 6), new Point( -2, 8), new Point( 5, 2), new Point( 9, 3), new Point( 10, 0), new Point( 5, -1),
+      new Point( 3, 0), new Point( -2, -9), new Point( -5, -6), new Point( -3, -2), new Point( -7, -1), new Point( -5, 2)};
 
-public static final int WRECKAGE_SHAPE_1 = 
-      {-8,-9}, {-9,-3}, {-7, 3}, {-1, 7}, { 8, 9}, { 9, 6}, \
-      { 2, 5}, {-2, 2}, { 4,-1}, { 2,-5}, { 0,-2}, {-5,-2}
+public static final Point[] WRECKAGE_SHAPE_1 = new Point[] {
+      new Point( -8, -9), new Point( -9, -3), new Point( -7, 3), new Point( -1, 7), new Point( 8, 9), new Point( 9, 6),
+      new Point( 2, 5), new Point( -2, 2), new Point( 4, -1), new Point( 2, -5), new Point( 0, -2), new Point( -5, -2)};
 
-public static final int WRECKAGE_SHAPE_2 = 
-      {-9,-2}, {-7, 2}, {-2,-3}, { 2,-3}, { 0, 1}, { 1,10}, \
-      { 4, 9}, { 4, 2}, { 7,-2}, { 7,-5}, { 2,-8}, {-4,-7}
+public static final Point[] WRECKAGE_SHAPE_2 = new Point[] {
+      new Point( -9, -2), new Point( -7, 2), new Point( -2, -3), new Point( 2, -3), new Point( 0, 1), new Point( 1, 10),
+      new Point( 4, 9), new Point( 4, 2), new Point( 7, -2), new Point( 7, -5), new Point( 2, -8), new Point( -4, -7)};
 
-static final public  Point wreckageShapes = new Point[NUM_WRECKAGE_SHAPES][NUM_WRECKAGE_POINTS];
+static final public  Point wreckageShapes[][] = new Point[NUM_WRECKAGE_SHAPES][NUM_WRECKAGE_POINTS];
 
-static final public  Point asteroidShapes = new Point[NUM_ASTEROID_SHAPES][NUM_ASTEROID_POINTS];
+static final public  Point asteroidShapes[][] = new Point[NUM_ASTEROID_SHAPES][NUM_ASTEROID_POINTS];
 
 }

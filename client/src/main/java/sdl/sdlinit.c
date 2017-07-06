@@ -50,10 +50,10 @@ font_data gamefont;
 font_data mapfont;
 int gameFontSize;
 int mapFontSize;
-char *gamefontname;
+String gamefontname;
 
 /* ugly kps hack */
-static bool file_exists(const char *path) 
+static bool file_exists(String path)
 { 
   FILE *fp;
 
@@ -104,14 +104,14 @@ static bool find_size(int *w, int *h)
     best_d = INT_MAX;
     for (i = 0; modes[i]; i++) {
 	m = modes[i];
-	d = (m->w - *w)*(m->w - *w) + (m->h - *h)*(m->h - *h);
+	d = (m.w - *w)*(m.w - *w) + (m.h - *h)*(m.h - *h);
 	if (d < best_d) {
 	    best_d = d;
 	    best_i = i;
 	}
     }
-    *w = modes[best_i]->w;
-    *h = modes[best_i]->h;
+    *w = modes[best_i].w;
+    *h = modes[best_i].h;
     return true;
 }
 
@@ -152,16 +152,16 @@ int Init_window(void)
 #endif
 
     /** This checks to see if surfaces can be stored in memory */
-    if ( videoInfo->hw_available )
+    if ( videoInfo.hw_available )
         videoFlags |= SDL_HWSURFACE;
     else
         videoFlags |= SDL_SWSURFACE;
 
     /* This checks if hardware blits can be done */
-    if ( videoInfo->blit_hw )
+    if ( videoInfo.blit_hw )
         videoFlags |= SDL_HWACCEL;
 
-    draw_depth =  videoInfo->vfmt->BitsPerPixel;
+    draw_depth =  videoInfo.vfmt.BitsPerPixel;
 
     SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 
@@ -307,7 +307,7 @@ void Platform_specific_cleanup(void)
     SDL_Quit();
 }
 
-static bool Set_geometry(xp_option_t *opt, const char *s)
+static bool Set_geometry(xp_option_t *opt, String s)
 {
     int w = 0, h = 0;
 
@@ -326,14 +326,14 @@ static bool Set_geometry(xp_option_t *opt, const char *s)
     return true;
 }
 
-static const char* Get_geometry(xp_option_t *opt)
+static const String  Get_geometry(xp_option_t *opt)
 {
     static char buf[20]; /* should be enough */
     snprintf(buf, 20, "%dx%d", draw_width, draw_height);
     return buf;
 }
 
-static bool Set_fontName(xp_option_t *opt, const char *value)
+static bool Set_fontName(xp_option_t *opt, String value)
 {
     UNUSED_PARAM(opt);
     XFREE(gamefontname);
@@ -342,7 +342,7 @@ static bool Set_fontName(xp_option_t *opt, const char *value)
     return true;
 }
 
-static const char *Get_fontName(xp_option_t *opt)
+static String Get_fontName(xp_option_t *opt)
 {
     UNUSED_PARAM(opt);
     return gamefontname;

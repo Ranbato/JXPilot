@@ -66,8 +66,8 @@ enum rendertype rendertype;
 void pushScreenCoordinateMatrix(void);
 void pop_projection_matrix(void);
 int next_p2 ( int a );
-void print(font_data *ft_font, int color, int XALIGN, int YALIGN, int x, int y, int length, const char *text, bool onHUD);
-int FTinit(font_data *font, const char * fontname, int ptsize);
+void print(font_data *ft_font, int color, int XALIGN, int YALIGN, int x, int y, int length, String text, bool onHUD);
+int FTinit(font_data *font, String  fontname, int ptsize);
 
 int next_p2 ( int a )
 {
@@ -86,12 +86,12 @@ GLuint SDL_GL_LoadTexture(SDL_Surface *surface, texcoord_t *texcoord)
     Uint8  saved_alpha;
 
     /* Use the surface width and height expanded to powers of 2 */
-    w = next_p2(surface->w);
-    h = next_p2(surface->h);
-    texcoord->MinX = 0.0f;		 /* Min X */
-    texcoord->MinY = 0.0f;		 /* Min Y */
-    texcoord->MaxX = (GLfloat)surface->w / w;  /* Max X */
-    texcoord->MaxY = (GLfloat)surface->h / h;  /* Max Y */
+    w = next_p2(surface.w);
+    h = next_p2(surface.h);
+    texcoord.MinX = 0.0f;		 /* Min X */
+    texcoord.MinY = 0.0f;		 /* Min Y */
+    texcoord.MaxX = (GLfloat)surface.w / w;  /* Max X */
+    texcoord.MaxY = (GLfloat)surface.h / h;  /* Max Y */
 
     image = SDL_CreateRGBSurface(
     		    SDL_SWSURFACE,
@@ -107,8 +107,8 @@ GLuint SDL_GL_LoadTexture(SDL_Surface *surface, texcoord_t *texcoord)
     }
 
     /* Save the alpha blending attributes */
-    saved_flags = surface->flags&(SDL_SRCALPHA|SDL_RLEACCELOK);
-    saved_alpha = surface->format->alpha;
+    saved_flags = surface.flags&(SDL_SRCALPHA|SDL_RLEACCELOK);
+    saved_alpha = surface.format.alpha;
     if ( (saved_flags & SDL_SRCALPHA) == SDL_SRCALPHA ) {
     	    SDL_SetAlpha(surface, 0, 0);
     }
@@ -116,8 +116,8 @@ GLuint SDL_GL_LoadTexture(SDL_Surface *surface, texcoord_t *texcoord)
     /* Copy the surface into the GL texture image */
     area.x = 0;
     area.y = 0;
-    area.w = surface->w;
-    area.h = surface->h;
+    area.w = surface.w;
+    area.h = surface.h;
     SDL_BlitSurface(surface, &area, image, &area);
 
     /* Restore the alpha blending attributes */
@@ -137,13 +137,13 @@ GLuint SDL_GL_LoadTexture(SDL_Surface *surface, texcoord_t *texcoord)
     		 0,
     		 GL_RGBA,
     		 GL_UNSIGNED_BYTE,
-    		 image->pixels);
+    		 image.pixels);
     SDL_FreeSurface(image); /* No longer needed */
 
     return texture;
 }
 
-int FTinit(font_data *font, const char * fontname, int ptsize)
+int FTinit(font_data *font, String  fontname, int ptsize)
 {
     int i;
     SDL_Color white = { 0xFF, 0xFF, 0xFF, 0x00 };
@@ -167,16 +167,16 @@ int FTinit(font_data *font, const char * fontname, int ptsize)
     	fprintf(stderr, "Couldn't initialize TTF: %s\n",SDL_GetError());
     	return(2);
     }*/
-    font->ttffont = TTF_OpenFont(fontname, ptsize);
-    if ( font->ttffont == NULL ) {
+    font.ttffont = TTF_OpenFont(fontname, ptsize);
+    if ( font.ttffont == NULL ) {
     	fprintf(stderr, "Couldn't load %d pt font from %s: %s\n", ptsize, fontname, SDL_GetError());
     	return(2);
     }
-    TTF_SetFontStyle(font->ttffont, renderstyle);
-    font->list_base=glGenLists(next_p2(NUMCHARS));
+    TTF_SetFontStyle(font.ttffont, renderstyle);
+    font.list_base=glGenLists(next_p2(NUMCHARS));
     /* Get the recommended spacing between lines of text for this font */
-    font->linespacing = TTF_FontLineSkip(font->ttffont);
-    font->h = ptsize;
+    font.linespacing = TTF_FontLineSkip(font.ttffont);
+    font.h = ptsize;
 
     for( i = 0; i < NUMCHARS; i++ ) {
 	SDL_Surface *glyph = NULL;
@@ -184,50 +184,50 @@ int FTinit(font_data *font, const char * fontname, int ptsize)
 
 	forecol = &white;
 	
-    	glyph = TTF_RenderGlyph_Blended( font->ttffont, i, *forecol );
+    	glyph = TTF_RenderGlyph_Blended( font.ttffont, i, *forecol );
     	if(glyph) {
 	    glGetError();
-    	    font->textures[i] = SDL_GL_LoadTexture(glyph, &texcoords);
+    	    font.textures[i] = SDL_GL_LoadTexture(glyph, &texcoords);
     	    if ( (gl_error = glGetError()) != GL_NO_ERROR )
 	    	printf("Warning: Couldn't create texture: 0x%x\n", gl_error);
 	    
-    	    font->W[i] = glyph->w;
-    	    height = glyph->h;
-    	    TTF_GlyphMetrics( font->ttffont, i, &minx,&maxx,&miny,&maxy,NULL);
+    	    font.W[i] = glyph.w;
+    	    height = glyph.h;
+    	    TTF_GlyphMetrics( font.ttffont, i, &minx,&maxx,&miny,&maxy,NULL);
    	}    
     	SDL_FreeSurface(glyph);
 		
-    	glNewList(font->list_base+i,GL_COMPILE);
+    	glNewList(font.list_base+i,GL_COMPILE);
 
-    	glBindTexture(GL_TEXTURE_2D, font->textures[i]);
+    	glBindTexture(GL_TEXTURE_2D, font.textures[i]);
     	glTranslatef(1,0,0);
     	glPushMatrix();
     	glBegin(GL_TRIANGLE_STRIP);
     	    glTexCoord2f(texcoords.MinX, texcoords.MaxY);
 	    glVertex2i(0 , miny);
      	    glTexCoord2f(texcoords.MaxX, texcoords.MaxY);
-	    glVertex2i(font->W[i] , miny);
+	    glVertex2i(font.W[i] , miny);
     	    glTexCoord2f(texcoords.MinX, texcoords.MinY);
 	    glVertex2i(0 ,miny+height );
    	    glTexCoord2f(texcoords.MaxX, texcoords.MinY);
-	    glVertex2i(font->W[i] , miny+height);
+	    glVertex2i(font.W[i] , miny+height);
     	glEnd();
     	glPopMatrix();
-    	glTranslatef((font->W[i]>3)?font->W[i]:(font->W[i] = 3) + 1,0,0);
+    	glTranslatef((font.W[i]>3)?font.W[i]:(font.W[i] = 3) + 1,0,0);
 	/*one would think this should be += 2... I guess they overlap or the edge
 	 * isn't painted
 	 */
-	font->W[i] += 1;
+	font.W[i] += 1;
 
     	glEndList();
     }
     
-    /*TTF_CloseFont(font->ttffont);*/
+    /*TTF_CloseFont(font.ttffont);*/
     /*TTF_Quit();*/
     return 0;
 }
 
-int fontinit(font_data *ft_font, const char * fname, unsigned int size)
+int fontinit(font_data *ft_font, String  fname, unsigned int size)
 {
     return FTinit(ft_font,fname,size);
 }
@@ -235,9 +235,9 @@ int fontinit(font_data *ft_font, const char * fname, unsigned int size)
 void fontclean(font_data *ft_font)
 {
     if (ft_font == NULL) return;
-    glDeleteLists(ft_font->list_base,next_p2(NUMCHARS));
-    if (ft_font->textures != NULL) {
-    	glDeleteTextures(NUMCHARS,ft_font->textures);
+    glDeleteLists(ft_font.list_base,next_p2(NUMCHARS));
+    if (ft_font.textures != NULL) {
+    	glDeleteTextures(NUMCHARS,ft_font.textures);
     }
 }
 
@@ -269,7 +269,7 @@ void pop_projection_matrix(void)
 }
 
 
-fontbounds nprintsize(font_data *ft_font, int length, const char *fmt, ...)
+fontbounds nprintsize(font_data *ft_font, int length, String fmt, ...)
 {
     int i=0,j,textlength;
     float len;
@@ -306,7 +306,7 @@ fontbounds nprintsize(font_data *ft_font, int length, const char *fmt, ...)
 	
 	len = 0.0;
 	for (j=start;j<=end-1;++j)
-	    len = len + ft_font->W[(GLubyte)text[j]];
+	    len = len + ft_font.W[(GLubyte)text[j]];
 	
     	if (len > returnval.width)
 	    returnval.width = len;	
@@ -318,12 +318,12 @@ fontbounds nprintsize(font_data *ft_font, int length, const char *fmt, ...)
 	start = end + 1;
     }
     /* i should be atleast 1 if we get here...*/
-    returnval.height = ft_font->h + (i-1)*ft_font->linespacing;
+    returnval.height = ft_font.h + (i-1)*ft_font.linespacing;
     
     return returnval;
 }
 
-fontbounds printsize(font_data *ft_font, const char *fmt, ...)
+fontbounds printsize(font_data *ft_font, String fmt, ...)
 {
     fontbounds returnval;
     char text[BUFSIZE];  /* Holds Our String */
@@ -345,7 +345,7 @@ fontbounds printsize(font_data *ft_font, const char *fmt, ...)
     return nprintsize(ft_font, BUFSIZE, "%s", text);
 }
 
-bool render_text(font_data *ft_font, const char *text, string_tex_t *string_tex)
+bool render_text(font_data *ft_font, String text, string_tex_t *string_tex)
 {
     SDL_Color white = { 0xFF, 0xFF, 0xFF, 0x00 };
     SDL_Color *forecol;
@@ -355,7 +355,7 @@ bool render_text(font_data *ft_font, const char *text, string_tex_t *string_tex)
     GLenum gl_error;
 
     if (!(ft_font)) return false;
-    if (!(ft_font->ttffont)) return false;
+    if (!(ft_font.ttffont)) return false;
     if (!(string_tex)) return false;
 #if 0
     if (!strlen(text)) return false; /* something is printing an empty string each frame */
@@ -367,19 +367,19 @@ bool render_text(font_data *ft_font, const char *text, string_tex_t *string_tex)
 
     forecol = &white;
 	
-    string_tex->font_height = ft_font->h;
+    string_tex.font_height = ft_font.h;
     
-    string_glyph = TTF_RenderText_Blended( ft_font->ttffont, text, *forecol );
+    string_glyph = TTF_RenderText_Blended( ft_font.ttffont, text, *forecol );
     
-    string_tex->tex_list = Arraylist_alloc(sizeof(tex_t));
+    string_tex.tex_list = Arraylist_alloc(sizeof(tex_t));
 	
-    string_tex->width = 0;
-    string_tex->height = string_glyph->h;
+    string_tex.width = 0;
+    string_tex.height = string_glyph.h;
     
     if (string_glyph) {
-    	int i, num = 1 + string_glyph->w / 254;
- 	string_tex->text = (char *)malloc(sizeof(char)*(strlen(text)+1));
-	sprintf(string_tex->text,"%s",text);
+    	int i, num = 1 + string_glyph.w / 254;
+ 	string_tex.text = (String )malloc(sizeof(char)*(strlen(text)+1));
+	sprintf(string_tex.text,"%s",text);
    	for( i=0 ; i<num ; ++i ) {
 	    tex_t tex;
 	    
@@ -394,10 +394,10 @@ bool render_text(font_data *ft_font, const char *text, string_tex_t *string_tex)
 	    dest.x  = 0;
     	    src.y = dest.y = 0;
 	    if (i==num-1)
-	    	dest.w = src.w = string_glyph->w - i*254;
+	    	dest.w = src.w = string_glyph.w - i*254;
 	    else
 	    	dest.w = src.w = 254;
-    	    src.h = dest.h = string_glyph->h;
+    	    src.h = dest.h = string_glyph.h;
 	    
     	    glyph = SDL_CreateRGBSurface(0,dest.w,dest.h,32,0,0,0,0);
     	    SDL_SetColorKey(glyph, SDL_SRCCOLORKEY, 0x00000000);
@@ -409,11 +409,11 @@ bool render_text(font_data *ft_font, const char *text, string_tex_t *string_tex)
     	    	printf("Warning: Couldn't create texture: 0x%x\n", gl_error);
 
     	    tex.width = dest.w;
-	    string_tex->width += dest.w;
+	    string_tex.width += dest.w;
 	    
     	    SDL_FreeSurface(glyph);
 	    
-	    Arraylist_add(string_tex->tex_list,&tex);
+	    Arraylist_add(string_tex.tex_list,&tex);
 	}
 	SDL_FreeSurface(string_glyph);
     } else {
@@ -423,12 +423,12 @@ bool render_text(font_data *ft_font, const char *text, string_tex_t *string_tex)
     return true;
 }
 
-bool draw_text(font_data *ft_font, int color, int XALIGN, int YALIGN, int x, int y, const char *text, bool savetex, string_tex_t *string_tex, bool onHUD)
+bool draw_text(font_data *ft_font, int color, int XALIGN, int YALIGN, int x, int y, String text, bool savetex, string_tex_t *string_tex, bool onHUD)
 {
     return draw_text_fraq(ft_font, color, XALIGN, YALIGN, x, y, text, 0.0f, 1.0f, 0.0f, 1.0f, savetex, string_tex, onHUD);
 }
 
-bool draw_text_fraq(font_data *ft_font, int color, int XALIGN, int YALIGN, int x, int y, const char *text
+bool draw_text_fraq(font_data *ft_font, int color, int XALIGN, int YALIGN, int x, int y, String text
     	    	    , float xstart
     	    	    , float xstop
     	    	    , float ystart
@@ -437,7 +437,7 @@ bool draw_text_fraq(font_data *ft_font, int color, int XALIGN, int YALIGN, int x
 {
     bool remove_tex = false;    	
     if (!(ft_font)) return false;
-    if (!(ft_font->ttffont)) return false;
+    if (!(ft_font.ttffont)) return false;
         
     if (!string_tex) {
     	remove_tex = true;
@@ -471,15 +471,15 @@ void disp_text_fraq(string_tex_t *string_tex, int color, int XALIGN, int YALIGN,
     if (!(string_tex)) return;
     set_alphacolor(color);
     
-    x -= (int)(string_tex->width/2.0f*XALIGN);
-    y += (int)(string_tex->height/2.0f*YALIGN - string_tex->height);
+    x -= (int)(string_tex.width/2.0f*XALIGN);
+    y += (int)(string_tex.height/2.0f*YALIGN - string_tex.height);
     
     if (onHUD) pushScreenCoordinateMatrix();
     
     xpos=x;
-    num = Arraylist_get_num_elements(string_tex->tex_list);
+    num = Arraylist_get_num_elements(string_tex.tex_list);
     for (i=0;i<num;++i) {
-    	tex_t tex = *((tex_t *)Arraylist_get(string_tex->tex_list,i));
+    	tex_t tex = *((tex_t *)Arraylist_get(string_tex.tex_list,i));
     	
 	glBindTexture(GL_TEXTURE_2D, tex.texture);
     	
@@ -489,16 +489,16 @@ void disp_text_fraq(string_tex_t *string_tex, int color, int XALIGN, int YALIGN,
 
     	glBegin(GL_TRIANGLE_STRIP);
     	    glTexCoord2f(   xstart*tex.texcoords.MaxX	, ystop*tex.texcoords.MaxY 	    );
-	    glVertex2f(     xpos + xstart*tex.width	, y  + ystart*string_tex->height    );
+	    glVertex2f(     xpos + xstart*tex.width	, y  + ystart*string_tex.height    );
 
      	    glTexCoord2f(   xstop*tex.texcoords.MaxX	, ystop*tex.texcoords.MaxY 	    );
-	    glVertex2f(     xpos + xstop*tex.width 	, y  + ystart*string_tex->height    );
+	    glVertex2f(     xpos + xstop*tex.width 	, y  + ystart*string_tex.height    );
 
     	    glTexCoord2f(   xstart*tex.texcoords.MaxX	, ystart*tex.texcoords.MaxY	    );
-	    glVertex2f(     xpos + xstart*tex.width	, y + ystop*string_tex->height	    ); 
+	    glVertex2f(     xpos + xstart*tex.width	, y + ystop*string_tex.height	    );
 
    	    glTexCoord2f(   xstop*tex.texcoords.MaxX	, ystart*tex.texcoords.MaxY	    );
-	    glVertex2f(     xpos + xstop*tex.width 	, y + ystop*string_tex->height	    ); 
+	    glVertex2f(     xpos + xstop*tex.width 	, y + ystop*string_tex.height	    );
     	glEnd();
 	
     	glDisable(GL_TEXTURE_2D);
@@ -512,21 +512,21 @@ void disp_text_fraq(string_tex_t *string_tex, int color, int XALIGN, int YALIGN,
 void free_string_texture(string_tex_t *string_tex)
 {
     if (string_tex) {
-    	if (string_tex->tex_list) {
-	    int i,num = Arraylist_get_num_elements(string_tex->tex_list);
+    	if (string_tex.tex_list) {
+	    int i,num = Arraylist_get_num_elements(string_tex.tex_list);
 	    for (i=0;i<num;++i) {
 	    	tex_t tex;
-	    	tex = *((tex_t *)Arraylist_get(string_tex->tex_list,i));
+	    	tex = *((tex_t *)Arraylist_get(string_tex.tex_list,i));
 		glDeleteTextures(1,&(tex.texture));
 	    }
-	    Arraylist_free(string_tex->tex_list);
-	    string_tex->tex_list = NULL;
+	    Arraylist_free(string_tex.tex_list);
+	    string_tex.tex_list = NULL;
 	}
-	XFREE(string_tex->text);
+	XFREE(string_tex.text);
     }
 }
 
-void print(font_data *ft_font, int color, int XALIGN, int YALIGN, int x, int y, int length, const char *text, bool onHUD)
+void print(font_data *ft_font, int color, int XALIGN, int YALIGN, int x, int y, int length, String text, bool onHUD)
 {
     int i=0,j,textlength;
     fontbounds returnval,dummy;
@@ -540,11 +540,11 @@ void print(font_data *ft_font, int color, int XALIGN, int YALIGN, int x, int y, 
 
     if (!(textlength = Math.min(strlen(text),length))) return;
     
-    font=ft_font->list_base;
+    font=ft_font.list_base;
 
     returnval = nprintsize(ft_font,length,"%s",text);
     
-    yoff = (returnval.height/2.0f)*((float)YALIGN) - ft_font->h;
+    yoff = (returnval.height/2.0f)*((float)YALIGN) - ft_font.h;
 
     glListBase(font);
 
@@ -581,7 +581,7 @@ void print(font_data *ft_font, int color, int XALIGN, int YALIGN, int x, int y, 
 	
 	dummy.width = 0.0;
 	for (j=start;j<=end-1;++j)
-	    dummy.width = dummy.width + ft_font->W[(GLubyte)text[j]];
+	    dummy.width = dummy.width + ft_font.W[(GLubyte)text[j]];
 	
 	xoff = - (dummy.width/2.0f)*((float)XALIGN);
 
@@ -589,7 +589,7 @@ void print(font_data *ft_font, int color, int XALIGN, int YALIGN, int x, int y, 
     	glLoadIdentity();
 	
     	X = (int)(x + xoff);
-    	Y = (int)(y - ft_font->linespacing*i + yoff);
+    	Y = (int)(y - ft_font.linespacing*i + yoff);
 	
     	if (color) set_alphacolor(color);
 	if (onHUD) glTranslatef(X, Y, 0);
@@ -612,7 +612,7 @@ void print(font_data *ft_font, int color, int XALIGN, int YALIGN, int x, int y, 
 
 }
 
-void mapnprint(font_data *ft_font, int color, int XALIGN, int YALIGN, int x, int y, int length, const char *fmt,...)
+void mapnprint(font_data *ft_font, int color, int XALIGN, int YALIGN, int x, int y, int length, String fmt,...)
 {
     int textlength;
     
@@ -635,7 +635,7 @@ void mapnprint(font_data *ft_font, int color, int XALIGN, int YALIGN, int x, int
     print(ft_font, color, XALIGN, YALIGN, x, y, length, text, false);
 }
 
-void HUDnprint(font_data *ft_font, int color, int XALIGN, int YALIGN, int x, int y, int length, const char *fmt, ...)
+void HUDnprint(font_data *ft_font, int color, int XALIGN, int YALIGN, int x, int y, int length, String fmt, ...)
 {
     int textlength;
     
@@ -658,7 +658,7 @@ void HUDnprint(font_data *ft_font, int color, int XALIGN, int YALIGN, int x, int
     print( ft_font, color, XALIGN, YALIGN, x, y, length, text, true);
 }
 
-void mapprint(font_data *ft_font, int color, int XALIGN, int YALIGN, int x, int y, const char *fmt,...)
+void mapprint(font_data *ft_font, int color, int XALIGN, int YALIGN, int x, int y, String fmt,...)
 {
     unsigned int textlength;
     
@@ -681,7 +681,7 @@ void mapprint(font_data *ft_font, int color, int XALIGN, int YALIGN, int x, int 
     print(ft_font, color, XALIGN, YALIGN, x, y, BUFSIZE, text, false);
 }
 
-void HUDprint(font_data *ft_font, int color, int XALIGN, int YALIGN, int x, int y, const char *fmt, ...)
+void HUDprint(font_data *ft_font, int color, int XALIGN, int YALIGN, int x, int y, String fmt, ...)
 {
     unsigned int textlength;
     

@@ -23,7 +23,7 @@
 #include "sdlkeys.h"
 
 typedef struct {
-	const char *name;
+	String name;
 	SDLKey	key;
 } sdlkey_t;
 
@@ -165,30 +165,30 @@ static sdlkey_t sdlkeys[] = {
    { NULL,  	    	SDLK_UNKNOWN },
 };
 
-SDLKey Get_key_by_name(const char* name)
+SDLKey Get_key_by_name(const String  name)
 {
     sdlkey_t *k;
 
-    for (k = &sdlkeys[0]; k->name != NULL; k++)
-        if (!strcmp(name, k->name)) {
-	   return k->key;
+    for (k = &sdlkeys[0]; k.name != NULL; k++)
+        if (!strcmp(name, k.name)) {
+	   return k.key;
 	}
 
     return SDLK_UNKNOWN;
 }
 
-char *Get_name_by_key(SDLKey key)
+String Get_name_by_key(SDLKey key)
 {
     sdlkey_t *k;
 
-    for (k = &sdlkeys[0]; k->name != NULL; k++)
-        if (key == k->key)
-            return (char *)(k->name);
+    for (k = &sdlkeys[0]; k.name != NULL; k++)
+        if (key == k.key)
+            return (String )(k.name);
 
     return NULL;
 }
 
-xp_keysym_t String_to_xp_keysym(/*const*/ char *name)
+xp_keysym_t String_to_xp_keysym(/*const*/ String name)
 {
     SDLKey sdlk = Get_key_by_name(name);
     if (sdlk == SDLK_UNKNOWN) return XP_KS_UNKNOWN;

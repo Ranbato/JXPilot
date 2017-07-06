@@ -24,11 +24,11 @@ Claus Leth Gregersen:
     ##      ######################################################################
     ##                                          |                               ##
     ##                          *               |                             <-##
-    ##->                                        |                               ##
+    ##.                                        |                               ##
     ##                                          |                               ##
     ######################################################################      ##
     ##                                          |                               ##
-    ##->                        *               |                               ##
+    ##.                        *               |                               ##
     ##                                          |                             <-##
     ##                                          |                               ##
     ##        ####################################################################
@@ -57,7 +57,7 @@ Claus Leth Gregersen:
       sparkling effect
 
 
-    -> and <- should be firing heat seekers or torpedos, just to spice it up a bit.
+    . and <- should be firing heat seekers or torpedos, just to spice it up a bit.
 
     Would be great if cannons and fences could belong to the team that controls
     the area which they're closest at, or just be owned by a team.

@@ -69,8 +69,8 @@ typedef struct {
     bbox_t	*bbox;
 } xp_picture_t;
 
-int Picture_init(xp_picture_t *picture, const char *filename, int count);
-int Picture_load( xp_picture_t *picture, const char *path);
+int Picture_init(xp_picture_t *picture, String filename, int count);
+int Picture_load( xp_picture_t *picture, String path);
 int Picture_rotate(xp_picture_t *picture);
 
 void Picture_set_pixel(xp_picture_t *picture, int image, int x, int y, 

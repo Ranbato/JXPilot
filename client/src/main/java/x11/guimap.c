@@ -209,7 +209,7 @@ void Gui_paint_fuel(int x, int y, double fuel)
 	    lastScaleFactor = clData.scaleFactor;
 	    text_width = XTextWidth(gameFont, s, 1);
 	    text_is_bigger = (text_width + 4 > WINSCALE(BLOCK_SZ) + 1)
-		|| (gameFont->ascent + gameFont->descent)
+		|| (gameFont.ascent + gameFont.descent)
 		> WINSCALE(BLOCK_SZ) + 2;
 	}
 	SET_FG(colors[fuelColor].pixel);
@@ -224,7 +224,7 @@ void Gui_paint_fuel(int x, int y, double fuel)
 	XSetFunction(dpy, gameGC, GXxor);
 	SET_FG(colors[BLACK].pixel ^ colors[fuelColor].pixel);
 	x = SCALEX(x + BLOCK_SZ/2) - text_width/2,
-	y = SCALEY(y + BLOCK_SZ/2) + gameFont->ascent/2,
+	y = SCALEY(y + BLOCK_SZ/2) + gameFont.ascent/2,
 	rd.drawString(dpy, drawPixmap, gameGC, x, y, s, 1);
 	XSetFunction(dpy, gameGC, GXcopy);
     }
@@ -260,7 +260,7 @@ void Gui_paint_fuel(int x, int y, double fuel)
 
 	bit = Bitmap_get(drawPixmap, BM_FUEL, image);
 	if (bit != NULL) {
-	    box = &bit->bbox;
+	    box = &bit.bbox;
 	    area.x = 0;
 	    area.y = 0;
 	    area.w = WINSCALE(BLOCK_SZ - 2 * BITMAP_FUEL_BORDER);
@@ -299,13 +299,13 @@ void Gui_paint_base(int x, int y, int id, int team, int type)
 	/*
 	 * Hacks to support base warnings.
 	 */
-	if (loops < base->appeartime)
+	if (loops < base.appeartime)
 	    do_basewarning = true;
 
 	if (version < 0x4F12 && do_basewarning) {
 	    if (baseWarningType & 1) {
 		/* We assume the ship will appear after 3 seconds. */
-		int count = (int)(360 * (base->appeartime - loops)
+		int count = (int)(360 * (base.appeartime - loops)
 				  / (3 * clientFPS));
 		LIMIT(count, 0, 360);
 		/* red box basewarning */
@@ -389,7 +389,7 @@ void Gui_paint_base(int x, int y, int id, int team, int type)
 
     Check_name_string(other);
 
-    if (Setup->mode.get( TEAM_PLAY)) {
+    if (Setup.mode.get( TEAM_PLAY)) {
 	s[0] = '0' + team;
 	if (other) {
 	    s[1] = ' ';
@@ -401,22 +401,22 @@ void Gui_paint_base(int x, int y, int id, int team, int type)
 
     switch (type) {
     case SETUP_BASE_UP:
-	y += BORDER + gameFont->ascent;
+	y += BORDER + gameFont.ascent;
 	x += WINSCALE(BLOCK_SZ / 2);
-	x -= size / 2 + (other ? other->name_width / 2 : 0);
+	x -= size / 2 + (other ? other.name_width / 2 : 0);
 	break;
     case SETUP_BASE_DOWN:
-	y -= WINSCALE(BLOCK_SZ) + BORDER + gameFont->descent;
+	y -= WINSCALE(BLOCK_SZ) + BORDER + gameFont.descent;
 	x += WINSCALE(BLOCK_SZ / 2);
-	x -= size / 2 + (other ? other->name_width / 2 : 0);
+	x -= size / 2 + (other ? other.name_width / 2 : 0);
 	break;
     case SETUP_BASE_LEFT:
 	x += WINSCALE(BLOCK_SZ) + BORDER;
-	y += -WINSCALE(BLOCK_SZ / 2) + gameFont->ascent / 2;
+	y += -WINSCALE(BLOCK_SZ / 2) + gameFont.ascent / 2;
 	break;
     case SETUP_BASE_RIGHT:
-	x -= BORDER + (other ? other->name_width : 0) + size;
-	y += -WINSCALE(BLOCK_SZ / 2) + gameFont->ascent / 2;
+	x -= BORDER + (other ? other.name_width : 0) + size;
+	y += -WINSCALE(BLOCK_SZ / 2) + gameFont.ascent / 2;
 	break;
     default:
 	warn("BUG: bad base setup type in Gui_paint_base()");
@@ -428,13 +428,13 @@ void Gui_paint_base(int x, int y, int id, int team, int type)
      * W (waiting for next round) at base.
      */
     if (other) {
-	if (other->mychar == ' ' || other->mychar == 'R') {
-	    if (Setup->mode.get( LIMITED_LIVES))
-		sprintf(info, " %d", other->life);
+	if (other.mychar == ' ' || other.mychar == 'R') {
+	    if (Setup.mode.get( LIMITED_LIVES))
+		sprintf(info, " %d", other.life);
 	    else
 		sprintf(info, " ");
 	} else
-	    sprintf(info, " %c", other->mychar);
+	    sprintf(info, " %c", other.mychar);
 
 	size2 = XTextWidth(gameFont, info, (int)strlen(info));
     }
@@ -446,8 +446,8 @@ void Gui_paint_base(int x, int y, int id, int team, int type)
     }
     if (other) {
 	rd.drawString(dpy, drawPixmap, gameGC, x, y,
-		      other->nick_name, other->name_len);
-	x += other->name_width;
+		      other.nick_name, other.name_len);
+	x += other.name_width;
     }
     /* Extra base info */
     if (size2)
@@ -487,10 +487,10 @@ void Gui_paint_decor(int x, int y, int xi, int yi, int type,
     if (!(instruments.filledDecor||instruments.texturedDecor)) {
 	if (mask & DECOR_LEFT) {
 	    if ((xi == 0)
-		? (!Setup->mode.get( WRAP_PLAY) ||
-		    !(decor[Setup->map_data[(Setup->x - 1) * Setup->y + yi]]
+		? (!Setup.mode.get( WRAP_PLAY) ||
+		    !(decor[Setup.map_data[(Setup.x - 1) * Setup.y + yi]]
 			& DECOR_RIGHT))
-		: !(decor[Setup->map_data[(xi - 1) * Setup->y + yi]]
+		: !(decor[Setup.map_data[(xi - 1) * Setup.y + yi]]
 		    & DECOR_RIGHT)) {
 		Segment_add(decorColor,
 			    X(x),
@@ -501,10 +501,10 @@ void Gui_paint_decor(int x, int y, int xi, int yi, int type,
 	}
 	if (mask & DECOR_DOWN) {
 	    if ((yi == 0)
-		? (!Setup->mode.get( WRAP_PLAY) ||
-		    !(decor[Setup->map_data[xi * Setup->y + Setup->y - 1]]
+		? (!Setup.mode.get( WRAP_PLAY) ||
+		    !(decor[Setup.map_data[xi * Setup.y + Setup.y - 1]]
 			& DECOR_UP))
-		: !(decor[Setup->map_data[xi * Setup->y + (yi - 1)]]
+		: !(decor[Setup.map_data[xi * Setup.y + (yi - 1)]]
 		    & DECOR_UP)) {
 		Segment_add(decorColor,
 			    X(x),
@@ -515,11 +515,11 @@ void Gui_paint_decor(int x, int y, int xi, int yi, int type,
 	}
 	if (mask & DECOR_RIGHT) {
 	    if (!instruments.outlineDecor
-		|| ((xi == Setup->x - 1)
-		    ? (!Setup->mode.get( WRAP_PLAY)
-		       || !(decor[Setup->map_data[yi]]
+		|| ((xi == Setup.x - 1)
+		    ? (!Setup.mode.get( WRAP_PLAY)
+		       || !(decor[Setup.map_data[yi]]
 			    & DECOR_LEFT))
-		    : !(decor[Setup->map_data[(xi + 1) * Setup->y + yi]]
+		    : !(decor[Setup.map_data[(xi + 1) * Setup.y + yi]]
 			& DECOR_LEFT))) {
 		Segment_add(decorColor,
 			    X(x+BLOCK_SZ),
@@ -530,11 +530,11 @@ void Gui_paint_decor(int x, int y, int xi, int yi, int type,
 	}
 	if (mask & DECOR_UP) {
 	    if (!instruments.outlineDecor
-		|| ((yi == Setup->y - 1)
-		    ? (!Setup->mode.get( WRAP_PLAY)
-		       || !(decor[Setup->map_data[xi * Setup->y]]
+		|| ((yi == Setup.y - 1)
+		    ? (!Setup.mode.get( WRAP_PLAY)
+		       || !(decor[Setup.map_data[xi * Setup.y]]
 			    & DECOR_DOWN))
-		    : !(decor[Setup->map_data[xi * Setup->y + (yi + 1)]]
+		    : !(decor[Setup.map_data[xi * Setup.y + (yi + 1)]]
 			& DECOR_DOWN))) {
 		Segment_add(decorColor,
 			    X(x),
@@ -1036,7 +1036,7 @@ void Gui_paint_setup_target(int x, int y, int team, double damage, bool own)
 
     color = own ? BLUE : RED;
 
-    if (Setup->mode.get( TEAM_PLAY)) {
+    if (Setup.mode.get( TEAM_PLAY)) {
 	int team_color = Team_color(team);
 
 	if (team_color)
@@ -1060,13 +1060,13 @@ void Gui_paint_setup_target(int x, int y, int team, double damage, bool own)
 		     UWINSCALE(BLOCK_SZ/2),
 		     UWINSCALE(BLOCK_SZ/2));
 
-    if (Setup->mode.get( TEAM_PLAY)) {
+    if (Setup.mode.get( TEAM_PLAY)) {
 	s[0] = '0' + team; s[1] = '\0';
 	size = XTextWidth(gameFont, s, 1);
 	rd.drawString(dpy, drawPixmap, gameGC,
 		      WINSCALE(X(x + BLOCK_SZ/2)) - size/2,
 		      WINSCALE(Y(y + BLOCK_SZ/2))
-			+ gameFont->ascent/2,
+			+ gameFont.ascent/2,
 		      s, 1);
     }
 
@@ -1092,7 +1092,7 @@ void Gui_paint_setup_treasure(int x, int y, int team, bool own)
 {
     int	    color = own ? BLUE : RED;
 
-    if (Setup->mode.get( TEAM_PLAY)) {
+    if (Setup.mode.get( TEAM_PLAY)) {
 	int team_color = Team_color(team);
 
 	if (team_color)
@@ -1118,7 +1118,7 @@ void Gui_paint_setup_treasure(int x, int y, int team, bool own)
 		X(x),
 		Y(y + BLOCK_SZ),
 		BLOCK_SZ, BLOCK_SZ, 0, 64*180);
-	if (Setup->mode.get( TEAM_PLAY)) {
+	if (Setup.mode.get( TEAM_PLAY)) {
 	    s[1] = '\0'; s[0] = '0' + team;
 	    size = XTextWidth(gameFont, s, 1);
 	    rd.drawString(dpy, drawPixmap, gameGC,
@@ -1135,7 +1135,7 @@ void Gui_paint_setup_treasure(int x, int y, int team, bool own)
 	Bitmap_paint(drawPixmap, type, WINSCALE(X(x)),
 		     WINSCALE(Y(y + BLOCK_SZ)), 0);
 
-	if (Setup->mode.get( TEAM_PLAY)) {
+	if (Setup.mode.get( TEAM_PLAY)) {
             SET_FG(colors[color].pixel);
 
 	    s[1] = '\0'; s[0] = '0' + team;
@@ -1154,7 +1154,7 @@ void Gui_paint_polygon(int i, int xoff, int yoff)
     static XPoint points[10000];
 
     int j, x, y, sindex, width, did_fill;
-    ipos_t ship;
+    Point  ship;
     xp_polygon_t polygon;
     polygon_style_t style;
     bool textured, filled;
@@ -1167,8 +1167,8 @@ void Gui_paint_polygon(int i, int xoff, int yoff)
     textured = instruments.texturedWalls && fullColor;
     filled = instruments.filledWorld;
 
-    x = xoff * Setup->width;
-    y = yoff * Setup->height;
+    x = xoff * Setup.width;
+    y = yoff * Setup.height;
     ship.x = WINSCALE(world.x);
     ship.y = WINSCALE(world.y + ext_view_height);
 
@@ -1188,14 +1188,14 @@ void Gui_paint_polygon(int i, int xoff, int yoff)
 	    xp_bitmap_t *bmp = Bitmap_get(drawPixmap, NUM_BITMAPS + style.texture, 0);
 	    if (bmp == NULL)
 		goto notexture; /* Print an error here? */
-	    XSetTile(dpy, gameGC, bmp->bitmap);
+	    XSetTile(dpy, gameGC, bmp.bitmap);
 	    /*
 	      XSetTSOrigin(dpy, gc, -WINSCALE(realWorld.x),
 	      WINSCALE(realWorld.y));
 	    */
 	    XSetTSOrigin(dpy, gameGC, WINSCALE(polygon.bounds.x + xoff *
-		   Setup->width) - ship.x, ship.y - WINSCALE(polygon.bounds.y +
-		   polygon.bounds.h + yoff * Setup->height));
+		   Setup.width) - ship.x, ship.y - WINSCALE(polygon.bounds.y +
+		   polygon.bounds.h + yoff * Setup.height));
 	    XSetFillStyle(dpy, gameGC, FillTiled);
         } else {
 	notexture:

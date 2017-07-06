@@ -233,7 +233,7 @@ Problem : If someone in your team died and is recovering, you can
 	  base, but with full recovery delay. This way you can keep
 	  a team member from recovering if you take his base all the time.
 Found by: Throat
-Solution: Don't set pl->count to RECOVERY_DELAY in Pick_startpos().
+Solution: Don't set pl.count to RECOVERY_DELAY in Pick_startpos().
 Fixed by: kps
 Files 
 affected: src/server/player.c

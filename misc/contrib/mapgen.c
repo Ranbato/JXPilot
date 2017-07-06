@@ -122,7 +122,7 @@ char       *argv[];
 
     parse(argc, argv);		/* parse command line options */
 
-    map = (char *)malloc(xsize * ysize);	/* get some space */
+    map = (String )malloc(xsize * ysize);	/* get some space */
     memset(map, 056, xsize * ysize);	/* initialize it with '.' characters */
 
     /* should we make walls? */
@@ -273,9 +273,9 @@ void        clean_map()
     list.x = x;			/* set list head to this spot */
     list.y = y;
 
-    while (cursor->next != NULL) {
-	x = cursor->x;
-	y = cursor->y;
+    while (cursor.next != NULL) {
+	x = cursor.x;
+	y = cursor.y;
 	for (h = x - 1; h <= x + 1; h++)	/* enqueue the '.' spaces
 						 * surrounding the current */
 	    for (v = y - 1; v <= y + 1; v++)	/* space. */
@@ -283,14 +283,14 @@ void        clean_map()
 		    && y < ysize && POS(h, v) == '.') {
 		    POS(h, v) = ' ';	/* erase '.' from h,v; prevent multiple
 					 * enqueing */
-		    end->next = malloc(sizeof(struct spot));
+		    end.next = malloc(sizeof(struct spot));
 		    			/* attach a new node */
-		    end = end->next;	/* move to the new node */
-		    end->x = h;		/* fill in its values */
-		    end->y = v;
-		    end->next = (struct spot *)NULL;
+		    end = end.next;	/* move to the new node */
+		    end.x = h;		/* fill in its values */
+		    end.y = v;
+		    end.next = (struct spot *)NULL;
 		}
-	cursor = cursor->next;	/* advance to next thing in the list */
+	cursor = cursor.next;	/* advance to next thing in the list */
     }
 
     for (h = 0; h < xsize; h++)

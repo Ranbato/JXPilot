@@ -26,9 +26,9 @@
 \***************************************************************************/
 #ifdef SOUND
 
-extern int audioDeviceInit(char *display);
+extern int audioDeviceInit(String display);
 extern void audioDeviceEvents();
-extern void audioDevicePlay(char *filename, int type, int volume,
+extern void audioDevicePlay(String filename, int type, int volume,
 			    void **private);
 
 #endif

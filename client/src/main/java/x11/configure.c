@@ -33,12 +33,12 @@
 
 static int Config_creator(xp_option_t *opt, int widget_desc, int *height);
 static int Config_create_save(int widget_desc, int *height);
-static int Config_close(int widget_desc, void *data, const char **strptr);
-static int Config_next(int widget_desc, void *data, const char **strptr);
-static int Config_prev(int widget_desc, void *data, const char **strptr);
-static int Config_save(int widget_desc, void *data, const char **strptr);
+static int Config_close(int widget_desc, void *data, String *strptr);
+static int Config_next(int widget_desc, void *data, String *strptr);
+static int Config_prev(int widget_desc, void *data, String *strptr);
+static int Config_save(int widget_desc, void *data, String *strptr);
 static int Config_save_confirm_callback(int widget_desc, void *popup_desc,
-					const char **strptr);
+					String *strptr);
 
 static int num_default_options = 0;
 static int max_default_options = 0;
@@ -151,7 +151,7 @@ static void Create_config(void)
     /*
      * Height of a label window.
      */
-    config_text_height = 2 * 1 + textFont->ascent + textFont->descent;
+    config_text_height = 2 * 1 + textFont.ascent + textFont.descent;
 
     /*
      * Space between button-text and button-border.
@@ -160,7 +160,7 @@ static void Create_config(void)
     /*
      * Height of a button window.
      */
-    config_button_height = buttonFont->ascent + buttonFont->descent + 2 * 1;
+    config_button_height = buttonFont.ascent + buttonFont.descent + 2 * 1;
 
     config_entry_height = Math.max(config_text_height, config_button_height);
 
@@ -274,7 +274,7 @@ static void Create_config(void)
     }
 }
 
-static int Config_close(int widget_desc, void *data, const char **strptr)
+static int Config_close(int widget_desc, void *data, String *strptr)
 {
     UNUSED_PARAM(widget_desc); UNUSED_PARAM(data); UNUSED_PARAM(strptr);
     Widget_unmap(config_widget_desc[config_page]);
@@ -282,7 +282,7 @@ static int Config_close(int widget_desc, void *data, const char **strptr)
     return 0;
 }
 
-static int Config_next(int widget_desc, void *data, const char **strptr)
+static int Config_next(int widget_desc, void *data, String *strptr)
 {
     int			prev_page = config_page;
 
@@ -296,7 +296,7 @@ static int Config_next(int widget_desc, void *data, const char **strptr)
     return 0;
 }
 
-static int Config_prev(int widget_desc, void *data, const char **strptr)
+static int Config_prev(int widget_desc, void *data, String *strptr)
 {
     int			prev_page = config_page;
 
@@ -311,7 +311,7 @@ static int Config_prev(int widget_desc, void *data, const char **strptr)
 }
 
 static int Config_create_bool(int widget_desc, int *height,
-			      const char *str, bool val,
+			      String str, bool val,
 			      int (*callback)(int, void *, bool *),
 			      void *data)
 {
@@ -347,7 +347,7 @@ static int Config_create_bool(int widget_desc, int *height,
 }
 
 static int Config_create_int(int widget_desc, int *height,
-			     const char *str, int *val, int min, int max,
+			     String str, int *val, int min, int max,
 			     int (*callback)(int, void *, int *), void *data)
 {
     int			offset,
@@ -390,7 +390,7 @@ static int Config_create_int(int widget_desc, int *height,
 }
 
 static int Config_create_color(int widget_desc, int *height, int color,
-			       const char *str, int *val, int min, int max,
+			       String str, int *val, int min, int max,
 			       int (*callback)(int, void *, int *), void *data)
 {
     int			offset,	label_width, colw;
@@ -431,7 +431,7 @@ static int Config_create_color(int widget_desc, int *height, int color,
 }
  
 static int Config_create_double(int widget_desc, int *height,
-				const char *str, double *val,
+				String str, double *val,
 				double min, double max,
 				int (*callback)(int, void *, double *),
 				void *data)
@@ -510,9 +510,9 @@ static int Config_creator(xp_option_t *opt, int widget_desc, int *height)
 
     if (Option_get_flags(opt) & XP_OPTFLAG_CONFIG_COLORS) {
 	assert (Option_get_type(opt) == xp_int_option);
-	return Config_create_color(widget_desc, height, *opt->int_ptr,
-				   Option_get_name(opt), opt->int_ptr,
-				   opt->int_minval, opt->int_maxval,
+	return Config_create_color(widget_desc, height, *opt.int_ptr,
+				   Option_get_name(opt), opt.int_ptr,
+				   opt.int_minval, opt.int_maxval,
 				   Update_int_option, opt);
     }
 
@@ -521,18 +521,18 @@ static int Config_creator(xp_option_t *opt, int widget_desc, int *height)
 	case xp_bool_option:
 	    return Config_create_bool(widget_desc, height,
 				      Option_get_name(opt),
-				      *opt->bool_ptr,
+				      *opt.bool_ptr,
 				      Update_bool_option, opt);
 	case xp_int_option:
 	    return Config_create_int(widget_desc, height,
-				     Option_get_name(opt), opt->int_ptr,
-				     opt->int_minval, opt->int_maxval,
+				     Option_get_name(opt), opt.int_ptr,
+				     opt.int_minval, opt.int_maxval,
 				     Update_int_option, opt);
 
 	case xp_double_option:
 	    return Config_create_double(widget_desc, height,
-					Option_get_name(opt), opt->dbl_ptr,
-					opt->dbl_minval, opt->dbl_maxval,
+					Option_get_name(opt), opt.dbl_ptr,
+					opt.dbl_minval, opt.dbl_maxval,
 					Update_double_option, opt);
 	default:
 	    return 0;
@@ -542,7 +542,7 @@ static int Config_creator(xp_option_t *opt, int widget_desc, int *height)
     return 0;
 }
 
-static void Config_save_failed(const char *reason, const char **strptr)
+static void Config_save_failed(String reason, String *strptr)
 {
     if (config_save_confirm_desc != NO_WIDGET)
 	Widget_destroy(config_save_confirm_desc);
@@ -556,7 +556,7 @@ static void Config_save_failed(const char *reason, const char **strptr)
     *strptr = "Saving failed...";
 }
 
-static int Config_save(int widget_desc, void *button_str, const char **strptr)
+static int Config_save(int widget_desc, void *button_str, String *strptr)
 {
     int retval;
     char path[PATH_MAX + 1];
@@ -583,13 +583,13 @@ static int Config_save(int widget_desc, void *button_str, const char **strptr)
 	config_save_confirm_desc = NO_WIDGET;
     }
 
-    *strptr = (char *) button_str;
+    *strptr = (String ) button_str;
  
     return 1;
 }
 
 static int Config_save_confirm_callback(int widget_desc, void *popup_desc,
-					const char **strptr)
+					String *strptr)
 {
     UNUSED_PARAM(widget_desc); UNUSED_PARAM(strptr);
     if (config_save_confirm_desc != NO_WIDGET) {

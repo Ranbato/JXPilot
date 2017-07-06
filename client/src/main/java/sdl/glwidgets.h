@@ -96,7 +96,7 @@ extern GLWidget *clicktarget[NUM_MOUSE_BUTTONS];
 extern GLWidget *hovertarget;
 
 /* puts text into the copy buffer */
-void load_textscrap(char *text);
+void load_textscrap(String text);
 /****************************************************/
 /* END: Main GLWidget stuff 	    	    	    */
 /****************************************************/
@@ -199,7 +199,7 @@ typedef struct {
     int             align;  /* horizontal alignemnt */
     int             valign; /* vertical alignment   */
 } LabelWidget;
-GLWidget *Init_LabelWidget( const char *text , Uint32 *fgcolor, Uint32 *bgcolor, int align, int valign );
+GLWidget *Init_LabelWidget( String text , Uint32 *fgcolor, Uint32 *bgcolor, int align, int valign );
 
 bool LabelWidget_SetColor( GLWidget *widget , Uint32 *fgcolor, Uint32 *bgcolor );
 
@@ -236,12 +236,12 @@ typedef struct {
     GLWidget	    *name;
     Uint32     	    *fgcolor;
     Uint32     	    *bgcolor;
-    void    	    (*callback)(void *tmp, const char *value);
+    void    	    (*callback)(void *tmp, String value);
     void    	    *data;
 } BoolChooserWidget;
 
-GLWidget *Init_BoolChooserWidget( const char *name, bool *value, Uint32 *fgcolor, Uint32 *bgcolor,
-    	    	    	    	 void (*callback)(void *tmp, const char *value), void *data );
+GLWidget *Init_BoolChooserWidget( String name, bool *value, Uint32 *fgcolor, Uint32 *bgcolor,
+    	    	    	    	 void (*callback)(void *tmp, String value), void *data );
 /**************************/
 /* End: BoolChooserWidget */
 /**************************/
@@ -263,12 +263,12 @@ typedef struct {
     int     	    duration;
     Uint32     	    *fgcolor;
     Uint32     	    *bgcolor;
-    void    	    (*callback)(void *tmp, const char *value);
+    void    	    (*callback)(void *tmp, String value);
     void    	    *data;
 } IntChooserWidget;
 
-GLWidget *Init_IntChooserWidget( const char *name, int *value, int minval, int maxval, Uint32 *fgcolor,
-    	    	    	    	Uint32 *bgcolor, void (*callback)(void *tmp, const char *value), void *data );
+GLWidget *Init_IntChooserWidget( String name, int *value, int minval, int maxval, Uint32 *fgcolor,
+    	    	    	    	Uint32 *bgcolor, void (*callback)(void *tmp, String value), void *data );
 /*************************/
 /* End: IntChooserWidget */
 /*************************/
@@ -289,13 +289,13 @@ typedef struct {
     int     	    direction;
     Uint32     	    *fgcolor;
     Uint32     	    *bgcolor;
-    void    	    (*callback)(void *tmp, const char *value);
+    void    	    (*callback)(void *tmp, String value);
     void    	    *data;
 } DoubleChooserWidget;
 
-GLWidget *Init_DoubleChooserWidget( const char *name, double *value, double minval, double maxval,
+GLWidget *Init_DoubleChooserWidget( String name, double *value, double minval, double maxval,
     	    	    	    	    Uint32 *fgcolor, Uint32 *bgcolor,
-    	    	    	    	    void (*callback)(void *tmp, const char *value), void *data );
+    	    	    	    	    void (*callback)(void *tmp, String value), void *data );
 /****************************/
 /* End: DoubleChooserWidget */
 /****************************/
@@ -312,12 +312,12 @@ typedef struct {
     Uint32     	    *fgcolor;
     Uint32     	    *bgcolor;
     bool    	    expanded;
-    void    	    (*callback)(void *tmp, const char *value);
+    void    	    (*callback)(void *tmp, String value);
     void    	    *data;
 } ColorChooserWidget;
 
-GLWidget *Init_ColorChooserWidget( const char *name, Uint32 *value, Uint32 *fgcolor, Uint32 *bgcolor,
-    	    	    	    	    void (*callback)(void *tmp, const char *value), void *data );
+GLWidget *Init_ColorChooserWidget( String name, Uint32 *value, Uint32 *fgcolor, Uint32 *bgcolor,
+    	    	    	    	    void (*callback)(void *tmp, String value), void *data );
 /***************************/
 /* End: ColorChooserWidget */
 /***************************/
@@ -338,12 +338,12 @@ typedef struct {
     GLWidget	    *alphapick;
     Uint32     	    *fgcolor;
     Uint32     	    *bgcolor;
-    void    	    (*callback)(void *tmp, const char *value);
+    void    	    (*callback)(void *tmp, String value);
     void    	    *data;
 } ColorModWidget;
 
 GLWidget *Init_ColorModWidget( Uint32 *value, Uint32 *fgcolor, Uint32 *bgcolor,
-    	    	    	    	    void (*callback)(void *tmp, const char *value), void *data );
+    	    	    	    	    void (*callback)(void *tmp, String value), void *data );
 /***********************/
 /* End: ColorModWidget */
 /***********************/
@@ -489,9 +489,9 @@ typedef struct {
     void (*onClick)(GLWidget *widget);
 } ImageButtonWidget;
 
-GLWidget *Init_ImageButtonWidget(const char *text,
-				 const char *upImage,
-				 const char *downImage,
+GLWidget *Init_ImageButtonWidget(String text,
+				 String upImage,
+				 String downImage,
 				 Uint32 bg, 
 				 Uint32 fg,
 				 void (*onClick)(GLWidget *widget));
@@ -508,7 +508,7 @@ typedef struct {
     GLWidget *label;
 } LabelButtonWidget;
 
-GLWidget *Init_LabelButtonWidget(   const char *text,
+GLWidget *Init_LabelButtonWidget(   String text,
 				    Uint32 *text_color,
     	    	    	    	    Uint32 *bg_color,
     	    	    	    	    Uint32 *active_color,

@@ -28,14 +28,14 @@
 enum valType { valInt, valReal, valBool, valIPos, valString };
 
 typedef struct {
-    char *name;
-    char *commandLineOption;
-    char *helpLine;
-    char *defaultValue;
+    String name;
+    String commandLineOption;
+    String helpLine;
+    String defaultValue;
     void *variable;
     enum valType type;
 } optionDesc;
 
 extern Window filepromptwin;
-extern char *StrToFloat(void);
+extern String StrToFloat(void);
 extern char oldmap[90];

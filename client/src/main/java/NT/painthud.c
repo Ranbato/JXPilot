@@ -65,7 +65,7 @@ static int meterHeight = 10;
  * the meter is drawn relative to the right side of the screen,
  * otherwise from the normal left side.
  */
-static void Paint_meter(int xoff, int y, const char *title, int val, int max,
+static void Paint_meter(int xoff, int y, String title, int val, int max,
 			int meter_color)
 {
     const int	mw1_4 = meterWidth/4,
@@ -109,7 +109,7 @@ static void Paint_meter(int xoff, int y, const char *title, int val, int max,
 	SET_FG(colors[meter_color].pixel);
 
     rd.drawString(dpy, drawPixmap, gameGC,
-		  xstr, WINSCALE(y)+(gameFont->ascent+meterHeight)/2,
+		  xstr, WINSCALE(y)+(gameFont.ascent+meterHeight)/2,
 		  title, (int)strlen(title));
 
     /* texturedObjects - TODO */
@@ -151,27 +151,27 @@ void Paint_score_objects(void)
 
     for (i = 0; i < MAX_SCORE_OBJECTS; i++) {
 	score_object_t*	sobj = &score_objects[i];
-	if (sobj->life_time > 0) {
+	if (sobj.life_time > 0) {
 	    if (loopsSlow % 3) {
-		x = sobj->x * BLOCK_SZ + BLOCK_SZ/2;
-		y = sobj->y * BLOCK_SZ + BLOCK_SZ/2;
+		x = sobj.x * BLOCK_SZ + BLOCK_SZ/2;
+		y = sobj.y * BLOCK_SZ + BLOCK_SZ/2;
 		if (wrap(&x, &y)) {
-		    if (sobj->msg_width == -1)
-			sobj->msg_width = 
-			    XTextWidth(gameFont, sobj->msg, sobj->msg_len);
+		    if (sobj.msg_width == -1)
+			sobj.msg_width =
+			    XTextWidth(gameFont, sobj.msg, sobj.msg_len);
 		    SET_FG(colors[scoreObjectColor].pixel);
-		    x = WINSCALE(X(x)) - sobj->msg_width / 2,
-		    y = WINSCALE(Y(y)) + gameFont->ascent / 2,
+		    x = WINSCALE(X(x)) - sobj.msg_width / 2,
+		    y = WINSCALE(Y(y)) + gameFont.ascent / 2,
 		    rd.drawString(dpy, drawPixmap, gameGC,
 				x, y,
-				sobj->msg,
-				sobj->msg_len);
+				sobj.msg,
+				sobj.msg_len);
 		}
 	    }
-	    sobj->life_time -= timePerFrame;
-	    if (sobj->life_time <= 0.0) {
-		sobj->life_time = 0.0;
-		sobj->hud_msg_len = 0;
+	    sobj.life_time -= timePerFrame;
+	    if (sobj.life_time <= 0.0) {
+		sobj.life_time = 0.0;
+		sobj.hud_msg_len = 0;
 	    }
 	}
     }
@@ -272,7 +272,7 @@ static void Paint_lock(int hud_pos_x, int hud_pos_y)
     static int	mapdiag = 0;
 
     if (mapdiag == 0)
-	mapdiag = LENGTH(Setup->width, Setup->height);
+	mapdiag = LENGTH(Setup.width, Setup.height);
 
     /*
      * Display direction arrow and miscellaneous target information.
@@ -289,19 +289,19 @@ static void Paint_lock(int hud_pos_x, int hud_pos_y)
 
 	Check_name_string(target);
 	rd.drawString(dpy, drawPixmap, gameGC,
-		      WINSCALE(hud_pos_x) - target->name_width / 2,
+		      WINSCALE(hud_pos_x) - target.name_width / 2,
 		      WINSCALE(hud_pos_y - hudSize + HUD_OFFSET - BORDER )
-		      - gameFont->descent ,
-		      target->id_string, target->name_len);
+		      - gameFont.descent ,
+		      target.id_string, target.name_len);
 
 	/* lives left is a better info than distance in team games MM */
-	if (Setup->mode.get( LIMITED_LIVES))
-	    sprintf(str, "%03d", target->life);
+	if (Setup.mode.get( LIMITED_LIVES))
+	    sprintf(str, "%03d", target.life);
 	else
 	    sprintf(str, "%03d", lock_dist / BLOCK_SZ);
 
-	if (Setup->mode.get( LIMITED_LIVES) || lock_dist !=0) {
-	    if (Setup->mode.get( LIMITED_LIVES) && target->life == 0)
+	if (Setup.mode.get( LIMITED_LIVES) || lock_dist !=0) {
+	    if (Setup.mode.get( LIMITED_LIVES) && target.life == 0)
 		SET_FG(colors[RED].pixel);
 	    else
 		SET_FG(colors[hudColor].pixel);
@@ -309,7 +309,7 @@ static void Paint_lock(int hud_pos_x, int hud_pos_y)
 	    rd.drawString(dpy, drawPixmap, gameGC,
 			  WINSCALE(hud_pos_x + hudSize - HUD_OFFSET + BORDER),
 			  WINSCALE(hud_pos_y - hudSize + HUD_OFFSET - BORDER)
-			  - gameFont->descent,
+			  - gameFont.descent,
 			  str, 3);
 	}
     }
@@ -322,10 +322,10 @@ static void Paint_lock(int hud_pos_x, int hud_pos_y)
 		size = 1;
 
 	    if (self != NULL
-		&& ((self->team == target->team
-		     && Setup->mode.get( TEAM_PLAY))
-		    || (self->alliance != ' '
-			&& self->alliance == target->alliance))) {
+		&& ((self.team == target.team
+		     && Setup.mode.get( TEAM_PLAY))
+		    || (self.alliance != ' '
+			&& self.alliance == target.alliance))) {
 		Arc_add(BLUE,
 			(int)(hud_pos_x + MIN_HUD_SIZE * 0.6 * tcos(lock_dir)
 			      - size * 0.5),
@@ -352,8 +352,8 @@ static void Paint_hudradar(double hrscale, double xlimit, double ylimit,
     int i, x, y;
     int hrw = hrscale * 256;
     int hrh = hrscale * RadarHeight;
-    double xf = (double) hrw / (double) Setup->width;
-    double yf = (double) hrh / (double) Setup->height;
+    double xf = (double) hrw / (double) Setup.width;
+    double yf = (double) hrh / (double) Setup.height;
 
     for (i = 0; i < num_radar; i++) {
 	x = radar_ptr[i].x * hrscale
@@ -398,8 +398,8 @@ static void Paint_hudradar(double hrscale, double xlimit, double ylimit,
 	float hrw = (float)hrscale * (float)256;
 	float hrh = (float)hrscale * (float)RadarHeight;
 	int sz = hrSize;
-	float xf = (float) hrw / (float) Setup->width;
-   float yf = (float) hrh / (float) Setup->height;
+	float xf = (float) hrw / (float) Setup.width;
+   float yf = (float) hrh / (float) Setup.height;
    
    x = X(xi) + SHIP_SZ/2;
    y = Y(yi) - SHIP_SZ*4/3;
@@ -433,7 +433,7 @@ static void Paint_HUD_items(int hud_pos_x, int hud_pos_y)
 
     /* Special itemtypes */
     if (vertSpacing < 0)
-	vertSpacing = Math.max(ITEM_SIZE, gameFont->ascent + gameFont->descent) + 1;
+	vertSpacing = Math.max(ITEM_SIZE, gameFont.ascent + gameFont.descent) + 1;
     /* find the scaled location, then work in pixels */
     vert_pos = WINSCALE(hud_pos_y - hudSize+HUD_OFFSET + BORDER);
     horiz_pos = WINSCALE(hud_pos_x - hudSize+HUD_OFFSET - BORDER);
@@ -488,7 +488,7 @@ static void Paint_HUD_items(int hud_pos_x, int hud_pos_y)
 	    width = XTextWidth(gameFont, str, len);
 	    rd.drawString(dpy, drawPixmap, gameGC,
 			  horiz_pos - ITEM_SIZE - BORDER - width,
-			  vert_pos + ITEM_SIZE/2 + gameFont->ascent/2,
+			  vert_pos + ITEM_SIZE/2 + gameFont.ascent/2,
 			  str, len);
 
 	    maxWidth = Math.max(maxWidth, width + BORDER + ITEM_SIZE);
@@ -546,7 +546,7 @@ void Paint_HUD(void)
 		    (int) (ext_view_height / 2 - 100 * tsin(heading)));
 
     if (hudRadarEnemyColor || hudRadarOtherColor) {
-	double hudRadarMapScale = (double) Setup->width / (double) 256;
+	double hudRadarMapScale = (double) Setup.width / (double) 256;
 	Paint_hudradar(
 	    hudRadarScale,
 	    hudRadarLimit * (active_view_width / 2) * hudRadarScale
@@ -619,7 +619,7 @@ void Paint_HUD(void)
 	rd.drawString(dpy, drawPixmap, gameGC,
 		    WINSCALE(hud_pos_x + hudSize-HUD_OFFSET+BORDER),
 		    WINSCALE(hud_pos_y + hudSize-HUD_OFFSET+BORDER)
-				+ gameFont->ascent,
+				+ gameFont.ascent,
 		    str, (int)strlen(str));
 	if (numItems[ITEM_TANK]) {
 	    if (fuelCurrent == 0)
@@ -629,7 +629,7 @@ void Paint_HUD(void)
 	    rd.drawString(dpy, drawPixmap, gameGC,
 			  WINSCALE(hud_pos_x + hudSize-HUD_OFFSET + BORDER),
 			  WINSCALE(hud_pos_y + hudSize-HUD_OFFSET + BORDER)
-			  + gameFont->descent + 2*gameFont->ascent,
+			  + gameFont.descent + 2*gameFont.ascent,
 			  str, (int)strlen(str));
 	}
     }
@@ -644,22 +644,22 @@ void Paint_HUD(void)
 	for (i = 0, j = 0; i < MAX_SCORE_OBJECTS; i++) {
 	    score_object_t*	sobj
 		= &score_objects[(i+score_object)%MAX_SCORE_OBJECTS];
-	    if (sobj->hud_msg_len > 0) {
-		if (sobj->hud_msg_width == -1)
-		    sobj->hud_msg_width = 
+	    if (sobj.hud_msg_len > 0) {
+		if (sobj.hud_msg_width == -1)
+		    sobj.hud_msg_width =
 			XTextWidth(gameFont, 
-				   sobj->hud_msg, 
-				   sobj->hud_msg_len);
+				   sobj.hud_msg,
+				   sobj.hud_msg_len);
 		if (j == 0 &&
-		    sobj->hud_msg_width > WINSCALE(2*hudSize-HUD_OFFSET*2) &&
+		    sobj.hud_msg_width > WINSCALE(2*hudSize-HUD_OFFSET*2) &&
 		    (did_fuel || hudVLineColor))
 		    ++j;
 		rd.drawString(dpy, drawPixmap, gameGC,
-			      WINSCALE(hud_pos_x) - sobj->hud_msg_width/2,
+			      WINSCALE(hud_pos_x) - sobj.hud_msg_width/2,
 			      WINSCALE(hud_pos_y + hudSize-HUD_OFFSET + BORDER)
-			      + gameFont->ascent
-			      + j * (gameFont->ascent + gameFont->descent),
-			      sobj->hud_msg, sobj->hud_msg_len);
+			      + gameFont.ascent
+			      + j * (gameFont.ascent + gameFont.descent),
+			      sobj.hud_msg, sobj.hud_msg_len);
 		j++;
 	    }
 	}
@@ -672,7 +672,7 @@ void Paint_HUD(void)
 			  WINSCALE(hud_pos_x - hudSize+HUD_OFFSET - BORDER)
 			  - size,
 			  WINSCALE(hud_pos_y - hudSize+HUD_OFFSET - BORDER)
-			  - gameFont->descent,
+			  - gameFont.descent,
 			  str, (int)strlen(str));
 	}
 
@@ -682,7 +682,7 @@ void Paint_HUD(void)
 		      WINSCALE(hud_pos_x - hudSize+HUD_OFFSET-BORDER)
 		      - XTextWidth(gameFont, mods, modlen),
 		      WINSCALE(hud_pos_y + hudSize-HUD_OFFSET+BORDER)
-		      + gameFont->ascent,
+		      + gameFont.ascent,
 		      mods, (int)strlen(mods));
 
 	if (autopilotLight) {
@@ -691,7 +691,7 @@ void Paint_HUD(void)
 	    rd.drawString(dpy, drawPixmap, gameGC,
 			  WINSCALE(hud_pos_x) - text_width/2,
 			  WINSCALE(hud_pos_y - hudSize+HUD_OFFSET - BORDER)
-			  - gameFont->descent * 2 - gameFont->ascent,
+			  - gameFont.descent * 2 - gameFont.ascent,
 			  autopilot, sizeof(autopilot)-1);
 	}
     }
@@ -739,16 +739,16 @@ void Paint_messages(void)
     int		i, x, y, top_y, bot_y, width;
     size_t	len;
     const int	BORDER = 10,
-		SPACING = messageFont->ascent+messageFont->descent+1;
+		SPACING = messageFont.ascent+messageFont.descent+1;
     message_t	*msg;
     int		last_msg_index = 0, msg_color;
 
-    top_y = BORDER + messageFont->ascent;
-    bot_y = WINSCALE(ext_view_height) - messageFont->descent - BORDER;
+    top_y = BORDER + messageFont.ascent;
+    bot_y = WINSCALE(ext_view_height) - messageFont.descent - BORDER;
 
     /* get number of player messages */
     while (last_msg_index < maxMessages
-	   && TalkMsg[last_msg_index]->len != 0)
+	   && TalkMsg[last_msg_index].len != 0)
 	last_msg_index++;
     last_msg_index--; /* make it an index */
 
@@ -757,7 +757,7 @@ void Paint_messages(void)
 	    msg = TalkMsg[i];
 	else
 	    msg = GameMsg[i - maxMessages];
-	if (msg->len == 0)
+	if (msg.len == 0)
 	    continue;
 
 	/*
@@ -765,21 +765,21 @@ void Paint_messages(void)
 	 * of a message if it is not drawn "flashed" (not in oldMessagesColor)
 	 * anymore.
 	 */
-	if ((msg->lifeTime -= timePerFrame) <= 0.0) {
-	    msg->txt[0] = '\0';
-	    msg->len = 0;
-	    msg->lifeTime = 0.0;
+	if ((msg.lifeTime -= timePerFrame) <= 0.0) {
+	    msg.txt[0] = '\0';
+	    msg.len = 0;
+	    msg.lifeTime = 0.0;
 	    continue;
 	}
 
-	if (msg->lifeTime <= MSG_FLASH_TIME)
+	if (msg.lifeTime <= MSG_FLASH_TIME)
 	    msg_color = oldMessagesColor;
 	else {
 	    /* If paused, don't bother to paint messages in mscScan* colors. */
-	    if (self && strchr("P", self->mychar))
+	    if (self && strchr("P", self.mychar))
 		msg_color = messagesColor;
 	    else {
-		switch (msg->bmsinfo) {
+		switch (msg.bmsinfo) {
 		case BmsBall:	msg_color = msgScanBallColor;	break;
 		case BmsSafe:	msg_color = msgScanSafeColor;	break;
 		case BmsCover:	msg_color = msgScanCoverColor;	break;
@@ -790,13 +790,13 @@ void Paint_messages(void)
 	}
 
 	/* kps ugly hack */
-	if (newbie && msg->txt) {
-	    const char *help = "[*Newbie help*]";
-	    size_t sz = strlen(msg->txt);
+	if (newbie && msg.txt) {
+	    String help = "[*Newbie help*]";
+	    size_t sz = strlen(msg.txt);
 	    size_t hsz = strlen(help);
 
 	    if (sz > hsz
-		&& !strcmp(help, &msg->txt[sz - hsz]))
+		&& !strcmp(help, &msg.txt[sz - hsz]))
 		msg_color = WHITE;
 	}
 
@@ -814,16 +814,16 @@ void Paint_messages(void)
 	    y = bot_y;
 	    bot_y -= SPACING;
 	}
-	len = charsPerSecond * (MSG_LIFE_TIME - msg->lifeTime);
-	len = Math.min(msg->len, len);
+	len = charsPerSecond * (MSG_LIFE_TIME - msg.lifeTime);
+	len = Math.min(msg.len, len);
 
 	{
 	    XSetForeground(dpy, messageGC, colors[msg_color].pixel);
 	    rd.drawString(dpy, drawPixmap, messageGC, x, y,
-			  msg->txt, (int)len);
+			  msg.txt, (int)len);
 	}
 
-	width = XTextWidth(messageFont, msg->txt, (int)Math.min(len, msg->len));
+	width = XTextWidth(messageFont, msg.txt, (int)Math.min(len, msg.len));
     }
 }
 
@@ -843,7 +843,7 @@ void Paint_recording(void)
     len = strlen(buf);
     w = XTextWidth(gameFont, buf, len);
     x = WINSCALE(ext_view_width) - 10 - w;
-    y = 10 + gameFont->ascent;
+    y = 10 + gameFont.ascent;
     XDrawString(dpy, drawPixmap, gameGC, x, y, buf, len);
 }
 
@@ -861,7 +861,7 @@ void Paint_HUD_values(void)
     len = strlen(buf);
     w = XTextWidth(gameFont, buf, len);
     x = WINSCALE(ext_view_width) - 10 - w;
-    y = 200 + gameFont->ascent;
+    y = 200 + gameFont.ascent;
     rd.drawString(dpy, drawPixmap, gameGC, x, y, buf, len);
 }
 

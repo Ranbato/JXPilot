@@ -55,7 +55,7 @@ static void Selection_paste(Window win, unsigned prop, int Delete)
             XFree(data);
             return;
         }
-        if (Talk_paste((char*)data, nitems, False) == 0)
+        if (Talk_paste((String )data, nitems, False) == 0)
 	   /* talk window doesn't accept text anymore */
 	    return;
 	else
@@ -100,39 +100,39 @@ static void Selection_send(const XSelectionRequestEvent *rq)
 
     ev.xselection.type = SelectionNotify;
     ev.xselection.property = None;
-    ev.xselection.display = rq->display;
-    ev.xselection.requestor = rq->requestor;
-    ev.xselection.selection = rq->selection;
-    ev.xselection.target = rq->target;
-    ev.xselection.time = rq->time;
+    ev.xselection.display = rq.display;
+    ev.xselection.requestor = rq.requestor;
+    ev.xselection.selection = rq.selection;
+    ev.xselection.target = rq.target;
+    ev.xselection.time = rq.time;
 
-    if (rq->target == xa_targets) {
+    if (rq.target == xa_targets) {
         target_list[0] = (Atom32) xa_targets;
         target_list[1] = (Atom32) XA_STRING;
-        XChangeProperty(dpy, rq->requestor, rq->property, rq->target,
+        XChangeProperty(dpy, rq.requestor, rq.property, rq.target,
                         (8 * sizeof(target_list[0])), PropModeReplace,
-                        (unsigned char *)target_list,
+                        (unsigned String )target_list,
                         (sizeof(target_list) / sizeof(target_list[0])));
-        ev.xselection.property = rq->property;
+        ev.xselection.property = rq.property;
     }
-    else if (rq->target == XA_STRING) {
-	XChangeProperty(dpy, rq->requestor, rq->property,
-			rq->target, 8, PropModeReplace,
-			(unsigned char *) selection.txt, (int)selection.len);
-	ev.xselection.property = rq->property;
+    else if (rq.target == XA_STRING) {
+	XChangeProperty(dpy, rq.requestor, rq.property,
+			rq.target, 8, PropModeReplace,
+			(unsigned String ) selection.txt, (int)selection.len);
+	ev.xselection.property = rq.property;
     }
-    XSendEvent(dpy, rq->requestor, False, 0, &ev);
+    XSendEvent(dpy, rq.requestor, False, 0, &ev);
 }
 
 void SelectionNotify_event(XEvent *event)
 {
-    Selection_paste(event->xselection.requestor,
-		    event->xselection.property, True);
+    Selection_paste(event.xselection.requestor,
+		    event.xselection.property, True);
 }
 
 void SelectionRequest_event(XEvent *event)
 {
-    Selection_send(&(event->xselectionrequest));
+    Selection_send(&(event.xselectionrequest));
 }
 
 void MapNotify_event(XEvent *event)
@@ -160,9 +160,9 @@ int ClientMessage_event(XEvent *event)
 {
     XClientMessageEvent	*cmev;
     cmev = (XClientMessageEvent *)event;
-    if (cmev->message_type == ProtocolAtom
-	&& cmev->format == 32
-	&& (unsigned)cmev->data.l[0] == KillAtom) {
+    if (cmev.message_type == ProtocolAtom
+	&& cmev.format == 32
+	&& (unsigned)cmev.data.l[0] == KillAtom) {
         XDestroyWindow(dpy, topWindow);
 	XSync(dpy, True);
 	printf("Quit\n");
@@ -213,15 +213,15 @@ void ConfigureNotify_event(XEvent *event)
        size has not changed then we do not need to destroy
        and resize widgets */
     
-    conf = &(event->xconfigure);
+    conf = &(event.xconfigure);
     
-    if (((unsigned) conf->width != conf_width) || 
-	((unsigned) conf->height != conf_height))
+    if (((unsigned) conf.width != conf_width) ||
+	((unsigned) conf.height != conf_height))
       {
-	Resize(conf->window, (unsigned)conf->width, (unsigned)conf->height);  
+	Resize(conf.window, (unsigned)conf.width, (unsigned)conf.height);
 	
-	conf_height = (unsigned)conf->height;
-	conf_width = (unsigned)conf->width;	
+	conf_height = (unsigned)conf.height;
+	conf_width = (unsigned)conf.width;
       }
     else
       {
@@ -242,15 +242,15 @@ void KeyChanged_event(XEvent *event)
 	    return;
     }
 #endif
-    if (event->xkey.window == topWindow)
+    if (event.xkey.window == topWindow)
         Key_event(event);
-    else if (event->xkey.window == talkWindow) {
-        if (event->type == KeyPress) {
+    else if (event.xkey.window == talkWindow) {
+        if (event.type == KeyPress) {
 	    talk_key_repeating = 1;
 	    gettimeofday(&talk_key_repeat_time, NULL);
 	    talk_key_repeat_event = *event;
 	}
-	else if (talk_key_repeating && event->xkey.keycode ==
+	else if (talk_key_repeating && event.xkey.keycode ==
 		 talk_key_repeat_event.xkey.keycode)
 	    talk_key_repeating = 0;
 
@@ -263,30 +263,30 @@ void KeyChanged_event(XEvent *event)
 
 void ButtonPress_event(XEvent *event)
 {
-    if (event->xbutton.window == drawWindow
-	|| event->xbutton.window == talkWindow) {
+    if (event.xbutton.window == drawWindow
+	|| event.xbutton.window == talkWindow) {
         if (clData.pointerControl
 	    && !clData.talking
-	    && event->xbutton.button <= MAX_POINTER_BUTTONS)
-	    Pointer_button_pressed((int)event->xbutton.button);
+	    && event.xbutton.button <= MAX_POINTER_BUTTONS)
+	    Pointer_button_pressed((int)event.xbutton.button);
 
 	return;
     }
     if (Widget_event(event) != 0)
         return;
-    Expose_button_window(BLACK, event->xbutton.window);
+    Expose_button_window(BLACK, event.xbutton.window);
 }
 
 void MotionNotify_event(XEvent *event)
 {
-    if (event->xmotion.window == drawWindow) {
+    if (event.xmotion.window == drawWindow) {
         if (clData.pointerControl) {
 	    if (!clData.talking) {
-	        if (!event->xmotion.send_event)
-		    mouseMovement += event->xmotion.x - mousePosition.x;
+	        if (!event.xmotion.send_event)
+		    mouseMovement += event.xmotion.x - mousePosition.x;
 	    }
-	    mousePosition.x = event->xmotion.x;
-	    mousePosition.y = event->xmotion.y;
+	    mousePosition.x = event.xmotion.x;
+	    mousePosition.y = event.xmotion.y;
 	}
     } else
         Widget_event(event);
@@ -294,13 +294,13 @@ void MotionNotify_event(XEvent *event)
 
 int ButtonRelease_event(XEvent *event)
 {
-    if (event->xbutton.window == drawWindow
-	|| event->xbutton.window == talkWindow) {
+    if (event.xbutton.window == drawWindow
+	|| event.xbutton.window == talkWindow) {
 
         if (clData.pointerControl
 	    && !clData.talking
-	    && event->xbutton.button <= MAX_POINTER_BUTTONS)
-	    Pointer_button_released((int)event->xbutton.button);
+	    && event.xbutton.button <= MAX_POINTER_BUTTONS)
+	    Pointer_button_released((int)event.xbutton.button);
 
 	return 0;
     }
@@ -313,44 +313,44 @@ int ButtonRelease_event(XEvent *event)
 	return 0;
     }
     Expose_button_window(buttonColor ? buttonColor: RED,
-			 event->xbutton.window);
-    if (event->xbutton.window == about_close_b)
+			 event.xbutton.window);
+    if (event.xbutton.window == about_close_b)
 	About(about_close_b);
-    else if (event->xbutton.window == about_next_b)
+    else if (event.xbutton.window == about_next_b)
 	About(about_next_b);
-    else if (event->xbutton.window == about_prev_b)
+    else if (event.xbutton.window == about_prev_b)
 	About(about_prev_b);
     return 0;
 }
 
 void Expose_event(XEvent *event)
 {
-    if (event->xexpose.window == playersWindow) {
-        if (event->xexpose.count == 0) {
+    if (event.xexpose.window == playersWindow) {
+        if (event.xexpose.count == 0) {
 	    players_exposed = true;
 	    scoresChanged++;
 	}
     }
-    else if (event->xexpose.window == aboutWindow) {
-	if (event->xexpose.count == 0)
+    else if (event.xexpose.window == aboutWindow) {
+	if (event.xexpose.count == 0)
 	    Expose_about_window();
     }
-    else if (event->xexpose.window == radarWindow) {
-	if (event->xexpose.count <= 1)
+    else if (event.xexpose.window == radarWindow) {
+	if (event.xexpose.count <= 1)
 	    radar_exposures = 1;
 	else
 	    radar_exposures++;
     }
-    else if (event->xexpose.window == talkWindow) {
-	if (event->xexpose.count == 0) {
+    else if (event.xexpose.window == talkWindow) {
+	if (event.xexpose.count == 0) {
 	    Talk_event(event);
 	    if (!clData.talking)
 		talk_key_repeating = 0;
 	}
     }
     else if (Widget_event(event) == 0) {
-	if (event->xexpose.count == 0)
+	if (event.xexpose.count == 0)
 	    Expose_button_window(buttonColor ? buttonColor : RED,
-				 event->xexpose.window);
+				 event.xexpose.window);
     }
 }

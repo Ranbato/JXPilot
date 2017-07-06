@@ -37,41 +37,41 @@ static void Compute_global_gravity(void)
 	theta = (options.gravityAngle * Math.PI) / 180.0;
 	xforce = cos(theta) * options.gravity;
 	yforce = sin(theta) * options.gravity;
-	for (xi = 0; xi < world->x; xi++) {
-	    grav = world->gravity[xi];
+	for (xi = 0; xi < world.x; xi++) {
+	    grav = world.gravity[xi];
 
-	    for (yi = 0; yi < world->y; yi++, grav++) {
-		grav->x = xforce;
-		grav->y = yforce;
+	    for (yi = 0; yi < world.y; yi++, grav++) {
+		grav.x = xforce;
+		grav.y = yforce;
 	    }
 	}
     } else {
-	for (xi = 0; xi < world->x; xi++) {
-	    grav = world->gravity[xi];
+	for (xi = 0; xi < world.x; xi++) {
+	    grav = world.gravity[xi];
 	    dx = (xi - options.gravityPoint.x) * BLOCK_SZ;
 	    dx = WRAP_DX(dx);
 
-	    for (yi = 0; yi < world->y; yi++, grav++) {
+	    for (yi = 0; yi < world.y; yi++, grav++) {
 		dy = (yi - options.gravityPoint.y) * BLOCK_SZ;
 		dy = WRAP_DX(dy);
 
 		if (dx == 0 && dy == 0) {
-		    grav->x = 0.0;
-		    grav->y = 0.0;
+		    grav.x = 0.0;
+		    grav.y = 0.0;
 		    continue;
 		}
 		strength = options.gravity / LENGTH(dx, dy);
 		if (options.gravityClockwise) {
-		    grav->x =  dy * strength;
-		    grav->y = -dx * strength;
+		    grav.x =  dy * strength;
+		    grav.y = -dx * strength;
 		}
 		else if (options.gravityAnticlockwise) {
-		    grav->x = -dy * strength;
-		    grav->y =  dx * strength;
+		    grav.x = -dy * strength;
+		    grav.y =  dx * strength;
 		}
 		else {
-		    grav->x =  dx * strength;
-		    grav->y =  dy * strength;
+		    grav.x =  dx * strength;
+		    grav.y =  dy * strength;
 		}
 	    }
 	}
@@ -106,21 +106,21 @@ static void Compute_local_gravity(void)
     Compute_grav_tab(grav_tab);
 
     min_xi = 0;
-    max_xi = world->x - 1;
+    max_xi = world.x - 1;
     min_yi = 0;
-    max_yi = world->y - 1;
-    if (world->rules->mode.get( WRAP_PLAY)) {
-	min_xi -= Math.min(GRAV_RANGE, world->x);
-	max_xi += Math.min(GRAV_RANGE, world->x);
-	min_yi -= Math.min(GRAV_RANGE, world->y);
-	max_yi += Math.min(GRAV_RANGE, world->y);
+    max_yi = world.y - 1;
+    if (world.rules.mode.get( WRAP_PLAY)) {
+	min_xi -= Math.min(GRAV_RANGE, world.x);
+	max_xi += Math.min(GRAV_RANGE, world.x);
+	min_yi -= Math.min(GRAV_RANGE, world.y);
+	max_yi += Math.min(GRAV_RANGE, world.y);
     }
     for (i = 0; i < Num_gravs(); i++) {
 	grav_t *g = Grav_by_index(i);
 
-	gx = CLICK_TO_BLOCK(g->pos.cx);
-	gy = CLICK_TO_BLOCK(g->pos.cy);
-	force = g->force;
+	gx = CLICK_TO_BLOCK(g.pos.cx);
+	gy = CLICK_TO_BLOCK(g.pos.cy);
+	force = g.force;
 
 	if ((first_xi = gx - GRAV_RANGE) < min_xi)
 	    first_xi = min_xi;
@@ -131,9 +131,9 @@ static void Compute_local_gravity(void)
 	if ((last_yi = gy + GRAV_RANGE) > max_yi)
 	    last_yi = max_yi;
 
-	gtype = g->type;
+	gtype = g.type;
 
-	mod_xi = (first_xi < 0) ? (first_xi + world->x) : first_xi;
+	mod_xi = (first_xi < 0) ? (first_xi + world.x) : first_xi;
 	dx = gx - first_xi;
 	fx = force;
 	for (xi = first_xi; xi <= last_xi; xi++, dx--) {
@@ -143,9 +143,9 @@ static void Compute_local_gravity(void)
 	    } else
 		ax = dx;
 
-	    mod_yi = (first_yi < 0) ? (first_yi + world->y) : first_yi;
+	    mod_yi = (first_yi < 0) ? (first_yi + world.y) : first_yi;
 	    dy = gy - first_yi;
-	    grav = &world->gravity[mod_xi][mod_yi];
+	    grav = &world.gravity[mod_xi][mod_yi];
 	    tab = grav_tab[ax];
 	    fy = force;
 	    for (yi = first_yi; yi <= last_yi; yi++, dy--) {
@@ -158,40 +158,40 @@ static void Compute_local_gravity(void)
 
 		    v = &tab[ay];
 		    if (gtype == CWISE_GRAV || gtype == ACWISE_GRAV) {
-			grav->x -= fy * v->y;
-			grav->y += fx * v->x;
+			grav.x -= fy * v.y;
+			grav.y += fx * v.x;
 		    } else if (gtype == UP_GRAV || gtype == DOWN_GRAV)
-			grav->y += force * v->x;
+			grav.y += force * v.x;
 		    else if (gtype == RIGHT_GRAV || gtype == LEFT_GRAV)
-			grav->x += force * v->y;
+			grav.x += force * v.y;
 		    else {
-			grav->x += fx * v->x;
-			grav->y += fy * v->y;
+			grav.x += fx * v.x;
+			grav.y += fy * v.y;
 		    }
 		}
 		else {
 		    if (gtype == UP_GRAV || gtype == DOWN_GRAV)
-			grav->y += force;
+			grav.y += force;
 		    else if (gtype == LEFT_GRAV || gtype == RIGHT_GRAV)
-			grav->x += force;
+			grav.x += force;
 		}
 		mod_yi++;
 		grav++;
-		if (mod_yi >= world->y) {
+		if (mod_yi >= world.y) {
 		    mod_yi = 0;
-		    grav = world->gravity[mod_xi];
+		    grav = world.gravity[mod_xi];
 		}
 	    }
-	    if (++mod_xi >= world->x)
+	    if (++mod_xi >= world.x)
 		mod_xi = 0;
 	}
     }
     /*
-     * We may want to free the world->gravity memory here
+     * We may want to free the world.gravity memory here
      * as it is not used anywhere else.
-     * e.g.: free(world->gravity);
-     *       world->gravity = NULL;
-     *       world->NumGravs = 0;
+     * e.g.: free(world.gravity);
+     *       world.gravity = NULL;
+     *       world.NumGravs = 0;
      * Some of the more modern maps have quite a few gravity symbols.
      */
 }

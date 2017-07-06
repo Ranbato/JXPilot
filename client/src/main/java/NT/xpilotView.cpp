@@ -116,7 +116,7 @@ BOOL CXpilotView::PreCreateWindow(CREATESTRUCT & cs)
 /////////////////////////////////////////////////////////////////////////////
 // CXpilotView drawing
 //extern "C" void Make_table(void);
-CString *CheckFileOpts(char *file, int *argc, char **argv)
+CString *CheckFileOpts(String file, int *argc, char **argv)
 {
     FILE *fp;
     if (_access(file, 2) != 0)
@@ -143,14 +143,14 @@ void CXpilotView::OnDraw(CDC * pDC)
     if (isVirgin) {
 	int ret;
 	int argc = 1;
-	char *argv[256];
+	String argv[256];
 	char cs[1024];
 
 	CString *ccs[256];
 	int args = 0;
 
 	isVirgin = FALSE;
-	GetParentFrame()->SetWindowText("XPilot");
+	GetParentFrame().SetWindowText("XPilot");
 	strncpy(cs, theApp.m_lpCmdLine, 1024);
 
 	argv[0] = "xpilot";
@@ -161,7 +161,7 @@ void CXpilotView::OnDraw(CDC * pDC)
 		args++;
 	    argc++;
 	    while ((argv[argc] =
-		    strtok(NULL, "\t\n\r\0")) != (char *) NULL) {
+		    strtok(NULL, "\t\n\r\0")) != (String ) NULL) {
 		if ((ccs[args] =
 		     CheckFileOpts(argv[1], &argc, argv)) != NULL)
 		    args++;
@@ -177,10 +177,10 @@ void CXpilotView::OnDraw(CDC * pDC)
 	    delete ccs[i];
 
 	if (!ret) {
-		GetParentFrame()->MoveWindow(0, 0, top_width, top_height);
-		GetParentFrame()->CenterWindow();
+		GetParentFrame().MoveWindow(0, 0, top_width, top_height);
+		GetParentFrame().CenterWindow();
 	    ret =
-		WSAAsyncSelect(Net_fd(), this->m_hWnd, WSA_EVENT,
+		WSAAsyncSelect(Net_fd(), this.m_hWnd, WSA_EVENT,
 			       FD_CLOSE | FD_READ);
 	    if (ret) {
 		char s[256];
@@ -191,7 +191,7 @@ void CXpilotView::OnDraw(CDC * pDC)
 	    }
 	    Net_input();
 	    ret =
-		WSAAsyncSelect(Net_fd(), this->m_hWnd, WSA_EVENT,
+		WSAAsyncSelect(Net_fd(), this.m_hWnd, WSA_EVENT,
 			       FD_CLOSE | FD_READ);
 
 	}
@@ -214,7 +214,7 @@ void CXpilotView::Dump(CDumpContext & dc) const
 
 CXpilotDoc *CXpilotView::GetDocument()	// non-debug version is inline
 {
-    ASSERT(m_pDocument->IsKindOf(RUNTIME_CLASS(CXpilotDoc)));
+    ASSERT(m_pDocument.IsKindOf(RUNTIME_CLASS(CXpilotDoc)));
     return (CXpilotDoc *) m_pDocument;
 }
 #endif				//_DEBUG
@@ -225,7 +225,7 @@ CXpilotDoc *CXpilotView::GetDocument()	// non-debug version is inline
 void CXpilotView::OnInitialUpdate()
 {
     CView::OnInitialUpdate();
-    InitWinX(this->m_hWnd);
+    InitWinX(this.m_hWnd);
 }
 
 BOOL CXpilotView::DestroyWindow()
@@ -251,7 +251,7 @@ void CXpilotView::OnSize(UINT /*nType */ , int cx, int cy)
 
 void CXpilotView::OnUpdateFileNew(CCmdUI * pCmdUI)
 {
-    pCmdUI->Enable();
+    pCmdUI.Enable();
 }
 
 void CXpilotView::OnFileNew()
@@ -278,7 +278,7 @@ int CXpilotView::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	return -1;
 
     CWnd *pWnd = GetParent();
-    GetParentFrame()->SetWindowText("XPilot");
+    GetParentFrame().SetWindowText("XPilot");
 
     return (0);
 }

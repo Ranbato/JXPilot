@@ -39,12 +39,12 @@ extern int 	maxVolume;		/* maximum volume (in percent) */
 extern bool 	sound;			/* option 'sound' */
 
 int  Handle_audio(int type, int volume);
-void audioInit(char *display);
+void audioInit(String display);
 void audioCleanup(void);
 void audioEvents(void);
 void audioUpdate(void);
-int  audioDeviceInit(char *display);
-void audioDevicePlay(char *filename, int type, int volume, void **priv);
+int  audioDeviceInit(String display);
+void audioDevicePlay(String filename, int type, int volume, void **priv);
 void audioDeviceEvents(void);
 void audioDeviceUpdate(void);
 void audioDeviceFree(void *priv);

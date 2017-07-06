@@ -109,9 +109,9 @@ struct cell_node {
     short		id;		/* For shots => id of player */	\
     uint16_t		team;		/* Team of player or cannon */	\
 /* Object position pos must only be changed with the proper functions! */ \
-    clpos_t		pos;		/* World coordinates */		\
-    clpos_t		prevpos;	/* previous position */		\
-    clpos_t		extmove;	/* For collision detection */	\
+    Click 		pos;		/* World coordinates */		\
+    Click 		prevpos;	/* previous position */		\
+    Click 		extmove;	/* For collision detection */	\
     float		wall_time;	/* bounce/crash time within frame */ \
     Point2D		vel;		/* speed in x,y */		\
     Point2D		acc;		/* acceleration in x,y */	\

@@ -203,7 +203,7 @@ private:
 	inline void SetMaxX(int x);
 	inline void SetMaxY(int y);
 	void ReadHeader(CArchive& ar);
-	char *ReadString(CArchive& ar);
+	String ReadString(CArchive& ar);
 	void ReadFont(CArchive& ar, char **fontname, int *fontsize);
 	void FreeFrames(void);
 	void FreeShapes(struct frame *f);

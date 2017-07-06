@@ -61,14 +61,14 @@ static int pow2_ceil(int t)
 static void to_screen(GLWidget *radar, int *x, int *y, int from_w, int from_h)
 {
     float fx, fy, sx, sy;
-    SDL_Rect rb = radar->bounds;
+    SDL_Rect rb = radar.bounds;
 
     fx = *x * rb.w / from_w;
     fy = *y * rb.h / from_h;
 
     if (instruments.slidingRadar) {
-	sx = selfPos.x * rb.w / Setup->width;
-	sy = selfPos.y * rb.h / Setup->height;
+	sx = selfPos.x * rb.w / Setup.width;
+	sy = selfPos.y * rb.h / Setup.height;
 	fx = fx - sx;
 	fy = fy - sy;
 	if (fx < -rb.w/2)
@@ -91,14 +91,14 @@ static void Radar_paint_border(GLWidget *radar)
 {
     glBegin(GL_LINE_LOOP);
     glColor4ub(0, 0, 0, 0xff);
-    glVertex2i(radar->bounds.x, radar->bounds.y + radar->bounds.h);
+    glVertex2i(radar.bounds.x, radar.bounds.y + radar.bounds.h);
     glColor4ub(0, 0x00, 0x90, 0xff);
-    glVertex2i(radar->bounds.x, radar->bounds.y);
+    glVertex2i(radar.bounds.x, radar.bounds.y);
     glColor4ub(0, 0, 0, 0xff);
-    glVertex2i(radar->bounds.x + radar->bounds.w - 1, radar->bounds.y);
+    glVertex2i(radar.bounds.x + radar.bounds.w - 1, radar.bounds.y);
     glColor4ub(0, 0x00, 0x90, 0xff);
-    glVertex2i(radar->bounds.x + radar->bounds.w - 1,
-	       radar->bounds.y + radar->bounds.h);
+    glVertex2i(radar.bounds.x + radar.bounds.w - 1,
+	       radar.bounds.y + radar.bounds.h);
     glEnd();
 }
 
@@ -109,10 +109,10 @@ static void Radar_paint_border(GLWidget *radar)
 static void Radar_paint_block(GLWidget *radar, SDL_Surface *s, int xi, int yi, color_t color)
 {
     SDL_Rect block;
-    block.x = xi * radar->bounds.w / Setup->x;
-    block.y = radar->bounds.h - (yi + 1) * radar->bounds.h / Setup->y;
-    block.w = (xi + 1) * radar->bounds.w / Setup->x - block.x;
-    block.h = radar->bounds.h - yi * radar->bounds.h / Setup->y - block.y;
+    block.x = xi * radar.bounds.w / Setup.x;
+    block.y = radar.bounds.h - (yi + 1) * radar.bounds.h / Setup.y;
+    block.w = (xi + 1) * radar.bounds.w / Setup.x - block.x;
+    block.h = radar.bounds.h - yi * radar.bounds.h / Setup.y - block.y;
 
     SDL_FillRect(s, &block, RGBA(color));
 }
@@ -155,10 +155,10 @@ static void Radar_paint_world_blocks(GLWidget *radar, SDL_Surface *s)
     SDL_FillRect(s, NULL, RGBA(bgRadarColorValue));
 
     /* Scan the map and paint the blocks */
-    for (xi = 0; xi < Setup->x; xi++) {
-        for (yi = 0; yi < Setup->y; yi++) {
+    for (xi = 0; xi < Setup.x; xi++) {
+        for (yi = 0; yi < Setup.y; yi++) {
 
-            type = Setup->map_data[xi * Setup->y + yi];
+            type = Setup.map_data[xi * Setup.y + yi];
 
             if (type >= SETUP_TARGET
                 && type < SETUP_TARGET + 10
@@ -175,16 +175,16 @@ static void Radar_paint_world_blocks(GLWidget *radar, SDL_Surface *s)
 
 }
 
-static void Compute_bounds_radar(ipos_t *min, ipos_t *max, const Rectangle *b)
+static void Compute_bounds_radar(Point  *min, Point  *max, const Rectangle *b)
 {
-    min->x = (0 - (b->x + b->w)) / Setup->width;
-    if (0 > b->x + b->w) min->x++;
-    max->x = (0 + Setup->width - b->x) / Setup->width;
-    if (0 + Setup->width < b->x) max->x--;
-    min->y = (0 - (b->y + b->h)) / Setup->height;
-    if (0 > b->y + b->h) min->y++;
-    max->y = (0 + Setup->height - b->y) / Setup->height;
-    if (0 + Setup->height < b->y) max->y--;
+    min.x = (0 - (b.x + b.w)) / Setup.width;
+    if (0 > b.x + b.w) min.x++;
+    max.x = (0 + Setup.width - b.x) / Setup.width;
+    if (0 + Setup.width < b.x) max.x--;
+    min.y = (0 - (b.y + b.h)) / Setup.height;
+    if (0 > b.y + b.h) min.y++;
+    max.y = (0 + Setup.height - b.y) / Setup.height;
+    if (0 + Setup.height < b.y) max.y--;
 }
 
 /*
@@ -194,7 +194,7 @@ static void Compute_bounds_radar(ipos_t *min, ipos_t *max, const Rectangle *b)
 static void Radar_paint_world_polygons(GLWidget *radar, SDL_Surface *s)
 {
     int i, j, xoff, yoff;
-    ipos_t min, max;
+    Point  min, max;
     Sint16 vx[MAX_VERTICES], vy[MAX_VERTICES];
     color_t color;
 
@@ -210,16 +210,16 @@ static void Radar_paint_world_polygons(GLWidget *radar, SDL_Surface *s)
 	for (xoff = min.x; xoff <= max.x; xoff++) {
 	    for (yoff = min.y; yoff <= max.y; yoff++) {
 
-		int x = polygons[i].points[0].x + xoff * Setup->width;
-		int y = -polygons[i].points[0].y + (1-yoff) * Setup->height;
-		vx[0] = (x * radar->bounds.w) / Setup->width;
-		vy[0] = (y * radar->bounds.h) / Setup->height;
+		int x = polygons[i].points[0].x + xoff * Setup.width;
+		int y = -polygons[i].points[0].y + (1-yoff) * Setup.height;
+		vx[0] = (x * radar.bounds.w) / Setup.width;
+		vy[0] = (y * radar.bounds.h) / Setup.height;
 
 		for (j = 1; j < polygons[i].num_points; j++) {
 		    x += polygons[i].points[j].x;
 		    y -= polygons[i].points[j].y;
-		    vx[j]= (x * radar->bounds.w) / Setup->width;
-		    vy[j] = (y * radar->bounds.h) / Setup->height;
+		    vx[j]= (x * radar.bounds.w) / Setup.width;
+		    vy[j] = (y * radar.bounds.h) / Setup.height;
 		}
 
 		color = polygon_styles[polygons[i].style].rgb;
@@ -269,7 +269,7 @@ static void Radar_paint_objects( GLWidget *radar )
 static void Radar_paint_self(GLWidget *radar)
 {
     int x, y, x2, y2;
-    SDL_Rect rb = radar->bounds;
+    SDL_Rect rb = radar.bounds;
 
     if (!selfVisible) return;
 
@@ -278,8 +278,8 @@ static void Radar_paint_self(GLWidget *radar)
 	/* the sliding radar seems to be off by roughly 1 pixel */
 	y = rb.y + rb.h/2 + 1;
     } else {
-	x = rb.x + selfPos.x * rb.w / Setup->width;
-	y = rb.y + rb.h - selfPos.y * rb.h / Setup->height;
+	x = rb.x + selfPos.x * rb.w / Setup.width;
+	y = rb.y + rb.h - selfPos.y * rb.h / Setup.height;
     }
     x2 = (int)(x + 8 * tcos(heading));
     y2 = (int)(y - 8 * tsin(heading));
@@ -298,7 +298,7 @@ static void Radar_paint_self(GLWidget *radar)
 static void Radar_paint_checkpoint(GLWidget *radar)
 {
     int x, y;
-    if (Setup->mode.get( TIMING)) {
+    if (Setup.mode.get( TIMING)) {
 	if (oldServer) {
 	    Check_pos_by_index(nextCheckPoint, &x, &y);
 	    x = x * BLOCK_SZ + BLOCK_SZ/2;
@@ -308,7 +308,7 @@ static void Radar_paint_checkpoint(GLWidget *radar)
 	    x = b.x + b.w/2;
 	    y = b.y + b.h/2;
 	}
-	to_screen(radar, &x, &y, Setup->width, Setup->height);
+	to_screen(radar, &x, &y, Setup.width, Setup.height);
 	
 	glColor4ub(0x50, 0x50, 0xff, 0xff);
 	glBegin(GL_QUADS);
@@ -326,14 +326,14 @@ static void move(Sint16 xrel,Sint16 yrel,Uint16 x,Uint16 y, void *data)
     char buf[40];
     SDL_Rect *b;
     
-    b = &(((GLWidget *)data)->bounds);
-    b->x += xrel;
-    b->y += yrel;
+    b = &(((GLWidget *)data).bounds);
+    b.x += xrel;
+    b.y += yrel;
     sprintf(buf, "%dx%d+%d+%d", 
 	    radar_bounds.w, 
 	    radar_bounds.h,
-	    b->x,
-	    b->y);
+	    b.x,
+	    b.y);
     Set_string_option(Find_option("radarGeometry"), buf, xp_option_origin_config);
 }
 
@@ -342,12 +342,12 @@ static void button( Uint8 button, Uint8 state , Uint16 x , Uint16 y, void *data 
     GLWidget *widget = (GLWidget *)data;
     if (state == SDL_PRESSED) {
     	if (button == 1) {
-    	    if (DelGLWidgetListItem( widget->list, widget ))
-	    	AppendGLWidgetList( widget->list, widget );
+    	    if (DelGLWidgetListItem( widget.list, widget ))
+	    	AppendGLWidgetList( widget.list, widget );
     	}
     	if (button == 2) {
-    	    if (DelGLWidgetListItem( widget->list, widget ))
-	    	PrependGLWidgetList( widget->list, widget );
+    	    if (DelGLWidgetListItem( widget.list, widget ))
+	    	PrependGLWidgetList( widget.list, widget );
 	}
     }
 }
@@ -360,9 +360,9 @@ static void Radar_init_texture(GLWidget *widget)
     glGenTextures(1, &radar_texture);
     glBindTexture(GL_TEXTURE_2D, radar_texture);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA,
-		 radar_surface->w, radar_surface->h,
+		 radar_surface.w, radar_surface.h,
                  0, GL_RGBA, GL_UNSIGNED_BYTE,
-		 radar_surface->pixels);
+		 radar_surface.pixels);
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER,
                     GL_NEAREST);
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,
@@ -373,8 +373,8 @@ static int Radar_init(GLWidget *widget)
 {
     radar_surface =
 	SDL_CreateRGBSurface(SDL_SWSURFACE | SDL_SRCALPHA,
-                             pow2_ceil(widget->bounds.w-1),
-			     pow2_ceil(widget->bounds.h-1), 32,
+                             pow2_ceil(widget.bounds.w-1),
+			     pow2_ceil(widget.bounds.h-1), 32,
                              RMASK, GMASK, BMASK, AMASK);
     if (!radar_surface) {
         error("Could not create radar surface: %s", SDL_GetError());
@@ -403,17 +403,17 @@ GLWidget *Init_RadarWidget(void)
         error("Failed to malloc in Init_RadarWidget");
 	return NULL;
     }
-    tmp->WIDGET     	= RADARWIDGET;
-    tmp->bounds.x   	= radar_bounds.x;
-    tmp->bounds.y   	= radar_bounds.y;
-    tmp->bounds.w   	= radar_bounds.w;
-    tmp->bounds.h   	= radar_bounds.h * RadarHeight / RadarWidth;
-    tmp->Draw	    	= Radar_paint;
-    tmp->Close	    	= Radar_cleanup;
-    tmp->button     	= button;
-    tmp->buttondata 	= tmp;
-    tmp->motion     	= move;
-    tmp->motiondata 	= tmp;
+    tmp.WIDGET     	= RADARWIDGET;
+    tmp.bounds.x   	= radar_bounds.x;
+    tmp.bounds.y   	= radar_bounds.y;
+    tmp.bounds.w   	= radar_bounds.w;
+    tmp.bounds.h   	= radar_bounds.h * RadarHeight / RadarWidth;
+    tmp.Draw	    	= Radar_paint;
+    tmp.Close	    	= Radar_cleanup;
+    tmp.button     	= button;
+    tmp.buttondata 	= tmp;
+    tmp.motion     	= move;
+    tmp.motiondata 	= tmp;
     
     if (Radar_init(tmp) != 0) {
 	free(tmp);
@@ -437,10 +437,10 @@ static void Radar_set_bounds(GLWidget *widget, int x, int y, int w, int h)
     radar_bounds.w = w;
     radar_bounds.h = h;
     if (widget != NULL) {
-	widget->bounds.x = x;
-	widget->bounds.y = y;
-	widget->bounds.w = w + 1;
-	widget->bounds.h = h * RadarHeight / RadarWidth + 1;
+	widget.bounds.x = x;
+	widget.bounds.y = y;
+	widget.bounds.w = w + 1;
+	widget.bounds.h = h * RadarHeight / RadarWidth + 1;
 	Radar_cleanup(widget);
 	Radar_init(widget);
     }
@@ -450,10 +450,10 @@ static void Radar_blit_world(SDL_Rect *sr, SDL_Rect *dr)
 {
     float tx1, ty1, tx2, ty2;
 
-    tx1 = (float)sr->x / radar_surface->w;
-    ty1 = (float)sr->y / radar_surface->h;
-    tx2 = ((float)sr->x + sr->w) / radar_surface->w;
-    ty2 = ((float)sr->y + sr->h) / radar_surface->h;
+    tx1 = (float)sr.x / radar_surface.w;
+    ty1 = (float)sr.y / radar_surface.h;
+    tx2 = ((float)sr.x + sr.w) / radar_surface.w;
+    ty2 = ((float)sr.y + sr.h) / radar_surface.h;
 
     glBindTexture(GL_TEXTURE_2D, radar_texture);
     glEnable(GL_TEXTURE_2D);
@@ -462,10 +462,10 @@ static void Radar_blit_world(SDL_Rect *sr, SDL_Rect *dr)
     glColor4ub(255, 255, 255, 255);
 
     glBegin(GL_QUADS);
-    glTexCoord2f(tx1, ty1); glVertex2i(dr->x, dr->y);
-    glTexCoord2f(tx2, ty1); glVertex2i(dr->x + dr->w, dr->y);
-    glTexCoord2f(tx2, ty2); glVertex2i(dr->x + dr->w, dr->y + dr->h);
-    glTexCoord2f(tx1, ty2); glVertex2i(dr->x, dr->y + dr->h);
+    glTexCoord2f(tx1, ty1); glVertex2i(dr.x, dr.y);
+    glTexCoord2f(tx2, ty1); glVertex2i(dr.x + dr.w, dr.y);
+    glTexCoord2f(tx2, ty2); glVertex2i(dr.x + dr.w, dr.y + dr.h);
+    glTexCoord2f(tx1, ty2); glVertex2i(dr.x, dr.y + dr.h);
     glEnd();
 
     glDisable(GL_BLEND);
@@ -479,13 +479,13 @@ static void Radar_paint( GLWidget *widget )
 {
     float xf, yf;
     
-    radar_bounds.x = ((GLWidget *)widget)->bounds.x;
-    radar_bounds.y = ((GLWidget *)widget)->bounds.y;
-    radar_bounds.w = ((GLWidget *)widget)->bounds.w-1;
-    radar_bounds.h = ((GLWidget *)widget)->bounds.h-1;
+    radar_bounds.x = ((GLWidget *)widget).bounds.x;
+    radar_bounds.y = ((GLWidget *)widget).bounds.y;
+    radar_bounds.w = ((GLWidget *)widget).bounds.w-1;
+    radar_bounds.h = ((GLWidget *)widget).bounds.h-1;
 
-    xf = (float)radar_bounds.w / (float)Setup->width;
-    yf = (float)radar_bounds.h / (float)Setup->height;
+    xf = (float)radar_bounds.w / (float)Setup.width;
+    yf = (float)radar_bounds.h / (float)Setup.height;
 
     if (instruments.slidingRadar) {
 
@@ -493,8 +493,8 @@ static void Radar_paint( GLWidget *widget )
         float xp, yp, xo, yo;
         SDL_Rect sr, dr;
 
-        xp = (float) (selfPos.x * radar_bounds.w) / Setup->width;
-        yp = (float) (selfPos.y * radar_bounds.h) / Setup->height;
+        xp = (float) (selfPos.x * radar_bounds.w) / Setup.width;
+        yp = (float) (selfPos.y * radar_bounds.h) / Setup.height;
         xo = (float) radar_bounds.w / 2;
         yo = (float) radar_bounds.h / 2;
         if (xo <= xp)
@@ -557,7 +557,7 @@ void Radar_show_target(int x, int y) {}
 
 void Radar_hide_target(int x, int y) {}
 
-static bool Set_geometry(xp_option_t *opt, const char *s)
+static bool Set_geometry(xp_option_t *opt, String s)
 {
     int x = 0, y = 0, w = 0, h = 0;
 
@@ -571,7 +571,7 @@ static bool Set_geometry(xp_option_t *opt, const char *s)
     return true;
 }
 
-static const char* Get_geometry(xp_option_t *opt)
+static const String  Get_geometry(xp_option_t *opt)
 {
     static char buf[40];
     sprintf(buf, "%dx%d+%d+%d", 

@@ -56,7 +56,7 @@ static bool audioIsEnabled(void)
     return true;
 }
 
-void audioInit(char *display)
+void audioInit(String display)
 {
     FILE           *fp;
     char            buf[512], *file, *soundstr, *ifile;
@@ -84,7 +84,7 @@ void audioInit(char *display)
 
 	for (i = 0; i < MAX_SOUNDS; i++)
 	    if (!strcmp(soundstr, soundNames[i])) {
-		size_t filename_ptrs_size = sizeof(char *) * MAX_RANDOM_SOUNDS;
+		size_t filename_ptrs_size = sizeof(String ) * MAX_RANDOM_SOUNDS;
 		size_t private_ptrs_size = sizeof(void *) * MAX_RANDOM_SOUNDS;
 
 		table[i].filenames = (char **)malloc(filename_ptrs_size);
@@ -98,7 +98,7 @@ void audioInit(char *display)
 		    else {
 			size_t filename_size = strlen(Conf_sounddir())
 					     + strlen(ifile) + 1;
-			table[i].filenames[j] = (char *)malloc(filename_size);
+			table[i].filenames[j] = (String )malloc(filename_size);
 			if (table[i].filenames[j] != NULL) {
 			    strcpy(table[i].filenames[j], Conf_sounddir());
 			    strcat(table[i].filenames[j], ifile);

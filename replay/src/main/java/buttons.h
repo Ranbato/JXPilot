@@ -25,7 +25,7 @@
 #define BUTTONS_H
 
 union button_image {
-    const char		*string;
+    String string;
     Pixmap		icon;
 };
 

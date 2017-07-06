@@ -52,7 +52,7 @@ static int itemsplit = -1;
  * vertical position it ended at.
  */
 int DrawShadowText(Display *display, Window w, GC gc,
-		   int x_border, int y_start, const char *str,
+		   int x_border, int y_start, String str,
 		   unsigned long fg, unsigned long bg)
 {
     XFontStruct		*font = XQueryFont(display, XGContextFromGC(gc));
@@ -68,7 +68,7 @@ int DrawShadowText(Display *display, Window w, GC gc,
 
     /* Start position */
     x = x_border;
-    y = y_start + font->ascent;
+    y = y_start + font.ascent;
 
     do {
 	char word[LINE_MAX];
@@ -84,7 +84,7 @@ int DrawShadowText(Display *display, Window w, GC gc,
 	/* We need a linebreak? */
 	if (x + wordLen > wattr.width - BORDER) {
 	    x = x_border;
-	    y += font->ascent + font->descent + 1;
+	    y += font.ascent + font.descent + 1;
 	}
 
 	/* Draw word and move cursor to point to after this word */
@@ -97,7 +97,7 @@ int DrawShadowText(Display *display, Window w, GC gc,
 		/* New paragraph */
 	    case '\n':
 		x = x_border;
-		y += font->ascent + font->descent + 1;
+		y += font.ascent + font.descent + 1;
 		break;
 
 		/* Just a space */
@@ -107,7 +107,7 @@ int DrawShadowText(Display *display, Window w, GC gc,
 	    }
     } while (*str != '\0');
 
-    tmp = font->descent+1;
+    tmp = font.descent+1;
 
     XFreeFontInfo(NULL, font, count);
 
@@ -254,8 +254,8 @@ void Expose_about_window(void)
 	    if (about_page == 3
 		&& itemsplit == -1
 		&& box_end >= (ABOUT_WINDOW_HEIGHT - BORDER * 2 - 4
-			       - (2*BTN_BORDER + buttonFont->ascent
-				  + buttonFont->descent))) {
+			       - (2*BTN_BORDER + buttonFont.ascent
+				  + buttonFont.descent))) {
 		itemsplit = i-1;
 		XSetForeground(dpy, textGC, colors[windowColor].pixel);
 		XFillRectangle(dpy, aboutWindow, textGC,
@@ -289,7 +289,7 @@ static void About_create_window(void)
 {
     const unsigned int		windowWidth = ABOUT_WINDOW_WIDTH,
 				buttonWindowHeight = 2*BTN_BORDER
-				    + buttonFont->ascent + buttonFont->descent,
+				    + buttonFont.ascent + buttonFont.descent,
 				windowHeight = ABOUT_WINDOW_HEIGHT;
     unsigned			textWidth;
     XSetWindowAttributes	sattr;
@@ -393,17 +393,17 @@ void Expose_button_window(int color, Window w)
 
     if (w == about_close_b)
 	ShadowDrawString(dpy, w, buttonGC,
-			 BTN_BORDER, buttonFont->ascent + BTN_BORDER,
+			 BTN_BORDER, buttonFont.ascent + BTN_BORDER,
 			 "CLOSE",
 			 colors[WHITE].pixel, colors[BLACK].pixel);
     if (w == about_prev_b)
 	ShadowDrawString(dpy, w, buttonGC,
-			 BTN_BORDER, buttonFont->ascent + BTN_BORDER,
+			 BTN_BORDER, buttonFont.ascent + BTN_BORDER,
 			 "PREV",
 			 colors[WHITE].pixel, colors[BLACK].pixel);
     if (w == about_next_b)
 	ShadowDrawString(dpy, w, buttonGC,
-			 BTN_BORDER, buttonFont->ascent + BTN_BORDER,
+			 BTN_BORDER, buttonFont.ascent + BTN_BORDER,
 			 "NEXT",
 			 colors[WHITE].pixel, colors[BLACK].pixel);
 }
@@ -436,7 +436,7 @@ void About(Window w)
 }
 
 
-int About_callback(int widget_desc, void *data, const char **str)
+int About_callback(int widget_desc, void *data, String *str)
 {
     UNUSED_PARAM(widget_desc); UNUSED_PARAM(data); UNUSED_PARAM(str);
     if (about_created == false) {
@@ -450,11 +450,11 @@ int About_callback(int widget_desc, void *data, const char **str)
 /*****************************************************************************/
 int		keys_viewer = NO_WIDGET;
 
-int Keys_callback(int widget_desc, void *data, const char **unused)
+int Keys_callback(int widget_desc, void *data, String *unused)
 {
     unsigned	bufsize = (num_keydefs * 64);
     char	*buf = XCALLOC(char, bufsize), *end = buf, *str;
-    const char	*help;
+    String help;
     int		i, len, maxkeylen = 0;
 
     UNUSED_PARAM(widget_desc); UNUSED_PARAM(data); UNUSED_PARAM(unused);
@@ -515,7 +515,7 @@ static size_t		motd_size;
        int		motd_viewer = NO_WIDGET;
 static bool		motd_auto_popup;
 
-int Motd_callback(int widget_desc, void *data, const char **str)
+int Motd_callback(int widget_desc, void *data, String *str)
 {
     UNUSED_PARAM(widget_desc); UNUSED_PARAM(data); UNUSED_PARAM(str);
 
@@ -536,7 +536,7 @@ void Motd_destroy(void)
     XFREE(motd_buf);
 }
 
-int Handle_motd(long off, char *buf, int len, long filesize)
+int Handle_motd(long off, String buf, int len, long filesize)
 {
     int			i;
     static char		no_motd_msg[] = "\nThis server has no MOTD.\n\n";

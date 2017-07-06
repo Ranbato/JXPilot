@@ -63,34 +63,34 @@ void Race_compute_game_status(void)
     /* Handle finishing of laps */
     for (i = 0; i < NumPlayers; i++) {
 	pl = Player_by_index(i);
-	if (!pl->pl_status.get( FINISH))
+	if (!pl.pl_status.get( FINISH))
 	    continue;
-	pl->last_lap_time = pl->time - pl->last_lap;
-	if ((pl->best_lap > pl->last_lap_time || pl->best_lap == 0)
-	    && pl->time != 0 && pl->round != 1) {
-	    pl->best_lap = pl->last_lap_time;
+	pl.last_lap_time = pl.time - pl.last_lap;
+	if ((pl.best_lap > pl.last_lap_time || pl.best_lap == 0)
+	    && pl.time != 0 && pl.round != 1) {
+	    pl.best_lap = pl.last_lap_time;
 	}
-	pl->last_lap = pl->time;
-	if (pl->round > options.raceLaps) {
+	pl.last_lap = pl.time;
+	if (pl.round > options.raceLaps) {
 	    Player_death_reset(pl);
 	    Player_set_state(pl, PL_STATE_DEAD);
 	    sprintf(msg, "%s finished the race. Last lap time: %.2fs. "
 		    "Personal race best lap time: %.2fs.",
-		    pl->name,
-		    (double) pl->last_lap_time / FPS,
-		    (double) pl->best_lap / FPS);
+		    pl.name,
+		    (double) pl.last_lap_time / FPS,
+		    (double) pl.best_lap / FPS);
 	}
-	else if (pl->round > 1)
+	else if (pl.round > 1)
 	    sprintf(msg, "%s completes lap %d in %.2fs. "
 		    "Personal race best lap time: %.2fs.",
-		    pl->name,
-		    pl->round-1,
-		    (double) pl->last_lap_time / FPS,
-		    (double) pl->best_lap / FPS);
+		    pl.name,
+		    pl.round-1,
+		    (double) pl.last_lap_time / FPS,
+		    (double) pl.best_lap / FPS);
 	else {
-	    sprintf(msg, "%s starts lap 1 of %d", pl->name,
+	    sprintf(msg, "%s starts lap 1 of %d", pl.name,
 		    options.raceLaps);
-	    pl->pl_status.clear( FINISH); /* no elimination from starting */
+	    pl.pl_status.clear( FINISH); /* no elimination from starting */
 	}
 	Set_message(msg);
     }
@@ -101,45 +101,45 @@ void Race_compute_game_status(void)
 
 	    for (i = 0; i < NumPlayers; i++) {
 		pl = Player_by_index(i);
-		if (pl->pl_status.get( FINISH) && pl->round < lap) {
-		    lap = pl->round;
+		if (pl.pl_status.get( FINISH) && pl.round < lap) {
+		    lap = pl.round;
 		    pli = i;
 		}
 	    }
 	    if (lap == INT_MAX)
 		break;
 	    pl_i = Player_by_index(pli);
-	    pl_i->pl_status.clear( FINISH);
+	    pl_i.pl_status.clear( FINISH);
 	    lap = 0;
 	    for (i = 0; i < NumPlayers; i++) {
 		pl = Player_by_index(i);
 		if (!Player_is_active(pl))
 		    continue;
-		if (pl->round < pl_i->round) {
+		if (pl.round < pl_i.round) {
 		    count++;
-		    if (pl->round > lap)
-			lap = pl->round;
+		    if (pl.round > lap)
+			lap = pl.round;
 		}
 	    }
-	    if (pl_i->round < lap + count)
+	    if (pl_i.round < lap + count)
 		continue;
 	    for (i = 0; i < NumPlayers; i++) {
 		pl = Player_by_index(i);
 		if (!Player_is_active(pl))
 		    continue;
-		if (pl->round < pl_i->round) {
+		if (pl.round < pl_i.round) {
 		    Player_death_reset(pl);
 		    Player_set_state(pl, PL_STATE_DEAD);
 		    if (count == 1) {
 			sprintf(msg, "%s was the last to complete lap "
 				"%d and is out of the race.",
-				pl->name, pl_i->round - 1);
+				pl.name, pl_i.round - 1);
 			Set_message(msg);
 		    }
 		    else {
 			sprintf(msg, "%s was the last to complete some "
-				"lap between %d and %d.", pl->name,
-				pl->round, pl_i->round - 1);
+				"lap between %d and %d.", pl.name,
+				pl.round, pl_i.round - 1);
 			Set_message(msg);
 		    }
 		}
@@ -161,15 +161,15 @@ void Race_compute_game_status(void)
 	} else if (!Player_is_dead(pl))
 	    num_alive_players++;
 
-	if (pl->pl_status.get( RACE_OVER)) {
+	if (pl.pl_status.get( RACE_OVER)) {
 	    num_race_over_players++;
 	    pos++;
 	}
-	else if (pl->pl_status.get( FINISH)) {
-	    if (pl->round > options.raceLaps)
+	else if (pl.pl_status.get( FINISH)) {
+	    if (pl.round > options.raceLaps)
 		num_finished_players++;
 	    else
-		pl->pl_status.clear( FINISH);
+		pl.pl_status.clear( FINISH);
 	}
 	else if (!Player_is_dead(pl))
 	    alive = pl;
@@ -210,26 +210,26 @@ void Race_compute_game_status(void)
 		|| Player_is_tank(pl))
 		continue;
 
-	    if (pl->pl_status.get( FINISH)) {
-		pl->pl_status.clear( FINISH);
-		pl->pl_status.get( RACE_OVER);
+	    if (pl.pl_status.get( FINISH)) {
+		pl.pl_status.clear( FINISH);
+		pl.pl_status.get( RACE_OVER);
 		if (pts > 0) {
 		    sprintf(msg,
 			    "%s finishes %sin position %d "
 			    "scoring %.2f point%s.",
-			    pl->name,
+			    pl.name,
 			    (num_finished_players == 1) ? "" : "jointly ",
 			    pos, pts,
 			    (pts == 1) ? "" : "s");
 		    Set_message(msg);
 		    sprintf(msg, "[Position %d%s]", pos,
 			    (num_finished_players == 1) ? "" : " (jointly)");
-		    if (!options.zeroSumScoring) Score(pl, pts, pl->pos, msg);
+		    if (!options.zeroSumScoring) Score(pl, pts, pl.pos, msg);
 		}
 		else {
 		    sprintf(msg,
 			    "%s finishes %sin position %d.",
-			    pl->name,
+			    pl.name,
 			    (num_finished_players == 1) ? "" : "jointly ",
 			    pos);
 		    Set_message(msg);
@@ -251,7 +251,7 @@ void Race_compute_game_status(void)
      * In limited lives mode, wait for everyone to die, except
      * for the last player.
      */
-    if (world->rules->mode.get( LIMITED_LIVES)) {
+    if (world.rules.mode.get( LIMITED_LIVES)) {
 	if (num_alive_players > 1)
 	    return;
 	if (num_alive_players == 1 && num_active_players == 1)
@@ -284,13 +284,13 @@ void Race_game_over(void)
 		continue;
 	    if (Player_is_paused(pl)
 		|| Player_is_waiting(pl)
-		|| pl->best_lap <= 0)
+		|| pl.best_lap <= 0)
 		j = i;
 	    else {
 		for (j = 0; j < i; j++) {
 		    player_t *pl_j = Player_by_index(order[j]);
 
-		    if (pl->best_lap < pl_j->best_lap)
+		    if (pl.best_lap < pl_j.best_lap)
 			break;
 
 		    if (Player_is_paused(pl_j)
@@ -305,8 +305,8 @@ void Race_game_over(void)
 	}
 	for (i = 0; i < num_ordered_players; i++) {
 	    pl = Player_by_index(order[i]);
-	    if (pl->home_base->ind != i) {
-		pl->home_base = Base_by_index(i);
+	    if (pl.home_base.ind != i) {
+		pl.home_base = Base_by_index(i);
 		for (j = 0; j < spectatorStart + NumSpectators; j++) {
 		    if (j == NumPlayers) {
 			if (NumSpectators)
@@ -314,9 +314,9 @@ void Race_game_over(void)
 			else
 			    break;
 		    }
-		    if (Player_by_index(j)->conn != NULL)
-			Send_base(Player_by_index(j)->conn,
-				  pl->id, pl->home_base->ind);
+		    if (Player_by_index(j).conn != NULL)
+			Send_base(Player_by_index(j).conn,
+				  pl.id, pl.home_base.ind);
 		}
 		if (Player_is_paused(pl))
 		    Go_home(pl);
@@ -327,7 +327,7 @@ void Race_game_over(void)
 
     for (i = NumPlayers - 1; i >= 0; i--)  {
 	pl = Player_by_index(i);
-	pl->pl_status.clear( RACE_OVER | FINISH);
+	pl.pl_status.clear( RACE_OVER | FINISH);
 	if (Player_is_paused(pl)
 	    || Player_is_waiting(pl)
 	    || Player_is_tank(pl))
@@ -343,12 +343,12 @@ void Race_game_over(void)
 	if (pl != Player_by_index(i))
 	    continue;
 
-	if ((pl->best_lap < bestlap || bestlap == 0) &&
-	    pl->best_lap > 0) {
-	    bestlap = pl->best_lap;
+	if ((pl.best_lap < bestlap || bestlap == 0) &&
+	    pl.best_lap > 0) {
+	    bestlap = pl.best_lap;
 	    num_best_players = 0;
 	}
-	if (pl->best_lap == bestlap)
+	if (pl.best_lap == bestlap)
 	    num_best_players++;
     }
 
@@ -361,12 +361,12 @@ void Race_game_over(void)
 		|| Player_is_tank(pl))
 		continue;
 
-	    if (pl->best_lap == bestlap) {
+	    if (pl.best_lap == bestlap) {
 		Set_message_f("%s %s the best lap time of %.2fs",
-			      pl->name,
+			      pl.name,
 			      (num_best_players == 1) ? "had" : "shares",
 			      (double) bestlap / FPS);
-		if (!options.zeroSumScoring) Score(pl, 5.0 + num_active_players, pl->pos,
+		if (!options.zeroSumScoring) Score(pl, 5.0 + num_active_players, pl.pos,
 		      (num_best_players == 1)
 		      ? "[Fastest lap]" : "[Joint fastest lap]");
 	    }
@@ -384,87 +384,87 @@ void Race_game_over(void)
 
 void Player_reset_timing(player_t *pl)
 {
-    pl->round = 0;
-    pl->check = 0;
-    pl->time = 0;
-    pl->best_lap = 0;
-    pl->last_lap = 0;
-    pl->last_lap_time = 0;
+    pl.round = 0;
+    pl.check = 0;
+    pl.time = 0;
+    pl.best_lap = 0;
+    pl.last_lap = 0;
+    pl.last_lap_time = 0;
 }
 
 void Player_pass_checkpoint(player_t *pl)
 {
     int j;
 
-    if (pl->check == 0) {
-	pl->round++;
+    if (pl.check == 0) {
+	pl.round++;
 #if 1
-	pl->last_lap_time = pl->time - pl->last_lap;
-	if ((pl->best_lap > pl->last_lap_time
-	     || pl->best_lap == 0)
-	    && pl->time != 0
-	    && pl->round != 1) {
-	    pl->best_lap = pl->last_lap_time;
+	pl.last_lap_time = pl.time - pl.last_lap;
+	if ((pl.best_lap > pl.last_lap_time
+	     || pl.best_lap == 0)
+	    && pl.time != 0
+	    && pl.round != 1) {
+	    pl.best_lap = pl.last_lap_time;
 	}
-	pl->last_lap = pl->time;
-	if (pl->round > options.raceLaps) {
+	pl.last_lap = pl.time;
+	if (pl.round > options.raceLaps) {
 	    if (options.ballrace) {
 		/* Balls are made unowned when their owner finishes the race
 		   This way, they can be reused by other players */
 		for (j = 0; j < NumObjs; j++) {
-		    if (Obj[j]->type == OBJ_BALL) {
+		    if (Obj[j].type == OBJ_BALL) {
 			ballobject_t *ball = BALL_PTR(Obj[j]);
 
-			if (ball->ball_owner == pl->id)
-			    ball->ball_owner = NO_ID;
+			if (ball.ball_owner == pl.id)
+			    ball.ball_owner = NO_ID;
 		    }
 		}
 	    }
 	    Player_death_reset(pl, false);
 	    Player_set_state(pl, PL_STATE_DEAD);
-	    pl->pl_status.get( FINISH);
+	    pl.pl_status.get( FINISH);
 	    Set_message_f("%s finished the race. Last lap time: %.2fs. "
 			  "Personal race best lap time: %.2fs.",
-			  pl->name,
-			  (double) pl->last_lap_time / FPS,
-			  (double) pl->best_lap / FPS);
-	} else if (pl->round > 1) {
+			  pl.name,
+			  (double) pl.last_lap_time / FPS,
+			  (double) pl.best_lap / FPS);
+	} else if (pl.round > 1) {
 	    Set_message_f("%s completes lap %d in %.2fs. "
 			  "Personal race best lap time: %.2fs.",
-			  pl->name,
-			  pl->round-1,
-			  (double) pl->last_lap_time / FPS,
-			  (double) pl->best_lap / FPS);
+			  pl.name,
+			  pl.round-1,
+			  (double) pl.last_lap_time / FPS,
+			  (double) pl.best_lap / FPS);
 	} else
 	    Set_message_f("%s starts lap 1 of %d.",
-			  pl->name, options.raceLaps);
+			  pl.name, options.raceLaps);
 #else
 	/* this is how 4.3.1X did this */
-	pl->pl_status.get( FINISH);
+	pl.pl_status.get( FINISH);
 	/* Rest done in Compute_game_status() */
 #endif
     }
 
-    if (++pl->check == world->NumChecks)
-	pl->check = 0;
-    pl->last_check_dir = pl->dir;
+    if (++pl.check == world.NumChecks)
+	pl.check = 0;
+    pl.last_check_dir = pl.dir;
 
     updateScores = true;
 }
 
 void PlayerCheckpointCollision(player_t *pl)
 {
-    if (!world->rules->mode.get( TIMING))
+    if (!world.rules.mode.get( TIMING))
 	return;
 
     if (Player_is_active(pl)) {
-	check_t *check = Check_by_index(pl->check);
+	check_t *check = Check_by_index(pl.check);
 
-	if (pl->round != 0)
-	    pl->time++;
+	if (pl.round != 0)
+	    pl.time++;
 	if (Player_is_alive(pl)
-	    && Wrap_length(pl->pos.cx - check->pos.cx,
-			   pl->pos.cy - check->pos.cy)
+	    && Wrap_length(pl.pos.cx - check.pos.cx,
+			   pl.pos.cy - check.pos.cy)
 	    < options.checkpointRadius * BLOCK_CLICKS
 	    && !Player_is_tank(pl)
 	    && !options.ballrace)

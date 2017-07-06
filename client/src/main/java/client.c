@@ -49,8 +49,8 @@ unsigned RadarWidth = 256;	/* radar width at the server */
 bool     UpdateRadar = false;   /* radar update because of polystyle changes? */
 
 int     oldServer;
-ipos_t	selfPos;
-ipos_t	selfVel;
+Point 	selfPos;
+Point 	selfVel;
 short	heading;
 short	nextCheckPoint;
 
@@ -237,7 +237,7 @@ static fuelstation_t *Fuelstation_by_pos(int x, int y)
 
     lo = 0;
     hi = num_fuels - 1;
-    pos = x * Setup->y + y;
+    pos = x * Setup.y + y;
     while (lo < hi) {
 	i = (lo + hi) >> 1;
 	if (pos > fuels[i].pos)
@@ -257,15 +257,15 @@ double Fuel_by_pos(int x, int y)
 
     if ((fuelp = Fuelstation_by_pos(x, y)) == NULL)
 	return 0;
-    return fuelp->fuel;
+    return fuelp.fuel;
 }
 
 int Target_by_index(int ind, int *xp, int *yp, int *dead_time, double *damage)
 {
     if (ind < 0 || ind >= num_targets)
 	return -1;
-    *xp = targets[ind].pos / Setup->y;
-    *yp = targets[ind].pos % Setup->y;
+    *xp = targets[ind].pos / Setup.y;
+    *yp = targets[ind].pos % Setup.y;
     *dead_time = targets[ind].dead_time;
     *damage = targets[ind].damage;
     return 0;
@@ -277,7 +277,7 @@ int Target_alive(int x, int y, double *damage)
 
     lo = 0;
     hi = num_targets - 1;
-    pos = x * Setup->y + y;
+    pos = x * Setup.y + y;
     while (lo < hi) {
 	i = (lo + hi) >> 1;
 	if (pos > targets[i].pos)
@@ -309,7 +309,7 @@ static cannontime_t *Cannon_by_pos(int x, int y)
 
     lo = 0;
     hi = num_cannons - 1;
-    pos = x * Setup->y + y;
+    pos = x * Setup.y + y;
     while (lo < hi) {
 	i = (lo + hi) >> 1;
 	if (pos > cannons[i].pos)
@@ -329,8 +329,8 @@ int Cannon_dead_time_by_pos(int x, int y, int *dot)
 
     if ((cannonp = Cannon_by_pos(x, y)) == NULL)
 	return -1;
-    *dot = cannonp->dot;
-    return cannonp->dead_time;
+    *dot = cannonp.dot;
+    return cannonp.dead_time;
 }
 
 int Handle_cannon(int ind, int dead_time)
@@ -355,11 +355,11 @@ int Handle_target(int num, int dead_time, double damage)
 
     if (targets[num].dead_time > 0 && dead_time == 0) {
 	int pos = targets[num].pos;
-	Radar_show_target(pos / Setup->y, pos % Setup->y);
+	Radar_show_target(pos / Setup.y, pos % Setup.y);
     }
     else if (targets[num].dead_time == 0 && dead_time > 0) {
 	int pos = targets[num].pos;
-	Radar_hide_target(pos / Setup->y, pos % Setup->y);
+	Radar_hide_target(pos / Setup.y, pos % Setup.y);
     }
 
     targets[num].dead_time = dead_time;
@@ -374,7 +374,7 @@ static homebase_t *Homebase_by_pos(int x, int y)
 
     lo = 0;
     hi = num_bases - 1;
-    pos = x * Setup->y + y;
+    pos = x * Setup.y + y;
     while (lo < hi) {
 	i = (lo + hi) >> 1;
 	if (pos > bases[i].pos)
@@ -394,8 +394,8 @@ int Base_info_by_pos(int x, int y, int *idp, int *teamp)
 
     if ((basep = Homebase_by_pos(x, y)) == NULL)
 	return -1;
-    *idp = basep->id;
-    *teamp = basep->team;
+    *idp = basep.id;
+    *teamp = basep.team;
     return 0;
 }
 
@@ -424,8 +424,8 @@ int Check_pos_by_index(int ind, int *xp, int *yp)
 	*yp = 0;
 	return -1;
     }
-    *xp = checks[ind].pos / Setup->y;
-    *yp = checks[ind].pos % Setup->y;
+    *xp = checks[ind].pos / Setup.y;
+    *yp = checks[ind].pos % Setup.y;
     return 0;
 }
 
@@ -433,7 +433,7 @@ int Check_index_by_pos(int x, int y)
 {
     int			i, pos;
 
-    pos = x * Setup->y + y;
+    pos = x * Setup.y + y;
     for (i = 0; i < num_checks; i++) {
 	if (pos == checks[i].pos)
 	    return i;
@@ -445,7 +445,7 @@ int Check_index_by_pos(int x, int y)
 /*
  * Convert a 'space' map block into a dot.
  */
-static void Map_make_dot(unsigned char *data)
+static void Map_make_dot(unsigned String data)
 {
     if (*data == SETUP_SPACE)
 	*data = SETUP_SPACE_DOT;
@@ -487,20 +487,20 @@ void Map_dots(void)
     /*
      * Restore the map to unoptimized form.
      */
-    for (i = Setup->x * Setup->y; i-- > 0; ) {
-	if (dot[Setup->map_data[i]]) {
-	    if (Setup->map_data[i] == SETUP_SPACE_DOT)
-		Setup->map_data[i] = SETUP_SPACE;
-	    else if (Setup->map_data[i] == SETUP_DECOR_DOT_FILLED)
-		Setup->map_data[i] = SETUP_DECOR_FILLED;
-	    else if (Setup->map_data[i] == SETUP_DECOR_DOT_RU)
-		Setup->map_data[i] = SETUP_DECOR_RU;
-	    else if (Setup->map_data[i] == SETUP_DECOR_DOT_RD)
-		Setup->map_data[i] = SETUP_DECOR_RD;
-	    else if (Setup->map_data[i] == SETUP_DECOR_DOT_LU)
-		Setup->map_data[i] = SETUP_DECOR_LU;
-	    else if (Setup->map_data[i] == SETUP_DECOR_DOT_LD)
-		Setup->map_data[i] = SETUP_DECOR_LD;
+    for (i = Setup.x * Setup.y; i-- > 0; ) {
+	if (dot[Setup.map_data[i]]) {
+	    if (Setup.map_data[i] == SETUP_SPACE_DOT)
+		Setup.map_data[i] = SETUP_SPACE;
+	    else if (Setup.map_data[i] == SETUP_DECOR_DOT_FILLED)
+		Setup.map_data[i] = SETUP_DECOR_FILLED;
+	    else if (Setup.map_data[i] == SETUP_DECOR_DOT_RU)
+		Setup.map_data[i] = SETUP_DECOR_RU;
+	    else if (Setup.map_data[i] == SETUP_DECOR_DOT_RD)
+		Setup.map_data[i] = SETUP_DECOR_RD;
+	    else if (Setup.map_data[i] == SETUP_DECOR_DOT_LU)
+		Setup.map_data[i] = SETUP_DECOR_LU;
+	    else if (Setup.map_data[i] == SETUP_DECOR_DOT_LD)
+		Setup.map_data[i] = SETUP_DECOR_LD;
 	}
     }
 
@@ -521,31 +521,31 @@ void Map_dots(void)
      * Optimize.
      */
     if (backgroundPointSize > 0) {
-	if (Setup->mode.get( WRAP_PLAY)) {
-	    for (x = 0; x < Setup->x; x++) {
-		if (dot[Setup->map_data[x * Setup->y]])
-		    Map_make_dot(&Setup->map_data[x * Setup->y]);
+	if (Setup.mode.get( WRAP_PLAY)) {
+	    for (x = 0; x < Setup.x; x++) {
+		if (dot[Setup.map_data[x * Setup.y]])
+		    Map_make_dot(&Setup.map_data[x * Setup.y]);
 	    }
-	    for (y = 0; y < Setup->y; y++) {
-		if (dot[Setup->map_data[y]])
-		    Map_make_dot(&Setup->map_data[y]);
+	    for (y = 0; y < Setup.y; y++) {
+		if (dot[Setup.map_data[y]])
+		    Map_make_dot(&Setup.map_data[y]);
 	    }
 	    start = backgroundPointDist;
 	} else
 	    start = 0;
 
 	if (backgroundPointDist > 0) {
-	    for (x = start; x < Setup->x; x += backgroundPointDist) {
-		for (y = start; y < Setup->y; y += backgroundPointDist) {
-		    if (dot[Setup->map_data[x * Setup->y + y]])
-			Map_make_dot(&Setup->map_data[x * Setup->y + y]);
+	    for (x = start; x < Setup.x; x += backgroundPointDist) {
+		for (y = start; y < Setup.y; y += backgroundPointDist) {
+		    if (dot[Setup.map_data[x * Setup.y + y]])
+			Map_make_dot(&Setup.map_data[x * Setup.y + y]);
 		}
 	    }
 	}
 	for (i = 0; i < num_cannons; i++) {
-	    x = cannons[i].pos / Setup->y;
-	    y = cannons[i].pos % Setup->y;
-	    if ((x == 0 || y == 0) && Setup->mode.get( WRAP_PLAY))
+	    x = cannons[i].pos / Setup.y;
+	    y = cannons[i].pos % Setup.y;
+	    if ((x == 0 || y == 0) && Setup.mode.get( WRAP_PLAY))
 		cannons[i].dot = 1;
 	    else if (backgroundPointDist > 0
 		&& x % backgroundPointDist == 0
@@ -574,40 +574,40 @@ void Map_restore(int startx, int starty, int width, int height)
     x = startx;
     for (i = 0; i < width; i++, x++) {
 	if (x < 0)
-	    x += Setup->x;
-	else if (x >= Setup->x)
-	    x -= Setup->x;
+	    x += Setup.x;
+	else if (x >= Setup.x)
+	    x -= Setup.x;
 
 	y = starty;
 	for (j = 0; j < height; j++, y++) {
 	    if (y < 0)
-		y += Setup->y;
-	    else if (y >= Setup->y)
-		y -= Setup->y;
+		y += Setup.y;
+	    else if (y >= Setup.y)
+		y -= Setup.y;
 
-	    map_index = x * Setup->y + y;
+	    map_index = x * Setup.y + y;
 
-	    type = Setup->map_data[map_index];
+	    type = Setup.map_data[map_index];
 	    if ((type & BLUE_BIT) == 0) {
 		if (type == SETUP_FILLED_NO_DRAW)
-		    Setup->map_data[map_index] = SETUP_FILLED;
+		    Setup.map_data[map_index] = SETUP_FILLED;
 	    }
 	    else if ((type & BLUE_FUEL) == BLUE_FUEL)
-		Setup->map_data[map_index] = SETUP_FUEL;
+		Setup.map_data[map_index] = SETUP_FUEL;
 
 	    else if (type & BLUE_OPEN) {
 		if (type & BLUE_BELOW)
-		    Setup->map_data[map_index] = SETUP_REC_RD;
+		    Setup.map_data[map_index] = SETUP_REC_RD;
 		else
-		    Setup->map_data[map_index] = SETUP_REC_LU;
+		    Setup.map_data[map_index] = SETUP_REC_LU;
 	    }
 	    else if (type & BLUE_CLOSED) {
 		if (type & BLUE_BELOW)
-		    Setup->map_data[map_index] = SETUP_REC_LD;
+		    Setup.map_data[map_index] = SETUP_REC_LD;
 		else
-		    Setup->map_data[map_index] = SETUP_REC_RU;
+		    Setup.map_data[map_index] = SETUP_REC_RU;
 	    } else
-		Setup->map_data[map_index] = SETUP_FILLED;
+		Setup.map_data[map_index] = SETUP_FILLED;
 	}
     }
 }
@@ -666,20 +666,20 @@ void Map_blue(int startx, int starty, int width, int height)
     x = startx;
     for (i = 0; i < width; i++, x++) {
 	if (x < 0)
-	    x += Setup->x;
-	else if (x >= Setup->x)
-	    x -= Setup->x;
+	    x += Setup.x;
+	else if (x >= Setup.x)
+	    x -= Setup.x;
 
 	y = starty;
 	for (j = 0; j < height; j++, y++) {
 	    if (y < 0)
-		y += Setup->y;
-	    else if (y >= Setup->y)
-		y -= Setup->y;
+		y += Setup.y;
+	    else if (y >= Setup.y)
+		y -= Setup.y;
 
-	    map_index = x * Setup->y + y;
+	    map_index = x * Setup.y + y;
 
-	    type = Setup->map_data[map_index];
+	    type = Setup.map_data[map_index];
 	    newtype = 0;
 	    switch (type) {
 	    case SETUP_FILLED:
@@ -690,33 +690,33 @@ void Map_blue(int startx, int starty, int width, int height)
 		    newtype |= BLUE_FUEL;
 		}
 		if ((x == 0)
-		    ? (!Setup->mode.get( WRAP_PLAY) ||
-			!(blue[Setup->map_data[(Setup->x - 1) * Setup->y + y]]
+		    ? (!Setup.mode.get( WRAP_PLAY) ||
+			!(blue[Setup.map_data[(Setup.x - 1) * Setup.y + y]]
 			    & BLUE_RIGHT))
-		    : !(blue[Setup->map_data[(x - 1) * Setup->y + y]]
+		    : !(blue[Setup.map_data[(x - 1) * Setup.y + y]]
 			& BLUE_RIGHT))
 		    newtype |= BLUE_LEFT;
 		if ((y == 0)
-		    ? (!Setup->mode.get( WRAP_PLAY) ||
-			!(blue[Setup->map_data[x * Setup->y + Setup->y - 1]]
+		    ? (!Setup.mode.get( WRAP_PLAY) ||
+			!(blue[Setup.map_data[x * Setup.y + Setup.y - 1]]
 			    & BLUE_UP))
-		    : !(blue[Setup->map_data[x * Setup->y + (y - 1)]]
+		    : !(blue[Setup.map_data[x * Setup.y + (y - 1)]]
 			& BLUE_UP))
 		    newtype |= BLUE_DOWN;
 		if (!outline
-		    || ((x == Setup->x - 1)
-			? (!Setup->mode.get( WRAP_PLAY)
-			   || !(blue[Setup->map_data[y]]
+		    || ((x == Setup.x - 1)
+			? (!Setup.mode.get( WRAP_PLAY)
+			   || !(blue[Setup.map_data[y]]
 				& BLUE_LEFT))
-			: !(blue[Setup->map_data[(x + 1) * Setup->y + y]]
+			: !(blue[Setup.map_data[(x + 1) * Setup.y + y]]
 			    & BLUE_LEFT)))
 		    newtype |= BLUE_RIGHT;
 		if (!outline
-		    || ((y == Setup->y - 1)
-			? (!Setup->mode.get( WRAP_PLAY)
-			   || !(blue[Setup->map_data[x * Setup->y]]
+		    || ((y == Setup.y - 1)
+			? (!Setup.mode.get( WRAP_PLAY)
+			   || !(blue[Setup.map_data[x * Setup.y]]
 				& BLUE_DOWN))
-			: !(blue[Setup->map_data[x * Setup->y + (y + 1)]]
+			: !(blue[Setup.map_data[x * Setup.y + (y + 1)]]
 			    & BLUE_DOWN)))
 		    newtype |= BLUE_UP;
 		break;
@@ -724,18 +724,18 @@ void Map_blue(int startx, int starty, int width, int height)
 	    case SETUP_REC_LU:
 		newtype = BLUE_BIT | BLUE_OPEN;
 		if (x == 0
-		    ? (!Setup->mode.get( WRAP_PLAY) ||
-			!(blue[Setup->map_data[(Setup->x - 1) * Setup->y + y]]
+		    ? (!Setup.mode.get( WRAP_PLAY) ||
+			!(blue[Setup.map_data[(Setup.x - 1) * Setup.y + y]]
 			    & BLUE_RIGHT))
-		    : !(blue[Setup->map_data[(x - 1) * Setup->y + y]]
+		    : !(blue[Setup.map_data[(x - 1) * Setup.y + y]]
 			& BLUE_RIGHT))
 		    newtype |= BLUE_LEFT;
 		if (!outline
-		    || ((y == Setup->y - 1)
-			? (!Setup->mode.get( WRAP_PLAY)
-			   || !(blue[Setup->map_data[x * Setup->y]]
+		    || ((y == Setup.y - 1)
+			? (!Setup.mode.get( WRAP_PLAY)
+			   || !(blue[Setup.map_data[x * Setup.y]]
 				& BLUE_DOWN))
-			: !(blue[Setup->map_data[x * Setup->y + (y + 1)]]
+			: !(blue[Setup.map_data[x * Setup.y + (y + 1)]]
 			    & BLUE_DOWN)))
 		    newtype |= BLUE_UP;
 		break;
@@ -743,19 +743,19 @@ void Map_blue(int startx, int starty, int width, int height)
 	    case SETUP_REC_RU:
 		newtype = BLUE_BIT | BLUE_CLOSED;
 		if (!outline
-		    || ((x == Setup->x - 1)
-			? (!Setup->mode.get( WRAP_PLAY)
-			   || !(blue[Setup->map_data[y]]
+		    || ((x == Setup.x - 1)
+			? (!Setup.mode.get( WRAP_PLAY)
+			   || !(blue[Setup.map_data[y]]
 				& BLUE_LEFT))
-			: !(blue[Setup->map_data[(x + 1) * Setup->y + y]]
+			: !(blue[Setup.map_data[(x + 1) * Setup.y + y]]
 			    & BLUE_LEFT)))
 		    newtype |= BLUE_RIGHT;
 		if (!outline
-		    || ((y == Setup->y - 1)
-			? (!Setup->mode.get( WRAP_PLAY)
-			   || !(blue[Setup->map_data[x * Setup->y]]
+		    || ((y == Setup.y - 1)
+			? (!Setup.mode.get( WRAP_PLAY)
+			   || !(blue[Setup.map_data[x * Setup.y]]
 				& BLUE_DOWN))
-			: !(blue[Setup->map_data[x * Setup->y + (y + 1)]]
+			: !(blue[Setup.map_data[x * Setup.y + (y + 1)]]
 			    & BLUE_DOWN)))
 		    newtype |= BLUE_UP;
 		break;
@@ -763,17 +763,17 @@ void Map_blue(int startx, int starty, int width, int height)
 	    case SETUP_REC_LD:
 		newtype = BLUE_BIT | BLUE_BELOW | BLUE_CLOSED;
 		if ((x == 0)
-		    ? (!Setup->mode.get( WRAP_PLAY) ||
-			!(blue[Setup->map_data[(Setup->x - 1) * Setup->y + y]]
+		    ? (!Setup.mode.get( WRAP_PLAY) ||
+			!(blue[Setup.map_data[(Setup.x - 1) * Setup.y + y]]
 			    & BLUE_RIGHT))
-		    : !(blue[Setup->map_data[(x - 1) * Setup->y + y]]
+		    : !(blue[Setup.map_data[(x - 1) * Setup.y + y]]
 			& BLUE_RIGHT))
 		    newtype |= BLUE_LEFT;
 		if ((y == 0)
-		    ? (!Setup->mode.get( WRAP_PLAY) ||
-			!(blue[Setup->map_data[x * Setup->y + Setup->y - 1]]
+		    ? (!Setup.mode.get( WRAP_PLAY) ||
+			!(blue[Setup.map_data[x * Setup.y + Setup.y - 1]]
 			    & BLUE_UP))
-		    : !(blue[Setup->map_data[x * Setup->y + (y - 1)]]
+		    : !(blue[Setup.map_data[x * Setup.y + (y - 1)]]
 			& BLUE_UP))
 		    newtype |= BLUE_DOWN;
 		break;
@@ -781,18 +781,18 @@ void Map_blue(int startx, int starty, int width, int height)
 	    case SETUP_REC_RD:
 		newtype = BLUE_BIT | BLUE_BELOW | BLUE_OPEN;
 		if (!outline
-		    || ((x == Setup->x - 1)
-			? (!Setup->mode.get( WRAP_PLAY)
-			   || !(blue[Setup->map_data[y]]
+		    || ((x == Setup.x - 1)
+			? (!Setup.mode.get( WRAP_PLAY)
+			   || !(blue[Setup.map_data[y]]
 				& BLUE_LEFT))
-			: !(blue[Setup->map_data[(x + 1) * Setup->y + y]]
+			: !(blue[Setup.map_data[(x + 1) * Setup.y + y]]
 			    & BLUE_LEFT)))
 		    newtype |= BLUE_RIGHT;
 		if ((y == 0)
-		    ? (!Setup->mode.get( WRAP_PLAY) ||
-			!(blue[Setup->map_data[x * Setup->y + Setup->y - 1]]
+		    ? (!Setup.mode.get( WRAP_PLAY) ||
+			!(blue[Setup.map_data[x * Setup.y + Setup.y - 1]]
 			    & BLUE_UP))
-		    : !(blue[Setup->map_data[x * Setup->y + (y - 1)]]
+		    : !(blue[Setup.map_data[x * Setup.y + (y - 1)]]
 			& BLUE_UP))
 		    newtype |= BLUE_DOWN;
 		break;
@@ -803,7 +803,7 @@ void Map_blue(int startx, int starty, int width, int height)
 	    if (newtype != 0) {
 		if (newtype == BLUE_BIT)
 		    newtype = SETUP_FILLED_NO_DRAW;
-		Setup->map_data[map_index] = newtype;
+		Setup.map_data[map_index] = newtype;
 	    }
 	}
     }
@@ -834,7 +834,7 @@ static int get_32bit(char **ptr)
 static void parse_styles(char **callptr)
 {
     int i, num_bmaps;
-    char *ptr;
+    String ptr;
 
     ptr = *callptr;
     num_polygon_styles = *ptr++ & 0xff;
@@ -897,11 +897,11 @@ static int init_polymap(void)
     int dx, dy, cx, cy, pc;
     int *styles;
     xp_polygon_t *poly;
-    ipos_t *points, min, max;
-    char *ptr, *edgeptr;
+    Point  *points, min, max;
+    String ptr, *edgeptr;
 
     oldServer = 0;
-    ptr = (char *)Setup->map_data;
+    ptr = (String )Setup.map_data;
 
     parse_styles(&ptr);
 
@@ -914,8 +914,8 @@ static int init_polymap(void)
 
     for (i = 0; i < num_polygons; i++) {
 	poly = &polygons[i];
-	poly->style = *ptr++ & 0xff;
-	current_estyle = polygon_styles[poly->style].def_edge_style;
+	poly.style = *ptr++ & 0xff;
+	current_estyle = polygon_styles[poly.style].def_edge_style;
 	dx = 0;
 	dy = 0;
 	ecount = get_ushort(&ptr);
@@ -926,7 +926,7 @@ static int init_polymap(void)
 	    edgechange = INT_MAX;
 	ptr += ecount * 2;
 	pc = get_ushort(&ptr);
-	if ((points = XMALLOC(ipos_t, pc)) == NULL) {
+	if ((points = XMALLOC(Point , pc)) == NULL) {
 	    error("no memory for points");
 	    exit(1);
 	}
@@ -976,13 +976,13 @@ static int init_polymap(void)
 	    if (styles)
 		styles[j] = current_estyle;
 	}
-	poly->points = points;
-	poly->edge_styles = styles;
-	poly->num_points = pc;
-	poly->bounds.x = min.x;
-	poly->bounds.y = min.y;
-	poly->bounds.w = max.x - min.x;
-	poly->bounds.h = max.y - min.y;
+	poly.points = points;
+	poly.edge_styles = styles;
+	poly.num_points = pc;
+	poly.bounds.x = min.x;
+	poly.bounds.y = min.y;
+	poly.bounds.w = max.x - min.x;
+	poly.bounds.h = max.y - min.y;
     }
     num_bases = *ptr++ & 0xff;
     bases = XMALLOC(homebase_t, num_bases);
@@ -1052,8 +1052,8 @@ static int init_polymap(void)
      * kps - hack.
      * Player can disable downloading of textures by having texturedWalls off.
      */
-    if (instruments.texturedWalls && Setup->data_url[0])
-	Mapdata_setup(Setup->data_url);
+    if (instruments.texturedWalls && Setup.data_url[0])
+	Mapdata_setup(Setup.data_url);
     Colors_init_style_colors();    
 
     return 0;
@@ -1088,9 +1088,9 @@ static int init_blockmap(void)
 	types[i] = 4;
     for (i = 0; i < OLD_MAX_CHECKS; i++)
 	types[SETUP_CHECK + i] = 5;
-    max = Setup->x * Setup->y;
+    max = Setup.x * Setup.y;
     for (i = 0; i < max; i++) {
-	switch (types[Setup->map_data[i]]) {
+	switch (types[Setup.map_data[i]]) {
 	case 1: num_fuels++; break;
 	case 2: num_cannons++; break;
 	case 3: num_targets++; break;
@@ -1141,7 +1141,7 @@ static int init_blockmap(void)
     }
 
     for (i = 0; i < max; i++) {
-	type = Setup->map_data[i];
+	type = Setup.map_data[i];
 	switch (types[type]) {
 	case 1:
 	    fuels[num_fuels].pos = i;
@@ -1167,12 +1167,12 @@ static int init_blockmap(void)
 	    bases[num_bases].type = type - (type % 10);
 	    bases[num_bases].appeartime = 0;
 	    num_bases++;
-	    Setup->map_data[i] = type - (type % 10);
+	    Setup.map_data[i] = type - (type % 10);
 	    break;
 	case 5:
 	    checks[type - SETUP_CHECK].pos = i;
 	    num_checks++;
-	    Setup->map_data[i] = SETUP_CHECK;
+	    Setup.map_data[i] = SETUP_CHECK;
 	    break;
 	default:
 	    break;
@@ -1234,7 +1234,7 @@ other_t *Other_by_id(int id)
     return NULL;
 }
 
-other_t *Other_by_name(const char *name, bool show_error_msg)
+other_t *Other_by_name(String name, bool show_error_msg)
 {
     int i;
     other_t *found_other = NULL, *other;
@@ -1246,7 +1246,7 @@ other_t *Other_by_name(const char *name, bool show_error_msg)
     /* Look for an exact match on player nickname. */
     for (i = 0; i < num_others; i++) {
 	other = &Others[i];
-	if (!strcasecmp(other->nick_name, name))
+	if (!strcasecmp(other.nick_name, name))
 	    return other;
     }
 
@@ -1254,7 +1254,7 @@ other_t *Other_by_name(const char *name, bool show_error_msg)
     for (i = 0; i < num_others; i++) {
 	other = &Others[i];
 
-	if (!strncasecmp(other->nick_name, name, len)) {
+	if (!strncasecmp(other.nick_name, name, len)) {
 	    if (found_other)
 		goto match_several;
 	    found_other = other;
@@ -1271,8 +1271,8 @@ other_t *Other_by_name(const char *name, bool show_error_msg)
 	int j;
 	other = &Others[i];
 
-	for (j = 0; j < 1 + (int)strlen(other->nick_name) - (int)len; j++) {
-	    if (!strncasecmp(other->nick_name + j, name, len)) {
+	for (j = 0; j < 1 + (int)strlen(other.nick_name) - (int)len; j++) {
+	    if (!strncasecmp(other.nick_name + j, name, len)) {
 		if (found_other)
 		    goto match_several;
 		found_other = other;
@@ -1297,13 +1297,13 @@ other_t *Other_by_name(const char *name, bool show_error_msg)
     }
 }
 
-shipshape_t *Ship_by_id(int id)
+ShipShape  *Ship_by_id(int id)
 {
     other_t		*other;
 
     if ((other = Other_by_id(id)) == NULL)
 	return Parse_shape_str(NULL);
-    return other->ship;
+    return other.ship;
 }
 
 int Handle_leave(int id)
@@ -1316,13 +1316,13 @@ int Handle_leave(int id)
 	    warn("Self left?!");
 	    self = NULL;
 	}
-	Free_ship_shape(other->ship);
-	other->ship = NULL;
+	Free_ship_shape(other.ship);
+	other.ship = NULL;
 	/*
 	 * Silent about tanks and robots.
 	 */
-	if (other->mychar != 'T' && other->mychar != 'R') {
-	    sprintf(msg, "%s left this world.", other->nick_name);
+	if (other.mychar != 'T' && other.mychar != 'R') {
+	    sprintf(msg, "%s left this world.", other.nick_name);
 	    Add_message(msg);
 	}
 	num_others--;
@@ -1336,12 +1336,12 @@ int Handle_leave(int id)
 }
 
 int Handle_player(int id, int player_team, int mychar,
-		  char *nick_name, char *user_name, char *host_name,
-		  char *shape, int myself)
+		  String nick_name, String user_name, String host_name,
+		  String shape, int myself)
 {
     other_t		*other;
 
-    if (Setup->mode.get( TEAM_PLAY)
+    if (Setup.mode.get( TEAM_PLAY)
 	&& (player_team < 0 || player_team >= MAX_TEAMS)) {
 	warn("Illegal team %d for received player, setting to 0", player_team);
 	player_team = 0;
@@ -1373,17 +1373,17 @@ int Handle_player(int id, int player_team, int mychar,
 	self = other;
     }
     memset(other, 0, sizeof(other_t));
-    other->id = id;
-    other->team = player_team;
-    other->mychar = mychar;
-    strlcpy(other->nick_name, nick_name, sizeof(other->nick_name));
-    strlcpy(other->user_name, user_name, sizeof(other->user_name));
-    strlcpy(other->host_name, host_name, sizeof(other->host_name));
-    strlcpy(other->id_string, nick_name, sizeof(other->id_string));
-    other->max_chars_in_names = -1;
+    other.id = id;
+    other.team = player_team;
+    other.mychar = mychar;
+    strlcpy(other.nick_name, nick_name, sizeof(other.nick_name));
+    strlcpy(other.user_name, user_name, sizeof(other.user_name));
+    strlcpy(other.host_name, host_name, sizeof(other.host_name));
+    strlcpy(other.id_string, nick_name, sizeof(other.id_string));
+    other.max_chars_in_names = -1;
     scoresChanged = true;
-    other->ship = Convert_shape_str(shape);
-    Calculate_shield_radius(other->ship);
+    other.ship = Convert_shape_str(shape);
+    Calculate_shield_radius(other.ship);
 
     return 0;
 }
@@ -1397,11 +1397,11 @@ int Handle_team(int id, int pl_team)
 	warn("Received packet to change team for nonexistent id %d", id);
 	return 0;
     }
-    if (Setup->mode.get( TEAM_PLAY) && (pl_team < 0 || pl_team >= MAX_TEAMS)) {
+    if (Setup.mode.get( TEAM_PLAY) && (pl_team < 0 || pl_team >= MAX_TEAMS)) {
 	warn("Illegal team %d received for player id %d", pl_team, id);
 	return 0;
     }
-    other->team = pl_team;
+    other.team = pl_team;
     scoresChanged = true;
 
     return 0;
@@ -1416,14 +1416,14 @@ int Handle_score(int id, double score, int life, int mychar, int alliance)
 	      id, score, life);
 	return 0;
     }
-    else if (other->score != score
-	|| other->life != life
-	|| other->mychar != mychar
-	|| other->alliance != alliance) {
-	other->score = score;
-	other->life = life;
-	other->mychar = mychar;
-	other->alliance = alliance;
+    else if (other.score != score
+	|| other.life != life
+	|| other.mychar != mychar
+	|| other.alliance != alliance) {
+	other.score = score;
+	other.life = life;
+	other.mychar = mychar;
+	other.alliance = alliance;
 	scoresChanged = true;
     }
 
@@ -1449,49 +1449,49 @@ int Handle_timing(int id, int check, int round, long tloops)
 	      id, check, round);
 	return 0;
     }
-    else if (other->check != check
-	|| other->round != round) {
-	other->check = check;
-	other->round = round;
-	other->timing = round * num_checks + check;
-	other->timing_loops = tloops;
+    else if (other.check != check
+	|| other.round != round) {
+	other.check = check;
+	other.round = round;
+	other.timing = round * num_checks + check;
+	other.timing_loops = tloops;
 	scoresChanged = true;
     }
 
     return 0;
 }
 
-int Handle_score_object(double score, int x, int y, char *msg)
+int Handle_score_object(double score, int x, int y, String msg)
 {
     score_object_t*	sobj = &score_objects[score_object];
 
-    sobj->score = score;
-    sobj->x = x;
-    sobj->y = y;
-    sobj->life_time = scoreObjectTime;
+    sobj.score = score;
+    sobj.x = x;
+    sobj.y = y;
+    sobj.life_time = scoreObjectTime;
 
-    /* Initialize sobj->hud_msg (is shown on the HUD) */
+    /* Initialize sobj.hud_msg (is shown on the HUD) */
     if (msg[0] != '\0') {
 	if (Using_score_decimals())
-	    sprintf(sobj->hud_msg, "%s %.*f", msg, showScoreDecimals, score);
+	    sprintf(sobj.hud_msg, "%s %.*f", msg, showScoreDecimals, score);
 	else {
 	    int sc = (int)(score >= 0.0 ? score + 0.5 : score - 0.5);
-	    sprintf(sobj->hud_msg, "%s %d", msg, sc);
+	    sprintf(sobj.hud_msg, "%s %d", msg, sc);
 	}
-	sobj->hud_msg_len = strlen(sobj->hud_msg);
-	sobj->hud_msg_width = -1;
+	sobj.hud_msg_len = strlen(sobj.hud_msg);
+	sobj.hud_msg_width = -1;
     } else
-	sobj->hud_msg_len = 0;
+	sobj.hud_msg_len = 0;
 
-    /* Initialize sobj->msg data (is shown on game area) */
+    /* Initialize sobj.msg data (is shown on game area) */
     if (Using_score_decimals())
-	sprintf(sobj->msg, "%.*f", showScoreDecimals, score);
+	sprintf(sobj.msg, "%.*f", showScoreDecimals, score);
     else {
 	int sc = (int)(score >= 0.0 ? score + 0.5 : score - 0.5);
-	sprintf(sobj->msg, "%d", sc);
+	sprintf(sobj.msg, "%d", sc);
     }
-    sobj->msg_len = strlen(sobj->msg);
-    sobj->msg_width = -1;
+    sobj.msg_len = strlen(sobj.msg);
+    sobj.msg_width = -1;
 
     /* Update global index variable */
     score_object = (score_object + 1) % MAX_SCORE_OBJECTS;
@@ -1527,7 +1527,7 @@ int Handle_start(long server_loops)
     destruct = 0;
     shutdown_delay = 0;
     shutdown_count = -1;
-    eyesId = (self != NULL) ? self->id : 0;
+    eyesId = (self != NULL) ? self.id : 0;
     eyes = Other_by_id(eyesId);
     thrusttime = -1;
     shieldtime = -1;
@@ -1560,7 +1560,7 @@ static void update_timing(void)
 int Handle_end(long server_loops)
 {
     end_loops = server_loops;
-    snooping = (self && eyesId != self->id) ? true : false;
+    snooping = (self && eyesId != self.id) ? true : false;
     update_timing();    
     Paint_frame();
 #ifdef SOUND
@@ -1642,7 +1642,7 @@ int Handle_damaged(int dam)
     return 0;
 }
 
-int Handle_modifiers(char *m)
+int Handle_modifiers(String m)
 {
     strlcpy(mods, m, MAX_CHARS);
     return 0;
@@ -1792,7 +1792,7 @@ int Handle_ship(int x, int y, int id, int dir, int shield, int cloak,
     t.x = x;
     t.y = y;
     t.id = id;
-    if (dirPrediction && self && self->id == id)
+    if (dirPrediction && self && self.id == id)
         t.dir = predict_self_dir(dir);
     else
         t.dir = dir;
@@ -1806,17 +1806,17 @@ int Handle_ship(int x, int y, int id, int dir, int shield, int cloak,
     /* if we see a ship in the center of the display, we may be watching
      * it, especially if it's us!  consider any ship there to be our eyes
      * until we see a ship that really is us.
-     * BG: XXX there was a bug here.  self was dereferenced at "self->id"
+     * BG: XXX there was a bug here.  self was dereferenced at "self.id"
      * while self could be NULL here.
      */
     if (!selfVisible
-	&& ((x == selfPos.x && y == selfPos.y) || (self && id == self->id))) {
+	&& ((x == selfPos.x && y == selfPos.y) || (self && id == self.id))) {
 
         eyesId = id;
 	eyes = Other_by_id(eyesId);
 	if (eyes != NULL)
-	    eyeTeam = eyes->team;
-	selfVisible = (self && (id == self->id));
+	    eyeTeam = eyes.team;
+	selfVisible = (self && (id == self.id));
 	return Handle_radar(x, y, 3);
     }
 
@@ -1932,7 +1932,7 @@ int Handle_polystyle(int polyind, int newstyle)
     xp_polygon_t *poly;
 
     poly = &polygons[polyind];
-    poly->style = newstyle;
+    poly.style = newstyle;
     /*warn("polygon %d style set to %d", polyind, newstyle);*/
     UpdateRadar=true;
     return 0;
@@ -2006,12 +2006,12 @@ int Handle_fastradar(int x, int y, int size)
 int Handle_radar(int x, int y, int size)
 {
     return Handle_fastradar
-	((int)((double)(x * RadarWidth) / Setup->width + 0.5),
-	 (int)((double)(y * RadarHeight) / Setup->height + 0.5),
+	((int)((double)(x * RadarWidth) / Setup.width + 0.5),
+	 (int)((double)(y * RadarHeight) / Setup.height + 0.5),
 	 size);
 }
 
-int Handle_message(char *msg)
+int Handle_message(String msg)
 {
     int i;
     char ignoree[MAX_CHARS];
@@ -2043,12 +2043,12 @@ int Handle_message(char *msg)
 	    return 0;
 	}
 
-	if (other->ignorelevel <= 0) {
+	if (other.ignorelevel <= 0) {
 	    Add_message(msg);
 	    return 0;
 	}
 
-	if (other->ignorelevel >= 2)
+	if (other.ignorelevel >= 2)
 	    return 0;
 
 	/* ignorelevel must be 1 */
@@ -2124,7 +2124,7 @@ bool Using_score_decimals(void)
     return false;
 }
 
-int Client_init(char *server, unsigned server_version)
+int Client_init(String server, unsigned server_version)
 {
     version = server_version;
     if (server_version < 0x4F09)
@@ -2132,7 +2132,7 @@ int Client_init(char *server, unsigned server_version)
     else
 	oldServer = 0;
 
-    Make_table();
+//    Make_table(); static init now
 
     if (Paint_init() == -1) 
 	return -1;
@@ -2148,8 +2148,8 @@ int Client_setup(void)
 
     if (oldServer) {
 	Map_dots();
-	Map_restore(0, 0, Setup->x, Setup->y);
-	Map_blue(0, 0, Setup->x, Setup->y);
+	Map_restore(0, 0, Setup.x, Setup.y);
+	Map_blue(0, 0, Setup.x, Setup.y);
 	/* kps -remove this, you shouldn't change options this way */
 	/* No one wants this on old-style maps anyway, so turn it off.
 	 * I do, so turn it on.
@@ -2160,7 +2160,7 @@ int Client_setup(void)
 	instruments.texturedWalls = false;
     }
 
-    RadarHeight = (RadarWidth * Setup->height) / Setup->width;
+    RadarHeight = (RadarWidth * Setup.height) / Setup.width;
 
     if (Init_playing_windows() == -1)
 	return -1;
@@ -2229,7 +2229,7 @@ void Client_cleanup(void)
     if (max_others > 0) {
 	for (i = 0; i < num_others; i++) {
 	    other_t* other = &Others[i];
-	    Free_ship_shape(other->ship);
+	    Free_ship_shape(other.ship);
 	}
 	free(Others);
 	num_others = 0;

@@ -57,8 +57,8 @@ int DrawMapIcon(HandlerInfo_t info)
     unsigned int btn;
 
 
-    x = info.x - info.field->x;
-    y = info.y - info.field->y;
+    x = info.x - info.field.x;
+    y = info.y - info.field.y;
     btn = info.button;
     count = info.count;
 
@@ -351,8 +351,8 @@ int MoveMapView(HandlerInfo_t info)
     int x, y, count;
     unsigned int btn;
 
-    x = info.x - info.field->x;
-    y = info.y - info.field->y;
+    x = info.x - info.field.x;
+    y = info.y - info.field.y;
     count = info.count;
     btn = info.button;
     if (count == 0)
@@ -596,10 +596,10 @@ int SaveUndoIcon(int x, int y, char icon)
 
     undo = (struct undo_t *) undolist;
     undolist = (undo_t *) malloc(sizeof(undo_t));
-    undolist->next = undo;
-    undolist->x = x;
-    undolist->y = y;
-    undolist->icon = icon;
+    undolist.next = undo;
+    undolist.x = x;
+    undolist.y = y;
+    undolist.icon = icon;
     return 0;
 }
 
@@ -617,8 +617,8 @@ int Undo(HandlerInfo_t info)
     ClearSelectArea();
     /* if the first icon is a breakpoint, skip it */
     if (undolist != NULL) {
-	if (undolist->icon == '\n') {
-	    traverse = (undo_t *) undolist->next;
+	if (undolist.icon == '\n') {
+	    traverse = (undo_t *) undolist.next;
 	    free(undolist);
 	    undolist = traverse;
 	}
@@ -626,11 +626,11 @@ int Undo(HandlerInfo_t info)
     while (undolist != NULL) {
 
 	/* check if we are at a breakpoint */
-	if (undolist->icon == '\n') {
+	if (undolist.icon == '\n') {
 	    return 0;
 	}
-	ChangeMapData(undolist->x, undolist->y, undolist->icon, 0);
-	traverse = (undo_t *) undolist->next;
+	ChangeMapData(undolist.x, undolist.y, undolist.icon, 0);
+	traverse = (undo_t *) undolist.next;
 	free(undolist);
 	undolist = traverse;
     }
@@ -667,7 +667,7 @@ int NewMap(HandlerInfo_t info)
 	changedwin = (Window) NULL;
     }
     free(map.comments);
-    map.comments = (char *) NULL;
+    map.comments = (String ) NULL;
     map.mapName[0] = map.mapAuthor[0] = map.mapFileName[0] =
 	map.gravity[0] = '\0';
     map.shipMass[0] = map.maxRobots[0] = map.worldLives[0] = '\0';
@@ -696,11 +696,11 @@ int ResizeWidth(HandlerInfo_t info)
 {
     int width;
 
-    width = atoi(info.field->charvar);
+    width = atoi(info.field.charvar);
     if ((width < 20) || (width > MAX_MAP_SIZE)) {
-	strcpy(info.field->charvar, info.form->entry_restore);
+	strcpy(info.field.charvar, info.form.entry_restore);
     } else {
-	sprintf(info.field->charvar, "%d", width);
+	sprintf(info.field.charvar, "%d", width);
 	map.width = width;
 	ResetMap();
 	ClearUndo();
@@ -717,11 +717,11 @@ int ResizeHeight(HandlerInfo_t info)
 {
     int height;
 
-    height = atoi(info.field->charvar);
+    height = atoi(info.field.charvar);
     if ((height < 20) || (height > MAX_MAP_SIZE)) {
-	strcpy(info.field->charvar, info.form->entry_restore);
+	strcpy(info.field.charvar, info.form.entry_restore);
     } else {
-	sprintf(info.field->charvar, "%d", height);
+	sprintf(info.field.charvar, "%d", height);
 	map.height = height;
 	ResetMap();
 	ClearUndo();
@@ -883,14 +883,14 @@ int OpenScoringPopup()
 /***************************************************************************/
 int ValidateCoordHandler(HandlerInfo_t info)
 {
-    char *returnval;
-    char *string, *start;
+    String returnval;
+    String string, *start;
 
-    returnval = malloc(strlen(info.field->charvar) + 1);
+    returnval = malloc(strlen(info.field.charvar) + 1);
     returnval[0] = '\0';
-    string = malloc(strlen(info.field->charvar) + 1);
+    string = malloc(strlen(info.field.charvar) + 1);
     start = string;
-    strcpy(string, info.field->charvar);
+    strcpy(string, info.field.charvar);
 
     while (string[0] != '\0') {
 	if (((string[0] >= '0') && (string[0] <= '9'))
@@ -899,7 +899,7 @@ int ValidateCoordHandler(HandlerInfo_t info)
 	string++;
     }
 
-    strcpy(info.field->charvar, returnval);
+    strcpy(info.field.charvar, returnval);
     free(returnval);
     free(start);
     return 0;

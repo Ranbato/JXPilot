@@ -34,7 +34,7 @@ int Startup_server_motd(void)
     return 0;
 }
 
-int Handle_motd(long off, char *buf, int len, long filesize) 
+int Handle_motd(long off, String buf, int len, long filesize)
 {
     fwrite(buf + off, 1, len, stdout);
     return 0;

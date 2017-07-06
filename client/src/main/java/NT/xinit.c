@@ -92,8 +92,8 @@ static char myClass[] = "XPilot";
  * NB!  Is dependent on the order of the items in item.h!
  */
 static struct {
-    unsigned char*	data;
-    const char*		keysText;
+    unsigned String 	data;
+    const String 		keysText;
 } itemBitmapData[NUM_ITEMS] = {
     {
 	itemEnergyPack_bits,
@@ -214,16 +214,16 @@ Pixmap	itemBitmaps[NUM_ITEMS];		/* Bitmaps for the items */
 char dashes[NUM_DASHES];
 char cdashes[NUM_CDASHES];
 
-static int Quit_callback(int, void *, const char **);
-static int Config_callback(int, void *, const char **);
-static int Colors_callback(int, void *, const char **);
-static int Score_callback(int, void *, const char **);
-static int Player_callback(int, void *, const char **);
+static int Quit_callback(int, void *, String *);
+static int Config_callback(int, void *, String *);
+static int Colors_callback(int, void *, String *);
+static int Score_callback(int, void *, String *);
+static int Player_callback(int, void *, String *);
 
 int button_form;
 static int menu_button;
 
-const char *Item_get_text(int i)
+String Item_get_text(int i)
 {
     return itemBitmapData[i].keysText;
 }
@@ -234,8 +234,8 @@ const char *Item_get_text(int i)
  * font failed (return default font in that case).
  */
 static XFontStruct* Set_font(Display* display, GC gc,
-			     const char* fontName,
-			     const char *resName)
+			     const String  fontName,
+			     String resName)
 {
     XFontStruct*	font;
 
@@ -245,10 +245,10 @@ static XFontStruct* Set_font(Display* display, GC gc,
 	      fontName, resName);
 	font = XQueryFont(display, XGContextFromGC(gc));
     } else
-	XSetFont(display, gc, font->fid);
+	XSetFont(display, gc, font.fid);
 #else
     font = WinXLoadFont(fontName);
-    XSetFont(display, gc, font->fid);
+    XSetFont(display, gc, font.fid);
 #endif
 
     return font;
@@ -274,7 +274,7 @@ static void Init_disp_prop(Display *d, Window win,
     xwmh.input	   = True;
     xwmh.initial_state = NormalState;
     xwmh.icon_pixmap   = XCreateBitmapFromData(d, win,
-					       (char *)icon_bits,
+					       (String )icon_bits,
 					       icon_width, icon_height);
 
     xsh.flags = (flags|PMinSize|PMaxSize|PBaseSize|PResizeInc);
@@ -546,7 +546,7 @@ int Init_playing_windows(void)
 
     /* Create buttons */
 #define BUTTON_WIDTH	84
-    ButtonHeight = buttonFont->ascent + buttonFont->descent + 2*BTN_BORDER;
+    ButtonHeight = buttonFont.ascent + buttonFont.descent + 2*BTN_BORDER;
 
     button_form
 	= Widget_create_form(0, topWindow,
@@ -624,12 +624,12 @@ void WinXCreateItemBitmaps(void)
     for (i = 0; i < NUM_ITEMS; i++) {
 	itemBitmaps[i][ITEM_HUD]
 	    = WinXCreateBitmapFromData(dpy, drawWindow,
-				       (char *)itemBitmapData[i].data,
+				       (String )itemBitmapData[i].data,
 				       ITEM_SIZE, ITEM_SIZE,
 				       colors[hudColor].pixel);
 	itemBitmaps[i][ITEM_PLAYFIELD]
 	    = WinXCreateBitmapFromData(dpy, drawWindow,
-				       (char *)itemBitmapData[i].data,
+				       (String )itemBitmapData[i].data,
 				       ITEM_SIZE, ITEM_SIZE,
 				       colors[RED].pixel);
     }
@@ -638,21 +638,21 @@ void WinXCreateItemBitmaps(void)
 }
 #endif
 
-static int Config_callback(int widget_desc, void *data, const char **str)
+static int Config_callback(int widget_desc, void *data, String *str)
 {
     UNUSED_PARAM(widget_desc); UNUSED_PARAM(data); UNUSED_PARAM(str);
     Config(true, CONFIG_DEFAULT);
     return 0;
 }
 
-static int Colors_callback(int widget_desc, void *data, const char **str)
+static int Colors_callback(int widget_desc, void *data, String *str)
 {
     UNUSED_PARAM(widget_desc); UNUSED_PARAM(data); UNUSED_PARAM(str);
     Config(true, CONFIG_COLORS);
     return 0;
 }
 
-static int Score_callback(int widget_desc, void *data, const char **str)
+static int Score_callback(int widget_desc, void *data, String *str)
 {
     UNUSED_PARAM(widget_desc); UNUSED_PARAM(data); UNUSED_PARAM(str);
     Config(false, CONFIG_NONE);
@@ -663,7 +663,7 @@ static int Score_callback(int widget_desc, void *data, const char **str)
     return 0;
 }
 
-static int Player_callback(int widget_desc, void *data, const char **str)
+static int Player_callback(int widget_desc, void *data, String *str)
 {
     UNUSED_PARAM(widget_desc); UNUSED_PARAM(data); UNUSED_PARAM(str);
     Config(false, CONFIG_NONE);
@@ -674,7 +674,7 @@ static int Player_callback(int widget_desc, void *data, const char **str)
     return 0;
 }
 
-static int Quit_callback(int widget_desc, void *data, const char **str)
+static int Quit_callback(int widget_desc, void *data, String *str)
 {
     UNUSED_PARAM(widget_desc); UNUSED_PARAM(data); UNUSED_PARAM(str);
     quitting = true;
@@ -709,7 +709,7 @@ void Resize(Window w, unsigned width, unsigned height)
     Net_flush();
     XResizeWindow(dpy, drawWindow, draw_width, draw_height);
 #ifndef _WINDOWS
-    if (dbuf_state->type == PIXMAP_COPY) {
+    if (dbuf_state.type == PIXMAP_COPY) {
 	XFreePixmap(dpy, drawPixmap);
 	drawPixmap = XCreatePixmap(dpy, drawWindow, draw_width, draw_height,
 				   dispDepth);

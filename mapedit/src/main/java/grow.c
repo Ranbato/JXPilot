@@ -51,7 +51,7 @@ int GrowMapArea(HandlerInfo_t info)
 	/* free grow structure */
 	next = grow;
 	while (next != NULL) {
-	    delgrow = next->next;
+	    delgrow = next.next;
 	    free(next);
 	    next = delgrow;
 	}
@@ -101,9 +101,9 @@ int GrowMapArea(HandlerInfo_t info)
 		    grow_filled++;
 		    next = grow;
 		    grow = (grow_t *) malloc(sizeof(grow_t));
-		    grow->x = i;
-		    grow->y = j;
-		    grow->next = next;
+		    grow.x = i;
+		    grow.y = j;
+		    grow.next = next;
 		}
 	    }
 	}
@@ -112,9 +112,9 @@ int GrowMapArea(HandlerInfo_t info)
 	if (grow == NULL) {
 	    ChangeMapData(grow_centerx, grow_centery, XPMAP_FILLED, 1);
 	    grow = (grow_t *) malloc(sizeof(grow_t));
-	    grow->x = grow_centerx;
-	    grow->y = grow_centery;
-	    grow->next = NULL;
+	    grow.x = grow_centerx;
+	    grow.y = grow_centery;
+	    grow.next = NULL;
 	    grow_filled = 1;
 	    if (grow_w > grow_h) {
 		grow_ya = ((double) grow_h) / ((double) grow_w);
@@ -130,7 +130,7 @@ int GrowMapArea(HandlerInfo_t info)
 	growat = randomMT() % (grow_filled - 1);
 	next = grow;
 	while ((next != NULL) && (growat != 0)) {
-	    next = next->next;
+	    next = next.next;
 	    growat--;
 	}
     } else {
@@ -141,8 +141,8 @@ int GrowMapArea(HandlerInfo_t info)
 
     dx = grow_xa * cos(2 * 3.14 * angle / 1000);
     dy = grow_ya * sin(2 * 3.14 * angle / 1000);
-    x = next->x + dx;
-    y = next->y + dy;
+    x = next.x + dx;
+    y = next.y + dy;
     while (MapData((int) x, (int) y) == XPMAP_FILLED) {
 	x += dx;
 	y += dy;
@@ -154,9 +154,9 @@ int GrowMapArea(HandlerInfo_t info)
     ChangeMapData((int) x, (int) y, XPMAP_FILLED, 1);
     next = grow;
     grow = (grow_t *) malloc(sizeof(grow_t));
-    grow->x = (int) x;
-    grow->y = (int) y;
-    grow->next = next;
+    grow.x = (int) x;
+    grow.y = (int) y;
+    grow.next = next;
     grow_filled++;
 
     return 0;

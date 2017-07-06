@@ -59,14 +59,14 @@ static int rank_cmp(const void *p1, const void *p2)
      * We want a descending order (greatest ratio first), that's why we
      * tell qsort a greater ratio is less than a lesser ratio.
      */
-    if (r1->ratio < r2->ratio)
+    if (r1.ratio < r2.ratio)
 	return 1;
-    if (r1->ratio > r2->ratio)
+    if (r1.ratio > r2.ratio)
 	return -1;
     return 0;
 }
 
-static char *rank_showtime(const time_t t)
+static String rank_showtime(const time_t t)
 {
     static char buf[80];
 
@@ -78,7 +78,7 @@ static char *rank_showtime(const time_t t)
 /*
  * Encode 'str' for XML (xml set to nonzero) or HTML (xml set to zero).
  */
-static char *encode(const char *str, int xml)
+static String encode(String str, int xml)
 {
     static char result[MAX_CHARS];
     char c;
@@ -125,25 +125,25 @@ static void SortRankings(void)
 	ranknode_t *rank = &ranknodes[k];
 	double attenuation, kills, sc, kd, kr, hf;
 
-	if (strlen(rank->name) == 0)
+	if (strlen(rank.name) == 0)
 	    continue;
 
 	/* The attenuation affects players with less than 300 rounds. */
-	attenuation = (rank->rounds < 300) ?
-	    ((double) rank->rounds / 300.0) : 1.0;
+	attenuation = (rank.rounds < 300) ?
+	    ((double) rank.rounds / 300.0) : 1.0;
 
-	kills = rank->kills;
-	sc = (double) rank->score * attenuation;
-	kd = ((rank->deaths != 0) ?
-	      (kills / (double) rank->deaths) :
+	kills = rank.kills;
+	sc = (double) rank.score * attenuation;
+	kd = ((rank.deaths != 0) ?
+	      (kills / (double) rank.deaths) :
 	      (kills)) * attenuation;
-	kr = ((rank->rounds != 0) ?
-	      (kills / (double) rank->rounds) :
+	kr = ((rank.rounds != 0) ?
+	      (kills / (double) rank.rounds) :
 	      (kills)) * attenuation;
-	hf = ((rank->ballsLost != 0) ?
-	      ((double) rank->ballsCashed /
-	       (double) rank->ballsLost) :
-	      (double) rank->ballsCashed) * attenuation;
+	hf = ((rank.ballsLost != 0) ?
+	      ((double) rank.ballsCashed /
+	       (double) rank.ballsLost) :
+	      (double) rank.ballsCashed) * attenuation;
 
 	sc_table[k] = sc;
 	kd_table[k] = kd;
@@ -199,7 +199,7 @@ static void SortRankings(void)
 	    double sc, kd, kr, hf, rsc, rkd, rkr, rhf;
 
 	    rank_base[i].ind = i;
-	    if (strlen(rank->name) == 0) {
+	    if (strlen(rank.name) == 0) {
 		rank_base[i].ratio = -1;
 		continue;
 	    }
@@ -219,7 +219,7 @@ static void SortRankings(void)
 
 	    /* KHS: maximum survived time serves as factor */
 	    if(options.survivalScore != 0.0){
-		rank_base[i].ratio=rank->max_survival_time;
+		rank_base[i].ratio=rank.max_survival_time;
 	    }
 	} 
 	  
@@ -229,13 +229,13 @@ static void SortRankings(void)
     }
 }
 
-static const char *Rank_get_logout_message(ranknode_t *rank)
+static String Rank_get_logout_message(ranknode_t *rank)
 {
     static char msg[MSG_LEN];
     player_t *pl;
 
-    assert(strlen(rank->name) > 0);
-    pl = Get_player_by_name(rank->name, NULL, NULL);
+    assert(strlen(rank.name) > 0);
+    pl = Get_player_by_name(rank.name, NULL, NULL);
     if (pl) {
 	if (Player_is_paused(pl))
 	    snprintf(msg, sizeof(msg), "paused");
@@ -243,7 +243,7 @@ static const char *Rank_get_logout_message(ranknode_t *rank)
 	    snprintf(msg, sizeof(msg), "playing");
     }
     else
-	snprintf(msg, sizeof(msg), "%s", rank_showtime(rank->timestamp));
+	snprintf(msg, sizeof(msg), "%s", rank_showtime(rank.timestamp));
 
     return msg;
 }
@@ -294,7 +294,7 @@ void Rank_write_webpage(void)
 	"    }\n"
 	"  </style>\n";
 
-    char *filename;
+    String filename;
     FILE *file;
     int i;
 
@@ -344,7 +344,7 @@ void Rank_write_webpage(void)
     for (i = 0; i < MAX_SCORES; i++) {
 	ranknode_t *rank = &ranknodes[rank_base[i].ind];
 
-	if (strlen(rank->name) == 0)
+	if (strlen(rank.name) == 0)
 	    continue;
 
 	if (i % 20 == 0)
@@ -371,7 +371,7 @@ void Rank_write_webpage(void)
 	    "      <td class=\"player\" align=\"left\">%s</td>\n",
 	    i % 2 == 0 ? "odd" : "even",  /* sic */
 	    i + 1,
-	    encode(rank->name, 0));
+	    encode(rank.name, 0));
 
 	fprintf(file,
 	    "      <td class=\"score\" align=\"right\">%.1f</td>\n"
@@ -383,21 +383,21 @@ void Rank_write_webpage(void)
 	    "      <td class=\"balls\" align=\"left\">%u/%u/%u/%u/%.2f</td>\n"
 	    "      <td class=\"ratio\" align=\"right\">%.2f</td>\n"
 	    "      <td class=\"user\" align=\"right\">%s</td>\n",
-	    rank->score,
-	    rank->kills, rank->deaths,
-	    rank->rounds, rank->shots,
-	    rank->deadliest,
-	    rank->ballsCashed, rank->ballsSaved,
-	    rank->ballsWon, rank->ballsLost,
-	    rank->bestball,
+	    rank.score,
+	    rank.kills, rank.deaths,
+	    rank.rounds, rank.shots,
+	    rank.deadliest,
+	    rank.ballsCashed, rank.ballsSaved,
+	    rank.ballsWon, rank.ballsLost,
+	    rank.bestball,
 	    rank_base[i].ratio,
-	    encode(rank->user, 0));
+	    encode(rank.user, 0));
 
 	fprintf(file,
 		"      <td class=\"host\" align=\"left\">%s</td>\n"
 		"      <td class=\"logout\" align=\"left\">%s</td>\n"
 		"    </tr>\n",
-		encode(rank->host, 0),
+		encode(rank.host, 0),
 		Rank_get_logout_message(rank));
     }
 
@@ -425,7 +425,7 @@ void Rank_write_webpage(void)
 }
 
 
-bool Rank_get_stats(const char *name, char *buf, size_t size)
+bool Rank_get_stats(String name, String buf, size_t size)
 {
     ranknode_t *r = Rank_get_by_name(name);
 
@@ -435,9 +435,9 @@ bool Rank_get_stats(const char *name, char *buf, size_t size)
     snprintf(buf, size,
 	     "%-15s  SC: %7.1f  K/D: %5d/%5d  R: %4d  SH: %6d  Dl: %d "
 	     "B: %d/%d/%d/%d/%.2f TM: %.2f",
-	     r->name, r->score, r->kills, r->deaths, r->rounds, r->shots, r->deadliest,
-	     r->ballsCashed, r->ballsSaved, r->ballsWon, r->ballsLost,
-	     r->bestball,r->max_survival_time);
+	     r.name, r.score, r.kills, r.deaths, r.rounds, r.shots, r.deadliest,
+	     r.ballsCashed, r.ballsSaved, r.ballsWon, r.ballsLost,
+	     r.bestball,r.max_survival_time);
 
     return true;
 }
@@ -455,13 +455,13 @@ void Rank_show_ranks(void)
     for (i = 0; i < MAX_SCORES; i++) {
 	ranknode_t *rank = &ranknodes[rank_base[i].ind];
 
-	if (strlen(rank->name) > 0)
+	if (strlen(rank.name) > 0)
 	    numranks++;
 
-	if (rank->pl != NULL) {
+	if (rank.pl != NULL) {
 	    if (num > 0)
 		strlcat(msg, ", ", sizeof(msg));
-	    snprintf(tmpbuf, sizeof(tmpbuf), "%s [%d]", rank->name, i + 1);
+	    snprintf(tmpbuf, sizeof(tmpbuf), "%s [%d]", rank.name, i + 1);
 	    strlcat(msg, tmpbuf, sizeof(msg));
 	    num++;
 	}
@@ -477,7 +477,7 @@ void Rank_show_ranks(void)
     for (i = 0; i < MAX_SCORES; i++) {
 	ranknode_t *rank = &ranknodes[rank_base[i].ind];
 
-	if (strlen(rank->name) == 0)
+	if (strlen(rank.name) == 0)
 	    continue;
 
 	if (num > 0)
@@ -485,7 +485,7 @@ void Rank_show_ranks(void)
 	snprintf(tmpbuf, sizeof(tmpbuf), 
 		 (options.survivalScore == 0.0) ? 
 		 "%d. %s (%.2f)" : "%d. %s (%.1f)",
-		 num + 1, rank->name, rank_base[i].ratio);
+		 num + 1, rank.name, rank_base[i].ratio);
 	strlcat(msg, tmpbuf, sizeof(msg));
 	num++;
 	if (num > 2)
@@ -499,16 +499,16 @@ void Rank_show_ranks(void)
 }
 
 static void Init_ranknode(ranknode_t *rank,
-			  const char *name, const char *user, const char *host)
+			  String name, String user, String host)
 {
     memset(rank, 0, sizeof(ranknode_t));
-    strlcpy(rank->name, name, sizeof(rank->name));
-    strlcpy(rank->user, user, sizeof(rank->user));
-    strlcpy(rank->host, host, sizeof(rank->host));
+    strlcpy(rank.name, name, sizeof(rank.name));
+    strlcpy(rank.user, user, sizeof(rank.user));
+    strlcpy(rank.host, host, sizeof(rank.host));
 }
 
 
-ranknode_t *Rank_get_by_name(const char *name)
+ranknode_t *Rank_get_by_name(String name)
 {
     int i;
     player_t *pl;
@@ -518,7 +518,7 @@ ranknode_t *Rank_get_by_name(const char *name)
     for (i = 0; i < MAX_SCORES; i++) {
 	ranknode_t *rank = &ranknodes[i];
 
-	if (!strcasecmp(name, rank->name))
+	if (!strcasecmp(name, rank.name))
 	    return rank;
     }
 
@@ -528,8 +528,8 @@ ranknode_t *Rank_get_by_name(const char *name)
      * who is currently playing.
      */
     pl = Get_player_by_name(name, NULL, NULL);
-    if (pl && pl->rank)
-	return pl->rank;
+    if (pl && pl.rank)
+	return pl.rank;
 
     return NULL;
 }
@@ -593,16 +593,16 @@ void Rank_get_saved_score(player_t * pl)
 
     for (i = 0; i < MAX_SCORES; i++) {
 	rank = &ranknodes[i];
-	if (!strcasecmp(pl->name, rank->name)) {
-	    if (rank->pl == NULL) {
+	if (!strcasecmp(pl.name, rank.name)) {
+	    if (rank.pl == NULL) {
 		/* Ok, found it. */
-		rank->pl = pl;
-		Player_set_score(pl,rank->score);
-		pl->rank = rank;
+		rank.pl = pl;
+		Player_set_score(pl,rank.score);
+		pl.rank = rank;
 	    } else {
 		/* That ranknode is already in use by another player! */
 		Player_set_score(pl,0);
-		pl->rank = NULL;
+		pl.rank = NULL;
 	    }
 	    return;
 	}
@@ -612,7 +612,7 @@ void Rank_get_saved_score(player_t * pl)
     for (i = 0; i < MAX_SCORES; i++) {
 	rank = &ranknodes[i];
 
-	if (strlen(rank->name) == 0) {
+	if (strlen(rank.name) == 0) {
 	    unused = rank;
 	    /*warn("found unused node %d", i);*/
 	    break;
@@ -628,31 +628,31 @@ void Rank_get_saved_score(player_t * pl)
 	    rank = &ranknodes[rank_base[i].ind];
 
 	    /*warn("i is %d, index is %d, timestamp is %u",
-	      i, rank_base[i].ind, rank->timestamp); */
+	      i, rank_base[i].ind, rank.timestamp); */
 
-	    if (!unused || rank->timestamp < unused->timestamp)
+	    if (!unused || rank.timestamp < unused.timestamp)
 		unused = rank;
 	}
     }
 
     rank = unused;
-    /*warn("timestamp of lru node = %u", rank->timestamp);*/
+    /*warn("timestamp of lru node = %u", rank.timestamp);*/
 
-    Init_ranknode(rank, pl->name, pl->username, pl->hostname);
-    rank->pl = pl;
-    rank->timestamp = time(NULL);
+    Init_ranknode(rank, pl.name, pl.username, pl.hostname);
+    rank.pl = pl;
+    rank.timestamp = time(NULL);
     Player_set_score(pl,0);
-    pl->rank = rank;
+    pl.rank = rank;
 }
 
 /* A player has quit, save his info and mark him as not playing. */
 void Rank_save_score(player_t * pl)
 {
-    ranknode_t *rank = pl->rank;
+    ranknode_t *rank = pl.rank;
 
-    rank->score =  Get_Score(pl);
-    rank->pl = NULL;
-    rank->timestamp = time(NULL);
+    rank.score =  Get_Score(pl);
+    rank.pl = NULL;
+    rank.timestamp = time(NULL);
 }
 
 /* Save the scores to disk (not the webpage). */
@@ -683,71 +683,71 @@ void Rank_write_rankfile(void)
     for (i = 0; i < rank_entries; i++) {
 	ranknode_t *rank = &ranknodes[rank_base[i].ind];
 
-	if (strlen(rank->name) == 0)
+	if (strlen(rank.name) == 0)
 	    continue;
 
 	if (fprintf(file, "<Player "
-		    "name=\"%s\" ", encode(rank->name, 1)) < 0)
+		    "name=\"%s\" ", encode(rank.name, 1)) < 0)
 	    goto writefailed;
 
 	if (fprintf(file,
-		    "user=\"%s\" ", encode(rank->user, 1)) < 0)
+		    "user=\"%s\" ", encode(rank.user, 1)) < 0)
 	    goto writefailed;
 
 	if (fprintf(file,
-		    "host=\"%s\" ", encode(rank->host, 1)) < 0)
+		    "host=\"%s\" ", encode(rank.host, 1)) < 0)
 	    goto writefailed;
 
-	if (rank->score != 0.0
-	    && fprintf(file, "score=\"%.2f\" ", rank->score) < 0)
+	if (rank.score != 0.0
+	    && fprintf(file, "score=\"%.2f\" ", rank.score) < 0)
 	    goto writefailed;
 
-	if (rank->kills > 0
-	    && fprintf(file, "kills=\"%d\" ", rank->kills) < 0)
+	if (rank.kills > 0
+	    && fprintf(file, "kills=\"%d\" ", rank.kills) < 0)
 	    goto writefailed;
 
-	if (rank->deaths > 0
-	    && fprintf(file, "deaths=\"%d\" ", rank->deaths) < 0)
+	if (rank.deaths > 0
+	    && fprintf(file, "deaths=\"%d\" ", rank.deaths) < 0)
 	    goto writefailed;
 
-	if (rank->rounds > 0
-	    && fprintf(file, "rounds=\"%d\" ", rank->rounds) < 0)
+	if (rank.rounds > 0
+	    && fprintf(file, "rounds=\"%d\" ", rank.rounds) < 0)
 	    goto writefailed;
 
-	if (rank->shots > 0
-	    && fprintf(file, "shots=\"%d\" ", rank->shots) < 0)
+	if (rank.shots > 0
+	    && fprintf(file, "shots=\"%d\" ", rank.shots) < 0)
 	    goto writefailed;
 
-	if (rank->deadliest > 0
-	    && fprintf(file, "deadliest=\"%d\" ", rank->deadliest) < 0)
+	if (rank.deadliest > 0
+	    && fprintf(file, "deadliest=\"%d\" ", rank.deadliest) < 0)
 	    goto writefailed;
 
-	if (rank->ballsCashed > 0
-	    && fprintf(file, "ballscashed=\"%d\" ", rank->ballsCashed) < 0)
+	if (rank.ballsCashed > 0
+	    && fprintf(file, "ballscashed=\"%d\" ", rank.ballsCashed) < 0)
 	    goto writefailed;
 
-	if (rank->ballsSaved > 0
-	    && fprintf(file, "ballssaved=\"%d\" ", rank->ballsSaved) < 0)
+	if (rank.ballsSaved > 0
+	    && fprintf(file, "ballssaved=\"%d\" ", rank.ballsSaved) < 0)
 	    goto writefailed;
 
-	if (rank->ballsWon > 0
-	    && fprintf(file, "ballswon=\"%d\" ", rank->ballsWon) < 0)
+	if (rank.ballsWon > 0
+	    && fprintf(file, "ballswon=\"%d\" ", rank.ballsWon) < 0)
 	    goto writefailed;
 
-	if (rank->ballsLost > 0
-	    && fprintf(file, "ballslost=\"%d\" ", rank->ballsLost) < 0)
+	if (rank.ballsLost > 0
+	    && fprintf(file, "ballslost=\"%d\" ", rank.ballsLost) < 0)
 	    goto writefailed;
 
-	if (rank->bestball > 0
-	    && fprintf(file, "bestball=\"%.2f\" ", rank->bestball) < 0)
+	if (rank.bestball > 0
+	    && fprintf(file, "bestball=\"%.2f\" ", rank.bestball) < 0)
 	    goto writefailed;
 
-        if (rank->max_survival_time > 0
+        if (rank.max_survival_time > 0
             && fprintf(file, "max_survival_time=\"%.2f\" ", 
-            rank->max_survival_time) < 0)
+            rank.max_survival_time) < 0)
 	    goto writefailed;
 
-	if (fprintf(file, "timestamp=\"%u\" ", (unsigned)rank->timestamp) < 0)
+	if (fprintf(file, "timestamp=\"%u\" ", (unsigned)rank.timestamp) < 0)
 	    goto writefailed;
 	
 	if (fprintf(file, "/>\n") < 0)
@@ -794,7 +794,7 @@ void Rank_write_rankfile(void)
 }
 
 
-static void tagstart(void *data, const char *el, const char **attr)
+static void tagstart(void *data, String el, String *attr)
 {
     static bool xptag = false;
 
@@ -833,37 +833,37 @@ static void tagstart(void *data, const char *el, const char **attr)
 
 	while (*attr) {
 	    if (!strcasecmp(*attr, "name"))
-		strlcpy(rank->name, *(attr + 1), sizeof(rank->name));
+		strlcpy(rank.name, *(attr + 1), sizeof(rank.name));
 	    if (!strcasecmp(*attr, "user"))
-		strlcpy(rank->user, *(attr + 1), sizeof(rank->user));
+		strlcpy(rank.user, *(attr + 1), sizeof(rank.user));
 	    if (!strcasecmp(*attr, "host"))
-		strlcpy(rank->host, *(attr + 1), sizeof(rank->host));
+		strlcpy(rank.host, *(attr + 1), sizeof(rank.host));
 	    if (!strcasecmp(*attr, "score"))
-		rank->score = atof(*(attr + 1));
+		rank.score = atof(*(attr + 1));
 	    if (!strcasecmp(*attr, "kills"))
-		rank->kills = atoi(*(attr + 1));
+		rank.kills = atoi(*(attr + 1));
 	    if (!strcasecmp(*attr, "deaths"))
-		rank->deaths = atoi(*(attr + 1));
+		rank.deaths = atoi(*(attr + 1));
 	    if (!strcasecmp(*attr, "rounds"))
-		rank->rounds = atoi(*(attr + 1));
+		rank.rounds = atoi(*(attr + 1));
 	    if (!strcasecmp(*attr, "shots"))
-		rank->shots = atoi(*(attr + 1));
+		rank.shots = atoi(*(attr + 1));
 	    if (!strcasecmp(*attr, "deadliest"))
-		rank->deadliest = atoi(*(attr + 1));
+		rank.deadliest = atoi(*(attr + 1));
 	    if (!strcasecmp(*attr, "ballssaved"))
-		rank->ballsSaved = atoi(*(attr + 1));
+		rank.ballsSaved = atoi(*(attr + 1));
 	    if (!strcasecmp(*attr, "ballslost"))
-		rank->ballsLost = atoi(*(attr + 1));
+		rank.ballsLost = atoi(*(attr + 1));
 	    if (!strcasecmp(*attr, "ballswon"))
-		rank->ballsWon = atoi(*(attr + 1));
+		rank.ballsWon = atoi(*(attr + 1));
 	    if (!strcasecmp(*attr, "ballscashed"))
-		rank->ballsCashed = atoi(*(attr + 1));
+		rank.ballsCashed = atoi(*(attr + 1));
 	    if (!strcasecmp(*attr, "bestball"))
-		rank->bestball = atof(*(attr + 1));
+		rank.bestball = atof(*(attr + 1));
 	    if (!strcasecmp(*attr, "max_survival_time"))
-	        rank->max_survival_time = atof(*(attr + 1));
+	        rank.max_survival_time = atof(*(attr + 1));
 	    if (!strcasecmp(*attr, "timestamp"))
-		rank->timestamp = atoi(*(attr + 1));
+		rank.timestamp = atoi(*(attr + 1));
 
 	    attr += 2;
 	}
@@ -880,7 +880,7 @@ static void tagstart(void *data, const char *el, const char **attr)
     return;
 }
 
-static void tagend(void *data, const char *el)
+static void tagend(void *data, String el)
 {
     UNUSED_PARAM(data);
 

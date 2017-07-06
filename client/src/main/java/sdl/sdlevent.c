@@ -128,7 +128,7 @@ int Process_event(SDL_Event *evt)
 
     if (Console_process(evt)) return 1;
     
-    switch (evt->type) {
+    switch (evt.type) {
 	
     case SDL_QUIT:
 	Client_exit(0);
@@ -136,23 +136,23 @@ int Process_event(SDL_Event *evt)
 	
     case SDL_KEYDOWN:
 	if (Console_isVisible()) break;
-	Keyboard_button_pressed((xp_keysym_t)evt->key.keysym.sym);
+	Keyboard_button_pressed((xp_keysym_t)evt.key.keysym.sym);
 	break;
 	
     case SDL_KEYUP:
         /* letting release events through to prevent some keys from locking */
 	/*if (Console_isVisible()) break;*/
-	Keyboard_button_released((xp_keysym_t)evt->key.keysym.sym);
+	Keyboard_button_released((xp_keysym_t)evt.key.keysym.sym);
 	break;
 	
     case SDL_MOUSEBUTTONDOWN:
-	button = evt->button.button;
+	button = evt.button.button;
 	if (!clData.pointerControl) {
-	    if ( (clicktarget[button-1] = FindGLWidget(MainWidget,evt->button.x,evt->button.y)) ) {
-	    	if (clicktarget[button-1]->button) {
-		    clicktarget[button-1]->button(button,evt->button.state,
-		    	    	    	    evt->button.x,evt->button.y,
-					    clicktarget[button-1]->buttondata);
+	    if ( (clicktarget[button-1] = FindGLWidget(MainWidget,evt.button.x,evt.button.y)) ) {
+	    	if (clicktarget[button-1].button) {
+		    clicktarget[button-1].button(button,evt.button.state,
+		    	    	    	    evt.button.x,evt.button.y,
+					    clicktarget[button-1].buttondata);
 		}
 	    }
 	    
@@ -163,26 +163,26 @@ int Process_event(SDL_Event *evt)
 	
     case SDL_MOUSEMOTION:
 	if (clData.pointerControl) {
-	    mouseMovement += evt->motion.xrel;
+	    mouseMovement += evt.motion.xrel;
 	} else {
-	    /*xpprintf("mouse motion xrel=%i yrel=%i\n",evt->motion.xrel,evt->motion.yrel);*/
+	    /*xpprintf("mouse motion xrel=%i yrel=%i\n",evt.motion.xrel,evt.motion.yrel);*/
 	    /*for (i = 0;i<NUM_MOUSE_BUTTONS;++i)*/ /* dragdrop for all mouse buttons*/
 	    if (clicktarget[0]) { /*is button one pressed?*/
 	    	/*xpprintf("SDL_MOUSEBUTTONDOWN drag: area found!\n");*/
-	    	if (clicktarget[0]->motion) {
-		    clicktarget[0]->motion(evt->motion.xrel,evt->motion.yrel,
-		    	    	    	evt->button.x,evt->button.y,
-					clicktarget[0]->motiondata);
+	    	if (clicktarget[0].motion) {
+		    clicktarget[0].motion(evt.motion.xrel,evt.motion.yrel,
+		    	    	    	evt.button.x,evt.button.y,
+					clicktarget[0].motiondata);
 		}
 	    } else {
-    	    	GLWidget *tmp = FindGLWidget(MainWidget,evt->button.x,evt->button.y);
+    	    	GLWidget *tmp = FindGLWidget(MainWidget,evt.button.x,evt.button.y);
 		if (tmp != hovertarget) {
-    	    	    if (hovertarget && hovertarget->hover) {
-		    	hovertarget->hover(false,evt->button.x,evt->button.y,hovertarget->hoverdata);
+    	    	    if (hovertarget && hovertarget.hover) {
+		    	hovertarget.hover(false,evt.button.x,evt.button.y,hovertarget.hoverdata);
 		    }
-		    tmp = FindGLWidget(MainWidget,evt->button.x,evt->button.y);
-		    if (tmp && tmp->hover)
-    	    	    	tmp->hover(true,evt->button.x,evt->button.y,tmp->hoverdata);
+		    tmp = FindGLWidget(MainWidget,evt.button.x,evt.button.y);
+		    if (tmp && tmp.hover)
+    	    	    	tmp.hover(true,evt.button.x,evt.button.y,tmp.hoverdata);
 		    hovertarget = tmp;
 		}
 	    }
@@ -190,15 +190,15 @@ int Process_event(SDL_Event *evt)
 	break;
 	
     case SDL_MOUSEBUTTONUP:
-	button = evt->button.button;
+	button = evt.button.button;
 	if (clData.pointerControl) {
 	    Pointer_button_released(button);
 	} else {
 	    if ( clicktarget[button-1] ) {
-	    	if (clicktarget[button-1]->button) {
-		    clicktarget[button-1]->button(button,evt->button.state,
-		    	    	    	    	evt->button.x,evt->button.y,
-						clicktarget[button-1]->buttondata);
+	    	if (clicktarget[button-1].button) {
+		    clicktarget[button-1].button(button,evt.button.state,
+		    	    	    	    	evt.button.x,evt.button.y,
+						clicktarget[button-1].buttondata);
 		}
 		clicktarget[button-1] = NULL;
 	    }
@@ -206,7 +206,7 @@ int Process_event(SDL_Event *evt)
 	break;
 
     case SDL_VIDEORESIZE:     
-        Resize_Window(evt->resize.w, evt->resize.h);          
+        Resize_Window(evt.resize.w, evt.resize.h);
         break;
 
     default:

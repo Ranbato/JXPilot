@@ -47,7 +47,7 @@
  * Globals.
  */
 static TTF_Font     *scoreListFont;
-static const char   *scoreListFontName = CONF_FONTDIR "VeraMoBd.ttf";
+static String scoreListFontName = CONF_FONTDIR "VeraMoBd.ttf";
 static sdl_window_t scoreListWin;
 static SDL_Rect     scoreEntryRect; /* Bounds for the last painted score entry */
 static bool         scoreListMoving;
@@ -62,12 +62,12 @@ static void Scorelist_button(Uint8 button, Uint8 state, Uint16 x, Uint16 y, void
     if (state == SDL_PRESSED) {
     	if (button == 1) {
 	    scoreListMoving = true;
-    	    if (DelGLWidgetListItem( widget->list, widget ))
-	    	AppendGLWidgetList( widget->list, widget );
+    	    if (DelGLWidgetListItem( widget.list, widget ))
+	    	AppendGLWidgetList( widget.list, widget );
 	}
     	if (button == 2) {
-    	    if (DelGLWidgetListItem( widget->list, widget ))
-	    	PrependGLWidgetList( widget->list, widget );
+    	    if (DelGLWidgetListItem( widget.list, widget ))
+	    	PrependGLWidgetList( widget.list, widget );
 	}
     }
     
@@ -80,8 +80,8 @@ static void Scorelist_button(Uint8 button, Uint8 state, Uint16 x, Uint16 y, void
 static void Scorelist_move(Sint16 xrel, Sint16 yrel, Uint16 x, Uint16 y, void *data)
 {
     if (scoreListMoving) {
-	((GLWidget *)data)->bounds.x = scoreListWin.x += xrel;
-	((GLWidget *)data)->bounds.y = scoreListWin.y += yrel;
+	((GLWidget *)data).bounds.x = scoreListWin.x += xrel;
+	((GLWidget *)data).bounds.y = scoreListWin.y += yrel;
     }
 }
 
@@ -94,8 +94,8 @@ static void Scorelist_cleanup( GLWidget *widget )
 
 static void SetBounds_ScoreList(GLWidget *widget, SDL_Rect *b )
 {
-    widget->bounds.x = scoreListWin.x = b->x;
-    widget->bounds.y = scoreListWin.y = b->y;
+    widget.bounds.x = scoreListWin.x = b.x;
+    widget.bounds.y = scoreListWin.y = b.y;
 }
 
 static void Scorelist_paint(GLWidget *widget)
@@ -113,8 +113,8 @@ static void Scorelist_paint(GLWidget *widget)
 	     * so I have to repaint it */
 	    scoresChanged = true;
 	    Paint_score_table();
-	    widget->bounds.w = scoreListWin.w+2;
-	    widget->bounds.h = scoreListWin.h+2;
+	    widget.bounds.w = scoreListWin.w+2;
+	    widget.bounds.h = scoreListWin.h+2;
 	}
 	sdl_window_refresh(&scoreListWin);
     }
@@ -147,11 +147,11 @@ GLWidget *Init_ScorelistWidget(void)
 	return NULL;
     }
 
-    tmp->WIDGET     	= SCORELISTWIDGET;
-    tmp->bounds.x   	= 10;
-    tmp->bounds.y   	= 240;
-    tmp->bounds.w   	= 200;
-    tmp->bounds.h   	= 100;
+    tmp.WIDGET     	= SCORELISTWIDGET;
+    tmp.bounds.x   	= 10;
+    tmp.bounds.y   	= 240;
+    tmp.bounds.w   	= 200;
+    tmp.bounds.h   	= 100;
 
     scoreListFont = TTF_OpenFont(scoreListFontName, 11);
     if (scoreListFont == NULL) {
@@ -159,18 +159,18 @@ GLWidget *Init_ScorelistWidget(void)
 	free(tmp);
 	return NULL;
     }
-    if (sdl_window_init(&scoreListWin, tmp->bounds.x, tmp->bounds.y, tmp->bounds.w, tmp->bounds.h)) {
+    if (sdl_window_init(&scoreListWin, tmp.bounds.x, tmp.bounds.y, tmp.bounds.w, tmp.bounds.h)) {
 	error("failed to init scorelist window");
 	free(tmp);
 	return NULL;
     }
-    tmp->Draw	    	= Scorelist_paint;
-    tmp->Close	    	= Scorelist_cleanup;
-    tmp->button     	= Scorelist_button;
-    tmp->SetBounds     	= SetBounds_ScoreList;
-    tmp->buttondata 	= tmp;
-    tmp->motion     	= Scorelist_move;
-    tmp->motiondata 	= tmp;
+    tmp.Draw	    	= Scorelist_paint;
+    tmp.Close	    	= Scorelist_cleanup;
+    tmp.button     	= Scorelist_button;
+    tmp.SetBounds     	= SetBounds_ScoreList;
+    tmp.buttondata 	= tmp;
+    tmp.motion     	= Scorelist_move;
+    tmp.motiondata 	= tmp;
 
     return tmp;
 }
@@ -342,15 +342,15 @@ void Paint_score_start(void)
 
     if (showUserName)
 	strlcpy(headingStr, "NICK=USER@HOST", sizeof(headingStr));
-    else if (Setup->mode.get( TEAM_PLAY))
+    else if (Setup.mode.get( TEAM_PLAY))
 	strlcpy(headingStr, "  SCORE NAME           LIFE", sizeof(headingStr));
     else {
 	strlcpy(headingStr, "  ", sizeof(headingStr));
-	if (Setup->mode.get( TIMING))
+	if (Setup.mode.get( TIMING))
 	    strcat(headingStr, "LAP ");
 	strlcpy(headingStr, " AL ", sizeof(headingStr));
 	strcat(headingStr, "  SCORE  ");
-	if (Setup->mode.get( LIMITED_LIVES))
+	if (Setup.mode.get( LIMITED_LIVES))
 	    strlcat(headingStr, "LIFE", sizeof(headingStr));
 	strlcat(headingStr, " NAME", sizeof(headingStr));
     }
@@ -369,9 +369,9 @@ void Paint_score_start(void)
     SDL_SetAlpha(header, 0, 0);
     SDL_BlitSurface(header, NULL, scoreListWin.surface, &scoreEntryRect);
     lineRGBA(scoreListWin.surface, SCORE_BORDER,
-	     scoreEntryRect.y + header->h + 2,
+	     scoreEntryRect.y + header.h + 2,
 	     scoreListWin.w - SCORE_BORDER,
-	     scoreEntryRect.y + header->h + 2,
+	     scoreEntryRect.y + header.h + 2,
 	     0, 128, 0, 255);
     SDL_FreeSurface(header);
 }
@@ -421,67 +421,67 @@ void Paint_score_entry(int entry_num, other_t *other, bool is_team)
      */
     if (showUserName)
 	sprintf(label, "%s=%s@%s",
-		other->nick_name, other->user_name, other->host_name);
+		other.nick_name, other.user_name, other.host_name);
     else {
-	if (Setup->mode.get( TIMING)) {
+	if (Setup.mode.get( TIMING)) {
 	    raceStr[0] = ' ';
 	    raceStr[1] = ' ';
-	    if ((other->mychar == ' ' || other->mychar == 'R')
-		&& other->round + other->check > 0) {
-		if (other->round > 99)
-		    sprintf(raceStr, "%3d", other->round);
+	    if ((other.mychar == ' ' || other.mychar == 'R')
+		&& other.round + other.check > 0) {
+		if (other.round > 99)
+		    sprintf(raceStr, "%3d", other.round);
 		else
 		    sprintf(raceStr, "%d.%c",
-			    other->round, other->check + 'a');
+			    other.round, other.check + 'a');
 	    }
 	}
-	if (Setup->mode.get( TEAM_PLAY))
-	    teamStr[0] = other->team + '0';
+	if (Setup.mode.get( TEAM_PLAY))
+	    teamStr[0] = other.team + '0';
 	else
-	    sprintf(teamStr, "%c", other->alliance);
+	    sprintf(teamStr, "%c", other.alliance);
 
-	if (Setup->mode.get( LIMITED_LIVES))
-	    sprintf(lifeStr, " %3d", other->life);
+	if (Setup.mode.get( LIMITED_LIVES))
+	    sprintf(lifeStr, " %3d", other.life);
 
 	if (Using_score_decimals())
 	    sprintf(scoreStr, "%*.*f",
 		    7 - showScoreDecimals, showScoreDecimals,
-		    other->score);
+		    other.score);
 	else {
-	    double score = other->score;
+	    double score = other.score;
 	    int sc = (int)(score >= 0.0 ? score + 0.5 : score - 0.5);
 	    sprintf(scoreStr, "%6d", sc);
 	}
 
-	if (Setup->mode.get( TEAM_PLAY))
+	if (Setup.mode.get( TEAM_PLAY))
 	    sprintf(label, "%c%s %-15s%s",
-		    other->mychar, scoreStr, other->nick_name, lifeStr);
+		    other.mychar, scoreStr, other.nick_name, lifeStr);
 	else
 	    sprintf(label, "%c %s%s%s%s  %s",
-		    other->mychar, raceStr, teamStr,
+		    other.mychar, raceStr, teamStr,
 		    scoreStr, lifeStr,
-		    other->nick_name);
+		    other.nick_name);
     }
 
     /*
      * Draw the line
      * e94_msu eKthHacks
      */
-    if (!is_team && strchr("DPW", other->mychar)) {
-	if (other->id == self->id)
+    if (!is_team && strchr("DPW", other.mychar)) {
+	if (other.id == self.id)
 	    color = scoreInactiveSelfColorRGBA;
 	else
 	    color = scoreInactiveColorRGBA;
     } else {
 	if (!is_team) {
-	    if (other->id == self->id)
+	    if (other.id == self.id)
 		color = scoreSelfColorRGBA;
 	    else
 		color = scoreColorRGBA;
 	} else {
-	    color = Team_color(other->team);
+	    color = Team_color(other.team);
 	    if (!color) {
-		if (other->team == self->team)
+		if (other.team == self.team)
 		    color = scoreOwnTeamColorRGBA;
 		else
 		    color = scoreEnemyTeamColorRGBA;
@@ -499,16 +499,16 @@ void Paint_score_entry(int entry_num, other_t *other, bool is_team)
     }
     SDL_SetAlpha(line, 0, 0);
     SDL_BlitSurface(line, NULL, scoreListWin.surface, &scoreEntryRect);
-    scoreEntryRect.h = line->h;
+    scoreEntryRect.h = line.h;
 
     /*
      * Underline the teams
      */
     if (is_team) {
 	lineRGBA(scoreListWin.surface, scoreEntryRect.x, 
-		 scoreEntryRect.y + line->h - 1,
+		 scoreEntryRect.y + line.h - 1,
 		 scoreEntryRect.x + scoreEntryRect.w,
-		 scoreEntryRect.y + line->h - 1,
+		 scoreEntryRect.y + line.h - 1,
 		 fg.r, fg.g, fg.b, 255);
     }
 

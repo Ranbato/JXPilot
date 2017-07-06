@@ -79,10 +79,10 @@ void CSplashWnd::ShowSplashScreen(CWnd * pParentWnd /*= NULL*/ )
 
     // Allocate a new splash screen, and create the window.
     c_pSplashWnd = new CSplashWnd;
-    if (!c_pSplashWnd->Create(pParentWnd))
+    if (!c_pSplashWnd.Create(pParentWnd))
 	delete c_pSplashWnd;
     else
-	c_pSplashWnd->UpdateWindow();
+	c_pSplashWnd.UpdateWindow();
 }
 
 BOOL CSplashWnd::PreTranslateAppMessage(MSG * pMsg)
@@ -91,15 +91,15 @@ BOOL CSplashWnd::PreTranslateAppMessage(MSG * pMsg)
 	return FALSE;
 
     // If we get a keyboard or mouse message, hide the splash screen.
-    if (pMsg->message == WM_KEYDOWN ||
-	pMsg->message == WM_SYSKEYDOWN ||
-	pMsg->message == WM_LBUTTONDOWN ||
-	pMsg->message == WM_RBUTTONDOWN ||
-	pMsg->message == WM_MBUTTONDOWN ||
-	pMsg->message == WM_NCLBUTTONDOWN ||
-	pMsg->message == WM_NCRBUTTONDOWN ||
-	pMsg->message == WM_NCMBUTTONDOWN) {
-	c_pSplashWnd->HideSplashScreen();
+    if (pMsg.message == WM_KEYDOWN ||
+	pMsg.message == WM_SYSKEYDOWN ||
+	pMsg.message == WM_LBUTTONDOWN ||
+	pMsg.message == WM_RBUTTONDOWN ||
+	pMsg.message == WM_MBUTTONDOWN ||
+	pMsg.message == WM_NCLBUTTONDOWN ||
+	pMsg.message == WM_NCRBUTTONDOWN ||
+	pMsg.message == WM_NCMBUTTONDOWN) {
+	c_pSplashWnd.HideSplashScreen();
 	return TRUE;		// message handled here
     }
 
@@ -116,17 +116,17 @@ BOOL CSplashWnd::Create(CWnd * pParentWnd /*= NULL*/ )
 
     return CreateEx(0,
 		    AfxRegisterWndClass(0,
-					AfxGetApp()->
+					AfxGetApp().
 					LoadStandardCursor(IDC_ARROW)),
 		    NULL, WS_POPUP | WS_VISIBLE, 0, 0, bm.bmWidth,
-		    bm.bmHeight, pParentWnd->GetSafeHwnd(), NULL);
+		    bm.bmHeight, pParentWnd.GetSafeHwnd(), NULL);
 }
 
 void CSplashWnd::HideSplashScreen()
 {
     // Destroy the window, and update the mainframe.
     DestroyWindow();
-    AfxGetMainWnd()->UpdateWindow();
+    AfxGetMainWnd().UpdateWindow();
 }
 
 void CSplashWnd::PostNcDestroy()
@@ -203,9 +203,9 @@ void CSplashWnd::ShowMessage(const CString & cs)
     if (c_bShowSplashWnd && !c_pSplashWnd)
 	ShowSplashScreen();
 
-    CDC *dc = c_pSplashWnd->GetDC();
+    CDC *dc = c_pSplashWnd.GetDC();
     CRect rect;
-    c_pSplashWnd->GetClientRect(&rect);
+    c_pSplashWnd.GetClientRect(&rect);
     CFont font;
     CFont *ofont;
     COLORREF ocolor;
@@ -218,27 +218,27 @@ void CSplashWnd::ShowMessage(const CString & cs)
 		    OUT_DEFAULT_PRECIS,
 		    CLIP_DEFAULT_PRECIS,
 		    DEFAULT_QUALITY, FF_ROMAN | FF_DONTCARE, "");
-    ofont = dc->SelectObject(&font);
-    ocolor = dc->SetTextColor(RGB(255, 255, 255));
-    //oback = dc->SetBkColor(RGB(0,0,0));
+    ofont = dc.SelectObject(&font);
+    ocolor = dc.SetTextColor(RGB(255, 255, 255));
+    //oback = dc.SetBkColor(RGB(0,0,0));
 
-    omode = dc->SetBkMode(TRANSPARENT);
+    omode = dc.SetBkMode(TRANSPARENT);
     rect.top = rect.bottom - 30;
     rect.left += 10;
     rect.right -= 10;
     rect.bottom -= 8;
 #ifdef	_DEBUG
-    dc->FillSolidRect(rect, RGB(255, 0, 0));
+    dc.FillSolidRect(rect, RGB(255, 0, 0));
 #else
-    dc->FillSolidRect(rect, RGB(0, 0, 0));
+    dc.FillSolidRect(rect, RGB(0, 0, 0));
 #endif
-    dc->TextOut(10, rect.bottom - 24, cs);
+    dc.TextOut(10, rect.bottom - 24, cs);
 
-    dc->SetBkMode(omode);
-    //dc->SetBkColor(oback);
-    dc->SetTextColor(ocolor);
-    dc->SelectObject(ofont);
-    c_pSplashWnd->ReleaseDC(dc);
+    dc.SetBkMode(omode);
+    //dc.SetBkColor(oback);
+    dc.SetTextColor(ocolor);
+    dc.SelectObject(ofont);
+    c_pSplashWnd.ReleaseDC(dc);
 
 #ifdef	_DEBUG
 //      Sleep(1000);

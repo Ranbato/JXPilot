@@ -55,7 +55,7 @@
 static int Query_subnet(sock_t *sock,
 			struct sockaddr_in *host_addr,
 			struct sockaddr_in *mask_addr,
-			char *msg,
+			String msg,
 			size_t msglen)
 {
     int i, nbits, max;
@@ -63,8 +63,8 @@ static int Query_subnet(sock_t *sock,
     struct sockaddr_in addr;
 
     addr = *host_addr;
-    host = ntohl(host_addr->sin_addr.s_addr);
-    mask = ntohl(mask_addr->sin_addr.s_addr);
+    host = ntohl(host_addr.sin_addr.s_addr);
+    mask = ntohl(mask_addr.sin_addr.s_addr);
     memset ((void *)hostbits, 0, sizeof hostbits);
     nbits = 0;
     hostmask = 0;
@@ -102,7 +102,7 @@ static int Query_subnet(sock_t *sock,
 	dest = (host & ~hostmask) | hostbits[i];
 	addr.sin_addr.s_addr = htonl(dest);
 	sock_get_error(sock);
-	sendto(sock->fd, msg, msglen, 0,
+	sendto(sock.fd, msg, msglen, 0,
 	       (struct sockaddr *)&addr, sizeof(addr));
 	D( printf("sendto %s/%d\n",
 		  inet_ntoa(addr.sin_addr), ntohs(addr.sin_port)) );
@@ -118,7 +118,7 @@ static int Query_subnet(sock_t *sock,
 }
 
 
-static int Query_fudged(sock_t *sock, int port, char *msg, size_t msglen)
+static int Query_fudged(sock_t *sock, int port, String msg, size_t msglen)
 {
     int			i, count = 0;
     unsigned char	*p;
@@ -132,22 +132,22 @@ static int Query_fudged(sock_t *sock, int port, char *msg, size_t msglen)
 	error("gethostbyname");
 	return -1;
     }
-    if (h->h_addrtype != AF_INET || h->h_length != 4) {
+    if (h.h_addrtype != AF_INET || h.h_length != 4) {
 	warn("Dunno about addresses with address type %d and length %d\n",
-	     h->h_addrtype, h->h_length);
+	     h.h_addrtype, h.h_length);
 	return -1;
     }
-    for (i = 0; h->h_addr_list[i]; i++) {
+    for (i = 0; h.h_addr_list[i]; i++) {
 	memset(&addr, 0, sizeof(addr));
 	addr.sin_family = AF_INET;
 	addr.sin_port = (unsigned short)htons((unsigned short)port);
-	p = (unsigned char *) h->h_addr_list[i];
+	p = (unsigned String ) h.h_addr_list[i];
 	addrmask = p[0] << 24 | p[1] << 16 | p[2] << 8 | p[3];
 	addr.sin_addr.s_addr = htonl(addrmask);
 	subnet = addr;
 	if (addrmask == 0x7F000001) {
 	    sock_get_error(sock);
-	    if (sendto(sock->fd, msg, msglen, 0,
+	    if (sendto(sock.fd, msg, msglen, 0,
 		       (struct sockaddr *)&addr, sizeof(addr)) != -1)
 		count++;
 	} else {
@@ -173,7 +173,7 @@ static int Query_fudged(sock_t *sock, int port, char *msg, size_t msglen)
  * we get multiple responses from the same server.
  */
 
-int Query_all(sock_t *sock, int port, char *msg, size_t msglen)
+int Query_all(sock_t *sock, int port, String msg, size_t msglen)
 {
 #ifdef QUERY_FUDGED
     return Query_fudged(sock, port, msg, msglen);
@@ -208,7 +208,7 @@ int Query_all(sock_t *sock, int port, char *msg, size_t msglen)
     ifconf.ifc_len = sizeof(ifbuf);
     ifconf.ifc_buf = (caddr_t)ifbuf;
     memset((void *)ifbuf, 0, sizeof(ifbuf));
-    if (ioctl(fd, SIOCGIFCONF, (char *)&ifconf) == -1) {
+    if (ioctl(fd, SIOCGIFCONF, (String )&ifconf) == -1) {
 	error("ioctl SIOCGIFCONF");
 	close(fd);
 	return Query_fudged(sock, port, msg, msglen);
@@ -216,8 +216,8 @@ int Query_all(sock_t *sock, int port, char *msg, size_t msglen)
     for (len = 0; len + (int)sizeof(struct ifreq) <= ifconf.ifc_len;) {
 	ifreqp = (struct ifreq *)&ifconf.ifc_buf[len];
 
-	D( printf("interface name %s\n", ifreqp->ifr_name) );
-	D( printf("\taddress family %d\n", ifreqp->ifr_addr.sa_family) );
+	D( printf("interface name %s\n", ifreqp.ifr_name) );
+	D( printf("\taddress family %d\n", ifreqp.ifr_addr.sa_family) );
 
 	len += sizeof(struct ifreq);
 #if (defined(BSD) && BSD >= 199006) \
@@ -228,26 +228,26 @@ int Query_all(sock_t *sock, int port, char *msg, size_t msglen)
 	 * address structure in order to support protocol families that have
 	 * bigger addresses.
 	 */
-	if (ifreqp->ifr_addr.sa_len > sizeof(ifreqp->ifr_addr)) {
-	    len += ifreqp->ifr_addr.sa_len - sizeof(ifreqp->ifr_addr);
+	if (ifreqp.ifr_addr.sa_len > sizeof(ifreqp.ifr_addr)) {
+	    len += ifreqp.ifr_addr.sa_len - sizeof(ifreqp.ifr_addr);
 	    D( printf("\textra address length %d\n",
-		      ifreqp->ifr_addr.sa_len - sizeof(ifreqp->ifr_addr)) );
+		      ifreqp.ifr_addr.sa_len - sizeof(ifreqp.ifr_addr)) );
 	}
 #endif
-	if (ifreqp->ifr_addr.sa_family != AF_INET)
+	if (ifreqp.ifr_addr.sa_family != AF_INET)
 	    /*
 	     * Not supported.
 	     */
 	    continue;
 
-	addr = *(struct sockaddr_in *)&ifreqp->ifr_addr;
+	addr = *(struct sockaddr_in *)&ifreqp.ifr_addr;
 	D( printf("\taddress %s\n", inet_ntoa(addr.sin_addr)) );
 
 	/*
 	 * Get interface flags.
 	 */
 	ifreq = *ifreqp;
-	if (ioctl(fd, SIOCGIFFLAGS, (char *)&ifreq) == -1) {
+	if (ioctl(fd, SIOCGIFFLAGS, (String )&ifreq) == -1) {
 	    error("ioctl SIOCGIFFLAGS");
 	    continue;
 	}
@@ -273,7 +273,7 @@ int Query_all(sock_t *sock, int port, char *msg, size_t msglen)
 	} else if ((ifflags & IFF_POINTOPOINT) != 0) {
 	    D( printf("\tpoint-to-point interface\n") );
 	    ifreq = *ifreqp;
-	    if (ioctl(fd, SIOCGIFDSTADDR, (char *)&ifreq) == -1) {
+	    if (ioctl(fd, SIOCGIFDSTADDR, (String )&ifreq) == -1) {
 		error("ioctl SIOCGIFDSTADDR");
 		continue;
 	    }
@@ -282,7 +282,7 @@ int Query_all(sock_t *sock, int port, char *msg, size_t msglen)
 	} else if ((ifflags & IFF_BROADCAST) != 0) {
 	    D( printf("\tbroadcast interface\n") );
 	    ifreq = *ifreqp;
-	    if (ioctl(fd, SIOCGIFBRDADDR, (char *)&ifreq) == -1) {
+	    if (ioctl(fd, SIOCGIFBRDADDR, (String )&ifreq) == -1) {
 		error("ioctl SIOCGIFBRDADDR");
 		continue;
 	    }
@@ -301,7 +301,7 @@ int Query_all(sock_t *sock, int port, char *msg, size_t msglen)
 	     * Well, we have an address (at last).
 	     */
 	    addr.sin_port = htons(port);
-	    if (sendto(sock->fd, msg, msglen, 0, (struct sockaddr *)&addr,
+	    if (sendto(sock.fd, msg, msglen, 0, (struct sockaddr *)&addr,
 		       sizeof addr) == (ssize_t)msglen) {
 		D(printf("\tsendto %s/%d\n", inet_ntoa(addr.sin_addr), port));
 		/*
@@ -337,7 +337,7 @@ int Query_all(sock_t *sock, int port, char *msg, size_t msglen)
 	 * Get the netmask for this interface.
 	 */
 	ifreq = *ifreqp;
-	if (ioctl(fd, SIOCGIFNETMASK, (char *)&ifreq) == -1) {
+	if (ioctl(fd, SIOCGIFNETMASK, (String )&ifreq) == -1) {
 	    error("ioctl SIOCGIFNETMASK");
 	    continue;
 	}
@@ -369,7 +369,7 @@ int Query_all(sock_t *sock, int port, char *msg, size_t msglen)
 	memset(&addr, 0, sizeof(addr));
 	addr.sin_addr = loopback.sin_addr;
 	addr.sin_port = htons(port);
-	if (sendto(sock->fd, msg, msglen, 0, (struct sockaddr *)&addr,
+	if (sendto(sock.fd, msg, msglen, 0, (struct sockaddr *)&addr,
 		   sizeof addr) == (ssize_t)msglen) {
 	    D(printf("\tsendto %s/%d\n", inet_ntoa(addr.sin_addr), port));
 	    count++;

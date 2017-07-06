@@ -32,7 +32,7 @@ int max_options = 0;
 
 xp_option_t *options = NULL;
 
-xp_option_t *Find_option(const char *name)
+xp_option_t *Find_option(String name)
 {
     int i;
 
@@ -44,32 +44,32 @@ xp_option_t *Find_option(const char *name)
     return NULL;
 }
 
-static const char *Option_default_value_to_string(xp_option_t *opt)
+static String Option_default_value_to_string(xp_option_t *opt)
 {
     static char buf[4096];
 
-    switch (opt->type) {
+    switch (opt.type) {
     case xp_noarg_option:
 	strcpy(buf, "");
 	break;
     case xp_bool_option:
-	sprintf(buf, "%s", opt->bool_defval ? "yes" : "no");
+	sprintf(buf, "%s", opt.bool_defval ? "yes" : "no");
 	break;
     case xp_int_option:
-	sprintf(buf, "%d", opt->int_defval);
+	sprintf(buf, "%d", opt.int_defval);
 	break;
     case xp_double_option:
-	sprintf(buf, "%.3f", opt->dbl_defval);
+	sprintf(buf, "%.3f", opt.dbl_defval);
 	break;
     case xp_string_option:
-	if (opt->str_defval && strlen(opt->str_defval) > 0)
-	    strlcpy(buf, opt->str_defval, sizeof(buf));
+	if (opt.str_defval && strlen(opt.str_defval) > 0)
+	    strlcpy(buf, opt.str_defval, sizeof(buf));
 	else
 	    strcpy(buf, "");
 	break;
     case xp_key_option:
-	if (opt->key_defval && strlen(opt->key_defval) > 0)
-	    strlcpy(buf, opt->key_defval, sizeof(buf));
+	if (opt.key_defval && strlen(opt.key_defval) > 0)
+	    strlcpy(buf, opt.key_defval, sizeof(buf));
 	else
 	    strcpy(buf, "");
 	break;
@@ -82,9 +82,9 @@ static const char *Option_default_value_to_string(xp_option_t *opt)
 
 static void Print_default_value(xp_option_t *opt)
 {
-    const char *defval = Option_default_value_to_string(opt);
+    String defval = Option_default_value_to_string(opt);
 
-    switch (opt->type) {
+    switch (opt.type) {
     case xp_noarg_option:
 	break;
     case xp_bool_option:
@@ -98,10 +98,10 @@ static void Print_default_value(xp_option_t *opt)
 	break;
 
     case xp_key_option:
-	if (opt->key_defval && strlen(opt->key_defval) > 0)
+	if (opt.key_defval && strlen(opt.key_defval) > 0)
 	    printf("        The default %s: %s.\n",
-		   (strchr(opt->key_defval, ' ') == NULL
-		    ? "key is" : "keys are"), opt->key_defval);
+		   (strchr(opt.key_defval, ' ') == NULL
+		    ? "key is" : "keys are"), opt.key_defval);
 	else
 	    printf("        There is no default value for this option.\n");
 	break;
@@ -119,12 +119,12 @@ void Usage(void)
     for (i = 0; i < num_options; i++) {
 	xp_option_t *opt = Option_by_index(i);
 
-	printf("    -%s %s\n", opt->name,
-	       (opt->type != xp_noarg_option) ? "<value>" : "");
-	if (opt->help && opt->help[0]) {
-	    const char *str;
+	printf("    -%s %s\n", opt.name,
+	       (opt.type != xp_noarg_option) ? "<value>" : "");
+	if (opt.help && opt.help[0]) {
+	    String str;
 	    printf("        ");
-	    for (str = opt->help; *str; str++) {
+	    for (str = opt.help; *str; str++) {
 		putchar(*str);
 		if (*str == '\n' && str[1])
 		    printf("        ");
@@ -154,11 +154,11 @@ static void Version(void)
 bool Set_noarg_option(xp_option_t *opt, bool value, xp_option_origin_t origin)
 {
     assert(opt);
-    assert(opt->type == xp_noarg_option);
-    assert(opt->noarg_ptr);
+    assert(opt.type == xp_noarg_option);
+    assert(opt.noarg_ptr);
 
-    *opt->noarg_ptr = value;
-    opt->origin = origin;
+    *opt.noarg_ptr = value;
+    opt.origin = origin;
 
     return true;
 }
@@ -169,16 +169,16 @@ bool Set_bool_option(xp_option_t *opt, bool value, xp_option_origin_t origin)
     bool retval = true;
 
     assert(opt);
-    assert(opt->type == xp_bool_option);
-    assert(opt->bool_ptr);
+    assert(opt.type == xp_bool_option);
+    assert(opt.bool_ptr);
 
-    if (opt->bool_setfunc)
-	retval = opt->bool_setfunc(opt, value);
+    if (opt.bool_setfunc)
+	retval = opt.bool_setfunc(opt, value);
     else
-	*opt->bool_ptr = value;
+	*opt.bool_ptr = value;
 
     if (retval)
-	opt->origin = origin;
+	opt.origin = origin;
 
     return retval;
 }
@@ -188,42 +188,42 @@ bool Set_int_option(xp_option_t *opt, int value, xp_option_origin_t origin)
     bool retval = true;
 
     assert(opt);
-    assert(opt->type == xp_int_option);
-    assert(opt->int_ptr);
+    assert(opt.type == xp_int_option);
+    assert(opt.int_ptr);
 
     if (origin == xp_option_origin_setcmd) {
 	char msg[MSG_LEN];
 
-	if (value < opt->int_minval) {
+	if (value < opt.int_minval) {
 	    snprintf(msg, sizeof(msg),
 		     "Minimum value for option %s is %d. [*Client reply*]",
-		     opt->name, opt->int_minval);
+		     opt.name, opt.int_minval);
 	    Add_message(msg);
 	}
-	if (value > opt->int_maxval) {
+	if (value > opt.int_maxval) {
 	    snprintf(msg, sizeof(msg),
 		     "Maximum value for option %s is %d. [*Client reply*]",
-		     opt->name, opt->int_maxval);
+		     opt.name, opt.int_maxval);
 	    Add_message(msg);
 	}
     }
     else {
-	if (!(value >= opt->int_minval && value <= opt->int_maxval)) {
+	if (!(value >= opt.int_minval && value <= opt.int_maxval)) {
 	    warn("Bad value %d for option \"%s\", using default...",
-		 value, opt->name);
-	    value = opt->int_defval;
+		 value, opt.name);
+	    value = opt.int_defval;
 	}
     }
 
-    LIMIT(value, opt->int_minval, opt->int_maxval);
+    LIMIT(value, opt.int_minval, opt.int_maxval);
 
-    if (opt->int_setfunc)
-	retval = opt->int_setfunc(opt, value);
+    if (opt.int_setfunc)
+	retval = opt.int_setfunc(opt, value);
     else
-	*opt->int_ptr = value;
+	*opt.int_ptr = value;
 
     if (retval)
-	opt->origin = origin;
+	opt.origin = origin;
 
     return retval;
 }
@@ -234,67 +234,67 @@ bool Set_double_option(xp_option_t *opt, double value,
     bool retval = true;
 
     assert(opt);
-    assert(opt->type == xp_double_option);
-    assert(opt->dbl_ptr);
+    assert(opt.type == xp_double_option);
+    assert(opt.dbl_ptr);
 
     if (origin == xp_option_origin_setcmd) {
 	char msg[MSG_LEN];
 
-	if (value < opt->dbl_minval) {
+	if (value < opt.dbl_minval) {
 	    snprintf(msg, sizeof(msg),
 		     "Minimum value for option %s is %.3f. [*Client reply*]",
-		     opt->name, opt->dbl_minval);
+		     opt.name, opt.dbl_minval);
 	    Add_message(msg);
 	}
-	if (value > opt->dbl_maxval) {
+	if (value > opt.dbl_maxval) {
 	    snprintf(msg, sizeof(msg),
 		     "Maximum value for option %s is %.3f. [*Client reply*]",
-		     opt->name, opt->dbl_maxval);
+		     opt.name, opt.dbl_maxval);
 	    Add_message(msg);
 	}
     }
     else {
-	if (!(value >= opt->dbl_minval && value <= opt->dbl_maxval)) {
+	if (!(value >= opt.dbl_minval && value <= opt.dbl_maxval)) {
 	    warn("Bad value %.3f for option \"%s\", using default...",
-		 value, opt->name);
-	    value = opt->dbl_defval;
+		 value, opt.name);
+	    value = opt.dbl_defval;
 	}
     }
 
-    LIMIT(value, opt->dbl_minval, opt->dbl_maxval);
+    LIMIT(value, opt.dbl_minval, opt.dbl_maxval);
 
-    if (opt->dbl_setfunc)
-	retval = opt->dbl_setfunc(opt, value);
+    if (opt.dbl_setfunc)
+	retval = opt.dbl_setfunc(opt, value);
     else
-	*opt->dbl_ptr = value;
+	*opt.dbl_ptr = value;
 
     if (retval)
-	opt->origin = origin;
+	opt.origin = origin;
 
     return retval;
 }
 
-bool Set_string_option(xp_option_t *opt, const char *value,
+bool Set_string_option(xp_option_t *opt, String value,
 		       xp_option_origin_t origin)
 {
     bool retval = true;
 
     assert(opt);
-    assert(opt->type == xp_string_option);
-    assert(opt->str_ptr || (opt->str_setfunc && opt->str_getfunc));
+    assert(opt.type == xp_string_option);
+    assert(opt.str_ptr || (opt.str_setfunc && opt.str_getfunc));
     assert(value);		/* allow NULL ? */
 
     /*
      * The reason string options don't assume a static area is that that
      * would not allow dynamically allocated strings of arbitrary size.
      */
-    if (opt->str_setfunc)
-	retval = opt->str_setfunc(opt, value);
+    if (opt.str_setfunc)
+	retval = opt.str_setfunc(opt, value);
     else
-	strlcpy(opt->str_ptr, value, opt->str_size);
+	strlcpy(opt.str_ptr, value, opt.str_size);
 
     if (retval)
-	opt->origin = origin;
+	opt.origin = origin;
 
     return retval;
 }
@@ -347,7 +347,7 @@ static void Store_keydef(int ks, keys_t key)
     for (i = 0; i < num_keydefs; i++) {
 	xp_keydefs_t *kd = &keydefs[i];
 
-	if (kd->keysym == ks && kd->key == key) {
+	if (kd.keysym == ks && kd.key == key) {
 	    /*warn("Pair (%d, %d) exist from before", ks, (int) key);*/
 	    /*
 	     * already exists, no need to store 
@@ -365,8 +365,8 @@ static void Store_keydef(int ks, keys_t key)
     for (i = 0; i < num_keydefs; i++) {
 	xp_keydefs_t *kd = &keydefs[i];
 
-	if (kd->key == KEY_DUMMY) {
-	    assert(kd->keysym == XP_KS_UNKNOWN);
+	if (kd.key == KEY_DUMMY) {
+	    assert(kd.keysym == XP_KS_UNKNOWN);
 	    /*warn("Store_keydef: Found dummy at index %d", i);*/
 	    *kd = keydef;
 	    return;
@@ -390,40 +390,40 @@ static void Remove_key_from_keydefs(keys_t key)
 	/*
 	 * lazy deletion 
 	 */
-	if (kd->key == key) {
+	if (kd.key == key) {
 	    /*warn("Remove_key_from_keydefs: Removing key at index %d", i);*/
-	    kd->keysym = XP_KS_UNKNOWN;
-	    kd->key = KEY_DUMMY;
+	    kd.keysym = XP_KS_UNKNOWN;
+	    kd.key = KEY_DUMMY;
 	}
     }
 }
 
-static bool Set_key_option(xp_option_t *opt, const char *value,
+static bool Set_key_option(xp_option_t *opt, String value,
 			   xp_option_origin_t origin)
 {
     /*bool retval = true;*/
-    char *str, *valcpy;
+    String str, *valcpy;
 
     assert(opt);
-    assert(opt->name);
-    assert(opt->type == xp_key_option);
-    assert(opt->key != KEY_DUMMY);
+    assert(opt.name);
+    assert(opt.type == xp_key_option);
+    assert(opt.key != KEY_DUMMY);
     assert(value);
 
     /*
-     * warn("Setting key option %s to \"%s\"", opt->name, value); 
+     * warn("Setting key option %s to \"%s\"", opt.name, value);
      */
 
     /*
      * First remove the old setting.
      */
-    XFREE(opt->key_string);
-    Remove_key_from_keydefs(opt->key);
+    XFREE(opt.key_string);
+    Remove_key_from_keydefs(opt.key);
 
     /*
      * Store the new setting.
      */
-    opt->key_string = xp_safe_strdup(value);
+    opt.key_string = xp_safe_strdup(value);
     valcpy = xp_safe_strdup(value);
     for (str = strtok(valcpy, " \t\r\n");
 	 str != NULL;
@@ -438,20 +438,20 @@ static bool Set_key_option(xp_option_t *opt, const char *value,
 
 	ks = String_to_xp_keysym(str);
 	if (ks == XP_KS_UNKNOWN) {
-	    warn("Invalid keysym \"%s\" for key \"%s\".\n", str, opt->name);
+	    warn("Invalid keysym \"%s\" for key \"%s\".\n", str, opt.name);
 	    continue;
 	}
 
-	Store_keydef(ks, opt->key);
+	Store_keydef(ks, opt.key);
     }
 
     /* in fact if we only get invalid keysyms we should return false */
-    opt->origin = origin;
+    opt.origin = origin;
     XFREE(valcpy);
     return true;
 }
 
-static bool is_legal_value(xp_option_type_t type, const char *value)
+static bool is_legal_value(xp_option_type_t type, String value)
 {
     if (type == xp_noarg_option || type == xp_bool_option) {
 	if (ON(value) || OFF(value))
@@ -476,7 +476,7 @@ static bool is_legal_value(xp_option_type_t type, const char *value)
 }
 
 
-bool Set_option(const char *name, const char *value, xp_option_origin_t origin)
+bool Set_option(String name, String value, xp_option_origin_t origin)
 {
     xp_option_t *opt;
 
@@ -485,21 +485,21 @@ bool Set_option(const char *name, const char *value, xp_option_origin_t origin)
 	/* unknown */
 	return false;
 
-    if (!is_legal_value(opt->type, value)) {
+    if (!is_legal_value(opt.type, value)) {
 	if (origin != xp_option_origin_setcmd)
-	    warn("Bad value \"%s\" for option %s.", value, opt->name);
+	    warn("Bad value \"%s\" for option %s.", value, opt.name);
 	else {
 	    char msg[MSG_LEN];
 	
 	    snprintf(msg, sizeof(msg),
 		     "Bad value \"%s\" for option %s. [*Client reply*]",
-		     value, opt->name);
+		     value, opt.name);
 	    Add_message(msg);
 	}
 	return false;
     }
 
-    switch (opt->type) {
+    switch (opt.type) {
     case xp_noarg_option:
 	return Set_noarg_option(opt, ON(value) ? true : false, origin);
     case xp_bool_option:
@@ -526,9 +526,9 @@ bool Set_option(const char *name, const char *value, xp_option_origin_t origin)
 /*
  * Handler for \set client command.
  */
-void Set_command(const char *args)
+void Set_command(String args)
 {
-    char *name, *value, *valcpy;
+    String name, *value, *valcpy;
     xp_option_t *opt;
     char msg[MSG_LEN];
 
@@ -554,8 +554,8 @@ void Set_command(const char *args)
 	goto out;
     }
     else {
-	const char *newvalue;
-	const char *nm = Option_get_name(opt);
+	String newvalue;
+	String nm = Option_get_name(opt);
 
 	Set_option(name, value, xp_option_origin_setcmd);
 
@@ -570,34 +570,34 @@ void Set_command(const char *args)
     XFREE(valcpy);
 }
 
-const char *Option_value_to_string(xp_option_t *opt)
+String Option_value_to_string(xp_option_t *opt)
 {
     static char buf[MSG_LEN];
 
-    switch (opt->type) {
+    switch (opt.type) {
     case xp_noarg_option:
-	sprintf(buf, "%s", *opt->noarg_ptr ? "yes" : "no");
+	sprintf(buf, "%s", *opt.noarg_ptr ? "yes" : "no");
 	break;
     case xp_bool_option:
-	sprintf(buf, "%s", *opt->bool_ptr ? "yes" : "no");
+	sprintf(buf, "%s", *opt.bool_ptr ? "yes" : "no");
 	break;
     case xp_int_option:
-	sprintf(buf, "%d", *opt->int_ptr);
+	sprintf(buf, "%d", *opt.int_ptr);
 	break;
     case xp_double_option:
-	sprintf(buf, "%.3f", *opt->dbl_ptr);
+	sprintf(buf, "%.3f", *opt.dbl_ptr);
 	break;
     case xp_string_option:
 	/*
 	 * Assertion in Store_option guarantees one of these is not NULL. 
 	 */
-	if (opt->str_getfunc)
-	    return opt->str_getfunc(opt);
+	if (opt.str_getfunc)
+	    return opt.str_getfunc(opt);
 	else
-	    return opt->str_ptr;
+	    return opt.str_ptr;
     case xp_key_option:
-	assert(opt->key_string);
-	return opt->key_string;
+	assert(opt.key_string);
+	return opt.key_string;
     default:
 	assert(0 && "Unknown option type");
     }
@@ -608,9 +608,9 @@ const char *Option_value_to_string(xp_option_t *opt)
 /*
  * Handler for \get client command.
  */
-void Get_command(const char *args)
+void Get_command(String args)
 {
-    char *name, *valcpy;
+    String name, *valcpy;
     xp_option_t *opt;
     char msg[MSG_LEN];
 
@@ -622,8 +622,8 @@ void Get_command(const char *args)
     opt = Find_option(name);
 
     if (opt) {
-	const char *val = Option_value_to_string(opt);
-	const char *nm = Option_get_name(opt);
+	String val = Option_value_to_string(opt);
+	String nm = Option_get_name(opt);
 
 	if (val && strlen(val) > 0)
 	    snprintf(msg, sizeof(msg),
@@ -648,16 +648,16 @@ void Store_option(xp_option_t *opt)
 {
     xp_option_t option;
 
-    assert(opt->name);
-    assert(strlen(opt->name) > 0);
-    assert(opt->help);
-    assert(strlen(opt->help) > 0);
+    assert(opt.name);
+    assert(strlen(opt.name) > 0);
+    assert(opt.help);
+    assert(strlen(opt.help) > 0);
 
     /*
      * Let's not allow several options with the same name 
      */
-    if (Find_option(opt->name) != NULL) {
-	warn("Trying to store duplicate option \"%s\"", opt->name);
+    if (Find_option(opt.name) != NULL) {
+	warn("Trying to store duplicate option \"%s\"", opt.name);
 	assert(0);
     }
 
@@ -665,44 +665,44 @@ void Store_option(xp_option_t *opt)
      * Check that default value is in range 
      * NOTE: these assertions will hold also for options of other types 
      */
-    assert(opt->int_defval >= opt->int_minval);
-    assert(opt->int_defval <= opt->int_maxval);
-    assert(opt->dbl_defval >= opt->dbl_minval);
-    assert(opt->dbl_defval <= opt->dbl_maxval);
+    assert(opt.int_defval >= opt.int_minval);
+    assert(opt.int_defval <= opt.int_maxval);
+    assert(opt.dbl_defval >= opt.dbl_minval);
+    assert(opt.dbl_defval <= opt.dbl_maxval);
 
     memcpy(&option, opt, sizeof(xp_option_t));
 
     STORE(xp_option_t, options, num_options, max_options, option);
 
-    opt = Find_option(opt->name);
+    opt = Find_option(opt.name);
     assert(opt);
 
     /* Set the default value. */
-    switch (opt->type) {
+    switch (opt.type) {
     case xp_noarg_option:
 	Set_noarg_option(opt, false, xp_option_origin_default);
 	break;
     case xp_bool_option:
-	Set_bool_option(opt, opt->bool_defval, xp_option_origin_default);
+	Set_bool_option(opt, opt.bool_defval, xp_option_origin_default);
 	break;
     case xp_int_option:
-	Set_int_option(opt, opt->int_defval, xp_option_origin_default);
+	Set_int_option(opt, opt.int_defval, xp_option_origin_default);
 	break;
     case xp_double_option:
-	Set_double_option(opt, opt->dbl_defval, xp_option_origin_default);
+	Set_double_option(opt, opt.dbl_defval, xp_option_origin_default);
 	break;
     case xp_string_option:
-	assert(opt->str_defval);
-	assert(opt->str_ptr || (opt->str_setfunc && opt->str_getfunc));
-	Set_string_option(opt, opt->str_defval, xp_option_origin_default);
+	assert(opt.str_defval);
+	assert(opt.str_ptr || (opt.str_setfunc && opt.str_getfunc));
+	Set_string_option(opt, opt.str_defval, xp_option_origin_default);
 	break;
     case xp_key_option:
-	assert(opt->key_defval);
-	assert(opt->key != KEY_DUMMY);
-	Set_key_option(opt, opt->key_defval, xp_option_origin_default);
+	assert(opt.key_defval);
+	assert(opt.key != KEY_DUMMY);
+	Set_key_option(opt, opt.key_defval, xp_option_origin_default);
 	break;
     default:
-	warn("Could not set default value for option %s", opt->name);
+	warn("Could not set default value for option %s", opt.name);
 	break;
     }
 
@@ -710,7 +710,7 @@ void Store_option(xp_option_t *opt)
 
 typedef struct xpilotrc_line {
     xp_option_t *opt;
-    const char *comment;
+    String comment;
 } xpilotrc_line_t;
 
 static xpilotrc_line_t	*xpilotrc_lines = NULL;
@@ -734,10 +734,10 @@ static int num_ok_options = 0;
  * Here is some sort of pseudo regular expression:
  * xpilot{.*}option[whitespace]:[whitespace][value][; comment]
  */
-static void Parse_xpilotrc_line(const char *line)
+static void Parse_xpilotrc_line(String line)
 {
-    char *lcpy = xp_safe_strdup(line);
-    char *l = lcpy, *colon, *name, *value, *semicolon, *comment = NULL;
+    String lcpy = xp_safe_strdup(line);
+    String l = lcpy, *colon, *name, *value, *semicolon, *comment = NULL;
     xpilotrc_line_t t;
     xp_option_t *opt;
     int i;
@@ -792,7 +792,7 @@ static void Parse_xpilotrc_line(const char *line)
     for (i = 0; i < num_xpilotrc_lines; i++) {
 	xpilotrc_line_t *x = &xpilotrc_lines[i];
 	
-	if (x->opt == opt) {
+	if (x.opt == opt) {
 	    /* same option defined several times in xpilotrc */
 	    warn("Xpilotrc line %d:", num_xpilotrc_lines + 1);
 	    warn("Option %s previously given on line %d, ignoring new value.",
@@ -846,16 +846,16 @@ static void Parse_xpilotrc_line(const char *line)
     XFREE(lcpy);
 }
 
-static inline bool is_noarg_option(const char *name)
+static inline bool is_noarg_option(String name)
 {
     xp_option_t *opt = Find_option(name);
 
-    if (!opt || opt->type != xp_noarg_option)
+    if (!opt || opt.type != xp_noarg_option)
 	return false;
     return true;
 }
 
-int Xpilotrc_read(const char *path)
+int Xpilotrc_read(String path)
 {
     char buf[4096]; /* long enough max line length in xpilotrc? */
     FILE *fp;
@@ -875,7 +875,7 @@ int Xpilotrc_read(const char *path)
     xpinfo("Reading options from xpilotrc file %s.", path);
 
     while (fgets(buf, sizeof buf, fp)) {
-	char *cp;
+	String cp;
 
 	cp = strchr(buf, '\n');
 	if (cp)
@@ -897,9 +897,9 @@ int Xpilotrc_read(const char *path)
 
 
 #define TABSIZE 8
-static void Xpilotrc_create_line(char *buf, size_t size,
+static void Xpilotrc_create_line(String buf, size_t size,
 				 xp_option_t *opt,
-				 const char *comment,
+				 String comment,
 				 bool comment_whole_line)
 {
     int len, numtabs, i;
@@ -907,7 +907,7 @@ static void Xpilotrc_create_line(char *buf, size_t size,
     assert(buf != NULL);
 
     if (comment_whole_line) {
-	const char *s = "; ";
+	String s = "; ";
 
 	assert(size > strlen(s));
 	strlcpy(buf, s, size);
@@ -918,9 +918,9 @@ static void Xpilotrc_create_line(char *buf, size_t size,
 	strcpy(buf, "");
 
     if (opt) {
-	const char *value;
+	String value;
 
-	snprintf(buf, size, "xpilot.%s:", opt->name);
+	snprintf(buf, size, "xpilot.%s:", opt.name);
 	len = (int) strlen(buf);
 	/* assume tabs are max size of TABSIZE */
 	numtabs = ((5 * TABSIZE - 1) - len) / TABSIZE;
@@ -936,19 +936,19 @@ static void Xpilotrc_create_line(char *buf, size_t size,
 }
 #undef TABSIZE
 
-static void Xpilotrc_write_line(FILE *fp, const char *buf)
+static void Xpilotrc_write_line(FILE *fp, String buf)
 {
 #ifndef _WINDOWS
-    const char *endline = "\n";
+    String endline = "\n";
 #else
-    const char *endline = "\r\n"; /* CR LF */
+    String endline = "\r\n"; /* CR LF */
 #endif
     /*warn("writing line \"%s\"", buf);*/
 
     fprintf(fp, "%s%s", buf, endline);
 }
 
-int Xpilotrc_write(const char *path)
+int Xpilotrc_write(String path)
 {
     FILE *fp;
     int i;
@@ -978,7 +978,7 @@ int Xpilotrc_write(const char *path)
 	for (j = 0; j < num_xpilotrc_lines; j++) {
 	    xpilotrc_line_t *lp = &xpilotrc_lines[j];
 
-	    if (lp->opt == opt)
+	    if (lp.opt == opt)
 		was_in_xpilotrc = true;
 	}
 
@@ -1013,9 +1013,9 @@ int Xpilotrc_write(const char *path)
 	    for (j = 0; j < num_xpilotrc_lines; j++) {
 		xpilotrc_line_t *lp = &xpilotrc_lines[j];
 
-		if (lp->opt == NULL
-		    && lp->comment != NULL
-		    && !strcmp(buf, lp->comment)) {
+		if (lp.opt == NULL
+		    && lp.comment != NULL
+		    && !strcmp(buf, lp.comment)) {
 		    found = true;
 		    break;
 		}
@@ -1037,7 +1037,7 @@ int Xpilotrc_write(const char *path)
 	char buf[4096];
 	xpilotrc_line_t *lp = &xpilotrc_lines[i];
 
-	Xpilotrc_create_line(buf, sizeof(buf), lp->opt, lp->comment, false);
+	Xpilotrc_create_line(buf, sizeof(buf), lp.opt, lp.comment, false);
 
 	Xpilotrc_write_line(fp, buf);
     }
@@ -1065,7 +1065,7 @@ void Parse_options(int *argcp, char **argvp)
 
     while (num_remaining_args > 0) {
 	if (argvp[arg_ind][0] == '-') {
-	    char *arg = &argvp[arg_ind][1];
+	    String arg = &argvp[arg_ind][1];
 
 	    /*
 	     * kps -
@@ -1131,17 +1131,17 @@ void Parse_options(int *argcp, char **argvp)
 
 
 
-const char *Get_keyHelpString(keys_t key)
+String Get_keyHelpString(keys_t key)
 {
     int i;
-    char *nl;
+    String nl;
     static char buf[MAX_CHARS];
 
     for (i = 0; i < num_options; i++) {
 	xp_option_t *opt = Option_by_index(i);
 
-	if (opt->key == key) {
-	    strlcpy(buf, opt->help, sizeof buf);
+	if (opt.key == key) {
+	    strlcpy(buf, opt.help, sizeof buf);
 	    if ((nl = strchr(buf, '\n')) != NULL)
 		*nl = '\0';
 	    return buf;
@@ -1152,26 +1152,26 @@ const char *Get_keyHelpString(keys_t key)
 }
 
 
-const char *Get_keyResourceString(keys_t key)
+String Get_keyResourceString(keys_t key)
 {
     int i;
 
     for (i = 0; i < num_options; i++) {
 	xp_option_t *opt = Option_by_index(i);
 
-	if (opt->key == key)
-	    return opt->name;
+	if (opt.key == key)
+	    return opt.name;
     }
 
     return NULL;
 }
 
 #ifndef _WINDOWS
-void Xpilotrc_get_filename(char *path, size_t size)
+void Xpilotrc_get_filename(String path, size_t size)
 {
-    const char *home = getenv("HOME");
-    const char *defaultFile = ".xpilotrc";
-    const char *optionalFile = getenv("XPILOTRC");
+    String home = getenv("HOME");
+    String defaultFile = ".xpilotrc";
+    String optionalFile = getenv("XPILOTRC");
 
     if (optionalFile != NULL)
 	strlcpy(path, optionalFile, size);
@@ -1183,7 +1183,7 @@ void Xpilotrc_get_filename(char *path, size_t size)
 	strlcpy(path, "", size);
 }
 #else
-void Xpilotrc_get_filename(char *path, size_t size)
+void Xpilotrc_get_filename(String path, size_t size)
 {
     strlcpy(path, "xpilotrc.txt", size);
 }

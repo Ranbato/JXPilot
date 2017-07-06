@@ -29,36 +29,36 @@ int last_packet_of_frame;
 
 int Sockbuf_init(sockbuf_t *sbuf, sock_t *sock, size_t size, int state)
 {
-    if ((sbuf->buf = sbuf->ptr = XMALLOC(char, size)) == NULL)
+    if ((sbuf.buf = sbuf.ptr = XMALLOC(char, size)) == NULL)
 	return -1;
 
     if (sock != NULL)
-	sbuf->sock = *sock;
+	sbuf.sock = *sock;
     else
-	sock_init(&sbuf->sock);
+	sock_init(&sbuf.sock);
 
-    sbuf->state = state;
-    sbuf->len = 0;
-    sbuf->size = size;
-    sbuf->ptr = sbuf->buf;
-    sbuf->state = state;
+    sbuf.state = state;
+    sbuf.len = 0;
+    sbuf.size = size;
+    sbuf.ptr = sbuf.buf;
+    sbuf.state = state;
     return 0;
 }
 
 int Sockbuf_cleanup(sockbuf_t *sbuf)
 {
-    XFREE(sbuf->buf);
+    XFREE(sbuf.buf);
 
-    sbuf->buf = sbuf->ptr = NULL;
-    sbuf->size = sbuf->len = 0;
-    sbuf->state = 0;
+    sbuf.buf = sbuf.ptr = NULL;
+    sbuf.size = sbuf.len = 0;
+    sbuf.state = 0;
     return 0;
 }
 
 int Sockbuf_clear(sockbuf_t *sbuf)
 {
-    sbuf->len = 0;
-    sbuf->ptr = sbuf->buf;
+    sbuf.len = 0;
+    sbuf.ptr = sbuf.buf;
     return 0;
 }
 
@@ -67,39 +67,39 @@ int Sockbuf_advance(sockbuf_t *sbuf, int len)
     /*
      * First do a few buffer consistency checks.
      */
-    if (sbuf->ptr > sbuf->buf + sbuf->len) {
+    if (sbuf.ptr > sbuf.buf + sbuf.len) {
 	warn("Sockbuf pointer too far");
-	sbuf->ptr = sbuf->buf + sbuf->len;
+	sbuf.ptr = sbuf.buf + sbuf.len;
     }
-    if (sbuf->ptr < sbuf->buf) {
+    if (sbuf.ptr < sbuf.buf) {
 	warn("Sockbuf pointer bad");
-	sbuf->ptr = sbuf->buf;
+	sbuf.ptr = sbuf.buf;
     }
-    if (sbuf->len > sbuf->size) {
+    if (sbuf.len > sbuf.size) {
 	warn("Sockbuf len too far");
-	sbuf->len = sbuf->size;
+	sbuf.len = sbuf.size;
     }
-    if (sbuf->len < 0) {
+    if (sbuf.len < 0) {
 	warn("Sockbuf len bad");
-	sbuf->len = 0;
+	sbuf.len = 0;
     }
     if (len <= 0) {
 	if (len < 0)
 	    warn("Sockbuf advance negative (%d)", len);
     }
-    else if (len >= sbuf->len) {
-	if (len > sbuf->len)
+    else if (len >= sbuf.len) {
+	if (len > sbuf.len)
 	    warn("Sockbuf advancing too far");
 
-	sbuf->len = 0;
-	sbuf->ptr = sbuf->buf;
+	sbuf.len = 0;
+	sbuf.ptr = sbuf.buf;
     } else {
-	memmove(sbuf->buf, sbuf->buf + len, (size_t)(sbuf->len - len));
-	sbuf->len -= len;
-	if (sbuf->ptr - sbuf->buf <= len)
-	    sbuf->ptr = sbuf->buf;
+	memmove(sbuf.buf, sbuf.buf + len, (size_t)(sbuf.len - len));
+	sbuf.len -= len;
+	if (sbuf.ptr - sbuf.buf <= len)
+	    sbuf.ptr = sbuf.buf;
 	else
-	    sbuf->ptr -= len;
+	    sbuf.ptr -= len;
     }
     return 0;
 }
@@ -109,22 +109,22 @@ int Sockbuf_flush(sockbuf_t *sbuf)
     int			len,
 			i;
 
-    if (sbuf->state.get( SOCKBUF_WRITE) == 0) {
+    if (sbuf.state.get( SOCKBUF_WRITE) == 0) {
 	warn("No flush on non-writable socket buffer");
 	warn("(state=%02x,buf=%08x,ptr=%08x,size=%d,len=%d,sock=%d)",
-	    sbuf->state, sbuf->buf, sbuf->ptr, sbuf->size, sbuf->len,
-	    sbuf->sock);
+	    sbuf.state, sbuf.buf, sbuf.ptr, sbuf.size, sbuf.len,
+	    sbuf.sock);
 	return -1;
     }
-    if (sbuf->state.get( SOCKBUF_LOCK) != 0) {
-	warn("No flush on locked socket buffer (0x%02x)", sbuf->state);
+    if (sbuf.state.get( SOCKBUF_LOCK) != 0) {
+	warn("No flush on locked socket buffer (0x%02x)", sbuf.state);
 	return -1;
     }
-    if (sbuf->len <= 0) {
-	if (sbuf->len < 0) {
+    if (sbuf.len <= 0) {
+	if (sbuf.len < 0) {
 	    warn("Write socket buffer length negative");
-	    sbuf->len = 0;
-	    sbuf->ptr = sbuf->buf;
+	    sbuf.len = 0;
+	    sbuf.ptr = sbuf.buf;
 	}
 	return 0;
     }
@@ -134,10 +134,10 @@ int Sockbuf_flush(sockbuf_t *sbuf)
     {
 	static int		max = 1024, avg, count;
 
-	avg += sbuf->len;
+	avg += sbuf.len;
 	count++;
-	if (sbuf->len > max) {
-	    max = sbuf->len;
+	if (sbuf.len > max) {
+	    max = sbuf.len;
 	    printf("Max packet = %d, avg = %d\n", max, avg / count);
 	}
 	else if (max > 1024 && (count & 0x03) == 0) {
@@ -146,15 +146,15 @@ int Sockbuf_flush(sockbuf_t *sbuf)
     }
 #endif
 
-    if (sbuf->state.get( SOCKBUF_DGRAM) != 0) {
+    if (sbuf.state.get( SOCKBUF_DGRAM) != 0) {
 	errno = 0;
 	i = 0;
 #if 0
 	if (randomMT() % 12 == 0)	/* artificial packet loss */
-	    len = sbuf->len;
+	    len = sbuf.len;
 	else
 #endif
-	while ((len = sock_write(&sbuf->sock, sbuf->buf, sbuf->len)) <= 0) {
+	while ((len = sock_write(&sbuf.sock, sbuf.buf, sbuf.len)) <= 0) {
 	    if (len == 0
 		|| errno == EWOULDBLOCK
 		|| errno == EAGAIN) {
@@ -173,7 +173,7 @@ int Sockbuf_flush(sockbuf_t *sbuf)
 	    }
 #endif
 	    if (++i > MAX_SOCKBUF_RETRIES) {
-		error("Can't send on socket (%d,%d)", sbuf->sock, sbuf->len);
+		error("Can't send on socket (%d,%d)", sbuf.sock, sbuf.len);
 		Sockbuf_clear(sbuf);
 		return -1;
 	    }
@@ -182,19 +182,19 @@ int Sockbuf_flush(sockbuf_t *sbuf)
 		if ((send_err++ & 0x3F) == 0)
 		    error("send (%d)", i);
 	    }
-	    if (sock_get_error(&sbuf->sock) == -1) {
+	    if (sock_get_error(&sbuf.sock) == -1) {
 		error("sock_get_error send");
 		return -1;
 	    }
 	    errno = 0;
 	}
-	if (len != sbuf->len)
-	    warn("Can't write complete datagram (%d,%d)", len, sbuf->len);
+	if (len != sbuf.len)
+	    warn("Can't write complete datagram (%d,%d)", len, sbuf.len);
 
 	Sockbuf_clear(sbuf);
     } else {
 	errno = 0;
-	while ((len = sock_write(&sbuf->sock, sbuf->buf, sbuf->len)) <= 0) {
+	while ((len = sock_write(&sbuf.sock, sbuf.buf, sbuf.len)) <= 0) {
 	    if (errno == EINTR) {
 		errno = 0;
 		continue;
@@ -210,26 +210,26 @@ int Sockbuf_flush(sockbuf_t *sbuf)
     return len;
 }
 
-int Sockbuf_write(sockbuf_t *sbuf, char *buf, int len)
+int Sockbuf_write(sockbuf_t *sbuf, String buf, int len)
 {
-    if (sbuf->state.get( SOCKBUF_WRITE) == 0) {
+    if (sbuf.state.get( SOCKBUF_WRITE) == 0) {
 	warn("No write to non-writable socket buffer");
 	return -1;
     }
-    if (sbuf->size - sbuf->len < len) {
-	if (sbuf->state.get( SOCKBUF_LOCK | SOCKBUF_DGRAM) != 0) {
+    if (sbuf.size - sbuf.len < len) {
+	if (sbuf.state.get( SOCKBUF_LOCK | SOCKBUF_DGRAM) != 0) {
 	    warn("No write to locked socket buffer (%d,%d,%d,%d)",
-		sbuf->state, sbuf->size, sbuf->len, len);
+		sbuf.state, sbuf.size, sbuf.len, len);
 	    return -1;
 	}
 	if (Sockbuf_flush(sbuf) == -1)
 	    return -1;
 
-	if (sbuf->size - sbuf->len < len)
+	if (sbuf.size - sbuf.len < len)
 	    return 0;
     }
-    memcpy(sbuf->buf + sbuf->len, buf, (size_t)len);
-    sbuf->len += len;
+    memcpy(sbuf.buf + sbuf.len, buf, (size_t)len);
+    sbuf.len += len;
 
     return len;
 }
@@ -240,33 +240,33 @@ int Sockbuf_read(sockbuf_t *sbuf)
 			i,
 			len;
 
-    if (sbuf->state.get( SOCKBUF_READ) == 0) {
-	warn("No read from non-readable socket buffer (%d)", sbuf->state);
+    if (sbuf.state.get( SOCKBUF_READ) == 0) {
+	warn("No read from non-readable socket buffer (%d)", sbuf.state);
 	return -1;
     }
-    if (sbuf->state.get( SOCKBUF_LOCK) != 0)
+    if (sbuf.state.get( SOCKBUF_LOCK) != 0)
 	return 0;
 
-    if (sbuf->ptr > sbuf->buf)
-	Sockbuf_advance(sbuf, sbuf->ptr - sbuf->buf);
+    if (sbuf.ptr > sbuf.buf)
+	Sockbuf_advance(sbuf, sbuf.ptr - sbuf.buf);
 
-    if ((max = sbuf->size - sbuf->len) <= 0) {
+    if ((max = sbuf.size - sbuf.len) <= 0) {
 	static int before;
 
 	if (before++ == 0)
 	    warn("Read socket buffer not big enough (%d,%d)",
-		  sbuf->size, sbuf->len);
+		  sbuf.size, sbuf.len);
 	return -1;
     }
-    if (sbuf->state.get( SOCKBUF_DGRAM) != 0) {
+    if (sbuf.state.get( SOCKBUF_DGRAM) != 0) {
 	errno = 0;
 	i = 0;
 #if 0
 	if (randomMT() % 12 == 0)		/* artificial packet loss */
-	    len = sbuf->len;
+	    len = sbuf.len;
 	else
 #endif
-	while ((len = sock_read(&sbuf->sock, sbuf->buf + sbuf->len, max))
+	while ((len = sock_read(&sbuf.sock, sbuf.buf + sbuf.len, max))
 	       <= 0) {
 	    if (len == 0)
 		return 0;
@@ -300,16 +300,16 @@ int Sockbuf_read(sockbuf_t *sbuf)
 		if ((recv_err++ & 0x3F) == 0)
 		    error("recv (%d)", i);
 	    }
-	    if (sock_get_error(&sbuf->sock) == -1) {
+	    if (sock_get_error(&sbuf.sock) == -1) {
 		error("GetSocketError recv");
 		return -1;
 	    }
 	    errno = 0;
 	}
-	sbuf->len += len;
+	sbuf.len += len;
     } else {
 	errno = 0;
-	while ((len = sock_read(&sbuf->sock, sbuf->buf + sbuf->len, max))
+	while ((len = sock_read(&sbuf.sock, sbuf.buf + sbuf.len, max))
 	       <= 0) {
 	    if (len == 0)
 		return 0;
@@ -324,29 +324,29 @@ int Sockbuf_read(sockbuf_t *sbuf)
 	    }
 	    return 0;
 	}
-	sbuf->len += len;
+	sbuf.len += len;
     }
 
-    return sbuf->len;
+    return sbuf.len;
 }
 
 int Sockbuf_copy(sockbuf_t *dest, sockbuf_t *src, int len)
 {
-    if (len < dest->size - dest->len) {
+    if (len < dest.size - dest.len) {
 	warn("Not enough room in destination copy socket buffer");
 	return -1;
     }
-    if (len < src->len) {
+    if (len < src.len) {
 	warn("Not enough data in source copy socket buffer");
 	return -1;
     }
-    memcpy(dest->buf + dest->len, src->buf, (size_t)len);
-    dest->len += len;
+    memcpy(dest.buf + dest.len, src.buf, (size_t)len);
+    dest.len += len;
 
     return len;
 }
 
-int Packet_printf(sockbuf_t *sbuf, const char *fmt, ...)
+int Packet_printf(sockbuf_t *sbuf, String fmt, ...)
 {
 #define PRINTF_FMT	1
 #define PRINTF_IO	2
@@ -371,7 +371,7 @@ int Packet_printf(sockbuf_t *sbuf, const char *fmt, ...)
 
     /* kps hack - let's not segfault if sbuf was not initialized yet. */
     assert(sbuf);
-    if (sbuf->buf == NULL)
+    if (sbuf.buf == NULL)
 	return -1;
     /* kps hack ends */
 
@@ -391,11 +391,11 @@ int Packet_printf(sockbuf_t *sbuf, const char *fmt, ...)
      * But we want to send frames even if they're bigger than
      * our available buffer space.
      */
-    end = sbuf->buf + sbuf->size;
+    end = sbuf.buf + sbuf.size;
     if (last_packet_of_frame != 1)
 	end -= SOCKBUF_WRITE_SPARE;
 
-    buf = sbuf->buf + sbuf->len;
+    buf = sbuf.buf + sbuf.len;
     for (i = 0; failure == 0 && fmt[i] != '\0'; i++) {
 	if (fmt[i] == '%') {
 	    switch (fmt[++i]) {
@@ -478,7 +478,7 @@ int Packet_printf(sockbuf_t *sbuf, const char *fmt, ...)
 	    case 'S':	/* Big strings */
 	    case 's':	/* Small strings */
 		max_str_size = (fmt[i] == 'S') ? MSG_LEN : MAX_CHARS;
-		str = va_arg(ap, char *);
+		str = va_arg(ap, String );
 		if (buf + max_str_size >= end)
 		    stop = end;
 		else
@@ -505,9 +505,9 @@ int Packet_printf(sockbuf_t *sbuf, const char *fmt, ...)
 	    static int before;
 	    if ((before++ & 0x0F) == 0)
 		printf("Write socket buffer not big enough (%d,%d,\"%s\")\n",
-		       sbuf->size, sbuf->len, fmt);
+		       sbuf.size, sbuf.len, fmt);
 #endif
-	    if (sbuf->state.get( SOCKBUF_DGRAM) != 0) {
+	    if (sbuf.state.get( SOCKBUF_DGRAM) != 0) {
 		count = 0;
 		failure = 0;
 	    }
@@ -515,8 +515,8 @@ int Packet_printf(sockbuf_t *sbuf, const char *fmt, ...)
 	else if (failure == PRINTF_FMT)
 	    warn("Error in format string (\"%s\")", fmt);
     } else {
-	count = buf - (sbuf->buf + sbuf->len);
-	sbuf->len += count;
+	count = buf - (sbuf.buf + sbuf.len);
+	sbuf.len += count;
     }
 
     va_end(ap);
@@ -524,7 +524,7 @@ int Packet_printf(sockbuf_t *sbuf, const char *fmt, ...)
     return count;
 }
 
-int Packet_scanf(sockbuf_t *sbuf, const char *fmt, ...)
+int Packet_scanf(sockbuf_t *sbuf, String fmt, ...)
 {
     int			i,
 			j,
@@ -549,8 +549,8 @@ int Packet_scanf(sockbuf_t *sbuf, const char *fmt, ...)
 	    count++;
 	    switch (fmt[++i]) {
 	    case 'c':
-		if (&sbuf->buf[sbuf->len] < &sbuf->ptr[j + 1]) {
-		    if (sbuf->state.get( SOCKBUF_DGRAM | SOCKBUF_LOCK) != 0) {
+		if (&sbuf.buf[sbuf.len] < &sbuf.ptr[j + 1]) {
+		    if (sbuf.state.get( SOCKBUF_DGRAM | SOCKBUF_LOCK) != 0) {
 			failure = 3;
 			break;
 		    }
@@ -558,17 +558,17 @@ int Packet_scanf(sockbuf_t *sbuf, const char *fmt, ...)
 			failure = 2;
 			break;
 		    }
-		    if (&sbuf->buf[sbuf->len] < &sbuf->ptr[j + 1]) {
+		    if (&sbuf.buf[sbuf.len] < &sbuf.ptr[j + 1]) {
 			failure = 3;
 			break;
 		    }
 		}
-		cptr = va_arg(ap, char *);
-		*cptr = sbuf->ptr[j++];
+		cptr = va_arg(ap, String );
+		*cptr = sbuf.ptr[j++];
 		break;
 	    case 'd':
-		if (&sbuf->buf[sbuf->len] < &sbuf->ptr[j + 4]) {
-		    if (sbuf->state.get( SOCKBUF_DGRAM | SOCKBUF_LOCK) != 0) {
+		if (&sbuf.buf[sbuf.len] < &sbuf.ptr[j + 4]) {
+		    if (sbuf.state.get( SOCKBUF_DGRAM | SOCKBUF_LOCK) != 0) {
 			failure = 3;
 			break;
 		    }
@@ -576,20 +576,20 @@ int Packet_scanf(sockbuf_t *sbuf, const char *fmt, ...)
 			failure = 2;
 			break;
 		    }
-		    if (&sbuf->buf[sbuf->len] < &sbuf->ptr[j + 4]) {
+		    if (&sbuf.buf[sbuf.len] < &sbuf.ptr[j + 4]) {
 			failure = 3;
 			break;
 		    }
 		}
 		iptr = va_arg(ap, int *);
-		*iptr = sbuf->ptr[j++] << 24;
-		*iptr |= (sbuf->ptr[j++] & 0xFF) << 16;
-		*iptr |= (sbuf->ptr[j++] & 0xFF) << 8;
-		*iptr |= (sbuf->ptr[j++] & 0xFF);
+		*iptr = sbuf.ptr[j++] << 24;
+		*iptr |= (sbuf.ptr[j++] & 0xFF) << 16;
+		*iptr |= (sbuf.ptr[j++] & 0xFF) << 8;
+		*iptr |= (sbuf.ptr[j++] & 0xFF);
 		break;
 	    case 'u':
-		if (&sbuf->buf[sbuf->len] < &sbuf->ptr[j + 4]) {
-		    if (sbuf->state.get( SOCKBUF_DGRAM | SOCKBUF_LOCK) != 0) {
+		if (&sbuf.buf[sbuf.len] < &sbuf.ptr[j + 4]) {
+		    if (sbuf.state.get( SOCKBUF_DGRAM | SOCKBUF_LOCK) != 0) {
 			failure = 3;
 			break;
 		    }
@@ -597,20 +597,20 @@ int Packet_scanf(sockbuf_t *sbuf, const char *fmt, ...)
 			failure = 2;
 			break;
 		    }
-		    if (&sbuf->buf[sbuf->len] < &sbuf->ptr[j + 4]) {
+		    if (&sbuf.buf[sbuf.len] < &sbuf.ptr[j + 4]) {
 			failure = 3;
 			break;
 		    }
 		}
 		uptr = va_arg(ap, unsigned *);
-		*uptr = (sbuf->ptr[j++] & 0xFF) << 24;
-		*uptr |= (sbuf->ptr[j++] & 0xFF) << 16;
-		*uptr |= (sbuf->ptr[j++] & 0xFF) << 8;
-		*uptr |= (sbuf->ptr[j++] & 0xFF);
+		*uptr = (sbuf.ptr[j++] & 0xFF) << 24;
+		*uptr |= (sbuf.ptr[j++] & 0xFF) << 16;
+		*uptr |= (sbuf.ptr[j++] & 0xFF) << 8;
+		*uptr |= (sbuf.ptr[j++] & 0xFF);
 		break;
 	    case 'h':
-		if (&sbuf->buf[sbuf->len] < &sbuf->ptr[j + 2]) {
-		    if (sbuf->state.get( SOCKBUF_DGRAM | SOCKBUF_LOCK) != 0) {
+		if (&sbuf.buf[sbuf.len] < &sbuf.ptr[j + 2]) {
+		    if (sbuf.state.get( SOCKBUF_DGRAM | SOCKBUF_LOCK) != 0) {
 			failure = 3;
 			break;
 		    }
@@ -618,7 +618,7 @@ int Packet_scanf(sockbuf_t *sbuf, const char *fmt, ...)
 			failure = 2;
 			break;
 		    }
-		    if (&sbuf->buf[sbuf->len] < &sbuf->ptr[j + 2]) {
+		    if (&sbuf.buf[sbuf.len] < &sbuf.ptr[j + 2]) {
 			failure = 3;
 			break;
 		    }
@@ -626,13 +626,13 @@ int Packet_scanf(sockbuf_t *sbuf, const char *fmt, ...)
 		switch (fmt[++i]) {
 		case 'd':
 		    sptr = va_arg(ap, short *);
-		    *sptr = sbuf->ptr[j++] << 8;
-		    *sptr |= (sbuf->ptr[j++] & 0xFF);
+		    *sptr = sbuf.ptr[j++] << 8;
+		    *sptr |= (sbuf.ptr[j++] & 0xFF);
 		    break;
 		case 'u':
 		    usptr = va_arg(ap, unsigned short *);
-		    *usptr = (sbuf->ptr[j++] & 0xFF) << 8;
-		    *usptr |= (sbuf->ptr[j++] & 0xFF);
+		    *usptr = (sbuf.ptr[j++] & 0xFF) << 8;
+		    *usptr |= (sbuf.ptr[j++] & 0xFF);
 		    break;
 		default:
 		    failure = 1;
@@ -640,8 +640,8 @@ int Packet_scanf(sockbuf_t *sbuf, const char *fmt, ...)
 		}
 		break;
 	    case 'l':
-		if (&sbuf->buf[sbuf->len] < &sbuf->ptr[j + 4]) {
-		    if (sbuf->state.get( SOCKBUF_DGRAM | SOCKBUF_LOCK) != 0) {
+		if (&sbuf.buf[sbuf.len] < &sbuf.ptr[j + 4]) {
+		    if (sbuf.state.get( SOCKBUF_DGRAM | SOCKBUF_LOCK) != 0) {
 			failure = 3;
 			break;
 		    }
@@ -649,7 +649,7 @@ int Packet_scanf(sockbuf_t *sbuf, const char *fmt, ...)
 			failure = 2;
 			break;
 		    }
-		    if (&sbuf->buf[sbuf->len] < &sbuf->ptr[j + 4]) {
+		    if (&sbuf.buf[sbuf.len] < &sbuf.ptr[j + 4]) {
 			failure = 3;
 			break;
 		    }
@@ -657,17 +657,17 @@ int Packet_scanf(sockbuf_t *sbuf, const char *fmt, ...)
 		switch (fmt[++i]) {
 		case 'd':
 		    lptr = va_arg(ap, long *);
-		    *lptr = sbuf->ptr[j++] << 24;
-		    *lptr |= (sbuf->ptr[j++] & 0xFF) << 16;
-		    *lptr |= (sbuf->ptr[j++] & 0xFF) << 8;
-		    *lptr |= (sbuf->ptr[j++] & 0xFF);
+		    *lptr = sbuf.ptr[j++] << 24;
+		    *lptr |= (sbuf.ptr[j++] & 0xFF) << 16;
+		    *lptr |= (sbuf.ptr[j++] & 0xFF) << 8;
+		    *lptr |= (sbuf.ptr[j++] & 0xFF);
 		    break;
 		case 'u':
 		    ulptr = va_arg(ap, unsigned long *);
-		    *ulptr = (sbuf->ptr[j++] & 0xFF) << 24;
-		    *ulptr |= (sbuf->ptr[j++] & 0xFF) << 16;
-		    *ulptr |= (sbuf->ptr[j++] & 0xFF) << 8;
-		    *ulptr |= (sbuf->ptr[j++] & 0xFF);
+		    *ulptr = (sbuf.ptr[j++] & 0xFF) << 24;
+		    *ulptr |= (sbuf.ptr[j++] & 0xFF) << 16;
+		    *ulptr |= (sbuf.ptr[j++] & 0xFF) << 8;
+		    *ulptr |= (sbuf.ptr[j++] & 0xFF);
 		    break;
 		default:
 		    failure = 1;
@@ -677,11 +677,11 @@ int Packet_scanf(sockbuf_t *sbuf, const char *fmt, ...)
 	    case 'S':	/* Big strings */
 	    case 's':	/* Small strings */
 		max_str_size = (fmt[i] == 'S') ? MSG_LEN : MAX_CHARS;
-		str = va_arg(ap, char *);
+		str = va_arg(ap, String );
 		k = 0;
 		for (;;) {
-		    if (&sbuf->buf[sbuf->len] < &sbuf->ptr[j + 1]) {
-			if (sbuf->state.get( SOCKBUF_DGRAM | SOCKBUF_LOCK)
+		    if (&sbuf.buf[sbuf.len] < &sbuf.ptr[j + 1]) {
+			if (sbuf.state.get( SOCKBUF_DGRAM | SOCKBUF_LOCK)
 			    != 0) {
 			    failure = 3;
 			    break;
@@ -690,12 +690,12 @@ int Packet_scanf(sockbuf_t *sbuf, const char *fmt, ...)
 			    failure = 2;
 			    break;
 			}
-			if (&sbuf->buf[sbuf->len] < &sbuf->ptr[j + 1]) {
+			if (&sbuf.buf[sbuf.len] < &sbuf.ptr[j + 1]) {
 			    failure = 3;
 			    break;
 			}
 		    }
-		    if ((str[k++] = sbuf->ptr[j++]) == '\0')
+		    if ((str[k++] = sbuf.ptr[j++]) == '\0')
 			break;
 		    else if (k >= max_str_size) {
 			/*
@@ -706,7 +706,7 @@ int Packet_scanf(sockbuf_t *sbuf, const char *fmt, ...)
 			 */
 			warn("String overflow while scanning (%d,%d)",
 			      k, max_str_size);
-			if (sbuf->state.get( SOCKBUF_LOCK) != 0)
+			if (sbuf.state.get( SOCKBUF_LOCK) != 0)
 			    failure = 2;
 			else
 			    failure = 3;
@@ -731,11 +731,11 @@ int Packet_scanf(sockbuf_t *sbuf, const char *fmt, ...)
 	failure = 0;
     }
     else if (failure == 0) {
-	if (&sbuf->buf[sbuf->len] < &sbuf->ptr[j]) {
+	if (&sbuf.buf[sbuf.len] < &sbuf.ptr[j]) {
 	    warn("Input buffer exceeded (%s)", fmt);
 	    failure = 1;
 	} else
-	    sbuf->ptr += j;
+	    sbuf.ptr += j;
     }
 
     va_end(ap);

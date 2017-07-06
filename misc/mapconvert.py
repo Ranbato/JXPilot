@@ -611,7 +611,7 @@ def convert(options):
     EMPTYTREASURE = '^'
     FUEL = '#'
     FRICTION = 'z'
-    GRAVS = '+-><imkj'
+    GRAVS = '+.<imkj'
     ITEMCONC = '%'
     SPACE = ' '
     TARGET = '!'

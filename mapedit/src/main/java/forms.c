@@ -168,7 +168,7 @@ void BuildPrefsForm(void)
 void BuildPrefsSheet(int num)
 {
     int w, h, t, i;
-    char *tmpstr = NULL;
+    String tmpstr = NULL;
     Window *temp = NULL;
 
     switch (num) {

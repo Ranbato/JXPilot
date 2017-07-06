@@ -27,7 +27,7 @@
 class CBSString:public CString {
   public:
     CBSString();
-    CBSString(const char *psz);
+    CBSString(String psz);
      CBSString(const CBSString & stringSrc);
      CBSString(const CString & stringSrc);
      CBSString(const CBSString * cbs);
@@ -36,7 +36,7 @@ class CBSString:public CString {
     CBSString SkipToken();
     CBSString SkipSpace();
 
-    int MatchToken(const char *list[]);
+    int MatchToken(String list[]);
     COLORREF ParseColor();
     POINT ParsePoint();
     CRect ParseRect();

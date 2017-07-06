@@ -25,21 +25,21 @@
 
 #include "xpcommon.h"
 
-char *Conf_datadir(void)
+String Conf_datadir(void)
 {
     static char conf[] = CONF_DATADIR;
 
     return conf;
 }
 
-char *Conf_defaults_file_name(void)
+String Conf_defaults_file_name(void)
 {
     static char conf[] = CONF_DEFAULTS_FILE_NAME;
 
     return conf;
 }
 
-char *Conf_password_file_name(void)
+String Conf_password_file_name(void)
 {
     static char conf[] = CONF_PASSWORD_FILE_NAME;
 
@@ -47,7 +47,7 @@ char *Conf_password_file_name(void)
 }
 
 #if 0
-char *Conf_player_passwords_file_name(void)
+String Conf_player_passwords_file_name(void)
 {
     static char conf[] = CONF_PLAYER_PASSWORDS_FILE_NAME;
 
@@ -55,32 +55,32 @@ char *Conf_player_passwords_file_name(void)
 }
 #endif
 
-char *Conf_mapdir(void)
+String Conf_mapdir(void)
 {
     static char conf[] = CONF_MAPDIR;
 
     return conf;
 }
 
-char *Conf_fontdir(void)
+String Conf_fontdir(void)
 {
     static char conf[] = CONF_FONTDIR;
 
     return conf;
 }
 
-char *Conf_default_map(void)
+String Conf_default_map(void)
 {
     static char conf[] = CONF_DEFAULT_MAP;
 
     return conf;
 }
 
-char *Conf_servermotdfile(void)
+String Conf_servermotdfile(void)
 {
     static char conf[] = CONF_SERVERMOTDFILE;
     static char env[] = "XPILOTSERVERMOTD";
-    char *filename;
+    String filename;
 
     filename = getenv(env);
     if (filename == NULL)
@@ -89,7 +89,7 @@ char *Conf_servermotdfile(void)
     return filename;
 }
 
-char *Conf_localmotdfile(void)
+String Conf_localmotdfile(void)
 {
     static char conf[] = CONF_LOCALMOTDFILE;
 
@@ -98,61 +98,61 @@ char *Conf_localmotdfile(void)
 
 char conf_logfile_string[] = CONF_LOGFILE;
 
-char *Conf_logfile(void)
+String Conf_logfile(void)
 {
     return conf_logfile_string;
 }
 
-char *Conf_ship_file(void)
+String Conf_ship_file(void)
 {
     static char conf[] = CONF_SHIP_FILE;
 
     return conf;
 }
 
-char *Conf_texturedir(void)
+String Conf_texturedir(void)
 {
     static char conf[] = CONF_TEXTUREDIR;
 
     return conf;
 }
 
-char *Conf_localguru(void)
+String Conf_localguru(void)
 {
     static char conf[] = CONF_LOCALGURU;
 
     return conf;
 }
 
-char *Conf_robotfile(void)
+String Conf_robotfile(void)
 {
     static char conf[] = CONF_ROBOTFILE;
 
     return conf;
 }
 
-char *Conf_zcat_ext(void)
+String Conf_zcat_ext(void)
 {
     static char conf[] = CONF_ZCAT_EXT;
 
     return conf;
 }
 
-char *Conf_zcat_format(void)
+String Conf_zcat_format(void)
 {
     static char conf[] = CONF_ZCAT_FORMAT;
 
     return conf;
 }
 
-char *Conf_sounddir(void)
+String Conf_sounddir(void)
 {
     static char conf[] = CONF_SOUNDDIR;
 
     return conf;
 }
 
-char *Conf_soundfile(void)
+String Conf_soundfile(void)
 {
     static char conf[] = CONF_SOUNDFILE;
 

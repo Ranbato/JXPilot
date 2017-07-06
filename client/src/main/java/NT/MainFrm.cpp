@@ -166,7 +166,7 @@ BOOL CMainFrame::PreTranslateMessage(MSG * pMsg)
 {
     // TODO: Add your specialized code here and/or call the base class
 
-    if (pMsg->message == WM_SYSKEYUP)
+    if (pMsg.message == WM_SYSKEYUP)
 	return (1);
     return CFrameWnd::PreTranslateMessage(pMsg);
 }

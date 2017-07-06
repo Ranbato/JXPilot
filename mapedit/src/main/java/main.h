@@ -49,7 +49,7 @@ typedef struct {
     map_data_t data;
     int view_x, view_y, view_zoom;
     int changed;
-    char *comments;
+    String comments;
 
     char gravity[7];
     char shipMass[7];
@@ -310,12 +310,12 @@ typedef struct {
 
 /* RTT */
 typedef struct {
-    const char *name;
-    const char *value;
+    String name;
+    String value;
 } charlie;
 /* RTT */
 
-extern char *progname;
+extern String progname;
 
 extern Window mapwin, prefwin, helpwin;
 
@@ -336,9 +336,9 @@ extern map_data_t clipdata;
 extern xpmap_t map;
 
 typedef struct {
-    const char *name, *altname, *label;
+    String name, *altname, *label;
     int length, type;
-    const char *charvar;
+    String charvar;
     int *intvar;
     int row, column, sheet, space;
 } prefs_t;

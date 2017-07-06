@@ -54,8 +54,8 @@
  * Global objects.
  */
 
-extern ipos_t	world;
-extern ipos_t	realWorld;
+extern Point 	world;
+extern Point 	realWorld;
 
 extern int	hudSize;		/* Size for HUD drawing */
 extern int	hudRadarDotSize;	/* Size for hudradar dot drawing */
@@ -149,7 +149,7 @@ void Paint_score_start(void);
 void Paint_score_objects(void);
 void Paint_meters(void);
 void Paint_HUD(void);
-int  Get_message(int *pos, char *message, int req_length, int key);
+int  Get_message(int *pos, String message, int req_length, int key);
 void Paint_messages(void);
 void Paint_recording(void);
 void Paint_HUD_values(void);

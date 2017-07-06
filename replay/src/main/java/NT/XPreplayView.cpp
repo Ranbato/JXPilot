@@ -206,9 +206,9 @@ void CXPreplayView::OnDraw(CDC* pDC)
 	CXPreplayDoc* pDoc = GetDocument();
 	ASSERT_VALID(pDoc);
 
-	if(pDoc->docOpened)
+	if(pDoc.docOpened)
 	{
-		DrawFrame(pDoc->rc.cur);
+		DrawFrame(pDoc.rc.cur);
 	}
 }
 
@@ -228,65 +228,65 @@ void CXPreplayView::OnInitialUpdate()
 	if(bitmapcolor)
 		delete[] bitmapcolor;
 
-	if(pDoc->docOpened)
+	if(pDoc.docOpened)
 	{
 		if(Trustheader)
 		{
-			sizeTotal.cx = pDoc->rc.view_width;
-			sizeTotal.cy = pDoc->rc.view_height;
+			sizeTotal.cx = pDoc.rc.view_width;
+			sizeTotal.cy = pDoc.rc.view_height;
 		}
 		else
 		{
-			sizeTotal.cx = pDoc->max.x;
-			sizeTotal.cy = pDoc->max.y;
+			sizeTotal.cx = pDoc.max.x;
+			sizeTotal.cy = pDoc.max.y;
 		}
 
-		pencolor = new CPen[pDoc->rc.maxColors];
-		pencolordashed = new CPen[pDoc->rc.maxColors];
-		brushcolor = new CBrush[pDoc->rc.maxColors];
-		bitmapcolor = new CBitmap[pDoc->rc.maxColors];
+		pencolor = new CPen[pDoc.rc.maxColors];
+		pencolordashed = new CPen[pDoc.rc.maxColors];
+		brushcolor = new CBrush[pDoc.rc.maxColors];
+		bitmapcolor = new CBitmap[pDoc.rc.maxColors];
 		CDC	tempDC;
 		tempDC.CreateCompatibleDC(GetDC());
 
-		for(int i = 0; i < pDoc->rc.maxColors; i++)
+		for(int i = 0; i < pDoc.rc.maxColors; i++)
 		{
-			pencolor[i].CreatePen(PS_SOLID, 1, pDoc->rc.colors[i].color);
-			pencolordashed[i].CreatePen(PS_DOT, 1, pDoc->rc.colors[i].color);
-			brushcolor[i].CreateSolidBrush(pDoc->rc.colors[i].color);
+			pencolor[i].CreatePen(PS_SOLID, 1, pDoc.rc.colors[i].color);
+			pencolordashed[i].CreatePen(PS_DOT, 1, pDoc.rc.colors[i].color);
+			brushcolor[i].CreateSolidBrush(pDoc.rc.colors[i].color);
 
 			bitmapcolor[i].CreateCompatibleBitmap(GetDC(), 16, 16);
 			tempDC.SelectObject(&bitmapcolor[i]);
-			tempDC.FillSolidRect(0, 0, 16, 16, pDoc->rc.colors[i].color);
+			tempDC.FillSolidRect(0, 0, 16, 16, pDoc.rc.colors[i].color);
 		}
 		tempDC.DeleteDC();
 
-		CSliderCtrl	*slider = &(((CMainFrame *)GetParent())->m_wndSliderBar.m_slider);
-		slider->SetRange(0, pDoc->frame_count - 1);
-		slider->SetSelection(0, pDoc->frame_count - 1);
-		slider->SetTicFreq(pDoc->frame_count / 50 + 1);
-		slider->SetPos(0);
-		slider->EnableWindow(TRUE);
-		pDoc->minSelection = 0;
-		pDoc->maxSelection = pDoc->frame_count - 1;
+		CSliderCtrl	*slider = &(((CMainFrame *)GetParent()).m_wndSliderBar.m_slider);
+		slider.SetRange(0, pDoc.frame_count - 1);
+		slider.SetSelection(0, pDoc.frame_count - 1);
+		slider.SetTicFreq(pDoc.frame_count / 50 + 1);
+		slider.SetPos(0);
+		slider.EnableWindow(TRUE);
+		pDoc.minSelection = 0;
+		pDoc.maxSelection = pDoc.frame_count - 1;
 
 		bgDC.DeleteDC();
 		bgDC.CreateCompatibleDC(GetDC());
 
 		bgBitmap.DeleteObject();
 		if(Trustheader)
-			bgBitmap.CreateCompatibleBitmap(GetDC(), pDoc->rc.view_width, pDoc->rc.view_height);
+			bgBitmap.CreateCompatibleBitmap(GetDC(), pDoc.rc.view_width, pDoc.rc.view_height);
 		else
-			bgBitmap.CreateCompatibleBitmap(GetDC(), pDoc->max.x, pDoc->max.y);
+			bgBitmap.CreateCompatibleBitmap(GetDC(), pDoc.max.x, pDoc.max.y);
 
 		bgDC.SelectObject(&bgBitmap);
 
 		gameFont.DeleteObject();
 		msgFont.DeleteObject();
 
-		gameFont.CreatePointFont(8*pDoc->rc.gameFontSize, pDoc->rc.gameFont, &bgDC);
-		msgFont.CreatePointFont(8*pDoc->rc.msgFontSize, pDoc->rc.gameFont, &bgDC);
+		gameFont.CreatePointFont(8*pDoc.rc.gameFontSize, pDoc.rc.gameFont, &bgDC);
+		msgFont.CreatePointFont(8*pDoc.rc.msgFontSize, pDoc.rc.gameFont, &bgDC);
 
-		DrawFrame(pDoc->rc.head);		// this line gets rid of small drawing-
+		DrawFrame(pDoc.rc.head);		// this line gets rid of small drawing-
 										// errors with dashed lines.
 	}
 	else
@@ -313,7 +313,7 @@ void CXPreplayView::Dump(CDumpContext& dc) const
 
 CXPreplayDoc* CXPreplayView::GetDocument() // non-debug version is inline
 {
-	ASSERT(m_pDocument->IsKindOf(RUNTIME_CLASS(CXPreplayDoc)));
+	ASSERT(m_pDocument.IsKindOf(RUNTIME_CLASS(CXPreplayDoc)));
 	return (CXPreplayDoc*)m_pDocument;
 }
 #endif //_DEBUG
@@ -334,27 +334,27 @@ void CXPreplayView::OnTimer(UINT nIDEvent)
 	case s_rewind:
 	case s_reverse:
 	case s_slowback:
-		if(pDoc->rc.cur->prev == NULL)
+		if(pDoc.rc.cur.prev == NULL)
 		{
 			KillTimer(nTimer);
 			status = s_stopped;
 		}
 		else
 		{
-			pDoc->rc.cur = pDoc->rc.cur->prev;
+			pDoc.rc.cur = pDoc.rc.cur.prev;
 		}
 		break;
 	case s_playing:
 	case s_forward:
 	case s_slowplay:
-		if(pDoc->rc.cur->next == NULL)
+		if(pDoc.rc.cur.next == NULL)
 		{
 			KillTimer(nTimer);
 			status = s_stopped;
 		}
 		else
 		{
-			pDoc->rc.cur = pDoc->rc.cur->next;
+			pDoc.rc.cur = pDoc.rc.cur.next;
 		}
 		break;
 	case s_toEnd:
@@ -386,22 +386,22 @@ void CXPreplayView::DrawFrame(CXPreplayDoc::frame *frame)
 
 	if(Trustheader)
 	{
-		height = pDoc->rc.view_height;
-		width = pDoc->rc.view_width;
+		height = pDoc.rc.view_height;
+		width = pDoc.rc.view_width;
 	}
 	else
 	{
-		width = pDoc->max.x;
-		height = pDoc->max.y;
+		width = pDoc.max.x;
+		height = pDoc.max.y;
 	}
 
-	bgDC.FillSolidRect(0, 0, width, height, pDoc->rc.colors[0].color);
+	bgDC.FillSolidRect(0, 0, width, height, pDoc.rc.colors[0].color);
 
 	ScrollOffset = GetScrollPosition();
 	Origin = bgDC.SetViewportOrg(-ScrollOffset);
-	shapes = frame->shapes;
+	shapes = frame.shapes;
 	if(shapes)
-		currentcolor = shapes->gc->color;
+		currentcolor = shapes.gc.color;
 	else
 		return;
 
@@ -409,12 +409,12 @@ void CXPreplayView::DrawFrame(CXPreplayDoc::frame *frame)
 
 	while(shapes)
 	{
-		if(shapes->gc->color >= 0)
+		if(shapes.gc.color >= 0)
 		{
-			currentcolor = shapes->gc->color;
+			currentcolor = shapes.gc.color;
 		}
 
-		if(shapes->gc->dashes)
+		if(shapes.gc.dashes)
 		{
 			bgDC.SelectObject(&pencolordashed[currentcolor]);
 		}
@@ -423,63 +423,63 @@ void CXPreplayView::DrawFrame(CXPreplayDoc::frame *frame)
 			bgDC.SelectObject(&pencolor[currentcolor]);
 		}
 
-		if(shapes->gc->width > 1)
+		if(shapes.gc.width > 1)
 		{
 			bgDC.SelectObject(originalPen);
 			otherpen.DeleteObject();
-			otherpen.CreatePen(PS_SOLID, shapes->gc->width - 1, pDoc->rc.colors[currentcolor].color);
+			otherpen.CreatePen(PS_SOLID, shapes.gc.width - 1, pDoc.rc.colors[currentcolor].color);
 			bgDC.SelectObject(&otherpen);
 		}
 
-		switch(shapes->type)
+		switch(shapes.type)
 		{
 		case RC_DRAWARC:
-			bgDC.Arc(	shapes->shape.arc.x1,
-						shapes->shape.arc.y1,
-						shapes->shape.arc.x2,
-						shapes->shape.arc.y2,
-						shapes->shape.arc.x3,
-						shapes->shape.arc.y3,
-						shapes->shape.arc.x4,
-						shapes->shape.arc.y4);
+			bgDC.Arc(	shapes.shape.arc.x1,
+						shapes.shape.arc.y1,
+						shapes.shape.arc.x2,
+						shapes.shape.arc.y2,
+						shapes.shape.arc.x3,
+						shapes.shape.arc.y3,
+						shapes.shape.arc.x4,
+						shapes.shape.arc.y4);
 			break;
 
 		case RC_DRAWLINES:
-			bgDC.Polyline(	shapes->shape.lines.points,
-							shapes->shape.lines.npoints);
+			bgDC.Polyline(	shapes.shape.lines.points,
+							shapes.shape.lines.npoints);
 			break;
 
 		case RC_DRAWLINE:
-			bgDC.MoveTo(shapes->shape.line.x1, shapes->shape.line.y1);
-			bgDC.LineTo(shapes->shape.line.x2, shapes->shape.line.y2);
+			bgDC.MoveTo(shapes.shape.line.x1, shapes.shape.line.y1);
+			bgDC.LineTo(shapes.shape.line.x2, shapes.shape.line.y2);
 			break;
 
 		case RC_DRAWRECTANGLE:
 			originalBrush = (CBrush *)bgDC.SelectStockObject(NULL_BRUSH);
-			bgDC.Rectangle(	shapes->shape.rectangle.x,
-							shapes->shape.rectangle.y,
-							shapes->shape.rectangle.x + shapes->shape.rectangle.width,
-							shapes->shape.rectangle.y + shapes->shape.rectangle.height);
+			bgDC.Rectangle(	shapes.shape.rectangle.x,
+							shapes.shape.rectangle.y,
+							shapes.shape.rectangle.x + shapes.shape.rectangle.width,
+							shapes.shape.rectangle.y + shapes.shape.rectangle.height);
 			bgDC.SelectObject(originalBrush);
 			break;
 
 		case RC_DRAWSTRING:
 			bgDC.SetBkMode(TRANSPARENT);
-			bgDC.SetTextColor(pDoc->rc.colors[currentcolor].color);
+			bgDC.SetTextColor(pDoc.rc.colors[currentcolor].color);
 
-			if(shapes->shape.string.font)
+			if(shapes.shape.string.font)
 			{
 				originalFont = bgDC.SelectObject(&msgFont);
-				bgDC.TextOut(	shapes->shape.string.x,
-								shapes->shape.string.y - (int)(0.8*pDoc->rc.msgFontSize),
-								shapes->shape.string.string);
+				bgDC.TextOut(	shapes.shape.string.x,
+								shapes.shape.string.y - (int)(0.8*pDoc.rc.msgFontSize),
+								shapes.shape.string.string);
 			}
 			else
 			{
 				originalFont = bgDC.SelectObject(&gameFont);
-				bgDC.TextOut(	shapes->shape.string.x,
-								shapes->shape.string.y - (int)(0.8*pDoc->rc.gameFontSize),
-								shapes->shape.string.string);
+				bgDC.TextOut(	shapes.shape.string.x,
+								shapes.shape.string.y - (int)(0.8*pDoc.rc.gameFontSize),
+								shapes.shape.string.string);
 			}
 
 			bgDC.SelectObject(originalFont);
@@ -489,14 +489,14 @@ void CXPreplayView::DrawFrame(CXPreplayDoc::frame *frame)
 			{
 				originalBrush = bgDC.SelectObject(&brushcolor[currentcolor]);
 
-				bgDC.Pie(	shapes->shape.arc.x1,
-							shapes->shape.arc.y1,
-							shapes->shape.arc.x2,
-							shapes->shape.arc.y2,
-							shapes->shape.arc.x3,
-							shapes->shape.arc.y3,
-							shapes->shape.arc.x4,
-							shapes->shape.arc.y4);
+				bgDC.Pie(	shapes.shape.arc.x1,
+							shapes.shape.arc.y1,
+							shapes.shape.arc.x2,
+							shapes.shape.arc.y2,
+							shapes.shape.arc.x3,
+							shapes.shape.arc.y3,
+							shapes.shape.arc.x4,
+							shapes.shape.arc.y4);
 
 				bgDC.SelectObject(originalBrush);
 			}
@@ -505,82 +505,82 @@ void CXPreplayView::DrawFrame(CXPreplayDoc::frame *frame)
 		case RC_FILLPOLYGON:
 			{
 				originalBrush = bgDC.SelectObject(&brushcolor[currentcolor]);
-				bgDC.Polygon(	shapes->shape.polygon.points,
-								shapes->shape.polygon.npoints);
+				bgDC.Polygon(	shapes.shape.polygon.points,
+								shapes.shape.polygon.npoints);
 				bgDC.SelectObject(originalBrush);
 			}
 			break;
 
 		case RC_FILLRECTANGLE:
-			bgDC.FillSolidRect(	shapes->shape.rectangle.x,
-								shapes->shape.rectangle.y,
-								shapes->shape.rectangle.width,
-								shapes->shape.rectangle.height,
-								pDoc->rc.colors[currentcolor].color);
+			bgDC.FillSolidRect(	shapes.shape.rectangle.x,
+								shapes.shape.rectangle.y,
+								shapes.shape.rectangle.width,
+								shapes.shape.rectangle.height,
+								pDoc.rc.colors[currentcolor].color);
 			break;
 
 		case RC_PAINTITEMSYMBOL:
 			{
 				CImageList	list;
-				CPoint		here(shapes->shape.symbol.x+1, shapes->shape.symbol.y);
+				CPoint		here(shapes.shape.symbol.x+1, shapes.shape.symbol.y);
 
 				list.Create(16, 16, ILC_COLOR8 | ILC_MASK, 1, 1);
-				list.Add(&bitmapcolor[currentcolor], &items[shapes->shape.symbol.type]);
+				list.Add(&bitmapcolor[currentcolor], &items[shapes.shape.symbol.type]);
 				list.Draw(&bgDC, 0, here, ILD_TRANSPARENT);
 				list.DeleteImageList();
 			}
 			break;
 
 		case RC_FILLRECTANGLES:
-			for(i = 0; i < shapes->shape.rectangles.nrectangles; i++)
+			for(i = 0; i < shapes.shape.rectangles.nrectangles; i++)
 			{
-				bgDC.FillSolidRect(shapes->shape.rectangles.rectangles[i], pDoc->rc.colors[currentcolor].color);
+				bgDC.FillSolidRect(shapes.shape.rectangles.rectangles[i], pDoc.rc.colors[currentcolor].color);
 			}
 			break;
 
 		case RC_DRAWARCS:
-			for(i = 0; i < shapes->shape.arcs.narcs; i++)
+			for(i = 0; i < shapes.shape.arcs.narcs; i++)
 			{
-				bgDC.Arc(	shapes->shape.arcs.arcs[i].x1,
-							shapes->shape.arcs.arcs[i].y1,
-							shapes->shape.arcs.arcs[i].x2,
-							shapes->shape.arcs.arcs[i].y2,
-							shapes->shape.arcs.arcs[i].x3,
-							shapes->shape.arcs.arcs[i].y3,
-							shapes->shape.arcs.arcs[i].x4,
-							shapes->shape.arcs.arcs[i].y4);
+				bgDC.Arc(	shapes.shape.arcs.arcs[i].x1,
+							shapes.shape.arcs.arcs[i].y1,
+							shapes.shape.arcs.arcs[i].x2,
+							shapes.shape.arcs.arcs[i].y2,
+							shapes.shape.arcs.arcs[i].x3,
+							shapes.shape.arcs.arcs[i].y3,
+							shapes.shape.arcs.arcs[i].x4,
+							shapes.shape.arcs.arcs[i].y4);
 			}
 			break;
 
 		case RC_DRAWSEGMENTS:
-			for(i = 0; i < shapes->shape.segments.nsegments; i++)
+			for(i = 0; i < shapes.shape.segments.nsegments; i++)
 			{
-				bgDC.MoveTo(shapes->shape.segments.segments[i].x1, shapes->shape.segments.segments[i].y1);
-				bgDC.LineTo(shapes->shape.segments.segments[i].x2, shapes->shape.segments.segments[i].y2);
+				bgDC.MoveTo(shapes.shape.segments.segments[i].x1, shapes.shape.segments.segments[i].y1);
+				bgDC.LineTo(shapes.shape.segments.segments[i].x2, shapes.shape.segments.segments[i].y2);
 			}
 			break;
 
 		case RC_DAMAGED:
-			bgDC.FillSolidRect(0, 0, width, height, pDoc->rc.colors[currentcolor].color);
+			bgDC.FillSolidRect(0, 0, width, height, pDoc.rc.colors[currentcolor].color);
 			break;
 
 		default:
 			{
 				CString errormessage;
-				errormessage.Format("Unknown shape (%d)", shapes->type);
+				errormessage.Format("Unknown shape (%d)", shapes.type);
 				MessageBox((LPCTSTR)errormessage, "Draw error", MB_OK | MB_ICONHAND);
 			}
 			break;
 		}
-		shapes = shapes->next;
+		shapes = shapes.next;
 	}
 
 	bgDC.SelectObject(originalPen);
 	bgDC.SetViewportOrg(Origin);
 
-	GetDC()->BitBlt(0, 0, width, height, &bgDC, 0, 0, SRCCOPY);
+	GetDC().BitBlt(0, 0, width, height, &bgDC, 0, 0, SRCCOPY);
 
-	((CMainFrame *)GetParent())->m_wndSliderBar.m_slider.SetPos(frame->number);
+	((CMainFrame *)GetParent()).m_wndSliderBar.m_slider.SetPos(frame.number);
 }
 
 void CXPreplayView::OnPlay() 
@@ -588,11 +588,11 @@ void CXPreplayView::OnPlay()
 	CXPreplayDoc* pDoc = GetDocument();
 	ASSERT_VALID(pDoc);
 
-	if(pDoc->rc.cur == pDoc->rc.tail)
+	if(pDoc.rc.cur == pDoc.rc.tail)
 	{
-		pDoc->rc.cur = pDoc->rc.head;
+		pDoc.rc.cur = pDoc.rc.head;
 	}
-	nTimer = SetTimer(1, 1000/pDoc->rc.fps, NULL);
+	nTimer = SetTimer(1, 1000/pDoc.rc.fps, NULL);
 	status = s_playing;
 }
 
@@ -600,7 +600,7 @@ void CXPreplayView::OnStop()
 {
 	KillTimer(nTimer);
 	status = s_stopped;
-	GetDocument()->rc.cur = GetDocument()->rc.head;
+	GetDocument().rc.cur = GetDocument().rc.head;
 	Invalidate(FALSE);
 }
 
@@ -615,11 +615,11 @@ void CXPreplayView::OnReverse()
 	CXPreplayDoc* pDoc = GetDocument();
 	ASSERT_VALID(pDoc);
 
-	if(pDoc->rc.cur == pDoc->rc.head)
+	if(pDoc.rc.cur == pDoc.rc.head)
 	{
-		pDoc->rc.cur = pDoc->rc.tail;
+		pDoc.rc.cur = pDoc.rc.tail;
 	}
-	nTimer = SetTimer(1, 1000/pDoc->rc.fps, NULL);
+	nTimer = SetTimer(1, 1000/pDoc.rc.fps, NULL);
 	status = s_reverse;
 }
 
@@ -628,9 +628,9 @@ void CXPreplayView::OnRewind()
 	CXPreplayDoc* pDoc = GetDocument();
 	ASSERT_VALID(pDoc);
 
-	if(pDoc->rc.cur != pDoc->rc.head)
+	if(pDoc.rc.cur != pDoc.rc.head)
 	{
-		nTimer = SetTimer(1, 1000/(4*pDoc->rc.fps), NULL);
+		nTimer = SetTimer(1, 1000/(4*pDoc.rc.fps), NULL);
 		status = s_rewind;
 	}
 	else
@@ -642,9 +642,9 @@ void CXPreplayView::OnForward()
 	CXPreplayDoc* pDoc = GetDocument();
 	ASSERT_VALID(pDoc);
 
-	if(pDoc->rc.cur != pDoc->rc.tail)
+	if(pDoc.rc.cur != pDoc.rc.tail)
 	{
-		nTimer = SetTimer(1, 1000/(4*pDoc->rc.fps), NULL);
+		nTimer = SetTimer(1, 1000/(4*pDoc.rc.fps), NULL);
 		status = s_forward;
 	}
 	else
@@ -653,13 +653,13 @@ void CXPreplayView::OnForward()
 
 void CXPreplayView::OnToend() 
 {
-	GetDocument()->rc.cur = GetDocument()->rc.tail;
+	GetDocument().rc.cur = GetDocument().rc.tail;
 	Invalidate(FALSE);
 }
 
 void CXPreplayView::OnTostart() 
 {
-	GetDocument()->rc.cur = GetDocument()->rc.head;
+	GetDocument().rc.cur = GetDocument().rc.head;
 	Invalidate(FALSE);
 }
 
@@ -668,11 +668,11 @@ void CXPreplayView::OnSlowplay()
 	CXPreplayDoc* pDoc = GetDocument();
 	ASSERT_VALID(pDoc);
 
-	if(pDoc->rc.cur == pDoc->rc.tail)
+	if(pDoc.rc.cur == pDoc.rc.tail)
 	{
-		pDoc->rc.cur = pDoc->rc.head;
+		pDoc.rc.cur = pDoc.rc.head;
 	}
-	nTimer = SetTimer(1, (4*1000)/pDoc->rc.fps, NULL);
+	nTimer = SetTimer(1, (4*1000)/pDoc.rc.fps, NULL);
 	status = s_slowplay;
 }
 
@@ -681,106 +681,106 @@ void CXPreplayView::OnSlowback()
 	CXPreplayDoc* pDoc = GetDocument();
 	ASSERT_VALID(pDoc);
 
-	if(pDoc->rc.cur == pDoc->rc.head)
+	if(pDoc.rc.cur == pDoc.rc.head)
 	{
-		pDoc->rc.cur = pDoc->rc.tail;
+		pDoc.rc.cur = pDoc.rc.tail;
 	}
-	nTimer = SetTimer(1, (4*1000)/pDoc->rc.fps, NULL);
+	nTimer = SetTimer(1, (4*1000)/pDoc.rc.fps, NULL);
 	status = s_slowback;
 }
 
 void CXPreplayView::OnStartframe() 
 {
 	int	start, end;
-	CSliderCtrl	*slider = &(((CMainFrame *)GetParent())->m_wndSliderBar.m_slider);
+	CSliderCtrl	*slider = &(((CMainFrame *)GetParent()).m_wndSliderBar.m_slider);
 
-	slider->GetSelection(start, end);
-	start = GetDocument()->rc.cur->number;
-	slider->SetSelection(start, end);
-	slider->RedrawWindow();
-	GetDocument()->minSelection = start;
+	slider.GetSelection(start, end);
+	start = GetDocument().rc.cur.number;
+	slider.SetSelection(start, end);
+	slider.RedrawWindow();
+	GetDocument().minSelection = start;
 }
 
 void CXPreplayView::OnEndframe() 
 {
 	int	start, end;
-	CSliderCtrl	*slider = &(((CMainFrame *)GetParent())->m_wndSliderBar.m_slider);
+	CSliderCtrl	*slider = &(((CMainFrame *)GetParent()).m_wndSliderBar.m_slider);
 
-	slider->GetSelection(start, end);
-	end = GetDocument()->rc.cur->number;
-	slider->SetSelection(start, end);
-	slider->RedrawWindow();
-	GetDocument()->maxSelection = end;
+	slider.GetSelection(start, end);
+	end = GetDocument().rc.cur.number;
+	slider.SetSelection(start, end);
+	slider.RedrawWindow();
+	GetDocument().maxSelection = end;
 }
 
 void CXPreplayView::OnUpdateForward(CCmdUI* pCmdUI) 
 {
-	pCmdUI->Enable(GetDocument()->docOpened);
-	pCmdUI->SetCheck(status == s_forward);
+	pCmdUI.Enable(GetDocument().docOpened);
+	pCmdUI.SetCheck(status == s_forward);
 }
 
 void CXPreplayView::OnUpdatePause(CCmdUI* pCmdUI) 
 {
-	pCmdUI->Enable(GetDocument()->docOpened);
-	pCmdUI->SetCheck(status == s_paused);
+	pCmdUI.Enable(GetDocument().docOpened);
+	pCmdUI.SetCheck(status == s_paused);
 }
 
 void CXPreplayView::OnUpdatePlay(CCmdUI* pCmdUI) 
 {
-	pCmdUI->Enable(GetDocument()->docOpened);
-	pCmdUI->SetCheck(status == s_playing);
+	pCmdUI.Enable(GetDocument().docOpened);
+	pCmdUI.SetCheck(status == s_playing);
 }
 
 void CXPreplayView::OnUpdateReverse(CCmdUI* pCmdUI) 
 {
-	pCmdUI->Enable(GetDocument()->docOpened);
-	pCmdUI->SetCheck(status == s_reverse);
+	pCmdUI.Enable(GetDocument().docOpened);
+	pCmdUI.SetCheck(status == s_reverse);
 }
 
 void CXPreplayView::OnUpdateRewind(CCmdUI* pCmdUI) 
 {
-	pCmdUI->Enable(GetDocument()->docOpened);
-	pCmdUI->SetCheck(status == s_rewind);
+	pCmdUI.Enable(GetDocument().docOpened);
+	pCmdUI.SetCheck(status == s_rewind);
 }
 
 void CXPreplayView::OnUpdateStop(CCmdUI* pCmdUI) 
 {
-	pCmdUI->Enable(GetDocument()->docOpened);
-	pCmdUI->SetCheck(status == s_stopped);
+	pCmdUI.Enable(GetDocument().docOpened);
+	pCmdUI.SetCheck(status == s_stopped);
 }
 
 void CXPreplayView::OnUpdateToend(CCmdUI* pCmdUI) 
 {
-	pCmdUI->Enable(GetDocument()->docOpened);
-	pCmdUI->SetCheck(status == s_toEnd);
+	pCmdUI.Enable(GetDocument().docOpened);
+	pCmdUI.SetCheck(status == s_toEnd);
 }
 
 void CXPreplayView::OnUpdateTostart(CCmdUI* pCmdUI) 
 {
-	pCmdUI->Enable(GetDocument()->docOpened);
-	pCmdUI->SetCheck(status == s_toStart);
+	pCmdUI.Enable(GetDocument().docOpened);
+	pCmdUI.SetCheck(status == s_toStart);
 }
 
 void CXPreplayView::OnUpdateSlowback(CCmdUI* pCmdUI) 
 {
-	pCmdUI->Enable(GetDocument()->docOpened);
-	pCmdUI->SetCheck(status == s_slowback);
+	pCmdUI.Enable(GetDocument().docOpened);
+	pCmdUI.SetCheck(status == s_slowback);
 }
 
 void CXPreplayView::OnUpdateSlowplay(CCmdUI* pCmdUI) 
 {
-	pCmdUI->Enable(GetDocument()->docOpened);
-	pCmdUI->SetCheck(status == s_slowplay);
+	pCmdUI.Enable(GetDocument().docOpened);
+	pCmdUI.SetCheck(status == s_slowplay);
 }
 
 void CXPreplayView::OnUpdateStartframe(CCmdUI* pCmdUI) 
 {
-	pCmdUI->Enable(GetDocument()->docOpened);
+	pCmdUI.Enable(GetDocument().docOpened);
 }
 
 void CXPreplayView::OnUpdateEndframe(CCmdUI* pCmdUI) 
 {
-	pCmdUI->Enable(GetDocument()->docOpened);
+	pCmdUI.Enable(GetDocument().docOpened);
 }
 
 BOOL CXPreplayView::OnEraseBkgnd(CDC* pDC) 
@@ -789,23 +789,23 @@ BOOL CXPreplayView::OnEraseBkgnd(CDC* pDC)
 	CXPreplayDoc	*pDoc = GetDocument();
 	GetClientRect(&rect);
 
-	if(GetDocument()->docOpened)
+	if(GetDocument().docOpened)
 	{
 		if(Trustheader)
 		{
-			pDC->FillSolidRect(0, 0, pDoc->rc.view_width, pDoc->rc.view_height, pDoc->rc.colors[0].color);
-			pDC->FillSolidRect(pDoc->rc.view_width, rect.top, rect.right, rect.bottom, RGB(128, 128, 128));
-			pDC->FillSolidRect(rect.left, pDoc->rc.view_height, rect.right, rect.bottom, RGB(128, 128, 128));
+			pDC.FillSolidRect(0, 0, pDoc.rc.view_width, pDoc.rc.view_height, pDoc.rc.colors[0].color);
+			pDC.FillSolidRect(pDoc.rc.view_width, rect.top, rect.right, rect.bottom, RGB(128, 128, 128));
+			pDC.FillSolidRect(rect.left, pDoc.rc.view_height, rect.right, rect.bottom, RGB(128, 128, 128));
 		}
 		else
 		{
-			pDC->FillSolidRect(0, 0, pDoc->max.x, pDoc->max.y, pDoc->rc.colors[0].color);
-			pDC->FillSolidRect(pDoc->max.x, rect.top, rect.right, rect.bottom, RGB(128, 128, 128));
-			pDC->FillSolidRect(rect.left, pDoc->max.y, rect.right, rect.bottom, RGB(128, 128, 128));
+			pDC.FillSolidRect(0, 0, pDoc.max.x, pDoc.max.y, pDoc.rc.colors[0].color);
+			pDC.FillSolidRect(pDoc.max.x, rect.top, rect.right, rect.bottom, RGB(128, 128, 128));
+			pDC.FillSolidRect(rect.left, pDoc.max.y, rect.right, rect.bottom, RGB(128, 128, 128));
 		}
 	}
 	else
-		pDC->FillSolidRect(&rect, RGB(128, 128, 128));
+		pDC.FillSolidRect(&rect, RGB(128, 128, 128));
 
 
 	return TRUE;
@@ -820,21 +820,21 @@ void CXPreplayView::OnOptionsTrustheader()
 	CSize sizeTotal;
 	if(Trustheader)
 	{
-		sizeTotal.cx = pDoc->rc.view_width;
-		sizeTotal.cy = pDoc->rc.view_height;
+		sizeTotal.cx = pDoc.rc.view_width;
+		sizeTotal.cy = pDoc.rc.view_height;
 	}
 	else
 	{
-		sizeTotal.cx = pDoc->max.x;
-		sizeTotal.cy = pDoc->max.y;
+		sizeTotal.cx = pDoc.max.x;
+		sizeTotal.cy = pDoc.max.y;
 	}
 	SetScrollSizes(MM_TEXT, sizeTotal);
 
 	bgBitmap.DeleteObject();
 	if(Trustheader)
-		bgBitmap.CreateCompatibleBitmap(GetDC(), pDoc->rc.view_width, pDoc->rc.view_height);
+		bgBitmap.CreateCompatibleBitmap(GetDC(), pDoc.rc.view_width, pDoc.rc.view_height);
 	else
-		bgBitmap.CreateCompatibleBitmap(GetDC(), pDoc->max.x, pDoc->max.y);
+		bgBitmap.CreateCompatibleBitmap(GetDC(), pDoc.max.x, pDoc.max.y);
 
 	bgDC.SelectObject(&bgBitmap);
 	Invalidate(TRUE);
@@ -842,10 +842,10 @@ void CXPreplayView::OnOptionsTrustheader()
 
 void CXPreplayView::OnUpdateOptionsTrustheader(CCmdUI* pCmdUI) 
 {
-	pCmdUI->SetCheck(Trustheader);
+	pCmdUI.SetCheck(Trustheader);
 }
 
-short *CXPreplayView::ConvertItem(unsigned char *c_bits)
+short *CXPreplayView::ConvertItem(unsigned String c_bits)
 {
 	short	*s_bits;
 
@@ -893,10 +893,10 @@ short *CXPreplayView::ConvertItem(unsigned char *c_bits)
 void CXPreplayView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint) 
 {
 	CXPreplayDoc	*pDoc = GetDocument();
-	CSliderCtrl	*slider = &(((CMainFrame *)GetParent())->m_wndSliderBar.m_slider);
+	CSliderCtrl	*slider = &(((CMainFrame *)GetParent()).m_wndSliderBar.m_slider);
 
-	slider->SetRange(0, pDoc->frame_count - 1);
-	slider->SetSelection(0, pDoc->frame_count - 1);
-	slider->SetTicFreq(pDoc->frame_count / 50 + 1);
-	slider->SetPos(0);
+	slider.SetRange(0, pDoc.frame_count - 1);
+	slider.SetSelection(0, pDoc.frame_count - 1);
+	slider.SetTicFreq(pDoc.frame_count / 50 + 1);
+	slider.SetPos(0);
 }

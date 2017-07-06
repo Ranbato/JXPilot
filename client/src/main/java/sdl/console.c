@@ -27,7 +27,7 @@
 static sdl_window_t console_window;
 static ConsoleInformation *console;
 
-void command_handler(ConsoleInformation *, char *);
+void command_handler(ConsoleInformation *, String );
 
 static void Console_refresh(void)
 {
@@ -71,7 +71,7 @@ int Console_init(void)
 void Console_paint(void)
 {
     if (!Console_isVisible()) return;
-    if (console->Visible != CON_OPEN) Console_refresh();
+    if (console.Visible != CON_OPEN) Console_refresh();
     console_window.x = (draw_width - console_window.w) / 2;
     console_window.y = (draw_height - console_window.h) / 2;
     sdl_window_paint(&console_window);
@@ -101,7 +101,7 @@ void Console_hide(void)
 
 int Console_isVisible(void)
 {
-    return (console->Visible != CON_CLOSED);
+    return (console.Visible != CON_CLOSED);
 }
 
 int Console_process(SDL_Event *e)
@@ -113,7 +113,7 @@ int Console_process(SDL_Event *e)
     return 0;
 }
 
-void Paste_String_to_Console(char *text)
+void Paste_String_to_Console(String text)
 {
     Add_String_to_Console(text);
     Console_refresh();
@@ -125,7 +125,7 @@ void Console_cleanup(void)
     sdl_window_destroy(&console_window);
 }
 
-void Console_print(const char *str, ...)
+void Console_print(String str, ...)
 {
     va_list marker;
     va_start(marker, str);
@@ -134,7 +134,7 @@ void Console_print(const char *str, ...)
     Console_refresh();
 }
 
-void command_handler(ConsoleInformation *con, char *command)
+void command_handler(ConsoleInformation *con, String command)
 {
     Net_talk(command);
     Talk_set_state(false);

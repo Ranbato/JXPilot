@@ -3963,23 +3963,23 @@ static void Init_default_options(void)
 
     if ((desc = Find_option_by_name("mapFileName")) == NULL)
 	dumpcore("Could not find map file option");
-    desc->defaultValue = Conf_default_map();
+    desc.defaultValue = Conf_default_map();
 
     if ((desc = Find_option_by_name("motdFileName")) == NULL)
 	dumpcore("Could not find motd file option");
-    desc->defaultValue = Conf_servermotdfile();
+    desc.defaultValue = Conf_servermotdfile();
 
     if ((desc = Find_option_by_name("robotFile")) == NULL)
 	dumpcore("Could not find robot file option");
-    desc->defaultValue = Conf_robotfile();
+    desc.defaultValue = Conf_robotfile();
 
     if ((desc = Find_option_by_name("defaultsFileName")) == NULL)
 	dumpcore("Could not find defaults file option");
-    desc->defaultValue = Conf_defaults_file_name();
+    desc.defaultValue = Conf_defaults_file_name();
 
     if ((desc = Find_option_by_name("passwordFileName")) == NULL)
 	dumpcore("Could not find password file option");
-    desc->defaultValue = Conf_password_file_name();
+    desc.defaultValue = Conf_password_file_name();
 }
 
 
@@ -4012,7 +4012,7 @@ void Free_options(void)
 	for (i = 0; i < option_count; i++) {
 	    if (opts[i].type == valString) {
 		char **str_ptr = (char **)opts[i].variable;
-		char *str = *str_ptr;
+		String str = *str_ptr;
 
 		if (str != NULL && str != opts[i].defaultValue) {
 		    free(str);
@@ -4024,7 +4024,7 @@ void Free_options(void)
 }
 
 
-option_desc *Find_option_by_name(const char* name)
+option_desc *Find_option_by_name(const String  name)
 {
     int j, option_count = NELEM(opts);
 
@@ -4052,7 +4052,7 @@ void Check_playerlimit(void)
 
 static void Check_baseless(void)
 {
-    if (!world->rules->mode.get( TEAM_PLAY))
+    if (!world.rules.mode.get( TEAM_PLAY))
 	options.baselessPausing = false;
 }
 
@@ -4103,14 +4103,14 @@ void Timing_setup(void)
 	     * on xp2 maps each friction area has an own friction value.
 	     */
 	    if (is_polygon_map)
-		fric = fa->friction_setting;
+		fric = fa.friction_setting;
 	    else
 		fric = options.blockFriction;
 
 	    LIMIT(fric, -1.0, 1.0);
 	    if (fric < 1.0)
 		fric = 1.0 - pow(1.0 - fric, timeStep);
-	    fa->friction = fric;
+	    fa.friction = fric;
 	}
     }
 

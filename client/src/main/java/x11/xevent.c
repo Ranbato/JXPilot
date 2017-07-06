@@ -31,8 +31,8 @@ XEvent	talk_key_repeat_event;
 struct timeval talk_key_repeat_time;
 static struct timeval time_now;
 
-static ipos_t	delta;
-ipos_t	mousePosition;	/* position of mouse pointer. */
+static Point 	delta;
+Point 	mousePosition;	/* position of mouse pointer. */
 int	mouseMovement;	/* horizontal mouse movement. */
 
 
@@ -49,7 +49,7 @@ keys_t Lookup_key(XEvent *event, KeySym ks, bool reset)
 	int count;
 
 	memset(str, 0, sizeof str);
-	count = XLookupString(&event->xkey, str, 1, &ks, &compose);
+	count = XLookupString(&event.xkey, str, 1, &ks, &compose);
 	if (count == NoSymbol)
 	    warn("Unknown keysym: 0x%03lx.", ks);
 	else {
@@ -165,10 +165,10 @@ void Key_event(XEvent *event)
 {
     KeySym ks;
 
-    if ((ks = XLookupKeysym(&event->xkey, 0)) == NoSymbol)
+    if ((ks = XLookupKeysym(&event.xkey, 0)) == NoSymbol)
 	return;
 
-    switch(event->type) {
+    switch(event.type) {
     case KeyPress:
 	Keyboard_button_pressed((xp_keysym_t)ks);
 	break;

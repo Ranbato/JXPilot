@@ -43,11 +43,11 @@
 
 /* score.c */
 
-void Score(player_t * pl, double points, clpos_t pos, const char *msg);
+void Score(player_t * pl, double points, Click  pos, String msg);
 double Rate(double winner, double loser);
 void Score_players(player_t * winner_pl, double winner_score,
-		   char *winner_msg, player_t * loser_pl,
-		   double loser_score, char *loser_msg, bool transfer_tag);
+		   String winner_msg, player_t * loser_pl,
+		   double loser_score, String loser_msg, bool transfer_tag);
 
 double Get_Score(player_t * pl);
 
@@ -71,5 +71,5 @@ typedef enum {
 } scoretype_t;
 
 void Handle_Scoring(scoretype_t st, player_t * killer, player_t * victim,
-		    void *extra, const char *somemsg);
+		    void *extra, String somemsg);
 #endif

@@ -26,20 +26,20 @@
 #ifndef OBJPOS_H
 #define OBJPOS_H
 
-void Object_position_set_clpos(object_t *obj, clpos_t pos);
-void Object_position_init_clpos(object_t *obj, clpos_t pos);
+void Object_position_set_clpos(object_t *obj, Click  pos);
+void Object_position_init_clpos(object_t *obj, Click  pos);
 void Object_position_restore(object_t *obj);
 void Object_position_limit(object_t *obj);
-void Player_position_debug(player_t *pl, const char *msg);
+void Player_position_debug(player_t *pl, String msg);
 
 static inline void Object_position_remember(object_t *obj)
 {
-    obj->prevpos = obj->pos;
+    obj.prevpos = obj.pos;
 }
 
-static inline void Object_position_set_clvec(object_t *obj, clvec_t vec)
+static inline void Object_position_set_clvec(object_t *obj, Click  vec)
 {
-    clpos_t pos;
+    Click  pos;
 
     pos.cx = vec.cx;
     pos.cy = vec.cy;

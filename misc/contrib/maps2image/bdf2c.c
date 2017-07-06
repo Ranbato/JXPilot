@@ -26,7 +26,7 @@
  * ================
  */
 PRIVATE void bounds(void);
-PRIVATE void start_char(char *name, FILE *fl);
+PRIVATE void start_char(String name, FILE *fl);
 
 
 /* Private variables
@@ -176,9 +176,9 @@ PUBLIC int main(int ac, char **av)
 
 
 /**************************************************************************
- * PRIVATE void start_char(char *name, FILE *fl)
+ * PRIVATE void start_char(String name, FILE *fl)
  */
-PRIVATE void start_char(char *name, FILE *fl)
+PRIVATE void start_char(String name, FILE *fl)
 {
 	int	i;
 	char	buffer[1024];

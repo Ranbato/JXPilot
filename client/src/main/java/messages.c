@@ -75,17 +75,17 @@ static void Delete_pending_messages(void);
 /*#define DP(x) x*/
 #define DP(x)
 
-static const char *shottypes[] = {
+static String shottypes[] = {
     "a shot", NULL
 };
 static const char head_first[] = " head first";
-static const char *crashes[] = {
+static String crashes[] = {
     "crashed", "smashed", "smacked", "was trashed", NULL
 };
-static const char *obstacles[] = {
+static String obstacles[] = {
     "wall", "target", "treasure", "cannon", NULL
 };
-static const char *teamnames[] = {
+static String teamnames[] = {
     "2", "4", "0", "1", "3", "5", "6", "7", "8", "9", NULL
 };
 
@@ -99,9 +99,9 @@ typedef struct {
 } msgnames_t;
 
 /* recursive descent parser for messages */
-static bool Msg_match_fmt(const char *msg, const char *fmt, msgnames_t *mn)
+static bool Msg_match_fmt(String msg, String fmt, msgnames_t *mn)
 {
-    char *fp;
+    String fp;
     int i;
     size_t len;
 
@@ -124,14 +124,14 @@ static bool Msg_match_fmt(const char *msg, const char *fmt, msgnames_t *mn)
     msg += len;
 
     switch (*(fp + 1)) {
-	char *nick;
+	String nick;
     case 'n':			/* nick */
 	for (i = 0; i < num_others; i++) {
 	    nick = Others[i].nick_name;
 	    len = strlen(nick);
 	    if ((strncmp(msg, nick, len) == 0)
 		&& Msg_match_fmt(msg + len, fmt, mn)) {
-		strncpy(mn->nick_name[mn->index++], nick, len + 1);
+		strncpy(mn.nick_name[mn.index++], nick, len + 1);
 		return true;
 	    }
 	}
@@ -167,7 +167,7 @@ static bool Msg_match_fmt(const char *msg, const char *fmt, msgnames_t *mn)
     case 't':			/* "nick" of a team */
 	for (i = 0; teamnames[i] != NULL; i++) {
 	    if (strncmp(msg, teamnames[i], strlen(teamnames[i])) == 0) {
-		strncpy(mn->nick_name[mn->index++], teamnames[i], 2);
+		strncpy(mn.nick_name[mn.index++], teamnames[i], 2);
 		msg += strlen(teamnames[i]);
 		return Msg_match_fmt(msg, fmt, mn);
 	    }
@@ -191,13 +191,13 @@ static bool Want_scan(void)
 	return false;
 
     /* if not playing, don't bother */
-    if (!self || strchr("PW", self->mychar))
+    if (!self || strchr("PW", self.mychar))
 	return false;
 
     for (i = 0; i < num_others; i++) {
 	other = &Others[i];
 	/* alive and dead ships and robots are considered playing */
-	if (strchr(" DR", other->mychar))
+	if (strchr(" DR", other.mychar))
 	    num_playing++;
     }
 
@@ -210,7 +210,7 @@ static bool Want_scan(void)
  * A total reset is most often done when a new match is starting.
  * If we see a total reset message we clear the statistics.
  */
-static bool Msg_scan_for_total_reset(const char *message)
+static bool Msg_scan_for_total_reset(String message)
 {
     static char total_reset[] = "Total reset";
 
@@ -231,7 +231,7 @@ static bool Msg_scan_for_total_reset(const char *message)
     return false;
 }
 
-static bool Msg_scan_for_replace_treasure(const char *message)
+static bool Msg_scan_for_replace_treasure(String message)
 {
     msgnames_t mn;
 
@@ -243,11 +243,11 @@ static bool Msg_scan_for_replace_treasure(const char *message)
 		      " < %n (team %t) has replaced the treasure >",
 		      &mn)) {
 	int replacer_team = atoi(mn.nick_name[0]);
-	char *replacer = mn.nick_name[1];
+	String replacer = mn.nick_name[1];
 
-	if (replacer_team == self->team) {
+	if (replacer_team == self.team) {
 	    Bms_set_state(BmsSafe);
-	    if (!strcmp(replacer, self->nick_name))
+	    if (!strcmp(replacer, self.nick_name))
 		ballstats_replaces++;
 	    return true;
 	}
@@ -267,7 +267,7 @@ static bool Msg_scan_for_replace_treasure(const char *message)
     return false;
 }
 
-static bool Msg_scan_for_ball_destruction(const char *message)
+static bool Msg_scan_for_ball_destruction(String message)
 {
     msgnames_t mn;
 
@@ -280,14 +280,14 @@ static bool Msg_scan_for_ball_destruction(const char *message)
 		      &mn)) {
 	int destroyer_team = atoi(mn.nick_name[0]);
 	int destroyed_team = atoi(mn.nick_name[1]);
-	char *destroyer = mn.nick_name[2];
+	String destroyer = mn.nick_name[2];
 
-	if (destroyer_team == self->team) {
+	if (destroyer_team == self.team) {
 	    ballstats_teamcashes++;
-	    if (!strcmp(destroyer, self->nick_name))
+	    if (!strcmp(destroyer, self.nick_name))
 		ballstats_cashes++;
 	}
-	if (destroyed_team == self->team)
+	if (destroyed_team == self.team)
 	    ballstats_lostballs++;
 	return true;
     }
@@ -308,7 +308,7 @@ static void Msg_scan_death(int id)
 	return;
 
     /* don't do base warning for players who lost their last life */
-    if (Setup->mode.get( LIMITED_LIVES)	&& other->life == 0)
+    if (Setup.mode.get( LIMITED_LIVES)	&& other.life == 0)
 	return;
 
     for (i = 0; i < num_bases; i++) {
@@ -319,17 +319,17 @@ static void Msg_scan_death(int id)
     }
 }
 
-static bool Msg_is_game_msg(const char *message)
+static bool Msg_is_game_msg(String message)
 {
     if (message[strlen(message) - 1] == ']' || strncmp(message, " <", 2) == 0)
 	return false;
     return true;
 }
 
-static void Msg_scan_game_msg(const char *message)
+static void Msg_scan_game_msg(String message)
 {
     msgnames_t mn;
-    char *killer = NULL, *victim = NULL, *victim2 = NULL;
+    String killer = NULL, *victim = NULL, *victim2 = NULL;
     bool i_am_killer = false;
     bool i_am_victim = false;
     bool i_am_victim2 = false;
@@ -446,19 +446,19 @@ static void Msg_scan_game_msg(const char *message)
 
     if (killer != NULL) {
 	DP(printf("Killer is %s.\n", killer));
-	if (strcmp(killer, self->nick_name) == 0)
+	if (strcmp(killer, self.nick_name) == 0)
 	    i_am_killer = true;
     }
 
     if (victim != NULL) {
 	DP(printf("Victim is %s.\n", victim));
-	if (strcmp(victim, self->nick_name) == 0)
+	if (strcmp(victim, self.nick_name) == 0)
 	    i_am_victim = true;
     }
 
     if (victim2 != NULL) {
 	DP(printf("Second victim is %s.\n", victim2));
-	if (strcmp(victim2, self->nick_name) == 0)
+	if (strcmp(victim2, self.nick_name) == 0)
 	    i_am_victim2 = true;
     }
 
@@ -469,7 +469,7 @@ static void Msg_scan_game_msg(const char *message)
 	/*for safety... could possibly happen with
 	  loss or parser bugs =) */
 	if (other != NULL)
-	    Msg_scan_death(other->id);
+	    Msg_scan_death(other.id);
     } else {
 	DP(printf("*** [%s] was not found in the players array! ***\n",
 		  victim));
@@ -478,7 +478,7 @@ static void Msg_scan_game_msg(const char *message)
     if (victim2 != NULL) {
 	other = Other_by_name(victim, false);
 	if (other != NULL)
-	    Msg_scan_death(other->id);
+	    Msg_scan_death(other.id);
     } else {
 	DP(printf("*** [%s] was not found in the players array! ***\n",
 		  victim));
@@ -532,7 +532,7 @@ static void Msg_scan_game_msg(const char *message)
  * Checks if the message is in angle brackets, that is,
  * starts with " < " and ends with ">"
  */
-static bool Msg_is_in_angle_brackets(const char *message)
+static bool Msg_is_in_angle_brackets(String message)
 {
     if (strncmp(message, " < ", 3))
 	return false;
@@ -541,7 +541,7 @@ static bool Msg_is_in_angle_brackets(const char *message)
     return true;
 }
 
-static void Msg_scan_angle_bracketed_msg(const char *message)
+static void Msg_scan_angle_bracketed_msg(String message)
 {
     /* let's scan for total reset even if not playing */
     if (Msg_scan_for_total_reset(message))
@@ -553,7 +553,7 @@ static void Msg_scan_angle_bracketed_msg(const char *message)
 }
 
 /* Mara's ball message scan */
-static msg_bms_t Msg_do_bms(const char *message)
+static msg_bms_t Msg_do_bms(String message)
 {
     static char ball_text1[] = "BALL";
     static char ball_text2[] = "Ball";
@@ -614,7 +614,7 @@ static msg_bms_t Msg_do_bms(const char *message)
  * In 'bracket' we will store info about where the
  * player name starts so the bms does can ignore that.
  */
-static bool Msg_is_from_our_team(const char *message, const char **msg2)
+static bool Msg_is_from_our_team(String message, String *msg2)
 {
     other_t *other;
     static char buf[MAX_CHARS + 8];
@@ -627,11 +627,11 @@ static bool Msg_is_from_our_team(const char *message, const char **msg2)
     len = strlen(message);
     for (i = 0; i < num_others; i++) {
 	other = &Others[i];
-	if (other->team != self->team)
+	if (other.team != self.team)
 	    continue;
 
 	/* first check if someone in your team sent the message for all */
-	sprintf(buf, "[%s]", other->nick_name);
+	sprintf(buf, "[%s]", other.nick_name);
 	bufstrlen = strlen(buf);
 	if (len < bufstrlen)
 	    continue;
@@ -642,7 +642,7 @@ static bool Msg_is_from_our_team(const char *message, const char **msg2)
 	}
 
 	/* if not, check if it was sent to your team only */
-	sprintf(buf, "[%s]:[%d]", other->nick_name, other->team);
+	sprintf(buf, "[%s]:[%d]", other.nick_name, other.team);
 	bufstrlen = strlen(buf);
 	if (len < bufstrlen)
 	    continue;
@@ -684,14 +684,14 @@ int Alloc_msgs(void)
 	    GameMsg[i - MAX_MSGS] = x;
 	    GameMsg_pending[i - MAX_MSGS] = x2;
 	}
-	x->txt[0] = '\0';
-	x->len = 0;
-	x->lifeTime = 0.0;
+	x.txt[0] = '\0';
+	x.len = 0;
+	x.lifeTime = 0.0;
 	x++;
 
-	x2->txt[0] = '\0';
-	x2->len = 0;
-	x2->lifeTime = 0.0;
+	x2.txt[0] = '\0';
+	x2.len = 0;
+	x2.lifeTime = 0.0;
 	x2++;
     }
     return 0;
@@ -737,9 +737,9 @@ static void Bms_clear(msg_bms_t type)
 {
     int i;
 
-    for (i = 0; i < maxMessages && TalkMsg[i]->len > 0; i++)
-	if (TalkMsg[i]->bmsinfo == type)
-	    TalkMsg[i]->bmsinfo = BmsNone;
+    for (i = 0; i < maxMessages && TalkMsg[i].len > 0; i++)
+	if (TalkMsg[i].bmsinfo == type)
+	    TalkMsg[i].bmsinfo = BmsNone;
 }
 
 bool Bms_test_state(msg_bms_t bms)
@@ -796,12 +796,12 @@ void Bms_set_state(msg_bms_t bms)
  * however, buffer new messages if there is a pending selection.
  * Add_pending_messages() will be called later in Talk_cut_from_messages().
  */
-void Add_message(const char *message)
+void Add_message(String message)
 {
     int i, last_msg_index;
     message_t *msg, **msg_set;
     msg_bms_t bmsinfo = BmsNone;
-    const char *msg2;
+    String msg2;
     bool is_game_msg = false;
     bool is_drawn_talk_message	= false; /* not pending */
     bool scrolling = false; /* really moving */
@@ -829,7 +829,7 @@ void Add_message(const char *message)
 	Msg_scan_angle_bracketed_msg(message);
 
     else if (!is_game_msg
-	     && Setup->mode.get( TEAM_PLAY)
+	     && Setup.mode.get( TEAM_PLAY)
 	     && Msg_is_from_our_team(message, &msg2))
 	bmsinfo = Msg_do_bms(msg2);
 
@@ -837,7 +837,7 @@ void Add_message(const char *message)
 	/* how many talk messages */
         last_msg_index = 0;
         while (last_msg_index < maxMessages
-		&& TalkMsg[last_msg_index]->len != 0)
+		&& TalkMsg[last_msg_index].len != 0)
             last_msg_index++;
         last_msg_index--; /* make it an index */
 
@@ -858,10 +858,10 @@ void Add_message(const char *message)
 	msg_set[i] = msg_set[i - 1];
 
     msg_set[0] = msg;
-    msg->lifeTime = MSG_LIFE_TIME;
-    strlcpy(msg->txt, message, MSG_LEN);
-    msg->len = strlen(message);
-    msg->bmsinfo = bmsinfo;
+    msg.lifeTime = MSG_LIFE_TIME;
+    strlcpy(msg.txt, message, MSG_LEN);
+    msg.len = strlen(message);
+    msg.bmsinfo = bmsinfo;
 
     /* Clear bms flags for out of date messages. */
     if (bmsinfo != BmsNone)
@@ -890,7 +890,7 @@ void Add_message(const char *message)
 	    } else {
 		selection.draw.y1++;
 		if (selection.draw.y2 == maxMessages - 1)
-		    selection.draw.x2 = msg_set[selection.draw.y2]->len - 1;
+		    selection.draw.x2 = msg_set[selection.draw.y2].len - 1;
 		else
 		    selection.draw.y2++;
 	    }
@@ -906,7 +906,7 @@ void Add_message(const char *message)
 	xpprintf("%s\n", message);
 }
 
-void Add_newbie_message(const char *message)
+void Add_newbie_message(String message)
 {
     char msg[MSG_LEN];
 
@@ -928,14 +928,14 @@ static void Delete_pending_messages(void)
 
     for (i = 0; i < maxMessages; i++) {
 	msg = TalkMsg_pending[i];
-	if (msg->len > 0) {
-            msg->txt[0] = '\0';
-            msg->len = 0;
+	if (msg.len > 0) {
+            msg.txt[0] = '\0';
+            msg.len = 0;
 	}
 	msg = GameMsg_pending[i];
-	if (msg->len > 0) {
-            msg->txt[0] = '\0';
-            msg->len = 0;
+	if (msg.len > 0) {
+            msg.txt[0] = '\0';
+            msg.len = 0;
 	}
     }
 }
@@ -951,10 +951,10 @@ void Add_pending_messages(void)
 
     /* just through all messages */
     for (i = maxMessages-1; i >= 0; i--) {
-	if (TalkMsg_pending[i]->len > 0)
-	    Add_message(TalkMsg_pending[i]->txt);
-	if (GameMsg_pending[i]->len > 0)
-	    Add_message(GameMsg_pending[i]->txt);
+	if (TalkMsg_pending[i].len > 0)
+	    Add_message(TalkMsg_pending[i].txt);
+	if (GameMsg_pending[i].len > 0)
+	    Add_message(GameMsg_pending[i].txt);
     }
     Delete_pending_messages();
 }
@@ -975,7 +975,7 @@ void Add_roundend_messages(other_t **order)
     static char hackbuf2[MSG_LEN];
     static char kdratio[16];
     static char killsperround[16];
-    char *s;
+    String s;
     int i;
     other_t *other;
 
@@ -1017,21 +1017,21 @@ void Add_roundend_messages(other_t **order)
      */
     for (i = 0; i < num_others; i++) {
 	other = order[i];
-	if (other->mychar == 'P')
+	if (other.mychar == 'P')
 	    continue;
 
 	if (Using_score_decimals()) {
-	    sprintf(hackbuf2, "%s: %.*f ", other->nick_name,
-		    showScoreDecimals, other->score);
+	    sprintf(hackbuf2, "%s: %.*f ", other.nick_name,
+		    showScoreDecimals, other.score);
 	    if ((s - hackbuf) + strlen(hackbuf2) > MSG_LEN) {
 		Add_message(hackbuf);
 		s = hackbuf;
 	    }
 	    s += sprintf(s, "%s", hackbuf2);
 	} else {
-	    double score = other->score;
+	    double score = other.score;
 	    int sc = (int)(score >= 0.0 ? score + 0.5 : score - 0.5);
-	    sprintf(hackbuf2, "%s: %d ", other->nick_name, sc);
+	    sprintf(hackbuf2, "%s: %d ", other.nick_name, sc);
 	    if ((s - hackbuf) + strlen(hackbuf2) > MSG_LEN) {
 		Add_message(hackbuf);
 		s = hackbuf;
@@ -1051,14 +1051,14 @@ void Print_messages_to_stdout(void)
 
     xpprintf("[talk messages]\n");
     for (i = 0; i < maxMessages; i++) {
-	if (TalkMsg[i] && TalkMsg[i]->len > 0)
-	    xpprintf("  %s\n", TalkMsg[i]->txt);
+	if (TalkMsg[i] && TalkMsg[i].len > 0)
+	    xpprintf("  %s\n", TalkMsg[i].txt);
     }
 
     xpprintf("[server messages]\n");
     for (i = maxMessages - 1; i >= 0; i--) {
-	if (GameMsg[i] && GameMsg[i]->len > 0)
-	    xpprintf("  %s\n", GameMsg[i]->txt);
+	if (GameMsg[i] && GameMsg[i].len > 0)
+	    xpprintf("  %s\n", GameMsg[i].txt);
     }
     xpprintf("\n");
 }

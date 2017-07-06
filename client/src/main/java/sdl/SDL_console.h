@@ -34,7 +34,7 @@
 
 /*! Number of visible characters in a line. Lines in the history, the commandline, or CON_Out strings cannot be longer
 	than this. Remark that this number does NOT include the '/0' character at the end of a string. So if we create
-	a string we do this char* mystring[CON_CHARS_PER_LINE + 1];
+	a string we do this String  mystring[CON_CHARS_PER_LINE + 1];
 	*/
 #define CON_CHARS_PER_LINE   127
 /*! Cursor blink frequency in ms */
@@ -83,7 +83,7 @@ extern "C" {
 		int LineBuffer;						/*! The number of visible lines in the console (autocalculated on CON_UpdateConsole()) */
 		int VChars;							/*! The number of visible characters in one console line (autocalculated on CON_Init() and recalc. on CON_Resize()) */
 		int BackX, BackY;					/*! Background image x and y coords */
-		char* Prompt;						/*! Prompt displayed in command line */
+		String  Prompt;						/*! Prompt displayed in command line */
 		char Command[CON_CHARS_PER_LINE+1];	/*! current command in command line = lcommand + rcommand (Get's updated in AssembleCommand())*/
 		char RCommand[CON_CHARS_PER_LINE+1];	/*! left hand side of cursor */
 		char LCommand[CON_CHARS_PER_LINE+1];	/*! right hand side of cursor */
@@ -99,8 +99,8 @@ extern "C" {
 		int DispX, DispY;					/*! The top left x and y coords of the console on the display screen */
 		unsigned char ConsoleAlpha;			/*! The consoles alpha level */
 		int CommandScrollBack;				/*! How much the users scrolled back in the command lines */
-		void(*CmdFunction)(struct console_information_td *console, char* command);	/*! The Function that is executed if you press 'Return' in the console */
-		char*(*TabFunction)(char* command);	/*! The Function that is executed if you press 'Tab' in the console */
+		void(*CmdFunction)(struct console_information_td *console, String  command);	/*! The Function that is executed if you press 'Return' in the console */
+		String (*TabFunction)(String  command);	/*! The Function that is executed if you press 'Tab' in the console */
 
 		int FontHeight;						/*! The height of the font used in the console */
 		int FontWidth;						/*! The width of the font used in the console (Remark that the console needs FIXED width fonts!!) */
@@ -127,13 +127,13 @@ extern "C" {
 		CON_DrawConsole will then no more blit the console to this surface but give you a pointer to ConsoleSurface when all updates are done***
 		@param lines The total number of lines in the history
 		@param rect Position and size of the new console */
-	extern DECLSPEC ConsoleInformation* SDLCALL CON_Init(const char *FontName, SDL_Surface *DisplayScreen, int lines, SDL_Rect rect);
+	extern DECLSPEC ConsoleInformation* SDLCALL CON_Init(String FontName, SDL_Surface *DisplayScreen, int lines, SDL_Rect rect);
 	/*! Frees DT_DrawText and calls CON_Free */
 	extern DECLSPEC void SDLCALL CON_Destroy(ConsoleInformation *console);
 	/*! Frees all the memory loaded by the console */
 	extern DECLSPEC void SDLCALL CON_Free(ConsoleInformation *console);
 	/*! Function to send text to the console. Works exactly like printf and supports the same format */
-	extern DECLSPEC void SDLCALL CON_Out(ConsoleInformation *console, const char *str, ...);
+	extern DECLSPEC void SDLCALL CON_Out(ConsoleInformation *console, String str, ...);
 	/*! Sets the alpha level of the console to the specified value (0 - transparent,
 		255 - opaque). Use this function also for OpenGL. */
 	extern DECLSPEC void SDLCALL CON_Alpha(ConsoleInformation *console, unsigned char alpha);
@@ -141,7 +141,7 @@ extern "C" {
 		Preconditions: the surface in question is RGBA. 0 <= a <= 255, where 0 is transparent and 255 opaque */
 	extern DECLSPEC void SDLCALL CON_AlphaGL(SDL_Surface *s, int alpha);
 	/*! Sets a background image for the console */
-	extern DECLSPEC int SDLCALL CON_Background(ConsoleInformation *console, const char *image, int x, int y);
+	extern DECLSPEC int SDLCALL CON_Background(ConsoleInformation *console, String image, int x, int y);
 	/*! Changes current position of the console to the new given coordinates */
 	extern DECLSPEC void SDLCALL CON_Position(ConsoleInformation *console, int x, int y);
 	/*! Changes the size of the console */
@@ -154,25 +154,25 @@ extern "C" {
 		sent with CON_Events() ***Will disappear in the next major release. There is no need for such a focus model *** */
 	extern DECLSPEC void SDLCALL CON_Topmost(ConsoleInformation *console);
 	/*! Modify the prompt of the console. If you want a backslash you will have to escape it. */
-	extern DECLSPEC void SDLCALL CON_SetPrompt(ConsoleInformation *console, const char* newprompt);
+	extern DECLSPEC void SDLCALL CON_SetPrompt(ConsoleInformation *console, const String  newprompt);
 	/*! Set the key, that invokes a CON_Hide() after press. default is ESCAPE and you can always hide using
-		ESCAPE and the HideKey (2 keys for hiding). compared against event->key.keysym.sym !! */
+		ESCAPE and the HideKey (2 keys for hiding). compared against event.key.keysym.sym !! */
 	extern DECLSPEC void SDLCALL CON_SetHideKey(ConsoleInformation *console, int key);
 	/*! Internal: executes the command typed in at the console (called if you press 'Return')*/
-	extern DECLSPEC void SDLCALL CON_Execute(ConsoleInformation *console, char* command);
+	extern DECLSPEC void SDLCALL CON_Execute(ConsoleInformation *console, String  command);
 	/*! Sets the callback function that is called if a command was typed in. The function you would like to use as the callback will have to
 		look like this: <br>
-		<b> void my_command_handler(ConsoleInformation* console, char* command)</b> <br><br>
+		<b> void my_command_handler(ConsoleInformation* console, String  command)</b> <br><br>
 		You will then call the function like this:<br><b> 
 		CON_SetExecuteFunction(console, my_command_handler)</b><br><br>
 		If this is not clear look at the example program */
-	extern DECLSPEC void SDLCALL CON_SetExecuteFunction(ConsoleInformation *console, void(*CmdFunction)(ConsoleInformation *console2, char* command));
+	extern DECLSPEC void SDLCALL CON_SetExecuteFunction(ConsoleInformation *console, void(*CmdFunction)(ConsoleInformation *console2, String  command));
 	/*! Sets the callback function that is called if you press the 'Tab' key. The function has to look like this:<br><b> 
-		char* my_tabcompletion(char* command)</b><br><br>
+		String  my_tabcompletion(String  command)</b><br><br>
 		The commandline on the left side of the cursor gets passed over to your function. You will then have to make your
 		own tab-complete and return the completed string as return value. If you have nothing to complete you can return
-		NULL or the string you got. ***Will change in the next major release to char* mytabfunction(ConsoleInformation* console, char* command) *** */
-	extern DECLSPEC void SDLCALL CON_SetTabCompletion(ConsoleInformation *console, char*(*TabFunction)(char* command));
+		NULL or the string you got. ***Will change in the next major release to String  mytabfunction(ConsoleInformation* console, String  command) *** */
+	extern DECLSPEC void SDLCALL CON_SetTabCompletion(ConsoleInformation *console, String (*TabFunction)(String  command));
 	/*! Internal: Gets called when TAB was pressed and executes the function you have earlier registered with CON_SetTabCompletion() */
 	extern DECLSPEC void SDLCALL CON_TabCompletion(ConsoleInformation *console);
 	/*! Internal: makes a newline (same as printf("\n") or CON_Out(console, "\n") ) */
@@ -184,9 +184,9 @@ extern "C" {
 
 
 	/*! Internal: Default Execute callback */
-	extern DECLSPEC void SDLCALL Default_CmdFunction(ConsoleInformation *console, char* command);
+	extern DECLSPEC void SDLCALL Default_CmdFunction(ConsoleInformation *console, String  command);
 	/*! Internal: Default TabCompletion callback */
-	extern DECLSPEC char* SDLCALL Default_TabFunction(char* command);
+	extern DECLSPEC String  SDLCALL Default_TabFunction(String  command);
 
 	/*! Internal: draws the commandline the user is typing in to the screen. Called from within CON_DrawConsole() *** Will change in the next major release to
 		void DrawCommandLine(ConsoleInformation* console) *** */
@@ -209,11 +209,11 @@ extern "C" {
 	extern DECLSPEC void SDLCALL Cursor_Add(ConsoleInformation *console, SDL_Event *event);
     	
 	/* add string to commandline */
-	extern DECLSPEC void SDLCALL Add_String_to_Console(char *text);
+	extern DECLSPEC void SDLCALL Add_String_to_Console(String text);
     	
 	/*! Internal: Called if you press Ctrl-C (deletes the commandline) */
 	extern DECLSPEC void SDLCALL Clear_Command(ConsoleInformation *console);
-	/*! Internal: Called if the command line has changed (assemles console->Command from LCommand and RCommand */
+	/*! Internal: Called if the command line has changed (assemles console.Command from LCommand and RCommand */
 	extern DECLSPEC void SDLCALL Assemble_Command(ConsoleInformation *console);
 	/*! Internal: Called if you press Ctrl-L (deletes the History) */
 	extern DECLSPEC void SDLCALL Clear_History(ConsoleInformation *console);

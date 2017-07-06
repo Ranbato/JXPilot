@@ -23,7 +23,7 @@
 #include "xpclient_x11.h"
 
 /* Information window dimensions */
-#define TALK_TEXT_HEIGHT	(textFont->ascent + textFont->descent)
+#define TALK_TEXT_HEIGHT	(textFont.ascent + textFont.descent)
 #define TALK_OUTSIDE_BORDER	2
 #define TALK_INSIDE_BORDER	3
 #define TALK_WINDOW_HEIGHT	(TALK_TEXT_HEIGHT + 2 * TALK_INSIDE_BORDER)
@@ -67,7 +67,7 @@ extern keys_t Lookup_key(XEvent * event, KeySym ks, bool reset);
 extern void Add_pending_messages(void);
 
 extern message_t *TalkMsg[MAX_MSGS], *GameMsg[MAX_MSGS];
-extern char *HistoryMsg[MAX_HIST_MSGS];
+extern String HistoryMsg[MAX_HIST_MSGS];
 
 static void Talk_create_window(void)
 {
@@ -97,9 +97,9 @@ void Talk_refresh()
 /*
  * add a line to the history.
  */
-void Add_msg_to_history(char *message)
+void Add_msg_to_history(String message)
 {
-    char *tmp;
+    String tmp;
     char **msg_set;
     int i;
 
@@ -138,7 +138,7 @@ void Add_msg_to_history(char *message)
  * (thus save_talk not as parameter here)
  *
  */
-char *Get_msg_from_history(int *pos, char *message, keys_t direction)
+String Get_msg_from_history(int *pos, String message, keys_t direction)
 {
     int i;
     char **msg_set;
@@ -230,7 +230,7 @@ void Talk_delete_emphasized_text()
 	XSetForeground(dpy, talkGC, colors[BLACK].pixel);
 	XDrawString(dpy, talkWindow, talkGC,
 		    talk_cursor.point * onewidth + TALK_INSIDE_BORDER,
-		    talkFont->ascent + TALK_INSIDE_BORDER,
+		    talkFont.ascent + TALK_INSIDE_BORDER,
 		    &talk_str[talk_cursor.point],
 		    oldlen - talk_cursor.point);
 	XSetForeground(dpy, talkGC, colors[WHITE].pixel);
@@ -238,7 +238,7 @@ void Talk_delete_emphasized_text()
     if (talk_cursor.point < newlen) {
 	XDrawString(dpy, talkWindow, talkGC,
 		    talk_cursor.point * onewidth + TALK_INSIDE_BORDER,
-		    talkFont->ascent + TALK_INSIDE_BORDER,
+		    talkFont.ascent + TALK_INSIDE_BORDER,
 		    &new_str[talk_cursor.point],
 		    newlen - talk_cursor.point);
     }
@@ -260,7 +260,7 @@ void Talk_delete_emphasized_text()
  *
  * Return the number of pasted characters.
  */
-int Talk_paste(char *data, size_t data_len, bool overwrite)
+int Talk_paste(String data, size_t data_len, bool overwrite)
 {
 
     int str_len;		/* current length */
@@ -348,7 +348,7 @@ int Talk_paste(char *data, size_t data_len, bool overwrite)
 	XSetForeground(dpy, talkGC, colors[WHITE].pixel);
 	XDrawString(dpy, talkWindow, talkGC,
 		    TALK_INSIDE_BORDER,
-		    talkFont->ascent + TALK_INSIDE_BORDER,
+		    talkFont.ascent + TALK_INSIDE_BORDER,
 		    tmp_str, accept_len);
     } else {
 	if (selection.talk.state == SEL_EMPHASIZED) {
@@ -364,7 +364,7 @@ int Talk_paste(char *data, size_t data_len, bool overwrite)
 	    XDrawString(dpy, talkWindow, talkGC,
 			talk_cursor.point * char_width +
 			TALK_INSIDE_BORDER,
-			talkFont->ascent + TALK_INSIDE_BORDER,
+			talkFont.ascent + TALK_INSIDE_BORDER,
 			&talk_backup[talk_cursor.point],
 			str_len - talk_cursor.point);
 	    XSetForeground(dpy, talkGC, colors[WHITE].pixel);
@@ -373,7 +373,7 @@ int Talk_paste(char *data, size_t data_len, bool overwrite)
 	/* the new part of the line */
 	XDrawString(dpy, talkWindow, talkGC,
 		    talk_cursor.point * char_width + TALK_INSIDE_BORDER,
-		    talkFont->ascent + TALK_INSIDE_BORDER,
+		    talkFont.ascent + TALK_INSIDE_BORDER,
 		    &tmp_str[talk_cursor.point],
 		    new_len - talk_cursor.point);
     }

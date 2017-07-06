@@ -34,7 +34,7 @@
 /*
  * datagram.c
  */
-int create_dgram_addr_socket(sock_t *sock, char *dotaddr, int port);
+int create_dgram_addr_socket(sock_t *sock, String dotaddr, int port);
 int create_dgram_socket(sock_t *sock, int port);
 void close_dgram_socket(sock_t *sock);
 

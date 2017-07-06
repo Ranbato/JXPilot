@@ -47,7 +47,7 @@ struct recordable_drawing {
 			 unsigned int width, unsigned int height);
     int (*drawString)(Display *display, Drawable drawable, GC gc,
 		      int x, int y,
-		      const char *string, int length);
+		      String string, int length);
     int (*fillArc)(Display *display, Drawable drawable, GC gc,
 		    int x, int y,
 		    unsigned height, unsigned width,
@@ -67,7 +67,7 @@ struct recordable_drawing {
     int (*drawSegments)(Display *display, Drawable drawable, GC gc,
 			 XSegment *segments, int nsegments);
     int (*setDashes)(Display *display, GC gc,
-		     int dash_offset, const char *dash_list, int n);
+		     int dash_offset, String dash_list, int n);
 };
 
 extern struct recordable_drawing rd;	/* external Drawing interface */
@@ -75,7 +75,7 @@ extern struct recordable_drawing rd;	/* external Drawing interface */
 extern bool recording;	/* Are we recording or not. */
 
 long Record_size(void);
-void Record_init(const char *filename);
+void Record_init(String filename);
 void Record_cleanup(void);
 void Store_record_options(void);
 

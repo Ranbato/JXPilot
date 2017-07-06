@@ -44,8 +44,8 @@ typedef enum {
 typedef bool (*xp_bool_option_setfunc_t)   (xp_option_t *opt, bool val);
 typedef bool (*xp_int_option_setfunc_t)    (xp_option_t *opt, int val);
 typedef bool (*xp_double_option_setfunc_t) (xp_option_t *opt, double val);
-typedef bool (*xp_string_option_setfunc_t) (xp_option_t *opt, const char *val);
-typedef const char *(*xp_string_option_getfunc_t)(xp_option_t *opt);
+typedef bool (*xp_string_option_setfunc_t) (xp_option_t *opt, String val);
+typedef String (*xp_string_option_getfunc_t)(xp_option_t *opt);
 
 typedef int xp_option_flags_t;
 
@@ -69,12 +69,12 @@ typedef int xp_option_flags_t;
 struct xp_option {
     xp_option_type_t type;
 
-    const char *name;
+    String name;
 
     xp_option_flags_t flags;
     xp_option_origin_t origin;
 
-    const char *help;
+    String help;
     void *private_data;		/* currently only used for string options */
 
     /* noarg option stuff */
@@ -120,8 +120,8 @@ struct xp_option {
 #define XP_STRING_OPTION_DUMMY \
 	NULL, NULL, 0, NULL, NULL
 
-    const char *str_defval;
-    char *str_ptr;
+    String str_defval;
+    String str_ptr;
     size_t str_size;
     xp_string_option_setfunc_t str_setfunc;
     xp_string_option_getfunc_t str_getfunc;
@@ -131,8 +131,8 @@ struct xp_option {
 #define XP_KEY_OPTION_DUMMY \
 	NULL, NULL, KEY_DUMMY
 
-    const char *key_defval;
-    char *key_string;
+    String key_defval;
+    String key_string;
     keys_t key;
 
     /* ... */
@@ -146,11 +146,11 @@ extern xp_option_t *options;
 
 extern void Parse_options(int *argcp, char **argvp);
 
-extern void Xpilotrc_get_filename(char *path, size_t size);
-extern int Xpilotrc_read(const char *path);
-extern int Xpilotrc_write(const char *path);
+extern void Xpilotrc_get_filename(String path, size_t size);
+extern int Xpilotrc_read(String path);
+extern int Xpilotrc_write(String path);
 
-extern bool Set_option(const char *name, const char *value,
+extern bool Set_option(String name, String value,
 		       xp_option_origin_t origin);
 extern bool Set_noarg_option(xp_option_t *opt, bool value,
 			     xp_option_origin_t origin);
@@ -160,17 +160,17 @@ extern bool Set_int_option(xp_option_t *opt, int value,
 			   xp_option_origin_t origin);
 extern bool Set_double_option(xp_option_t *opt, double value,
 			      xp_option_origin_t origin);
-extern bool Set_string_option(xp_option_t *opt, const char *value,
+extern bool Set_string_option(xp_option_t *opt, String value,
 			      xp_option_origin_t origin);
 
-extern xp_option_t *Find_option(const char *name);
-extern void Set_command(const char *command);
-extern void Get_command(const char *command);
+extern xp_option_t *Find_option(String name);
+extern void Set_command(String command);
+extern void Get_command(String command);
 
 extern void Usage(void);
-extern const char *Get_keyHelpString(keys_t key);
-extern const char *Get_keyResourceString(keys_t key);
-extern const char *Option_value_to_string(xp_option_t *opt);
+extern String Get_keyHelpString(keys_t key);
+extern String Get_keyResourceString(keys_t key);
+extern String Option_value_to_string(xp_option_t *opt);
 
 void Store_option(xp_option_t *);
 
@@ -181,46 +181,46 @@ void Store_option(xp_option_t *);
 	Store_option(& (option_array) [ii]); \
 } \
 
-static inline const char *Option_get_name(xp_option_t *opt)
+static inline String Option_get_name(xp_option_t *opt)
 {
     assert(opt);
-    return opt->name;
+    return opt.name;
 }
 
 static inline xp_option_type_t Option_get_type(xp_option_t *opt)
 {
     assert(opt);
-    return opt->type;
+    return opt.type;
 }
 
 static inline xp_option_flags_t Option_get_flags(xp_option_t *opt)
 {
     assert(opt);
-    return opt->flags;
+    return opt.flags;
 }
 
-static inline const char *Option_get_help(xp_option_t *opt)
+static inline String Option_get_help(xp_option_t *opt)
 {
     assert(opt);
-    return opt->help;
+    return opt.help;
 }
 
 static inline xp_option_origin_t Option_get_origin(xp_option_t *opt)
 {
     assert(opt);
-    return opt->origin;
+    return opt.origin;
 }
 
 static inline keys_t Option_get_key(xp_option_t *opt)
 {
     assert(opt);
-    return opt->key;
+    return opt.key;
 }
 
 static inline void *Option_get_private_data(xp_option_t *opt)
 {
     assert(opt);
-    return opt->private_data;
+    return opt.private_data;
 }
 
 static inline xp_option_t *Option_by_index(int ind)
@@ -350,7 +350,7 @@ XP_INT_OPTION(name, defval, 0, MAX_COLORS-1, valptr, setfunc, XP_OPTFLAG_CONFIG_
 #define XP_KS_UNKNOWN (-1)
 typedef int xp_keysym_t;
 /* no const because of mfc client */
-extern xp_keysym_t String_to_xp_keysym(/*const*/ char *str);
+extern xp_keysym_t String_to_xp_keysym(/*const*/ String str);
 extern keys_t Generic_lookup_key(xp_keysym_t ks, bool reset);
 
 typedef struct {

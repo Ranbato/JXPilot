@@ -51,7 +51,7 @@ extern "C" {
 #define	WinXCreateWinDC(__w) \
 	WinXCreateWinDC_(__w, __FILE__, __LINE__)
 
-    extern WinXCreateWinDC_(Window w, const char *file, const int line);
+    extern WinXCreateWinDC_(Window w, String file, const int line);
 #else
 #define	WinXCreateWinDC(__w) \
 	WinXCreateWinDC_(__w)
@@ -78,7 +78,7 @@ extern	void WinXPaintPlayers(); */
 
 /* used for creating item bitmaps */
     extern Pixmap WinXCreateBitmapFromData(Display * dpy, Drawable d,
-					   char *data, unsigned int width,
+					   String data, unsigned int width,
 					   unsigned int height, int color);
 
     extern Window WinXGetParent(Window w);

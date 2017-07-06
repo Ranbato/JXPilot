@@ -103,8 +103,8 @@
 #define BLUE_RIGHT		0x02
 #define BLUE_DOWN		0x04
 #define BLUE_LEFT		0x08
-#define BLUE_OPEN		0x10	/* diagonal botleft -> rightup */
-#define BLUE_CLOSED		0x20	/* diagonal topleft -> rightdown */
+#define BLUE_OPEN		0x10	/* diagonal botleft . rightup */
+#define BLUE_CLOSED		0x20	/* diagonal topleft . rightdown */
 #define BLUE_FUEL		0x30	/* when filled block is fuelstation */
 #define BLUE_BELOW		0x40	/* when triangle is below diagonal */
 #define BLUE_BIT		0x80	/* set when drawn with blue lines */
@@ -147,7 +147,7 @@ typedef struct {
 #  error "FPS needs a different definition in the client"
 #  undef FPS
 # endif
-# define FPS		(Setup->frames_per_second)
+# define FPS		(Setup.frames_per_second)
 
 extern setup_t *Setup;
 

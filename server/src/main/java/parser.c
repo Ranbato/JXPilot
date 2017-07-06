@@ -32,10 +32,10 @@
  * Print the option list in "-help" format.
  * NT uses this to generate the ServerOpts.txt file
  */
-static void Parse_help(char *progname)
+static void Parse_help(String progname)
 {
     int j, flags, all_flags, option_count;
-    const char *str;
+    String str;
     option_desc *option_descs;
     char msg[MSG_LEN];
 
@@ -112,7 +112,7 @@ static void Parse_help(char *progname)
 /*
  * Print the option list.
  */
-static void Parser_dump_options(char *progname)
+static void Parser_dump_options(String progname)
 {
     int j, option_count;
     option_desc *option_descs;
@@ -138,7 +138,7 @@ static void Parser_dump_options(char *progname)
 /*
  * Print the option flags.
  */
-static void Parser_dump_flags(char *progname)
+static void Parser_dump_flags(String progname)
 {
     int j, option_count;
     option_desc *option_descs;
@@ -174,7 +174,7 @@ static void Parser_dump_flags(char *progname)
 /*
  * Print some compile time configuration parameters.
  */
-static void Parser_dump_config(char *progname)
+static void Parser_dump_config(String progname)
 {
     option_desc *option_descs;
     int option_count;
@@ -199,7 +199,7 @@ static void Parser_dump_config(char *progname)
  * Print the option list and
  * some compile time configuration parameters.
  */
-static void Parser_dump_all(char *progname)
+static void Parser_dump_all(String progname)
 {
     Parser_dump_config(progname);
     Parser_dump_options(progname);
@@ -213,7 +213,7 @@ static void Parser_dump_all(char *progname)
  * This is called when a client requests
  * to see the current server parameter list.
  */
-int Parser_list_option(int *ind, char *buf)
+int Parser_list_option(int *ind, String buf)
 {
     int i = *ind, option_count;
     option_desc *opts;
@@ -242,8 +242,8 @@ int Parser_list_option(int *ind, char *buf)
 	break;
     case valIPos:
 	sprintf(buf, "%s:%d,%d", opts[i].name,
-		((ipos_t *)opts[i].variable)->x,
-		((ipos_t *)opts[i].variable)->y);
+		((Point  *)opts[i].variable).x,
+		((Point  *)opts[i].variable).y);
 	break;
     case valString:
 	sprintf(buf, "%s:%s", opts[i].name, *(char **)opts[i].variable);
@@ -259,7 +259,7 @@ int Parser_list_option(int *ind, char *buf)
 		for (iter = List_begin(list);
 		     iter != List_end(list);
 		     LI_FORWARD(iter)) {
-		    char *str = (char *)LI_DATA(iter);
+		    String str = (String )LI_DATA(iter);
 
 		    if (iter != List_begin(list))
 			strlcat(buf, ",", MSG_LEN);
@@ -282,7 +282,7 @@ int Parser_list_option(int *ind, char *buf)
  */
 static bool Parse_check_info_request(char **argv, int i)
 {
-    char *arg = argv[i];
+    String arg = argv[i];
 
     if (arg[0] == '-' && arg[1] == '-')
 	/* when arg starts with two dashes skip first one */
@@ -326,7 +326,7 @@ static bool Parse_check_info_request(char **argv, int i)
 bool Parser(int argc, char **argv)
 {
     int i;
-    char *fname;
+    String fname;
     option_desc *desc;
 
     options.mapData = NULL;
@@ -343,23 +343,23 @@ bool Parser(int argc, char **argv)
 	if (argv[i][0] == '-' || argv[i][0] == '+') {
 	    desc = Find_option_by_name(argv[i] + 1);
 	    if (desc != NULL) {
-		if (desc->type == valBool) {
-		    const char *bool_value;
+		if (desc.type == valBool) {
+		    String bool_value;
 
 		    if (argv[i][0] == '-')
 			bool_value = "true";
 		    else
 			bool_value = "false";
-		    Option_set_value(desc->name, bool_value, 1, OPT_COMMAND);
+		    Option_set_value(desc.name, bool_value, 1, OPT_COMMAND);
 		}
-		else if (desc->type == valVoid)
+		else if (desc.type == valVoid)
 		    ;
 		else {
 		    if (i + 1 == argc)
 			warn("Option '%s' needs an argument", argv[i]);
 		    else {
 			i++;
-			Option_set_value(desc->name, argv[i], 1, OPT_COMMAND);
+			Option_set_value(desc.name, argv[i], 1, OPT_COMMAND);
 		    }
 		}
 	    }
@@ -430,7 +430,7 @@ bool Parser(int argc, char **argv)
  * Options which don't need such a tuner function set it to 'tuner_dummy'.
  * Options which cannot be modified have the tuner set to 'tuner_none'.
  */
-int Tune_option(char *name, char *val)
+int Tune_option(String name, String val)
 {
     int ival;
     double fval;
@@ -439,41 +439,41 @@ int Tune_option(char *name, char *val)
     if (!(opt = Find_option_by_name(name)))
 	return -2;	/* Variable not found */
 
-    if (opt->tuner == tuner_none)
+    if (opt.tuner == tuner_none)
 	return -1;	/* Operation undefined */
 
-    switch (opt->type) {
+    switch (opt.type) {
     case valInt:
 	if (Convert_string_to_int(val, &ival) != true)
 	    return 0;
-	*(int *)opt->variable = ival;
-	(*opt->tuner)();
+	*(int *)opt.variable = ival;
+	(*opt.tuner)();
 	return 1;
     case valBool:
 	if (ON(val))
-	    *(bool *)opt->variable = true;
+	    *(bool *)opt.variable = true;
 	else if (OFF(val))
-	    *(bool *)opt->variable = false;
+	    *(bool *)opt.variable = false;
 	else
 	    return 0;
-	(*opt->tuner)();
+	(*opt.tuner)();
 	return 1;
     case valReal:
 	if (Convert_string_to_float(val, &fval) != true)
 	    return 0;
-	*(double *)opt->variable = fval;
-	(*opt->tuner)();
+	*(double *)opt.variable = fval;
+	(*opt.tuner)();
 	return 1;
     case valString:
 	{
-	    char *s = xp_strdup(val);
+	    String s = xp_strdup(val);
 
 	    if (!s)
 		return 0;
-	    if (*(char **)(opt->variable) != opt->defaultValue)
-		free(*(char **)opt->variable);
-	    *(char **)opt->variable = s;
-	    (*opt->tuner)();
+	    if (*(char **)(opt.variable) != opt.defaultValue)
+		free(*(char **)opt.variable);
+	    *(char **)opt.variable = s;
+	    (*opt.tuner)();
 	    return 1;
 	}
     default:
@@ -482,7 +482,7 @@ int Tune_option(char *name, char *val)
 }
 
 
-int Get_option_value(const char *name, char *value, size_t size)
+int Get_option_value(String name, String value, size_t size)
 {
     option_desc *opt;
 
@@ -492,28 +492,28 @@ int Get_option_value(const char *name, char *value, size_t size)
     if (!(opt = Find_option_by_name(name)))
 	return -2;	/* Variable not found */
 
-    if ((opt->flags & OPT_VISIBLE) == 0)
+    if ((opt.flags & OPT_VISIBLE) == 0)
 	return -3;
 
-    switch (opt->type) {
+    switch (opt.type) {
     case valInt:
-	sprintf(value, "%d", *((int *)opt->variable));
+	sprintf(value, "%d", *((int *)opt.variable));
 	break;
     case valReal:
-	sprintf(value, "%g", *((double *)opt->variable));
+	sprintf(value, "%g", *((double *)opt.variable));
 	break;
     case valBool:
-	sprintf(value, "%s", *((bool *)opt->variable) ? "true" : "false");
+	sprintf(value, "%s", *((bool *)opt.variable) ? "true" : "false");
 	break;
     case valString:
-	if (*((char **)opt->variable) == NULL)
+	if (*((char **)opt.variable) == NULL)
 	    return -4;
-	strlcpy(value, *((char **)opt->variable), size);
+	strlcpy(value, *((char **)opt.variable), size);
 	break;
     case valIPos:
 	sprintf(value, "%d, %d",
-		((ipos_t *)opt->variable)->x,
-		((ipos_t *)opt->variable)->y);
+		((Point  *)opt.variable).x,
+		((Point  *)opt.variable).y);
     default:
 	return -1;	/* Generic error. */
     }

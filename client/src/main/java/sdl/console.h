@@ -30,6 +30,6 @@ void Console_hide(void);
 int Console_isVisible(void);
 int Console_process(SDL_Event *e);
 void Console_cleanup(void);
-void Console_print(const char *str, ...);
-void Paste_String_to_Console(char *text);
+void Console_print(String str, ...);
+void Paste_String_to_Console(String text);
 #endif

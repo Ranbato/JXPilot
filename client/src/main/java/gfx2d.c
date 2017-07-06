@@ -36,11 +36,11 @@ char    *realTexturePath = NULL; /* Real texture lookup path */
  *   return -1 on error.
  */
 
-int Picture_init (xp_picture_t *picture, const char *filename, int count)
+int Picture_init (xp_picture_t *picture, String filename, int count)
 {
-    picture->count = count;
-    picture->data = XMALLOC(RGB_COLOR *, Math.abs(count));
-    if (!picture->data) {
+    picture.count = count;
+    picture.data = XMALLOC(RGB_COLOR *, Math.abs(count));
+    if (!picture.data) {
 	error("Not enough memory.");
 	return -1;
     }
@@ -52,8 +52,8 @@ int Picture_init (xp_picture_t *picture, const char *filename, int count)
         if (Picture_rotate(picture) == -1)
 	    return -1;
 
-    picture->bbox = XMALLOC(bbox_t, Math.abs(count));
-    if (!picture->bbox) {
+    picture.bbox = XMALLOC(bbox_t, Math.abs(count));
+    if (!picture.bbox) {
 	error("Not enough memory.");
 	return -1;
     }
@@ -66,7 +66,7 @@ int Picture_init (xp_picture_t *picture, const char *filename, int count)
 /*
  * Find full path for a picture filename.
  */
-static int Picture_find_path(const char *filename, char *path,
+static int Picture_find_path(String filename, String path,
 			     size_t path_size)
 {
     char		*dir, *colon;
@@ -161,7 +161,7 @@ static int Picture_get_decimal(FILE *f, int c, int *dec)
  * return 0 on success.
  * return -1 on error.
  */
-int Picture_load(xp_picture_t *picture, const char *filename)
+int Picture_load(xp_picture_t *picture, String filename)
 {
     FILE		*f;
     int			c, c1, c2;
@@ -205,26 +205,26 @@ int Picture_load(xp_picture_t *picture, const char *filename)
 	return -1;
     }
 
-    picture->height = height;
-    if (picture->count > 0) {
+    picture.height = height;
+    if (picture.count > 0) {
 	count = 1;
-	picture->width = width;
+	picture.width = width;
     } else  {
-	count = -picture->count;
-	picture->width = width / count;
+	count = -picture.count;
+	picture.width = width / count;
     }
 
     for (p = 0; p < count; p++) {
-	if (!(picture->data[p] =
-	      XMALLOC(RGB_COLOR, picture->width * picture->height))) {
+	if (!(picture.data[p] =
+	      XMALLOC(RGB_COLOR, picture.width * picture.height))) {
 	    error("Not enough memory.");
 	    return -1;
 	}
     }
 
-    for (y = 0 ; y < (int)picture->height ; y++) {
+    for (y = 0 ; y < (int)picture.height ; y++) {
 	for (p = 0; p < count ; p++) {
-	    for (x = 0; x < (int)picture->width ; x++) {
+	    for (x = 0; x < (int)picture.width ; x++) {
 		r = getc(f);
 		g = getc(f);
 		b = getc(f);
@@ -255,10 +255,10 @@ int Picture_rotate(xp_picture_t *picture)
     int size, x, y, image;
     RGB_COLOR color;
     
-    size = picture->height;
-    for (image = 1; image < picture->count; image++) {
-        if (!(picture->data[image] =
-              XMALLOC(RGB_COLOR, picture->width * picture->height))) {
+    size = picture.height;
+    for (image = 1; image < picture.count; image++) {
+        if (!(picture.data[image] =
+              XMALLOC(RGB_COLOR, picture.width * picture.height))) {
             error("Not enough memory.");
             return -1;
         }
@@ -280,7 +280,7 @@ void Picture_set_pixel(xp_picture_t *picture, int image, int x, int y,
 		       RGB_COLOR color)
 {
     if (x < 0 || y < 0
-	|| x >= (int)picture->width || y >= (int)picture->height) {
+	|| x >= (int)picture.width || y >= (int)picture.height) {
 	;
 	/*
 	 * this might be an error, but it can be a convenience to allow the
@@ -288,7 +288,7 @@ void Picture_set_pixel(xp_picture_t *picture, int image, int x, int y,
 	 * introduce error handling here
 	 */
     } else
-	picture->data[image][x + y * picture->width] = color;
+	picture.data[image][x + y * picture.width] = color;
 }
 
 /*
@@ -299,7 +299,7 @@ RGB_COLOR Picture_get_pixel(const xp_picture_t *picture, int image,
 			    int x, int y)
 {
     if (x < 0 || y < 0
-	|| x >= (int)picture->width || y >= (int)picture->height) {
+	|| x >= (int)picture.width || y >= (int)picture.height) {
 	return RGB24(0, 0, 0);
 	/*
 	 * this might be an error, but it can be a convenience to allow the
@@ -308,7 +308,7 @@ RGB_COLOR Picture_get_pixel(const xp_picture_t *picture, int image,
 	 * There is already code that relies on this behavior
 	 */
     } else
-	return picture->data[image][x + y * picture->width];
+	return picture.data[image][x + y * picture.width];
 }
 
 /*
@@ -368,13 +368,13 @@ RGB_COLOR Picture_get_rotated_pixel(const xp_picture_t *picture,
     int		angle;
     double	rot_x, rot_y;
 
-    angle = ((image  * RES) / picture->count) % 128;
+    angle = ((image  * RES) / picture.count) % 128;
 
-    x -= picture->width / 2;
-    y -= picture->height / 2;
+    x -= picture.width / 2;
+    y -= picture.height / 2;
 
-    rot_x = (tcos(angle) * x - tsin(angle) * y) + picture->width / 2;
-    rot_y = (tsin(angle) * x + tcos(angle) * y) + picture->height / 2;
+    rot_x = (tcos(angle) * x - tsin(angle) * y) + picture.width / 2;
+    rot_y = (tsin(angle) * x + tcos(angle) * y) + picture.height / 2;
 
     return (Picture_get_pixel_avg(picture, 0, rot_x, rot_y));
 }
@@ -414,7 +414,7 @@ static void Picture_scale_x_slice(const xp_picture_t * picture, int image,
 {
     double weight;
     RGB_COLOR col;
-    RGB_COLOR *image_data = picture->data[image] + x + y * picture->width ;
+    RGB_COLOR *image_data = picture.data[image] + x + y * picture.width ;
 
     if (xscale > xfrac) {
 	col = *image_data;
@@ -510,25 +510,25 @@ void Picture_get_bounding_box(xp_picture_t *picture)
     int		x, y, i;
     bbox_t	*box;
 
-    for (i = 0; i < Math.abs(picture->count); i++) {
-	box = &picture->bbox[i];
-	box->xmin = picture->width - 1;
-	box->xmax = 0;
-	box->ymin = picture->height - 1;
-	box->ymax = 0;
+    for (i = 0; i < Math.abs(picture.count); i++) {
+	box = &picture.bbox[i];
+	box.xmin = picture.width - 1;
+	box.xmax = 0;
+	box.ymin = picture.height - 1;
+	box.ymax = 0;
 
-	for (y = 0 ; y < (int)picture->height ; y++) {
-	    for (x = 0; x < (int)picture->width ; x++) {
+	for (y = 0 ; y < (int)picture.height ; y++) {
+	    for (x = 0; x < (int)picture.width ; x++) {
 		RGB_COLOR color = Picture_get_pixel(picture, i, x, y);
 		if (color) {
-		    if (box->xmin > x)
-			box->xmin = x;
-		    if (box->xmax < x)
-			box->xmax = x;
-		    if (box->ymin > y)
-			box->ymin = y;
-		    if (box->ymax < y)
-			box->ymax = y;
+		    if (box.xmin > x)
+			box.xmin = x;
+		    if (box.xmax < x)
+			box.xmax = x;
+		    if (box.ymin > y)
+			box.ymin = y;
+		    if (box.ymax < y)
+			box.ymax = y;
 		}
 	    }
 	}

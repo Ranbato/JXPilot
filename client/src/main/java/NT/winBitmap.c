@@ -53,12 +53,12 @@ int Bitmap_create_begin(Drawable d, xp_pixmap_t * pm, int bmp)
     hDC = GetDC(xid[d].hwnd.hWnd);
     hDCb = CreateCompatibleDC(hDC);
 
-    if (pm->bitmaps[bmp].bitmap) {
+    if (pm.bitmaps[bmp].bitmap) {
 	SelectObject(itemsDC, GetStockObject(BLACK_PEN));
-	DeleteObject((HBITMAP) pm->bitmaps[bmp].bitmap);
+	DeleteObject((HBITMAP) pm.bitmaps[bmp].bitmap);
     }
 
-    hbm = CreateCompatibleBitmap(hDC, pm->width, pm->height);
+    hbm = CreateCompatibleBitmap(hDC, pm.width, pm.height);
     SelectObject(hDCb, hbm);
     SelectPalette(hDCb, myPal, FALSE);
     RealizePalette(hDCb);
@@ -67,10 +67,10 @@ int Bitmap_create_begin(Drawable d, xp_pixmap_t * pm, int bmp)
 	error("Can't create item bitmaps");
 	return -1;
     }
-    pm->bitmaps[bmp].bitmap = (Pixmap) hbm;
+    pm.bitmaps[bmp].bitmap = (Pixmap) hbm;
     // The following hack is used to pass the dimension information 
     // to XFillPolygon
-    SetBitmapDimensionEx(hbm, pm->width, pm->height, NULL);
+    SetBitmapDimensionEx(hbm, pm.width, pm.height, NULL);
     return 0;
 }
 
@@ -92,10 +92,10 @@ void Bitmap_paint_area(Drawable d, xp_bitmap_t * bit, int x, int y,
 {
     HDC hDC = xid[d].hwnd.hBmpDC;
 
-    SelectObject(itemsDC, (HBITMAP) bit->bitmap);
+    SelectObject(itemsDC, (HBITMAP) bit.bitmap);
     SelectPalette(itemsDC, myPal, FALSE);
     RealizePalette(itemsDC);
-    BitBlt(hDC, x, y, r->w, r->h, itemsDC, r->x, r->y, SRCPAINT);
+    BitBlt(hDC, x, y, r.w, r.h, itemsDC, r.x, r.y, SRCPAINT);
 }
 
 
@@ -200,16 +200,16 @@ void Winpaint_world_radar(void)
 	    visibleColor[SETUP_DECOR_RD] = decorRadarColor;
     }
 
-    xs = (float) (Setup->x - 1) / (256 - 1);
-    ys = (float) (Setup->y - 1) / (RadarHeight - 1);
+    xs = (float) (Setup.x - 1) / (256 - 1);
+    ys = (float) (Setup.y - 1) / (RadarHeight - 1);
     for (xi = 0; xi < 256; xi++) {
 	xm = (int) (xi * xs + 0.5);
-	xmoff = xm * Setup->y;
+	xmoff = xm * Setup.y;
 	start = end = -1;
 	xp = xi;
 	for (yi = 0; yi < RadarHeight; yi++) {
 	    ym = (int) (yi * ys + 0.5);
-	    type = Setup->map_data[xmoff + ym];
+	    type = Setup.map_data[xmoff + ym];
 	    vis = visible[type];
 	    radar[((RadarHeight - 1) - yi) * 256 + xi] = vis;
 	}

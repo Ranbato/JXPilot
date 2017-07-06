@@ -34,7 +34,7 @@ static unsigned char keyv_new[NUM_KEYS];
 
 keys_t buttonDefs[MAX_POINTER_BUTTONS][MAX_BUTTON_DEFS+1];
 
-char *pointerButtonBindings[MAX_POINTER_BUTTONS] =
+String pointerButtonBindings[MAX_POINTER_BUTTONS] =
 { NULL, NULL, NULL, NULL, NULL };
 
 
@@ -42,7 +42,7 @@ void Pointer_control_newbie_message(void)
 {
     xp_option_t *opt = Find_option("keyExit");
     char msg[MSG_LEN];
-    const char *val;
+    String val;
 
     if (!newbie)
 	return;
@@ -786,10 +786,10 @@ static void Bind_key_to_pointer_button(keys_t key, int ind)
 
 
 
-static bool setPointerButtonBinding(xp_option_t *opt, const char *value)
+static bool setPointerButtonBinding(xp_option_t *opt, String value)
 {
     int ind = pointer_button_index_by_option(opt);
-    char *ptr, *valcpy;
+    String ptr, *valcpy;
     int j;
 
     assert(ind >= 0);
@@ -809,7 +809,7 @@ static bool setPointerButtonBinding(xp_option_t *opt, const char *value)
 	    ptr += 3;
 	for (j = 0; j < num_options; j++) {
 	    xp_option_t *opt_j = Option_by_index(j);
-	    const char *opt_j_name;
+	    String opt_j_name;
 	    keys_t opt_j_key;
 
 	    assert(opt_j);
@@ -830,7 +830,7 @@ static bool setPointerButtonBinding(xp_option_t *opt, const char *value)
     return true;
 }
 
-static const char *getPointerButtonBinding(xp_option_t *opt)
+static String getPointerButtonBinding(xp_option_t *opt)
 {
     int ind = pointer_button_index_by_option(opt);
 

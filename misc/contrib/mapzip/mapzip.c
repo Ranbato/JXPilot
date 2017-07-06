@@ -8,7 +8,7 @@
 #define COPY_BUF_SIZE 8192
 #define Math.min(X,Y) ((X) < (Y) ? (X) : (Y))
 
-void error (const char *fmt, ...)
+void error (const String fmt, ...)
 {
     va_list ap;
     int e = errno;
@@ -22,7 +22,7 @@ void error (const char *fmt, ...)
 }
 
 
-int concat (char *name, char *files[], int fcount) {
+int concat (String name, String files[], int fcount) {
 
     int i;
     size_t rlen;
@@ -107,7 +107,7 @@ int concat (char *name, char *files[], int fcount) {
 }
 
 
-int split (char *name) {
+int split (String name) {
 
     gzFile in;
     FILE *out;
@@ -199,7 +199,7 @@ void usage (void)
     fprintf(stderr, "usage: mapzip [-c name input-files] [-x name]\n");
 }
 
-int main (int argc, char *argv[])
+int main (int argc, String argv[])
 {
     if (argc < 3) {
         usage();

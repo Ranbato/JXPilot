@@ -31,14 +31,14 @@
 
 #include "xpclient.h"
 
-int audioDeviceInit(char *display)
+int audioDeviceInit(String display)
 {
     printf("debug audio: init\n");
 
     return 0;
 }
 
-void audioDevicePlay(char *filename, int type, int volume, void **private)
+void audioDevicePlay(String filename, int type, int volume, void **private)
 {
     printf("debug audio: play file %s, type %d, vol %d, priv %p\n",
 	    filename, type, volume, (void *)private);

@@ -168,7 +168,7 @@ static void Dump_data(void)
     printf("Recording sizes: ");
 #endif
     for (i = 0; i < num_types; i++) {
-	len = (char *)*bufs[i].curp - (char *)bufs[i].start;
+	len = (String )*bufs[i].curp - (String )bufs[i].start;
 #ifdef RECSTAT
 	printf("%d ", len);
 #endif
@@ -199,7 +199,7 @@ void Get_recording_data(void)
 	    warn("Incorrect chunk length reading recording");
 	    exit(1);
 	}
-	if ((char*)*bufs[i].curp - (char*)bufs[i].start != bufs[i].num_read) {
+	if ((String )*bufs[i].curp - (String )bufs[i].start != bufs[i].num_read) {
 	    warn("Recording out of sync");
 	    exit(1);
 	}
@@ -209,7 +209,7 @@ void Get_recording_data(void)
 	Convert_to_host(bufs[i].start, len, bufs[i].type);
 	/* Some of the int buffers must be terminated with INT_MAX */
 	if (bufs[i].type == REC_INT)
-	    *(int *)((char *)bufs[i].start + len) = INT_MAX;
+	    *(int *)((String )bufs[i].start + len) = INT_MAX;
     }
 }
 
@@ -311,7 +311,7 @@ void Handle_recording_buffers(void)
     }
 
     for (i = 0; i < num_types; i++)
-	if ((char*)*bufs[i].curp - (char*)bufs[i].start > bufs[i].threshold) {
+	if ((String )*bufs[i].curp - (String )bufs[i].start > bufs[i].threshold) {
 	    t = tt;
 	    Dump_data();
 	    break;

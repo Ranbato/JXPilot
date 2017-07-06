@@ -121,38 +121,38 @@ void CMainFrame::OnSizing(UINT fwSide, LPRECT pRect)
 
 	bool	adjust = false;
 
-	if(pRect->right - pRect->left < 388)
+	if(pRect.right - pRect.left < 388)
 	{
 		switch(fwSide)
 		{
 		case 1:		// left
 		case 4:		// top left
 		case 7:		// bottom left
-			pRect->left = pRect->right - 388;
+			pRect.left = pRect.right - 388;
 			break;
 		case 2:		// right
 		case 5:		// top right
 		case 8:		// bottom right
-			pRect->right = pRect->left + 388;
+			pRect.right = pRect.left + 388;
 			break;
 		}
 
 		adjust = true;
 	}
 
-	if(pRect->bottom - pRect->top < 247)
+	if(pRect.bottom - pRect.top < 247)
 	{
 		switch(fwSide)
 		{
 		case 3:		// top
 		case 4:		// top left
 		case 5:		// top right
-			pRect->top = pRect->bottom - 247;
+			pRect.top = pRect.bottom - 247;
 			break;
 		case 6:		// bottom
 		case 7:		// bottom left
 		case 8:		// bottom right
-			pRect->bottom = pRect->top + 247;
+			pRect.bottom = pRect.top + 247;
 			break;
 		}
 
@@ -172,5 +172,5 @@ void CMainFrame::OnViewSliderbar()
 
 void CMainFrame::OnUpdateViewSliderbar(CCmdUI* pCmdUI) 
 {
-	pCmdUI->SetCheck(showslider);
+	pCmdUI.SetCheck(showslider);
 }

@@ -101,12 +101,12 @@ void Cannon_set_hitmask(int group, cannon_t *cannon);
 bool Cannon_hitfunc(group_t *groupptr, const move_t *move);
 void World_restore_cannon(cannon_t *cannon);
 void World_remove_cannon(cannon_t *cannon);
-void Cannon_set_option(cannon_t *cannon, const char *name, const char *value);
+void Cannon_set_option(cannon_t *cannon, String name, String value);
 
 static inline int Cannon_get_smartness(cannon_t *c)
 {
-    if (c->smartness != -1)
-	return c->smartness;
+    if (c.smartness != -1)
+	return c.smartness;
     return options.cannonSmartness;
 }
 
@@ -128,13 +128,13 @@ static inline double Cannon_get_shot_life(cannon_t *cannon)
     maxlife = Cannon_get_max_shot_life(cannon);
     d = maxlife - minlife;
 
-    return minlife + rfrac() * d;
+    return minlife + Math.random() * d;
 }
 
 static inline double Cannon_get_shot_speed(cannon_t *cannon)
 {
-    if (cannon->shot_speed > 0)
-	return cannon->shot_speed;
+    if (cannon.shot_speed > 0)
+	return cannon.shot_speed;
     return options.cannonShotSpeed;
 }
 

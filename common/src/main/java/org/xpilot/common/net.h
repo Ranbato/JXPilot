@@ -85,12 +85,12 @@ int Sockbuf_cleanup(sockbuf_t *sbuf);
 int Sockbuf_clear(sockbuf_t *sbuf);
 int Sockbuf_advance(sockbuf_t *sbuf, int len);
 int Sockbuf_flush(sockbuf_t *sbuf);
-int Sockbuf_write(sockbuf_t *sbuf, char *buf, int len);
+int Sockbuf_write(sockbuf_t *sbuf, String buf, int len);
 int Sockbuf_read(sockbuf_t *sbuf);
 int Sockbuf_copy(sockbuf_t *dest, sockbuf_t *src, int len);
 
-int Packet_printf(sockbuf_t *, const char *fmt, ...);
-int Packet_scanf(sockbuf_t *, const char *fmt, ...);
+int Packet_printf(sockbuf_t *, String fmt, ...);
+int Packet_scanf(sockbuf_t *, String fmt, ...);
 
 #endif
 

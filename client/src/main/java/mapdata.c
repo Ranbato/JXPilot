@@ -25,24 +25,24 @@
 #define COPY_BUF_SIZE 8192
 
 typedef struct {
-    char *protocol;
-    char *host;
+    String protocol;
+    String host;
     int   port;
-    const char *path;
-    char *query;
+    String path;
+    String query;
 } URL;
 
-static int Mapdata_extract(const char *name);
-static int Mapdata_download(const URL *url, const char *filePath);
-static int Url_parse(const char *urlstr, URL *url);
+static int Mapdata_extract(String name);
+static int Mapdata_download(const URL *url, String filePath);
+static int Url_parse(String urlstr, URL *url);
 static void Url_free_parsed(URL *url);
 
 static bool setup_done = false;
 
-int Mapdata_setup(const char *urlstr)
+int Mapdata_setup(String urlstr)
 {
     URL url;
-    const char *name, *dir = NULL;
+    String name, *dir = NULL;
     char path[1024], buf[1024], *ptr;
     int rv = false;
 
@@ -78,7 +78,7 @@ int Mapdata_setup(const char *urlstr)
 	/* realTexturePath hasn't got a directory with proper access rights */
 	/* so lets create one into users home dir */
 
-	char *home = getenv("HOME");
+	String home = getenv("HOME");
 	if (home == NULL) {
 	    error("couldn't access any dir in %s and HOME is unset", path);
 	    goto end;
@@ -121,7 +121,7 @@ int Mapdata_setup(const char *urlstr)
     if (realTexturePath == NULL) {
 	realTexturePath = strdup(path);
     } else {
-	char *temp = XMALLOC(char, strlen(realTexturePath) + strlen(path) + 2);
+	String temp = XMALLOC(char, strlen(realTexturePath) + strlen(path) + 2);
 	if (temp == NULL) {
 	    error("not enough memory to new realTexturePath");
 	    goto end;
@@ -160,7 +160,7 @@ int Mapdata_setup(const char *urlstr)
 }
 
 
-static int Mapdata_extract(const char *name)
+static int Mapdata_extract(String name)
 {
     gzFile in;
     FILE *out;
@@ -266,7 +266,7 @@ static int Mapdata_extract(const char *name)
 }
 
 
-static int Mapdata_download(const URL *url, const char *filePath)
+static int Mapdata_download(const URL *url, String filePath)
 {
     char buf[1024];
     int rv, header, c, len, i;
@@ -274,8 +274,8 @@ static int Mapdata_download(const URL *url, const char *filePath)
     FILE *f = NULL;
     size_t n;
 
-    if (strncmp("http", url->protocol, 4) != 0) {
-	error("unsupported protocol %s", url->protocol);
+    if (strncmp("http", url.protocol, 4) != 0) {
+	error("unsupported protocol %s", url.protocol);
 	return false;
     }
 
@@ -283,16 +283,16 @@ static int Mapdata_download(const URL *url, const char *filePath)
 	error("failed to create a socket");
 	return false;
     }
-    if (sock_connect(&s, url->host, url->port) == SOCK_IS_ERROR) {
+    if (sock_connect(&s, url.host, url.port) == SOCK_IS_ERROR) {
 	error("couldn't connect to download address");
 	sock_close(&s);
 	return false;
     }
 
-    if (url->query) {
+    if (url.query) {
 	if (snprintf(buf, sizeof buf,
 	     "GET %s?%s HTTP/1.1\r\nHost: %s:%d\r\nConnection: close\r\n\r\n",
-	     url->path, url->query, url->host, url->port) == -1) {
+	     url.path, url.query, url.host, url.port) == -1) {
 	    error("too long URL");
 	    sock_close(&s);
 	    return false;
@@ -301,7 +301,7 @@ static int Mapdata_download(const URL *url, const char *filePath)
     } else {
 	if (snprintf(buf, sizeof buf,
 	     "GET %s HTTP/1.1\r\nHost: %s:%d\r\nConnection: close\r\n\r\n",
-	     url->path, url->host, url->port) == -1) {
+	     url.path, url.host, url.port) == -1) {
 
 	    error("too long URL");
 	    sock_close(&s);
@@ -406,14 +406,14 @@ static int Mapdata_download(const URL *url, const char *filePath)
 }
 
 
-static int Url_parse(const char *urlstr, URL *url)
+static int Url_parse(String urlstr, URL *url)
 {
     int len, i, beg, doPort;
-    char *buf;
+    String buf;
 
     memset(url, 0, sizeof(URL));
-    url->port = 80;
-    url->path = "/";
+    url.port = 80;
+    url.path = "/";
 
     len = strlen(urlstr);
     buf = strdup(urlstr);
@@ -425,7 +425,7 @@ static int Url_parse(const char *urlstr, URL *url)
     for (i = 0; i < len; i++) {
 	if (buf[i] == ':') {
 	    buf[i] = '\0';
-	    url->protocol = buf;
+	    url.protocol = buf;
 	    break;
 	}
     }
@@ -445,7 +445,7 @@ static int Url_parse(const char *urlstr, URL *url)
 	}
     }
 
-    url->host = buf + beg;
+    url.host = buf + beg;
     beg = i + 1;
     if (beg >= len) return true;
 
@@ -456,7 +456,7 @@ static int Url_parse(const char *urlstr, URL *url)
 		break;
 	    }
 	}
-	url->port = atoi(buf + beg);
+	url.port = atoi(buf + beg);
 	/* error detection should be added */
 
 	beg = i + 1;
@@ -465,8 +465,8 @@ static int Url_parse(const char *urlstr, URL *url)
     }
 
     /* make space for / in the beginning of path */
-    memmove(url->host - 1, url->host, strlen(url->host) + 1);
-    url->host--;
+    memmove(url.host - 1, url.host, strlen(url.host) + 1);
+    url.host--;
     buf[beg - 1] = '/';
 
     for (i = beg; i < len; i++) {
@@ -475,17 +475,17 @@ static int Url_parse(const char *urlstr, URL *url)
 	    break;
 	}
     }
-    url->path = buf + beg - 1;
+    url.path = buf + beg - 1;
 
     beg = i + 1;
     if (beg >= len) return true;
 
-    url->query = buf + beg;
+    url.query = buf + beg;
     return true;
 }
 
 
 static void Url_free_parsed(URL *url)
 {
-    free(url->protocol);
+    free(url.protocol);
 }

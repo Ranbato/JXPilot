@@ -62,14 +62,14 @@ static BitFont *BitFonts = NULL;	/* Linked list of fonts */
  * returns -1 as an error else it returns the number
  * of the font for the user to use
  */
-int DT_LoadFont(const char *BitmapName, int flags) {
+int DT_LoadFont(String BitmapName, int flags) {
 	int FontNumber = 0;
 	BitFont **CurrentFont = &BitFonts;
 	SDL_Surface *Temp;
 
 
 	while(*CurrentFont) {
-		CurrentFont = &((*CurrentFont)->NextFont);
+		CurrentFont = &((*CurrentFont).NextFont);
 		FontNumber++;
 	}
 
@@ -90,13 +90,13 @@ int DT_LoadFont(const char *BitmapName, int flags) {
 	/* Add a font to the list */
 	*CurrentFont = (BitFont *) malloc(sizeof(BitFont));
 
-	(*CurrentFont)->FontSurface = SDL_DisplayFormat(Temp);
+	(*CurrentFont).FontSurface = SDL_DisplayFormat(Temp);
 	SDL_FreeSurface(Temp);
 
-	(*CurrentFont)->CharWidth = (*CurrentFont)->FontSurface->w / 256;
-	(*CurrentFont)->CharHeight = (*CurrentFont)->FontSurface->h;
-	(*CurrentFont)->FontNumber = FontNumber;
-	(*CurrentFont)->NextFont = NULL;
+	(*CurrentFont).CharWidth = (*CurrentFont).FontSurface.w / 256;
+	(*CurrentFont).CharHeight = (*CurrentFont).FontSurface.h;
+	(*CurrentFont).FontNumber = FontNumber;
+	(*CurrentFont).NextFont = NULL;
 
 
 	/* Set font as transparent if the flag is set.  The assumption we'll go on
@@ -104,13 +104,13 @@ int DT_LoadFont(const char *BitmapName, int flags) {
 	 * as transparent.
 	 */
 	if(flags & TRANS_FONT) {
-	    SDL_SetColorKey((*CurrentFont)->FontSurface, SDL_SRCCOLORKEY | SDL_RLEACCEL, SDL_MapRGB((*CurrentFont)->FontSurface->format, 255, 0, 255));
+	    SDL_SetColorKey((*CurrentFont).FontSurface, SDL_SRCCOLORKEY | SDL_RLEACCEL, SDL_MapRGB((*CurrentFont).FontSurface.format, 255, 0, 255));
 	}
 	return FontNumber;
 }
 
 /* Takes the font type, coords, and text to draw to the surface*/
-void DT_DrawText(const char *string, SDL_Surface *surface, int FontType, int x, int y) {
+void DT_DrawText(String string, SDL_Surface *surface, int FontType, int x, int y) {
 	int loop;
 	int characters;
 	int current;
@@ -120,32 +120,32 @@ void DT_DrawText(const char *string, SDL_Surface *surface, int FontType, int x, 
 	CurrentFont = DT_FontPointer(FontType);
 
 	/* see how many characters can fit on the screen */
-	if(x > surface->w || y > surface->h)
+	if(x > surface.w || y > surface.h)
 		return;
 
-	if((int)strlen(string) < (surface->w - x) / CurrentFont->CharWidth)
+	if((int)strlen(string) < (surface.w - x) / CurrentFont.CharWidth)
 		characters = strlen(string);
 	else
-		characters = (surface->w - x) / CurrentFont->CharWidth;
+		characters = (surface.w - x) / CurrentFont.CharWidth;
 
 	DestRect.x = x;
 	DestRect.y = y;
-	DestRect.w = CurrentFont->CharWidth;
-	DestRect.h = CurrentFont->CharHeight;
+	DestRect.w = CurrentFont.CharWidth;
+	DestRect.h = CurrentFont.CharHeight;
 
 	SourceRect.y = 0;
-	SourceRect.w = CurrentFont->CharWidth;
-	SourceRect.h = CurrentFont->CharHeight;
+	SourceRect.w = CurrentFont.CharWidth;
+	SourceRect.h = CurrentFont.CharHeight;
 
 	/* Now draw it */
 	for(loop = 0; loop < characters; loop++) {
 		current = (const unsigned char)string[loop];
 		if (current<0 || current > 255)
 			current = 0;
-		/* SourceRect.x = string[loop] * CurrentFont->CharWidth; */
-		SourceRect.x = current * CurrentFont->CharWidth;
-		SDL_BlitSurface(CurrentFont->FontSurface, &SourceRect, surface, &DestRect);
-		DestRect.x += CurrentFont->CharWidth;
+		/* SourceRect.x = string[loop] * CurrentFont.CharWidth; */
+		SourceRect.x = current * CurrentFont.CharWidth;
+		SDL_BlitSurface(CurrentFont.FontSurface, &SourceRect, surface, &DestRect);
+		DestRect.x += CurrentFont.CharWidth;
 	}
 }
 
@@ -157,7 +157,7 @@ int DT_FontHeight(int FontNumber) {
 
 	CurrentFont = DT_FontPointer(FontNumber);
 	if(CurrentFont)
-		return CurrentFont->CharHeight;
+		return CurrentFont.CharHeight;
 	else
 		return 0;
 }
@@ -168,7 +168,7 @@ int DT_FontWidth(int FontNumber) {
 
 	CurrentFont = DT_FontPointer(FontNumber);
 	if(CurrentFont)
-		return CurrentFont->CharWidth;
+		return CurrentFont.CharWidth;
 	else
 		return 0;
 }
@@ -181,11 +181,11 @@ BitFont *DT_FontPointer(int FontNumber) {
 	BitFont *temp;
 
 	while(CurrentFont)
-		if(CurrentFont->FontNumber == FontNumber)
+		if(CurrentFont.FontNumber == FontNumber)
 			return CurrentFont;
 		else {
 			temp = CurrentFont;
-			CurrentFont = CurrentFont->NextFont;
+			CurrentFont = CurrentFont.NextFont;
 		}
 
 	return NULL;
@@ -199,9 +199,9 @@ void DT_DestroyDrawText(void) {
 
 	while(CurrentFont) {
 		temp = CurrentFont;
-		CurrentFont = CurrentFont->NextFont;
+		CurrentFont = CurrentFont.NextFont;
 
-		SDL_FreeSurface(temp->FontSurface);
+		SDL_FreeSurface(temp.FontSurface);
 		free(temp);
 	}
 

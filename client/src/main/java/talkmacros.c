@@ -25,7 +25,7 @@
 
 #include "xpclient.h"
 
-char *talk_fast_msgs[TALK_FAST_NR_OF_MSGS];	/* talk macros */
+String talk_fast_msgs[TALK_FAST_NR_OF_MSGS];	/* talk macros */
 
 /*
  * Abandon your hope, all you enter here
@@ -39,7 +39,7 @@ static char final_str[MAX_CHARS];
 /*
  * Returns a pointer to the first character after the fields
  */
-static char *Talk_macro_fields_info(char *buf, int *n_fields)
+static String Talk_macro_fields_info(String buf, int *n_fields)
 {
     int end_found = 0, level = 0;
 
@@ -76,11 +76,11 @@ static char *Talk_macro_fields_info(char *buf, int *n_fields)
 /* Returns a string pointer to the wanted_field
  * This pointer must be freed after using it
  */
-static char *Talk_macro_get_field(char *buf, int wanted_field)
+static String Talk_macro_get_field(String buf, int wanted_field)
 {
     int finished = 0, level = 0, field = 0;
     size_t len;
-    char *field_ptr, *start_ptr = NULL, *end_ptr = NULL;
+    String field_ptr, *start_ptr = NULL, *end_ptr = NULL;
 
     while (!finished) {
 	switch (*buf) {
@@ -131,7 +131,7 @@ static char *Talk_macro_get_field(char *buf, int wanted_field)
 }
 
 
-static int Talk_macro_parse_mesg(char *outbuf, char *inbuf, long pos,
+static int Talk_macro_parse_mesg(String outbuf, String inbuf, long pos,
 				 long max)
 {
     FILE *fp;
@@ -140,12 +140,12 @@ static int Talk_macro_parse_mesg(char *outbuf, char *inbuf, long pos,
     int i;
     int done = 0;
     int n_fields;
-    char *tmpptr;
-    char *tmpptr1;
-    char *tmpptr2;
-    char *tmpptr3 = 0;
-    char *nextpos;
-    char *filename;
+    String tmpptr;
+    String tmpptr1;
+    String tmpptr2;
+    String tmpptr3 = 0;
+    String nextpos;
+    String filename;
     other_t *player = NULL;
 
     while (!done && (c = *inbuf++) != '\0') {
@@ -162,21 +162,21 @@ static int Talk_macro_parse_mesg(char *outbuf, char *inbuf, long pos,
 	if (player != NULL) {
 	    switch (c) {
 	    case 'l':
-		if (Setup->mode.get( LIMITED_LIVES))
-		    outbuf[pos++] = player->life + '0';
+		if (Setup.mode.get( LIMITED_LIVES))
+		    outbuf[pos++] = player.life + '0';
 		break;
 	    case 'n':
-		tmpptr = player->nick_name;
+		tmpptr = player.nick_name;
 		for (i = 0; tmpptr[i] != '\0' && pos < max - 2; ++i)
 		    outbuf[pos++] = tmpptr[i];
 		break;
 	    case 's':
 		if (pos < max - 1 - 6)	/* short - "-16535" max no of chars */
-		    pos += sprintf(outbuf + pos, "%.2f", player->score);
+		    pos += sprintf(outbuf + pos, "%.2f", player.score);
 		break;
 	    case 't':
-		if (Setup->mode.get( TEAM_PLAY))
-		    outbuf[pos++] = player->team + '0';
+		if (Setup.mode.get( TEAM_PLAY))
+		    outbuf[pos++] = player.team + '0';
 		break;
 	    default:
 		break;
@@ -335,8 +335,8 @@ static int Talk_macro_parse_mesg(char *outbuf, char *inbuf, long pos,
 		    player = self;
 		    break;
 		case 't':
-		    if (Setup->mode.get( TEAM_PLAY))
-			outbuf[pos++] = self->team + '0';
+		    if (Setup.mode.get( TEAM_PLAY))
+			outbuf[pos++] = self.team + '0';
 		    break;
 		case TALK_FAST_SPECIAL_TALK_CHAR:
 		    outbuf[pos++] = c;
@@ -362,7 +362,7 @@ static int Talk_macro_parse_mesg(char *outbuf, char *inbuf, long pos,
 
 int Talk_macro(int i)
 {
-    char *str;
+    String str;
 
     assert(i >= 0);
     assert(i < TALK_FAST_NR_OF_MSGS);
@@ -382,7 +382,7 @@ static inline int index_by_option(xp_option_t *opt)
     return atoi(Option_get_name(opt) + strlen("msg")) - 1;
 }
 
-static bool Set_talk_macro(xp_option_t *opt, const char *value)
+static bool Set_talk_macro(xp_option_t *opt, String value)
 {
     int i = index_by_option(opt);
 
@@ -396,7 +396,7 @@ static bool Set_talk_macro(xp_option_t *opt, const char *value)
     return true;
 }
 
-static const char *Get_talk_macro(xp_option_t *opt)
+static String Get_talk_macro(xp_option_t *opt)
 {
     int i = index_by_option(opt);
 

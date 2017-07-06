@@ -37,7 +37,7 @@ bool team_dead(int team)
     for (i = 0; i < NumPlayers; i++) {
 	player_t *pl = Player_by_index(i);
 
-	if (pl->team != team)
+	if (pl.team != team)
 	    continue;
 
 	if (Player_is_alive(pl)
@@ -54,11 +54,11 @@ bool team_dead(int team)
 static bool Player_lock_allowed(player_t *pl, player_t *lock_pl)
 {
     /* we can never lock on ourselves, nor on NULL. */
-    if (lock_pl == NULL || pl->id == lock_pl->id)
+    if (lock_pl == NULL || pl.id == lock_pl.id)
 	return false;
 
     /* Spectators can watch freely */
-    if (pl->rectype == 2)
+    if (pl.rectype == 2)
 	return true;
 
     /* if we are actively playing then we can lock since we are not viewing. */
@@ -66,7 +66,7 @@ static bool Player_lock_allowed(player_t *pl, player_t *lock_pl)
 	return true;
 
     /* if there is no team play then we can always lock on anyone. */
-    if (!world->rules->mode.get( TEAM_PLAY))
+    if (!world.rules.mode.get( TEAM_PLAY))
 	return true;
 
     /* we can always lock on players from our own team. */
@@ -78,7 +78,7 @@ static bool Player_lock_allowed(player_t *pl, player_t *lock_pl)
 	return true;
 
     /* if our own team is dead then we can lock on anyone. */
-    if (team_dead(pl->team))
+    if (team_dead(pl.team))
 	return true;
 
     /* can't find any reason why this lock should be allowed. */
@@ -87,14 +87,14 @@ static bool Player_lock_allowed(player_t *pl, player_t *lock_pl)
 
 static void Player_lock_next_or_prev(player_t *pl, int key)
 {
-    int i, j, ind = GetInd(pl->id);
+    int i, j, ind = GetInd(pl.id);
     player_t *pl_i;
 
     if (NumPlayers == 0) /* Spectator? */
 	return;
 
-    j = i = GetInd(pl->lock.pl_id);
-    if (!pl->lock.tagged.get( LOCK_PLAYER))
+    j = i = GetInd(pl.lock.pl_id);
+    if (!pl.lock.tagged.get( LOCK_PLAYER))
 	i = j = 0;
     if (j < 0 || j >= NumPlayers)
 	/* kps - handle this some other way */
@@ -119,10 +119,10 @@ static void Player_lock_next_or_prev(player_t *pl, int key)
 	     || !Player_lock_allowed(pl, pl_i));
 
     if (i == ind)
-	pl->lock.tagged.clear( LOCK_PLAYER);
+	pl.lock.tagged.clear( LOCK_PLAYER);
     else {
-	pl->lock.pl_id = pl_i->id;
-	pl->lock.tagged.get( LOCK_PLAYER);
+	pl.lock.pl_id = pl_i.id;
+	pl.lock.tagged.get( LOCK_PLAYER);
     }
 }
 
@@ -133,12 +133,12 @@ int Player_lock_closest(player_t *pl, bool next)
     player_t *lock_pl = NULL, *new_pl = NULL;
 
     if (!next)
-	pl->lock.tagged.clear( LOCK_PLAYER);
+	pl.lock.tagged.clear( LOCK_PLAYER);
 
-    if (pl->lock.tagged.get( LOCK_PLAYER)) {
-	lock_pl = Player_by_id(pl->lock.pl_id);
-	dist = Wrap_length(lock_pl->pos.cx - pl->pos.cx,
-			   lock_pl->pos.cy - pl->pos.cy);
+    if (pl.lock.tagged.get( LOCK_PLAYER)) {
+	lock_pl = Player_by_id(pl.lock.pl_id);
+	dist = Wrap_length(lock_pl.pos.cx - pl.pos.cx,
+			   lock_pl.pos.cy - pl.pos.cy);
     }
     best = Float.MAX_VALUE;
     for (i = 0; i < NumPlayers; i++) {
@@ -152,8 +152,8 @@ int Player_lock_closest(player_t *pl, bool next)
 	    || Players_are_allies(pl, pl_i))
 	    continue;
 
-	l = Wrap_length(pl_i->pos.cx - pl->pos.cx,
-			pl_i->pos.cy - pl->pos.cy);
+	l = Wrap_length(pl_i.pos.cx - pl.pos.cx,
+			pl_i.pos.cy - pl.pos.cy);
 	if (l >= dist && l < best) {
 	    best = l;
 	    new_pl = pl_i;
@@ -162,8 +162,8 @@ int Player_lock_closest(player_t *pl, bool next)
     if (new_pl == NULL)
 	return 0;
 
-    pl->lock.tagged.get( LOCK_PLAYER);
-    pl->lock.pl_id = new_pl->id;
+    pl.lock.tagged.get( LOCK_PLAYER);
+    pl.lock.pl_id = new_pl.id;
 
     return 1;
 }
@@ -179,12 +179,12 @@ static void Player_change_home(player_t *pl)
     for (i = 0; i < Num_bases(); i++) {
 	base_t *base = Base_by_index(i);
 
-	l = Wrap_length(pl->pos.cx - base->pos.cx,
-			pl->pos.cy - base->pos.cy);
+	l = Wrap_length(pl.pos.cx - base.pos.cx,
+			pl.pos.cy - base.pos.cy);
 	if (l < dist
 	    && l < 1.5 * BLOCK_CLICKS) {
-	    if (base->team != TEAM_NOT_SET
-		&& base->team != pl->team) {
+	    if (base.team != TEAM_NOT_SET
+		&& base.team != pl.team) {
 		enemybase = base;
 		continue;
 	    }
@@ -197,7 +197,7 @@ static void Player_change_home(player_t *pl)
 	if (enemybase)
 	    Set_player_message_f(pl, "Base belongs to team %d. "
 				 "Enemy home bases can't be occupied. "
-				 "[*Server notice*]", enemybase->team);
+				 "[*Server notice*]", enemybase.team);
 	else
 	    Set_player_message(pl, "You are too far away from "
 			       "a suitable base to change home. "
@@ -206,16 +206,16 @@ static void Player_change_home(player_t *pl)
     }
 
     /* Maybe the base is our own base? */
-    if (base2 == pl->home_base)
+    if (base2 == pl.home_base)
 	return;
 
     /* Let's see if someone else in our has this base. */
     for (i = 0; i < NumPlayers; i++) {
 	player_t *pl_i = Player_by_index(i);
 
-	if (pl_i->id != pl->id
+	if (pl_i.id != pl.id
 	    && !Player_is_tank(pl_i)
-	    && base2 == pl_i->home_base) {
+	    && base2 == pl_i.home_base) {
 	    pl2 = pl_i;
 	    break;
 	}
@@ -233,15 +233,15 @@ static void Player_change_home(player_t *pl)
     }
 #endif
 
-    pl->home_base = base2;
+    pl.home_base = base2;
     sound_play_all(CHANGE_HOME_SOUND);
 
     if (pl2 != NULL) {
 	Pick_startpos(pl2);
 	Set_message_f("%s has taken over %s's home base.",
-		      pl->name, pl2->name);
+		      pl.name, pl2.name);
     } else
-	Set_message_f("%s has changed home base.", pl->name);
+	Set_message_f("%s has changed home base.", pl.name);
 
     /*
      * Send info about new bases.
@@ -249,23 +249,23 @@ static void Player_change_home(player_t *pl)
     for (i = 0; i < NumPlayers; i++) {
 	player_t *pl_i = Player_by_index(i);
 
-	if (pl_i->conn != NULL)
-	    Send_base(pl_i->conn, pl->id, pl->home_base->ind);
+	if (pl_i.conn != NULL)
+	    Send_base(pl_i.conn, pl.id, pl.home_base.ind);
     }
     for (i = 0; i < NumSpectators; i++)
-	Send_base(Player_by_index(i + spectatorStart)->conn,
-		  pl->id, pl->home_base->ind);
+	Send_base(Player_by_index(i + spectatorStart).conn,
+		  pl.id, pl.home_base.ind);
 
     if (pl2) {
 	for (i = 0; i < NumPlayers; i++) {
 	    player_t *pl_i = Player_by_index(i);
 
-	    if (pl_i->conn != NULL)
-		Send_base(pl_i->conn, pl2->id, pl2->home_base->ind);
+	    if (pl_i.conn != NULL)
+		Send_base(pl_i.conn, pl2.id, pl2.home_base.ind);
 	}
 	for (i = 0; i < NumSpectators; i++)
-	    Send_base(Player_by_index(i + spectatorStart)->conn,
-		      pl2->id, pl2->home_base->ind);
+	    Send_base(Player_by_index(i + spectatorStart).conn,
+		      pl2.id, pl2.home_base.ind);
     }
 }
 
@@ -274,19 +274,19 @@ static void Player_refuel(player_t *pl)
     int i;
     double l, dist = 1e19;
 
-    if (!pl->have.get( HAS_REFUEL))
+    if (!pl.have.get( HAS_REFUEL))
 	return;
 
-    pl->used.clear( USES_REFUEL);
+    pl.used.clear( USES_REFUEL);
     for (i = 0; i < Num_fuels(); i++) {
 	fuel_t *fs = Fuel_by_index(i);
 
-	l = Wrap_length(pl->pos.cx - fs->pos.cx,
-			pl->pos.cy - fs->pos.cy);
+	l = Wrap_length(pl.pos.cx - fs.pos.cx,
+			pl.pos.cy - fs.pos.cy);
 	if (!Player_is_refueling(pl)
 	    || l < dist) {
-	    pl->used.get( USES_REFUEL);
-	    pl->fs = i;
+	    pl.used.get( USES_REFUEL);
+	    pl.fs = i;
 	    dist = l;
 	}
     }
@@ -298,21 +298,21 @@ static void Player_repair(player_t *pl)
     int i;
     double l, dist = 1e19;
 
-    if (!pl->have.get( HAS_REPAIR))
+    if (!pl.have.get( HAS_REPAIR))
 	return;
 
-    pl->used.clear( USES_REPAIR);
+    pl.used.clear( USES_REPAIR);
     for (i = 0; i < Num_targets(); i++) {
 	target_t *targ = Target_by_index(i);
 
-	if (targ->team == pl->team
-	    && targ->dead_ticks <= 0) {
-	    l = Wrap_length(pl->pos.cx - targ->pos.cx,
-			    pl->pos.cy - targ->pos.cy);
+	if (targ.team == pl.team
+	    && targ.dead_ticks <= 0) {
+	    l = Wrap_length(pl.pos.cx - targ.pos.cx,
+			    pl.pos.cy - targ.pos.cy);
 	    if (!Player_is_repairing(pl)
 		|| l < dist) {
-		pl->used.get( USES_REPAIR);
-		pl->repair_target = i;
+		pl.used.get( USES_REPAIR);
+		pl.repair_target = i;
 		dist = l;
 	    }
 	}
@@ -333,9 +333,9 @@ static void Player_toggle_pause(player_t *pl)
     else if (Player_is_appearing(pl))
 	pausetype = paused;
     else {
-	base_t *base = pl->home_base;
-	double dist = Wrap_length(pl->pos.cx - base->pos.cx,
-				  pl->pos.cy - base->pos.cy);
+	base_t *base = pl.home_base;
+	double dist = Wrap_length(pl.pos.cx - base.pos.cx,
+				  pl.pos.cy - base.pos.cy);
 	double minv;
 
 	if (dist < 1.5 * BLOCK_CLICKS) {
@@ -345,8 +345,8 @@ static void Player_toggle_pause(player_t *pl)
 	    minv = 5.0;
 	    pausetype = hoverpaused;
 	}
-	minv += VECTOR_LENGTH(World_gravity(pl->pos));
-	if (pl->velocity > minv) {
+	minv += VECTOR_LENGTH(World_gravity(pl.pos));
+	if (pl.velocity > minv) {
 	    Set_player_message(pl,
 		       "You need to slow down to pause. [*Server notice*]");
 	    return;
@@ -372,14 +372,14 @@ static void Player_toggle_pause(player_t *pl)
 	    /*
 	     * Turn hover pause on, together with shields.
 	     */
-	    pl->pause_count = 5 * 12;
+	    pl.pause_count = 5 * 12;
 	    Player_self_destruct(pl, false);
-	    pl->pl_status.get( HOVERPAUSE);
+	    pl.pl_status.get( HOVERPAUSE);
 
 	    if (Player_uses_emergency_thrust(pl))
 		Emergency_thrust(pl, false);
 
-	    if (pl->used.get( HAS_EMERGENCY_SHIELD))
+	    if (pl.used.get( HAS_EMERGENCY_SHIELD))
 		Emergency_shield(pl, false);
 
 	    if (!Player_uses_autopilot(pl))
@@ -395,13 +395,13 @@ static void Player_toggle_pause(player_t *pl)
 	     * cloaking).
 	     */
 	    Player_used_kill(pl);
-	    if (pl->have.get( HAS_SHIELD))
-		pl->used.get( HAS_SHIELD);
-	} else if (pl->pause_count <= 0) {
+	    if (pl.have.get( HAS_SHIELD))
+		pl.used.get( HAS_SHIELD);
+	} else if (pl.pause_count <= 0) {
 	    Autopilot(pl, false);
-	    pl->pl_status.clear( HOVERPAUSE);
-	    if (!pl->have.get( HAS_SHIELD))
-		pl->used.clear( HAS_SHIELD);
+	    pl.pl_status.clear( HOVERPAUSE);
+	    if (!pl.have.get( HAS_SHIELD))
+		pl.used.clear( HAS_SHIELD);
 	}
 	break;
     default:
@@ -419,10 +419,10 @@ static void Player_swap_settings(player_t *pl)
 	return;
 
     /* kps - turnacc == 0.0 ? */
-    if (pl->turnacc == 0.0) {
-	FOOBARSWAP(pl->power, pl->power_s);
-	FOOBARSWAP(pl->turnspeed, pl->turnspeed_s);
-	FOOBARSWAP(pl->turnresistance, pl->turnresistance_s);
+    if (pl.turnacc == 0.0) {
+	FOOBARSWAP(pl.power, pl.power_s);
+	FOOBARSWAP(pl.turnspeed, pl.turnspeed_s);
+	FOOBARSWAP(pl.turnresistance, pl.turnresistance_s);
     }
 }
 #undef FOOBARSWAP
@@ -430,11 +430,11 @@ static void Player_swap_settings(player_t *pl)
 
 static void Player_toggle_compass(player_t *pl)
 {
-    int i, k, ind = GetInd(pl->id);
+    int i, k, ind = GetInd(pl.id);
 
-    if (!pl->have.get( HAS_COMPASS))
+    if (!pl.have.get( HAS_COMPASS))
 	return;
-    pl->used.flip( USES_COMPASS);
+    pl.used.flip( USES_COMPASS);
 
     if (!Player_uses_compass(pl))
 	return;
@@ -443,12 +443,12 @@ static void Player_toggle_compass(player_t *pl)
      * Verify if the lock has ever been initialized at all
      * and if the lock is still valid.
      */
-    if (pl->lock.tagged.get( LOCK_PLAYER)
+    if (pl.lock.tagged.get( LOCK_PLAYER)
 	&& NumPlayers > 1
-	&& (k = pl->lock.pl_id) > 0
+	&& (k = pl.lock.pl_id) > 0
 	&& (i = GetInd(k)) > 0
 	&& i < NumPlayers
-	&& Player_by_index(i)->id == k
+	&& Player_by_index(i).id == k
 	&& i != ind)
 	return;
 
@@ -464,91 +464,91 @@ void Pause_player(player_t *pl, bool on)
     if (!Player_is_human(pl))
 	return;
     if (on && !Player_is_paused(pl)) { /* Turn pause mode on */
-	if (pl->team != TEAM_NOT_SET)
-	    world->teams[pl->team].SwapperId = NO_ID;
+	if (pl.team != TEAM_NOT_SET)
+	    world.teams[pl.team].SwapperId = NO_ID;
 	/* Minimum pause time is 10 seconds at gamespeed 12. */
-	pl->pause_count = 10 * 12;
+	pl.pause_count = 10 * 12;
 	/* player might have paused when recovering */
-	pl->recovery_count = 0;
-	pl->updateVisibility = true;
+	pl.recovery_count = 0;
+	pl.updateVisibility = true;
 	Player_set_state(pl, PL_STATE_PAUSED);
-	pl->pauseTime = 0;
+	pl.pauseTime = 0;
 	if (options.baselessPausing) {
-	    if (pl->team != TEAM_NOT_SET)
-		world->teams[pl->team].NumMembers--;
-	    pl->pl_prev_team = pl->team;
+	    if (pl.team != TEAM_NOT_SET)
+		world.teams[pl.team].NumMembers--;
+	    pl.pl_prev_team = pl.team;
 	    /* kps - probably broken if no team play */
-	    pl->team = 0;
+	    pl.team = 0;
 	    for (i = 0; i < NumPlayers; i++) {
 		player_t *pl_i = Player_by_index(i);
 
-		if (pl_i->conn != NULL) {
-		    Send_base(pl_i->conn, NO_ID, pl->home_base->ind);
-		    Send_team(pl_i->conn, pl->id, 0);
+		if (pl_i.conn != NULL) {
+		    Send_base(pl_i.conn, NO_ID, pl.home_base.ind);
+		    Send_team(pl_i.conn, pl.id, 0);
 		}
 	    }
 	    for (i = spectatorStart; i < spectatorStart + NumSpectators; i++) {
 		player_t *pl_i = Player_by_index(i);
 
-		Send_base(pl_i->conn, NO_ID, pl->home_base->ind);
-		Send_team(pl_i->conn, pl->id, 0);
+		Send_base(pl_i.conn, NO_ID, pl.home_base.ind);
+		Send_team(pl_i.conn, pl.id, 0);
 	    }
-	    pl->home_base = NULL;
+	    pl.home_base = NULL;
 	}
 	updateScores = true;
 
 	Detach_ball(pl, NULL);
 	if (Player_uses_autopilot(pl)
 	    || Player_is_hoverpaused(pl)) {
-	    pl->pl_status.clear( HOVERPAUSE);
+	    pl.pl_status.clear( HOVERPAUSE);
 	    Autopilot(pl, false);
 	}
 
-	pl->vel.x		= pl->vel.y	= 0.0;
-	pl->acc.x		= pl->acc.y	= 0.0;
+	pl.vel.x		= pl.vel.y	= 0.0;
+	pl.acc.x		= pl.acc.y	= 0.0;
 
-	pl->obj_status	&= ~(KILL_OBJ_BITS);
+	pl.obj_status	&= ~(KILL_OBJ_BITS);
 
 	/*
 	 * kps - possibly add option to make items reset
 	 * to initial when pausing
 	 */
 
-	pl->forceVisible	= 0;
-	pl->ecmcount		= 0;
-	pl->emergency_thrust_left = 0;
-	pl->emergency_shield_left = 0;
-	pl->phasing_left	= 0;
-	pl->self_destruct_count = 0;
-	pl->damaged 		= 0;
-	pl->stunned		= 0;
-	pl->lock.distance	= 0;
-	pl->used		= DEF_USED;
+	pl.forceVisible	= 0;
+	pl.ecmcount		= 0;
+	pl.emergency_thrust_left = 0;
+	pl.emergency_shield_left = 0;
+	pl.phasing_left	= 0;
+	pl.self_destruct_count = 0;
+	pl.damaged 		= 0;
+	pl.stunned		= 0;
+	pl.lock.distance	= 0;
+	pl.used		= DEF_USED;
 
 	for (i = 0; i < MAX_TEAMS ; i++) {
-	    if (world->teams[i].SwapperId == pl->id)
-		world->teams[i].SwapperId = NO_ID;
+	    if (world.teams[i].SwapperId == pl.id)
+		world.teams[i].SwapperId = NO_ID;
 	}
     }
     else if (!on && Player_is_paused(pl)) { /* Turn pause mode off */
 
-	if (pl->pause_count > 0) {
+	if (pl.pause_count > 0) {
 	    Set_player_message(pl, "You can't unpause so soon after pausing. "
 			       "[*Server notice*]");
 	    return;
 	}
 	/* there seems to be a race condition if idleTime is set later */
-	pl->idleTime = 0;
+	pl.idleTime = 0;
 
-	if (pl->home_base == NULL) {
-	    int team = pl->pl_prev_team;
+	if (pl.home_base == NULL) {
+	    int team = pl.pl_prev_team;
 
 	    /* kps - code copied from Cmd_team() */
 	    if (team > 0 && team < MAX_TEAMS
-		&& (world->teams[team].NumBases
-		    > world->teams[team].NumMembers)) {
-		pl->team = team;
-		world->teams[pl->team].NumMembers++;
+		&& (world.teams[team].NumBases
+		    > world.teams[team].NumMembers)) {
+		pl.team = team;
+		world.teams[pl.team].NumMembers++;
 		Set_swapper_state(pl);
 		Pick_startpos(pl);
 		Send_info_about_player(pl);
@@ -562,7 +562,7 @@ void Pause_player(player_t *pl, bool on)
 	}
 
 	updateScores = true;
-	if (world->rules->mode.get( LIMITED_LIVES)) {
+	if (world.rules.mode.get( LIMITED_LIVES)) {
 	    /* too late, wait for next round */
 	    Player_set_state(pl, PL_STATE_WAITING);
 	} else {
@@ -583,28 +583,28 @@ int Handle_keyboard(player_t *pl)
 
     for (key = 0; key < NUM_KEYS; key++) {
 	/* Find first keyv element where last_keyv isn't equal to prev_keyv. */
-	if (pl->last_keyv[key / BITV_SIZE] == pl->prev_keyv[key / BITV_SIZE]) {
+	if (pl.last_keyv[key / BITV_SIZE] == pl.prev_keyv[key / BITV_SIZE]) {
 	    /* Skip to next keyv element. */
 	    key |= (BITV_SIZE - 1);
 	    continue;
 	}
 	/* Now check which specific key it is that has changed state. */
-	while (pl->last_keyv.get( key)
-	       == pl->prev_keyv.get( key)) {
+	while (pl.last_keyv.get( key)
+	       == pl.prev_keyv.get( key)) {
 	    if (++key >= NUM_KEYS)
 		break;
 	}
 	if (key >= NUM_KEYS)
 	    break;
 
-	pressed = (pl->last_keyv.get( key) != 0) ? true : false;
-	pl->prev_keyv.flip( key);
+	pressed = (pl.last_keyv.get( key) != 0) ? true : false;
+	pl.prev_keyv.flip( key);
 	/*
 	 * KEY_SHIELD would interfere with auto-idle-pause
 	 * due to client auto-shield hack.
 	 */
 	if (key != KEY_SHIELD)
-	    pl->idleTime = 0;
+	    pl.idleTime = 0;
 
 	/*
 	 * Allow these functions while you're 'dead'.
@@ -702,12 +702,12 @@ int Handle_keyboard(player_t *pl)
 
 	    case KEY_TANK_NEXT:
 	    case KEY_TANK_PREV:
-		if (pl->fuel.num_tanks) {
-		    pl->fuel.current += (key==KEY_TANK_NEXT) ? 1 : -1;
-		    if (pl->fuel.current < 0)
-			pl->fuel.current = pl->fuel.num_tanks;
-		    else if (pl->fuel.current > pl->fuel.num_tanks)
-			pl->fuel.current = 0;
+		if (pl.fuel.num_tanks) {
+		    pl.fuel.current += (key==KEY_TANK_NEXT) ? 1 : -1;
+		    if (pl.fuel.current < 0)
+			pl.fuel.current = pl.fuel.num_tanks;
+		    else if (pl.fuel.current > pl.fuel.num_tanks)
+			pl.fuel.current = 0;
 		}
 		break;
 
@@ -738,9 +738,9 @@ int Handle_keyboard(player_t *pl)
 		break;
 
 	    case KEY_SHIELD:
-		if (pl->have.get( HAS_SHIELD)) {
-		    pl->used.get( HAS_SHIELD);
-		    pl->used.clear( HAS_LASER);	/* don't remove! */
+		if (pl.have.get( HAS_SHIELD)) {
+		    pl.used.get( HAS_SHIELD);
+		    pl.used.clear( HAS_LASER);	/* don't remove! */
 		}
 		break;
 
@@ -749,46 +749,46 @@ int Handle_keyboard(player_t *pl)
 		break;
 
 	    case KEY_FIRE_SHOT:
-		if (!pl->used.get( HAS_SHIELD|HAS_SHOT)
-		    && pl->have.get( HAS_SHOT)) {
-		    pl->used.get( HAS_SHOT);
+		if (!pl.used.get( HAS_SHIELD|HAS_SHOT)
+		    && pl.have.get( HAS_SHOT)) {
+		    pl.used.get( HAS_SHOT);
 		    /* Set this so that one shot is fired even if player
 		     * releases the key during the same frame */
-		    pl->did_shoot = true;
+		    pl.did_shoot = true;
 		}
 		break;
 
 	    case KEY_FIRE_MISSILE:
-		if (pl->item[ITEM_MISSILE] > 0)
-		    Fire_shot(pl, OBJ_SMART_SHOT, pl->dir);
+		if (pl.item[ITEM_MISSILE] > 0)
+		    Fire_shot(pl, OBJ_SMART_SHOT, pl.dir);
 		break;
 
 	    case KEY_FIRE_HEAT:
-		if (pl->item[ITEM_MISSILE] > 0)
-		    Fire_shot(pl, OBJ_HEAT_SHOT, pl->dir);
+		if (pl.item[ITEM_MISSILE] > 0)
+		    Fire_shot(pl, OBJ_HEAT_SHOT, pl.dir);
 		break;
 
 	    case KEY_FIRE_TORPEDO:
-		if (pl->item[ITEM_MISSILE] > 0)
-		    Fire_shot(pl, OBJ_TORPEDO, pl->dir);
+		if (pl.item[ITEM_MISSILE] > 0)
+		    Fire_shot(pl, OBJ_TORPEDO, pl.dir);
 		break;
 
 	    case KEY_FIRE_LASER:
-		if (pl->item[ITEM_LASER] > 0 && pl->used.get( HAS_SHIELD) == 0)
-		    pl->used.get( HAS_LASER);
+		if (pl.item[ITEM_LASER] > 0 && pl.used.get( HAS_SHIELD) == 0)
+		    pl.used.get( HAS_LASER);
 		break;
 
 	    case KEY_TOGGLE_NUCLEAR:
-		switch (Mods_get(pl->mods, ModsNuclear)) {
+		switch (Mods_get(pl.mods, ModsNuclear)) {
 		case MODS_NUCLEAR:
-		    Mods_set(&pl->mods, ModsNuclear,
+		    Mods_set(&pl.mods, ModsNuclear,
 			     MODS_NUCLEAR|MODS_FULLNUCLEAR);
 		    break;
 		case 0:
-		    Mods_set(&pl->mods, ModsNuclear, MODS_NUCLEAR);
+		    Mods_set(&pl.mods, ModsNuclear, MODS_NUCLEAR);
 		    break;
 		default:
-		    Mods_set(&pl->mods, ModsNuclear, 0);
+		    Mods_set(&pl.mods, ModsNuclear, 0);
 		    break;
 		}
 
@@ -796,99 +796,99 @@ int Handle_keyboard(player_t *pl)
 
 	    case KEY_TOGGLE_CLUSTER:
 		{
-		    int cluster = Mods_get(pl->mods, ModsCluster);
+		    int cluster = Mods_get(pl.mods, ModsCluster);
 
-		    Mods_set(&pl->mods, ModsCluster, !cluster);
+		    Mods_set(&pl.mods, ModsCluster, !cluster);
 		}
 		break;
 
 	    case KEY_TOGGLE_IMPLOSION:
 		{
-		    int implosion = Mods_get(pl->mods, ModsImplosion);
+		    int implosion = Mods_get(pl.mods, ModsImplosion);
 
-		    Mods_set(&pl->mods, ModsImplosion, !implosion);
+		    Mods_set(&pl.mods, ModsImplosion, !implosion);
 		}
 		break;
 
 	    case KEY_TOGGLE_VELOCITY:
 		{
-		    int velocity = Mods_get(pl->mods, ModsVelocity);
+		    int velocity = Mods_get(pl.mods, ModsVelocity);
 
 		    if (velocity == MODS_VELOCITY_MAX)
 			velocity = 0;
 		    else
 			velocity++;
-		    Mods_set(&pl->mods, ModsVelocity, velocity);
+		    Mods_set(&pl.mods, ModsVelocity, velocity);
 		}
 		break;
 
 	    case KEY_TOGGLE_MINI:
 		{
-		    int mini = Mods_get(pl->mods, ModsMini);
+		    int mini = Mods_get(pl.mods, ModsMini);
 
 		    if (mini == MODS_MINI_MAX)
 			mini = 0;
 		    else
 			mini++;
-		    Mods_set(&pl->mods, ModsMini, mini);
+		    Mods_set(&pl.mods, ModsMini, mini);
 		}
 		break;
 
 	    case KEY_TOGGLE_SPREAD:
 		{
-		    int spread = Mods_get(pl->mods, ModsSpread);
+		    int spread = Mods_get(pl.mods, ModsSpread);
 
 		    if (spread == MODS_SPREAD_MAX)
 			spread = 0;
 		    else
 			spread++;
-		    Mods_set(&pl->mods, ModsSpread, spread);
+		    Mods_set(&pl.mods, ModsSpread, spread);
 		}
 		break;
 
 	    case KEY_TOGGLE_LASER:
 		{
-		    int laser = Mods_get(pl->mods, ModsLaser);
+		    int laser = Mods_get(pl.mods, ModsLaser);
 
 		    if (laser == MODS_LASER_MAX)
 			laser = 0;
 		    else
 			laser++;
-		    Mods_set(&pl->mods, ModsLaser, laser);
+		    Mods_set(&pl.mods, ModsLaser, laser);
 		}
 		break;
 
 	    case KEY_TOGGLE_POWER:
 		{
-		    int power = Mods_get(pl->mods, ModsPower);
+		    int power = Mods_get(pl.mods, ModsPower);
 
 		    if (power == MODS_POWER_MAX)
 			power = 0;
 		    else
 			power++;
-		    Mods_set(&pl->mods, ModsPower, power);
+		    Mods_set(&pl.mods, ModsPower, power);
 		}
 		break;
 
 	    case KEY_CLEAR_MODIFIERS:
-		Mods_clear(&pl->mods);
+		Mods_clear(&pl.mods);
 		break;
 
 	    case KEY_REPROGRAM:
-		pl->pl_status.get( REPROGRAM);
+		pl.pl_status.get( REPROGRAM);
 		break;
 
 	    case KEY_LOAD_MODIFIERS_1:
 	    case KEY_LOAD_MODIFIERS_2:
 	    case KEY_LOAD_MODIFIERS_3:
 	    case KEY_LOAD_MODIFIERS_4: {
-		modifiers_t *m = &(pl->modbank[key - KEY_LOAD_MODIFIERS_1]);
+		modifiers_t *m = &(pl.modbank[key - KEY_LOAD_MODIFIERS_1]);
 
-		if (pl->pl_status.get( REPROGRAM))
-		    *m = pl->mods;
+		if (pl.pl_status.get( REPROGRAM))
+		    *m = pl.mods;
 		else {
-		    pl->mods = *m;
-		    Mods_filter(&pl->mods);
+		    pl.mods = *m;
+		    Mods_filter(&pl.mods);
 		}
 		break;
 	    }
@@ -897,16 +897,16 @@ int Handle_keyboard(player_t *pl)
 	    case KEY_LOAD_LOCK_2:
 	    case KEY_LOAD_LOCK_3:
 	    case KEY_LOAD_LOCK_4: {
-		int *l = &(pl->lockbank[key - KEY_LOAD_LOCK_1]);
+		int *l = &(pl.lockbank[key - KEY_LOAD_LOCK_1]);
 
-		if (pl->pl_status.get( REPROGRAM)) {
-		    if (pl->lock.tagged.get( LOCK_PLAYER))
-			*l = pl->lock.pl_id;
+		if (pl.pl_status.get( REPROGRAM)) {
+		    if (pl.lock.tagged.get( LOCK_PLAYER))
+			*l = pl.lock.pl_id;
 		} else {
 		    if (*l != -1
 			    && Player_lock_allowed(pl, Player_by_id(*l))) {
-			pl->lock.pl_id = *l;
-			pl->lock.tagged.get( LOCK_PLAYER);
+			pl.lock.pl_id = *l;
+			pl.lock.tagged.get( LOCK_PLAYER);
 		    }
 		}
 		break;
@@ -924,9 +924,9 @@ int Handle_keyboard(player_t *pl)
 		break;
 
 	    case KEY_EMERGENCY_SHIELD:
-		if (pl->have.get( HAS_EMERGENCY_SHIELD))
+		if (pl.have.get( HAS_EMERGENCY_SHIELD))
 		    Emergency_shield(pl,
-				     !pl->used.get( HAS_EMERGENCY_SHIELD));
+				     !pl.used.get( HAS_EMERGENCY_SHIELD));
 		break;
 
 	    case KEY_DROP_MINE:
@@ -945,16 +945,16 @@ int Handle_keyboard(player_t *pl)
 	    case KEY_TURN_RIGHT:
 		if (Player_uses_autopilot(pl))
 		    Autopilot(pl, false);
-		pl->turnacc = 0;
+		pl.turnacc = 0;
 #if 0
 		if (frame_loops % 50 == 0)
 		    Set_player_message(pl, "You should use the mouse to turn."
 				       " [*Server notice*]");
 #endif
-		if (pl->last_keyv.get( KEY_TURN_LEFT))
-		    pl->turnacc += pl->turnspeed;
-		if (pl->last_keyv.get( KEY_TURN_RIGHT))
-		    pl->turnacc -= pl->turnspeed;
+		if (pl.last_keyv.get( KEY_TURN_LEFT))
+		    pl.turnacc += pl.turnspeed;
+		if (pl.last_keyv.get( KEY_TURN_RIGHT))
+		    pl.turnacc -= pl.turnspeed;
 		break;
 
 	    case KEY_SELF_DESTRUCT:
@@ -981,21 +981,21 @@ int Handle_keyboard(player_t *pl)
 		break;
 
 	    case KEY_CONNECTOR:
-		if (pl->have.get( HAS_CONNECTOR))
-		    pl->used.get( USES_CONNECTOR);
+		if (pl.have.get( HAS_CONNECTOR))
+		    pl.used.get( USES_CONNECTOR);
 		break;
 
 	    case KEY_PRESSOR_BEAM:
 		if (Player_has_tractor_beam(pl)) {
-		    pl->tractor_is_pressor = true;
-		    pl->used.get( USES_TRACTOR_BEAM);
+		    pl.tractor_is_pressor = true;
+		    pl.used.get( USES_TRACTOR_BEAM);
 		}
 		break;
 
 	    case KEY_TRACTOR_BEAM:
 		if (Player_has_tractor_beam(pl)) {
-		    pl->tractor_is_pressor = false;
-		    pl->used.get( USES_TRACTOR_BEAM);
+		    pl.tractor_is_pressor = false;
+		    pl.used.get( USES_TRACTOR_BEAM);
 		}
 		break;
 
@@ -1006,7 +1006,7 @@ int Handle_keyboard(player_t *pl)
 		break;
 
 	    case KEY_CLOAK:
-		if (pl->item[ITEM_CLOAK] > 0)
+		if (pl.item[ITEM_CLOAK] > 0)
 		    Cloak(pl, !Player_is_cloaked(pl));
 		break;
 
@@ -1019,8 +1019,8 @@ int Handle_keyboard(player_t *pl)
 		break;
 
 	    case KEY_DEFLECTOR:
-		if (pl->item[ITEM_DEFLECTOR] > 0)
-		    Deflector(pl, !pl->used.get( USES_DEFLECTOR));
+		if (pl.item[ITEM_DEFLECTOR] > 0)
+		    Deflector(pl, !pl.used.get( USES_DEFLECTOR));
 		break;
 
 	    case KEY_HYPERJUMP:
@@ -1034,15 +1034,15 @@ int Handle_keyboard(player_t *pl)
 
 	    case KEY_SELECT_ITEM:
 		for (i = 0; i < NUM_ITEMS; i++) {
-		    if (++pl->lose_item >= NUM_ITEMS)
-			pl->lose_item = 0;
-		    if (pl->lose_item == ITEM_FUEL
-			|| pl->lose_item == ITEM_TANK)
+		    if (++pl.lose_item >= NUM_ITEMS)
+			pl.lose_item = 0;
+		    if (pl.lose_item == ITEM_FUEL
+			|| pl.lose_item == ITEM_TANK)
 			/* can't lose fuel or tanks. */
 			continue;
-		    if (pl->item[pl->lose_item] > 0) {
+		    if (pl.item[pl.lose_item] > 0) {
 			/* 2: key down; 1: key up */
-			pl->lose_item_state = 2;
+			pl.lose_item_state = 2;
 			break;
 		    }
 		}
@@ -1062,49 +1062,49 @@ int Handle_keyboard(player_t *pl)
 	    case KEY_TURN_RIGHT:
 		if (Player_uses_autopilot(pl))
 		    Autopilot(pl, false);
-		pl->turnacc = 0;
-		if (pl->last_keyv.get( KEY_TURN_LEFT))
-		    pl->turnacc += pl->turnspeed;
-		if (pl->last_keyv.get( KEY_TURN_RIGHT))
-		    pl->turnacc -= pl->turnspeed;
+		pl.turnacc = 0;
+		if (pl.last_keyv.get( KEY_TURN_LEFT))
+		    pl.turnacc += pl.turnspeed;
+		if (pl.last_keyv.get( KEY_TURN_RIGHT))
+		    pl.turnacc -= pl.turnspeed;
 		break;
 
 	    case KEY_REFUEL:
-		pl->used.clear( USES_REFUEL);
+		pl.used.clear( USES_REFUEL);
 		break;
 
 	    case KEY_REPAIR:
-		pl->used.clear( USES_REPAIR);
+		pl.used.clear( USES_REPAIR);
 		break;
 
 	    case KEY_CONNECTOR:
-		pl->used.clear( USES_CONNECTOR);
+		pl.used.clear( USES_CONNECTOR);
 		break;
 
 	    case KEY_TRACTOR_BEAM:
 	    case KEY_PRESSOR_BEAM:
-		pl->used.clear( USES_TRACTOR_BEAM);
+		pl.used.clear( USES_TRACTOR_BEAM);
 		break;
 
 	    case KEY_SHIELD:
-		if (pl->used.get( HAS_SHIELD)) {
-		    pl->used.clear( HAS_SHIELD|HAS_LASER);
+		if (pl.used.get( HAS_SHIELD)) {
+		    pl.used.clear( HAS_SHIELD|HAS_LASER);
 		    /*
 		     * Insert the default fireRepeatRate between lowering
 		     * shields and firing in order to prevent macros
 		     * and hacked clients.
 		     */
-		    pl->shot_time = frame_time;
-		    pl->laser_time = frame_time;
+		    pl.shot_time = frame_time;
+		    pl.laser_time = frame_time;
 		}
 		break;
 
 	    case KEY_FIRE_SHOT:
-		pl->used.clear( HAS_SHOT);
+		pl.used.clear( HAS_SHOT);
 		break;
 
 	    case KEY_FIRE_LASER:
-		pl->used.clear( HAS_LASER);
+		pl.used.clear( HAS_LASER);
 		break;
 
 	    case KEY_THRUST:
@@ -1114,11 +1114,11 @@ int Handle_keyboard(player_t *pl)
 		break;
 
 	    case KEY_REPROGRAM:
-		pl->pl_status.clear( REPROGRAM);
+		pl.pl_status.clear( REPROGRAM);
 		break;
 
 	    case KEY_SELECT_ITEM:
-		pl->lose_item_state = 1;
+		pl.lose_item_state = 1;
 		break;
 
 	    default:
@@ -1126,7 +1126,7 @@ int Handle_keyboard(player_t *pl)
 	    }
 	}
     }
-    memcpy(pl->prev_keyv, pl->last_keyv, sizeof(pl->last_keyv));
+    memcpy(pl.prev_keyv, pl.last_keyv, sizeof(pl.last_keyv));
 
     return 1;
 }

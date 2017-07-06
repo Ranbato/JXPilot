@@ -52,10 +52,10 @@ static BOOL   gFinderLaunch;
 - (void) setupWorkingDirectory:(BOOL)shouldChdir
 {
     char parentdir[MAXPATHLEN];
-    char *c;
+    String c;
     
     strncpy ( parentdir, gArgv[0], sizeof(parentdir) );
-    c = (char*) parentdir;
+    c = (String ) parentdir;
 
     while (*c != '\0')     /* go to end */
         c++;
@@ -262,7 +262,7 @@ int main (int argc, char **argv)
         gArgc = argc;
 	gFinderLaunch = NO;
     }
-    gArgv = (char**) malloc (sizeof(*gArgv) * (gArgc+1));
+    gArgv = (String *) malloc (sizeof(*gArgv) * (gArgc+1));
     assert (gArgv != NULL);
     for (i = 0; i < gArgc; i++)
         gArgv[i] = argv[i];

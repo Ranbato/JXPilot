@@ -102,11 +102,11 @@ void Arc_end(void)
     for (i = 0; i < num_rgb_arc; i++) {
 	rgb_arc_t *p = &rgb_arc_ptr[i];
 
-	SET_FG(p->color);
+	SET_FG(p.color);
 	rd.drawArc(dpy, drawPixmap, gameGC,
-		   p->arc.x, p->arc.y,
-		   p->arc.width, p->arc.height,
-		   p->arc.angle1, p->arc.angle2);
+		   p.arc.x, p.arc.y,
+		   p.arc.width, p.arc.height,
+		   p.arc.angle1, p.arc.angle2);
     }
     if (num_rgb_arc > 0)
 	RELEASE(rgb_arc_ptr, num_rgb_arc, max_rgb_arc);

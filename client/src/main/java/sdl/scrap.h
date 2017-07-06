@@ -6,5 +6,5 @@
 
 extern int init_scrap(void);
 extern int lost_scrap(void);
-extern void put_scrap(int type, int srclen, char *src);
+extern void put_scrap(int type, int srclen, String src);
 extern void get_scrap(int type, int *dstlen, char **dst);

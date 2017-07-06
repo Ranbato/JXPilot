@@ -144,7 +144,7 @@ static void Paint_mines(void)
 			name = expired_name;
 		    } else if ((other = Other_by_id(mine_ptr[i].id))
 			       != NULL)
-			name = other->id_string;
+			name = other.id_string;
 		    else {
 			static char unknown_name[] = "Not of this world!";
 			name = unknown_name;
@@ -458,7 +458,7 @@ static void Paint_all_ships(void)
 		  eyesId = ship_ptr[i].id;
 		  eyes = Other_by_id(eyesId);
 		  if (eyes != NULL)
-		      eyeTeam = eyes->team;
+		      eyeTeam = eyes.team;
 	    }
 
 	    Gui_paint_ship(x, y,
@@ -574,7 +574,7 @@ int Init_wreckage(void)
      */
     point_size = sizeof(Point2D) * RES;
     total_size = point_size * NUM_WRECKAGE_POINTS * NUM_WRECKAGE_SHAPES;
-    if ((dynmem = (char *) malloc(total_size)) == NULL) {
+    if ((dynmem = (String ) malloc(total_size)) == NULL) {
 	error("Not enough memory for wreckage shapes");
 	return -1;
     }

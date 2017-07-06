@@ -42,7 +42,7 @@ struct MetaServer meta_servers[2] = {
     },
 };
 
-void Meta_send(char *mesg, size_t len)
+void Meta_send(String mesg, size_t len)
 {
     int i;
 
@@ -59,7 +59,7 @@ void Meta_send(char *mesg, size_t len)
     }
 }
 
-int Meta_from(char *addr, int port)
+int Meta_from(String addr, int port)
 {
     int i;
 
@@ -83,7 +83,7 @@ void Meta_gone(void)
 void Meta_init(void)
 {
     int i;
-    char *addr;
+    String addr;
 
     if (!options.reportToMetaServer)
 	return;
@@ -111,7 +111,7 @@ void Meta_init(void)
 static void asciidump(void *p, size_t size)
 {
     int i;
-    unsigned char *up = p;
+    unsigned String up = p;
     char c;
 
     for (i = 0; i < size; i++) {
@@ -138,11 +138,11 @@ void Meta_update(bool change)
 {
 #define GIVE_META_SERVER_A_HINT	180
 
-    char *string = meta_update_string, freebases[120];
+    String string = meta_update_string, freebases[120];
     int i, num_active_players, active_per_team[MAX_TEAMS];
     size_t len, max_size;
     time_t currentTime;
-    const char *game_mode;
+    String game_mode;
     static time_t lastMetaSendTime = 0;
     static int queue_length = 0;
     bool first;
@@ -179,15 +179,15 @@ void Meta_update(bool change)
 	    continue;
 
 	num_active_players++;
-	if (world->rules->mode.get( TEAM_PLAY))
-	    active_per_team[pl->team]++;
+	if (world.rules.mode.get( TEAM_PLAY))
+	    active_per_team[pl.team]++;
     }
 
     game_mode = Describe_game_status();
 
     /* calculate number of available homebases per team. */
     freebases[0] = '\0';
-    if (world->rules->mode.get( TEAM_PLAY)) {
+    if (world.rules.mode.get( TEAM_PLAY)) {
 	bool firstteam = true;
 
 	for (i = 0; i < MAX_TEAMS; i++) {
@@ -196,12 +196,12 @@ void Meta_update(bool change)
 	    if (i == options.robotTeam && options.reserveRobotTeam)
 		continue;
 
-	    if (team->NumBases > 0) {
+	    if (team.NumBases > 0) {
 		char str[32];
 
 		snprintf(str, sizeof(str), "%s%d=%d",
 			 (firstteam ? "" : ","), i,
-			 team->NumBases - active_per_team[i]);
+			 team.NumBases - active_per_team[i]);
 		firstteam = false;
 		strlcat(freebases, str, sizeof(freebases));
 	    }
@@ -229,10 +229,10 @@ void Meta_update(bool change)
 	     "add queue %d\n"
 	     "add sound %s\n",
 	     Server.host, num_active_players,
-	     META_VERSION, world->name, world->x, world->y, world->author,
+	     META_VERSION, world.name, world.x, world.y, world.author,
 	     Num_bases(), FPS, options.contactPort,
-	     game_mode, world->NumTeamBases, freebases,
-	     world->rules->mode.get( TIMING) ? 1:0,
+	     game_mode, world.NumTeamBases, freebases,
+	     world.rules.mode.get( TIMING) ? 1:0,
 	     (long)(time(NULL) - serverStartTime),
 	     queue_length, options.sound ? "yes" : "no");
 
@@ -258,12 +258,12 @@ void Meta_update(bool change)
 	snprintf(str, sizeof(str),
 		 "%s%s=%s@%s",
 		 first ? "add players " : ",",
-		 pl->name,
-		 pl->username,
-		 pl->hostname);
+		 pl.name,
+		 pl.username,
+		 pl.hostname);
 
-	if (world->rules->mode.get( TEAM_PLAY)) {
-	    snprintf(tstr, sizeof(tstr), "{%d}", pl->team);
+	if (world.rules.mode.get( TEAM_PLAY)) {
+	    snprintf(tstr, sizeof(tstr), "{%d}", pl.team);
 	    strlcat(str, tstr, sizeof(str));
 	}
 

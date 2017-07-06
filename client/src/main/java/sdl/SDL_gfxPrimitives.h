@@ -168,8 +168,8 @@ extern "C" {
 
     DLLINTERFACE int characterColor(SDL_Surface * dst, Sint16 x, Sint16 y, char c, Uint32 color);
     DLLINTERFACE int characterRGBA(SDL_Surface * dst, Sint16 x, Sint16 y, char c, Uint8 r, Uint8 g, Uint8 b, Uint8 a);
-    DLLINTERFACE int stringColor(SDL_Surface * dst, Sint16 x, Sint16 y, char *c, Uint32 color);
-    DLLINTERFACE int stringRGBA(SDL_Surface * dst, Sint16 x, Sint16 y, char *c, Uint8 r, Uint8 g, Uint8 b, Uint8 a);
+    DLLINTERFACE int stringColor(SDL_Surface * dst, Sint16 x, Sint16 y, String c, Uint32 color);
+    DLLINTERFACE int stringRGBA(SDL_Surface * dst, Sint16 x, Sint16 y, String c, Uint8 r, Uint8 g, Uint8 b, Uint8 a);
 
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus

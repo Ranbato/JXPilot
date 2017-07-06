@@ -48,7 +48,7 @@ void process_bit_packed()
             if (!(count % width))
             {
 		/* end of row, skip over remaining bits
-                   to next char */
+                   to next String /
                 putchar('\n');
                 break;
             }
@@ -81,7 +81,7 @@ void process_ascii()
 int
 main()
 {
-    char *n;
+    String n;
     int bit_packed;
 
     while (fgets(buf, SIZE, stdin))

@@ -59,10 +59,10 @@ public static final int SERVER_PORT = 15345;		/* Port which server listens to. *
  * newer servers can support older clients.
  * The client maintains a 'version' variable indicating
  * the version of the server it has joined and the server
- * maintains for each connection a 'connection_t->version'
- * and a 'player->version' variable.
+ * maintains for each connection a 'connection_t.version'
+ * and a 'player.version' variable.
  * 3.0.4: the so-called 'pizza-mode' introduced a new packet type.
- * The score packet now also includes pl->mychar.
+ * The score packet now also includes pl.mychar.
  * 3.0.4.1: new laser weapon introduces another packet change.
  * Because there is an unofficial (and forbidden) 3.0.4 version floating
  * around the sub patchlevel number is used to distinguish versions.

@@ -33,7 +33,7 @@ XFontStruct *T_Font;
 Atom ProtocolAtom;
 Atom KillAtom;
 
-char *T_Background = COLOR_BACKGROUND,
+String T_Background = COLOR_BACKGROUND,
     *T_Highlight = COLOR_HIGHLIGHT,
     *T_Foreground = COLOR_FOREGROUND, *T_Shadow = COLOR_SHADOW;
 
@@ -45,7 +45,7 @@ char *T_Background = COLOR_BACKGROUND,
 /*           screennum, root_width, and root_height. Get toolkit GCs and   */
 /*           font.                                                         */
 /***************************************************************************/
-void T_ConnectToServer(char *display_name)
+void T_ConnectToServer(String display_name)
 {
     if (display_name == NULL) {
 	display_name = getenv("DISPLAY");
@@ -74,7 +74,7 @@ void T_ConnectToServer(char *display_name)
 /***************************************************************************/
 void T_CloseServerConnection(void)
 {
-    XUnloadFont(display, T_Font->fid);
+    XUnloadFont(display, T_Font.fid);
     XFreeGC(display, T_Back_GC);
     XFreeGC(display, T_Fore_GC);
     XFreeGC(display, T_Hlgt_GC);
@@ -89,9 +89,9 @@ void T_CloseServerConnection(void)
 /* Purpose : Unload old toolkit font and load a new one with the name      */
 /*           specified in the argument font.                               */
 /***************************************************************************/
-void T_SetToolkitFont(char *font)
+void T_SetToolkitFont(String font)
 {
-    XUnloadFont(display, T_Font->fid);
+    XUnloadFont(display, T_Font.fid);
     T_FontInit(&T_Font, font);
 }
 
@@ -103,7 +103,7 @@ void T_SetToolkitFont(char *font)
 /* Purpose : Set up a GC with the specified foreground color name, line    */
 /*           width 0. Return integer pixel value of allocated color.       */
 /***************************************************************************/
-int T_GetGC(GC * gc, char *foreground)
+int T_GetGC(GC * gc, String foreground)
 {
     XGCValues values;
     unsigned long valuemask;
@@ -139,7 +139,7 @@ int T_GetGC(GC * gc, char *foreground)
 /* Purpose : Load a font with the specified name into fontinfo. Return 0   */
 /*           if successful. If not, load font "9x15" and return 1.         */
 /***************************************************************************/
-int T_FontInit(XFontStruct ** fontinfo, char *fontname)
+int T_FontInit(XFontStruct ** fontinfo, String fontname)
 {
     if ((*fontinfo = XLoadQueryFont(display, fontname)) == NULL) {
 	*fontinfo = XLoadQueryFont(display, "9x15");
@@ -162,8 +162,8 @@ int T_FontInit(XFontStruct ** fontinfo, char *fontname)
 /*           height. Set background and foreground to bg and fg. Set       */
 /*           window hints such that the window cannot be resized.          */
 /***************************************************************************/
-Window T_MakeWindow(int x, int y, int width, int height, char *fg,
-		    char *bg)
+Window T_MakeWindow(int x, int y, int width, int height, String fg,
+		    String bg)
 {
     Window window;
     XColor color;
@@ -248,23 +248,23 @@ void T_SetWindowSizeLimits(Window window, int minwidth, int minheight,
 	exit(-1);
     }
 
-    sizeh->flags = PPosition | PSize;
+    sizeh.flags = PPosition | PSize;
     if ((maxwidth != 0) && (maxheight != 0)) {
-	sizeh->flags = sizeh->flags | PMaxSize;
-	sizeh->max_width = maxwidth;
-	sizeh->max_height = maxheight;
+	sizeh.flags = sizeh.flags | PMaxSize;
+	sizeh.max_width = maxwidth;
+	sizeh.max_height = maxheight;
     }
     if ((minwidth != 0) && (minheight != 0)) {
-	sizeh->flags = sizeh->flags | PMinSize;
-	sizeh->min_width = minwidth;
-	sizeh->min_height = minheight;
+	sizeh.flags = sizeh.flags | PMinSize;
+	sizeh.min_width = minwidth;
+	sizeh.min_height = minheight;
     }
     if ((aspectx != 0) && (aspecty != 0)) {
-	sizeh->flags = sizeh->flags | PAspect;
-	sizeh->max_aspect.x = aspectx;
-	sizeh->min_aspect.x = aspectx;
-	sizeh->max_aspect.y = aspecty;
-	sizeh->min_aspect.y = aspecty;
+	sizeh.flags = sizeh.flags | PAspect;
+	sizeh.max_aspect.x = aspectx;
+	sizeh.min_aspect.x = aspectx;
+	sizeh.max_aspect.y = aspecty;
+	sizeh.min_aspect.y = aspecty;
     }
     XSetWMNormalHints(display, window, sizeh);
     free(sizeh);
@@ -362,7 +362,7 @@ void T_PopButton(Window win, int x, int y, int width, int height,
 /* Purpose : Draw a button with a label string centered.                   */
 /***************************************************************************/
 void T_DrawTextButton(Window win, int x, int y, int width, int height,
-		      int zheight, char *string)
+		      int zheight, String string)
 {
     T_DrawButton(win, x, y, width, height, zheight, 1);
     if (string != NULL)
@@ -390,14 +390,14 @@ void T_DrawTextButton(Window win, int x, int y, int width, int height,
 /*           character at curpos unless cursorpos is negative.             */
 /***************************************************************************/
 void T_DrawString(Window win, int x, int y, int width, int height, GC gc,
-		  char *string, int justify, int crop, int cursorpos)
+		  String string, int justify, int crop, int cursorpos)
 {
     int length, c;
 
     c = cursorpos;
-    XSetFont(display, gc, T_Font->fid);
+    XSetFont(display, gc, T_Font.fid);
 
-    if (height < (T_Font->ascent + T_Font->descent))
+    if (height < (T_Font.ascent + T_Font.descent))
 	return;
 
     length = strlen(string);
@@ -421,7 +421,7 @@ void T_DrawString(Window win, int x, int y, int width, int height, GC gc,
     } else if (justify == JUSTIFY_RIGHT) {
 	x += width - XTextWidth(T_Font, string, length);
     }
-    y = y + height / 2 + (T_Font->ascent + T_Font->descent) * 0.35;
+    y = y + height / 2 + (T_Font.ascent + T_Font.descent) * 0.35;
 
     XDrawString(display, win, gc, x, y, string, length);
 
@@ -433,7 +433,7 @@ void T_DrawString(Window win, int x, int y, int width, int height, GC gc,
     XDrawString(display, win, gc,
 		(int) (x + XTextWidth(T_Font, string, cursorpos) -
 		       XTextWidth(T_Font, CURSOR_CHAR, 1) / 2),
-		(int) (y + (T_Font->ascent + T_Font->descent) * .7),
+		(int) (y + (T_Font.ascent + T_Font.descent) * .7),
 		CURSOR_CHAR, 1);
 }
 
@@ -452,14 +452,14 @@ void T_DrawString(Window win, int x, int y, int width, int height, GC gc,
 /*           constant BKGR.                                                */
 /***************************************************************************/
 void T_DrawText(Window win, int x, int y, int width, int height, GC gc,
-		char *text)
+		String text)
 {
     int length, last, h, line;
-    char *draw, *next, *curr;
+    String draw, *next, *curr;
 
-    XSetFont(display, gc, T_Font->fid);
+    XSetFont(display, gc, T_Font.fid);
 
-    h = (T_Font->ascent + T_Font->descent);
+    h = (T_Font.ascent + T_Font.descent);
     draw = next = curr = text;
     length = last = line = 0;
     while ((*curr) != '\0') {

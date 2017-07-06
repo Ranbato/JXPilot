@@ -117,7 +117,7 @@ void Bitmaps_cleanup(void)
  * Adds a new bitmap needed by the current map into global pixmaps.
  * Returns the index of the newly added bitmap in the array.
  */
-int Bitmap_add(char *filename, int count, bool scalable)
+int Bitmap_add(String filename, int count, bool scalable)
 {
     xp_pixmap_t pixmap;
 
@@ -138,36 +138,36 @@ int Bitmap_create(Drawable d, int img)
     int j;
     xp_pixmap_t *pix = &pixmaps[img];
 
-    if (pix->state == BMS_UNINITIALIZED)
+    if (pix.state == BMS_UNINITIALIZED)
 	Bitmap_init(img);
-    if (pix->state != BMS_INITIALIZED)
+    if (pix.state != BMS_INITIALIZED)
 	return -1;
 
 
-    for (j = 0; j < Math.abs(pix->count); j++) {
-	if (pix->scalable) {
-	    pix->width = UWINSCALE(pix->picture.width);
-	    pix->height = UWINSCALE(pix->picture.height);
+    for (j = 0; j < Math.abs(pix.count); j++) {
+	if (pix.scalable) {
+	    pix.width = UWINSCALE(pix.picture.width);
+	    pix.height = UWINSCALE(pix.picture.height);
 	}
 
 	if (Bitmap_create_begin(d, pix, j) == -1) {
-	    pix->state = BMS_ERROR;
+	    pix.state = BMS_ERROR;
 	    return -1;
 	}
 
-	if (pix->height == pix->picture.height &&
-	    pix->width == pix->picture.width) {
+	if (pix.height == pix.picture.height &&
+	    pix.width == pix.picture.width) {
 	    Bitmap_picture_copy(pix, j);
 	} else
 	    Bitmap_picture_scale(pix, j);
 
 	if (Bitmap_create_end(d) == -1) {
-	    pix->state = BMS_ERROR;
+	    pix.state = BMS_ERROR;
 	    return -1;
 	}
     }
 
-    pix->state = BMS_READY;
+    pix.state = BMS_READY;
 
     return 0;
 }
@@ -219,13 +219,13 @@ static void Bitmap_blend_with_color(int img, int bmp, int rgb)
     double x_scaled = 0.0, y_scaled  = 0.0, dx_scaled  = 0.0, dy_scaled = 0.0;
     xp_pixmap_t *pix = &pixmaps[img];
 
-    pix->bitmaps[bmp].rgb = rgb;
-    scaled = pix->height != pix->picture.height ||
-	pix->width != pix->picture.width;
+    pix.bitmaps[bmp].rgb = rgb;
+    scaled = pix.height != pix.picture.height ||
+	pix.width != pix.picture.width;
 
     if (scaled) {
-	dx_scaled = ((double)pix->picture.width) / pix->width;
-	dy_scaled = ((double)pix->picture.height) / pix->height;
+	dx_scaled = ((double)pix.picture.width) / pix.width;
+	dy_scaled = ((double)pix.picture.height) / pix.height;
 	y_scaled = 0;
     }
 
@@ -233,15 +233,15 @@ static void Bitmap_blend_with_color(int img, int bmp, int rgb)
     g2 = (rgb >> 8) & 0xff;
     b2 = rgb & 0xff;
     
-    for (y = 0; y < (int)pix->height; y++) {
+    for (y = 0; y < (int)pix.height; y++) {
 	if (scaled)
 	    x_scaled = 0;
-	for (x = 0; x < (int)pix->width; x++) {
+	for (x = 0; x < (int)pix.width; x++) {
 	    color = scaled ?
-		Picture_get_pixel_area(&(pix->picture), bmp,
+		Picture_get_pixel_area(&(pix.picture), bmp,
 				       x_scaled, y_scaled,
 				       dx_scaled, dy_scaled) :
-		Picture_get_pixel(&(pix->picture), bmp, x, y);
+		Picture_get_pixel(&(pix.picture), bmp, x, y);
 	    r = RED_VALUE(color) * r2 / 0xff;
 	    g = GREEN_VALUE(color) * g2 / 0xff;
 	    b = BLUE_VALUE(color) * b2 / 0xff;
@@ -336,15 +336,15 @@ static void Bitmap_picture_copy(xp_pixmap_t * xp_pixmap, int image)
     int x, y;
     RGB_COLOR color;
 
-    for (y = 0; y < (int)xp_pixmap->height; y++) {
-	for (x = 0; x < (int)xp_pixmap->width; x++) {
-	    color = Picture_get_pixel(&(xp_pixmap->picture), image, x, y);
+    for (y = 0; y < (int)xp_pixmap.height; y++) {
+	for (x = 0; x < (int)xp_pixmap.width; x++) {
+	    color = Picture_get_pixel(&(xp_pixmap.picture), image, x, y);
 	    Bitmap_set_pixel(xp_pixmap, image, x, y, color);
 	}
     }
 
     /* copy bounding box from original picture. */
-    xp_pixmap->bitmaps[image].bbox = xp_pixmap->picture.bbox[image];
+    xp_pixmap.bitmaps[image].bbox = xp_pixmap.picture.bbox[image];
 }
 
 
@@ -365,10 +365,10 @@ static void Bitmap_picture_scale(xp_pixmap_t * xp_pixmap, int image)
     double orig_height, orig_width;
     int height, width;
 
-    orig_height = xp_pixmap->picture.height;
-    orig_width = xp_pixmap->picture.width;
-    height = xp_pixmap->height;
-    width = xp_pixmap->width;
+    orig_height = xp_pixmap.picture.height;
+    orig_width = xp_pixmap.picture.width;
+    height = xp_pixmap.height;
+    width = xp_pixmap.width;
 
     dx_scaled = orig_width / width;
     dy_scaled = orig_height / height;
@@ -379,7 +379,7 @@ static void Bitmap_picture_scale(xp_pixmap_t * xp_pixmap, int image)
 	for (x = 0; x < width; x++) {
 	    color =
 		Picture_get_pixel_area
-		(&(xp_pixmap->picture), image,
+		(&(xp_pixmap.picture), image,
 		 x_scaled, y_scaled, dx_scaled, dy_scaled);
 
 	    Bitmap_set_pixel(xp_pixmap, image, x, y, color);
@@ -390,14 +390,14 @@ static void Bitmap_picture_scale(xp_pixmap_t * xp_pixmap, int image)
 
     /* scale bounding box as well. */
     {
-	bbox_t *src = &xp_pixmap->picture.bbox[image];
-	bbox_t *dst = &xp_pixmap->bitmaps[image].bbox;
+	bbox_t *src = &xp_pixmap.picture.bbox[image];
+	bbox_t *dst = &xp_pixmap.bitmaps[image].bbox;
 
-	dst->xmin = (int) ((width * src->xmin) / orig_width);
-	dst->ymin = (int) ((height * src->ymin) / orig_height);
-	dst->xmax = (int) (((width * src->xmax) + (orig_width - 1)) /
+	dst.xmin = (int) ((width * src.xmin) / orig_width);
+	dst.ymin = (int) ((height * src.ymin) / orig_height);
+	dst.xmax = (int) (((width * src.xmax) + (orig_width - 1)) /
 			   orig_width);
-	dst->ymax = (int) (((height * src->ymax) + (orig_height - 1)) /
+	dst.ymax = (int) (((height * src.ymax) + (orig_height - 1)) /
 			   orig_height);
     }
 }
@@ -416,12 +416,12 @@ void Bitmap_paint(Drawable d, int img, int x, int y, int bmp)
 
     if ((bit = Bitmap_get(d, img, bmp)) == NULL)
 	return;
-    box = &bit->bbox;
+    box = &bit.bbox;
 
-    area.x = box->xmin;
-    area.y = box->ymin;
-    area.w = box->xmax + 1 - box->xmin;
-    area.h = box->ymax + 1 - box->ymin;
+    area.x = box.xmin;
+    area.y = box.ymin;
+    area.w = box.xmax + 1 - box.xmin;
+    area.h = box.ymax + 1 - box.ymin;
 
     Bitmap_paint_area(d, bit, x + area.x, y + area.y, &area);
 }
@@ -438,12 +438,12 @@ void Bitmap_paint_blended(Drawable d, int img, int x, int y, int rgb)
 
     if ((bit = Bitmap_get_blended(d, img, rgb)) == NULL)
 	return;
-    box = &bit->bbox;
+    box = &bit.bbox;
 
-    area.x = box->xmin;
-    area.y = box->ymin;
-    area.w = box->xmax + 1 - box->xmin;
-    area.h = box->ymax + 1 - box->ymin;
+    area.x = box.xmin;
+    area.y = box.ymin;
+    area.w = box.xmax + 1 - box.xmin;
+    area.h = box.ymax + 1 - box.ymin;
 
     Bitmap_paint_area(d, bit, x + area.x, y + area.y, &area);
 }

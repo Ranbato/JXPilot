@@ -425,9 +425,9 @@ case "${UNAME_MACHINE}:${UNAME_SYSTEM}:${UNAME_RELEASE}:${UNAME_VERSION}" in
 	sed 's/^	//' << EOF >$dummy.c
 #ifdef __cplusplus
 #include <stdio.h>  /* for printf() prototype */
-	int main (int argc, char *argv[]) {
+	int main (int argc, String argv[]) {
 #else
-	int main (argc, argv) int argc; char *argv[]; {
+	int main (argc, argv) int argc; String argv[]; {
 #endif
 	#if defined (host_mips) && defined (MIPSEB)
 	#if defined (SYSTYPE_SYSV)

@@ -261,7 +261,7 @@ static void Alloc_map(void)
     map.fuzz_word = map.seed;
     map.linewidth = map.width + 1;
     map.datasize = map.linewidth * map.height;
-    map.data = (char *) malloc(map.datasize + 1);
+    map.data = (String ) malloc(map.datasize + 1);
     if (!map.data) {
 	printf("no mem\n");
 	exit(1);
@@ -293,46 +293,46 @@ static void Flood_map(int i)
 	return;
     }
     map.data[i] = map.flood_marker;
-    putp->next = NULL;
-    putp->n = 1;
-    putp->arr[0] = i;
+    putp.next = NULL;
+    putp.n = 1;
+    putp.arr[0] = i;
 
     for (getp = &intarr; getp != NULL; getp = tmpp) {
 
-	while (getp->n > 0) {
-	    k = getp->arr[--getp->n];
-	    if (putp->n + 4 > INTARR_SIZE) {
-		if ((putp->next = (struct int_arr *)
+	while (getp.n > 0) {
+	    k = getp.arr[--getp.n];
+	    if (putp.n + 4 > INTARR_SIZE) {
+		if ((putp.next = (struct int_arr *)
 				  malloc(sizeof(struct int_arr))) == NULL) {
 		    fprintf(stderr, "No mem\n");
 		    exit(1);
 		}
-		putp = putp->next;
-		putp->next = NULL;
-		putp->n = 0;
+		putp = putp.next;
+		putp.next = NULL;
+		putp.n = 0;
 	    }
 	    j = MAPOFFUP(k);
 	    if (map.data[j] == map.flood_trigger) {
 		map.data[j] = map.flood_marker;
-		putp->arr[putp->n++] = j;
+		putp.arr[putp.n++] = j;
 	    }
 	    j = MAPOFFLEFT(k);
 	    if (map.data[j] == map.flood_trigger) {
 		map.data[j] = map.flood_marker;
-		putp->arr[putp->n++] = j;
+		putp.arr[putp.n++] = j;
 	    }
 	    j = MAPOFFDOWN(k);
 	    if (map.data[j] == map.flood_trigger) {
 		map.data[j] = map.flood_marker;
-		putp->arr[putp->n++] = j;
+		putp.arr[putp.n++] = j;
 	    }
 	    j = MAPOFFRIGHT(k);
 	    if (map.data[j] == map.flood_trigger) {
 		map.data[j] = map.flood_marker;
-		putp->arr[putp->n++] = j;
+		putp.arr[putp.n++] = j;
 	    }
 	}
-	tmpp = getp->next;
+	tmpp = getp.next;
 	if (getp != &intarr) {
 	    free(getp);
 	}
@@ -1224,7 +1224,7 @@ static void Picture_map(void)
 	perror(name);
 	return;
     }
-    line = (unsigned char *)malloc(3 * map.width);
+    line = (unsigned String )malloc(3 * map.width);
     if (!line) {
 	perror("No memory for wildmap dump");
 	fclose(fp);

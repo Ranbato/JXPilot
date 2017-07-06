@@ -1,4 +1,4 @@
-/* 
+package org.xpilot.common;/*
  * XPilot NG, a multiplayer space war game.
  *
  * Copyright (C) 2000-2004 by
@@ -28,12 +28,11 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef CLICK_H
-#define CLICK_H
+import java.awt.*;
 
-#ifndef CONST_H
-# include "const.h"
-#endif
+import static org.xpilot.common.Const.BLOCK_SZ;
+
+public class Click{
 
 /*
  * The wall collision detection routines depend on repeatability
@@ -45,50 +44,41 @@
  * Therefore a fixed point sub-pixel resolution is used called clicks.
  */
 
-typedef int click_t;
+int cx;
+int cy;
 
-typedef struct {
-    click_t		cx, cy;
-} clpos_t;
 
-typedef struct {
-    click_t		cx, cy;
-} clvec_t;
-
-#define CLICK_SHIFT		6
-#define CLICK			(1 << CLICK_SHIFT)
-#define PIXEL_CLICKS		CLICK
-#define BLOCK_CLICKS		(BLOCK_SZ << CLICK_SHIFT)
-#define CLICK_TO_PIXEL(C)	((int)((C) >> CLICK_SHIFT))
-#define CLICK_TO_BLOCK(C)	((int)((C) / (BLOCK_SZ << CLICK_SHIFT)))
-#define CLICK_TO_FLOAT(C)	((double)(C) * (1.0 / CLICK))
-#define PIXEL_TO_CLICK(I)	((click_t)(I) << CLICK_SHIFT)
-#define FLOAT_TO_CLICK(F)	((int)((F) * CLICK))
+static final int CLICK_SHIFT	=	6;
+static final int CLICK		=	(1 << CLICK_SHIFT);
+    static final int PIXEL_CLICKS	=	CLICK;
+    static final int BLOCK_CLICKS	=	(BLOCK_SZ << CLICK_SHIFT);
+public int CLICK_TO_PIXEL(int C)	{return (int)((C) >> CLICK_SHIFT);}
+static int CLICK_TO_BLOCK(int C)	{return (int)((C) / (BLOCK_SZ << CLICK_SHIFT));}
+    public float CLICK_TO_FLOAT(int C)	{return (float)(C) * (1.0f / CLICK);}
+    public int PIXEL_TO_CLICK(int I)	{return (I) << CLICK_SHIFT;}
+    public int FLOAT_TO_CLICK(float F)	{return (int)((F) * CLICK);}
 
 /*
- * Return the block position this click position is in.
+ * Return the block position this click position is in.Math.
  */
-static inline Dimension Clpos_to_blkpos(clpos_t pos)
+static Dimension Clpos_to_blkpos(Click  pos)
 {
-    Dimension bpos;
-
-    bpos.bx = CLICK_TO_BLOCK(pos.cx);
-    bpos.by = CLICK_TO_BLOCK(pos.cy);
+    Dimension bpos = new Dimension(CLICK_TO_BLOCK(pos.cx),CLICK_TO_BLOCK(pos.cy));
 
     return bpos;
 }
 
-#define BLOCK_CENTER(B) ((int)((B) * BLOCK_CLICKS) + BLOCK_CLICKS / 2)
+static int BLOCK_CENTER(int B) {return (int)((B) * BLOCK_CLICKS) + BLOCK_CLICKS / 2;}
 
 /* calculate the clpos of the center of a block */
-static inline clpos_t Block_get_center_clpos(Dimension bpos)
+static  Click  Block_get_center_clpos(Dimension bpos)
 {
-    clpos_t pos;
+    Click  pos = new Click();
 
-    pos.cx = (bpos.bx * BLOCK_CLICKS) + BLOCK_CLICKS / 2;
-    pos.cy = (bpos.by * BLOCK_CLICKS) + BLOCK_CLICKS / 2;
+    pos.cx = (int) ((bpos.getWidth() * BLOCK_CLICKS) + BLOCK_CLICKS / 2);
+    pos.cy = (int) ((bpos.getHeight() * BLOCK_CLICKS) + BLOCK_CLICKS / 2);
 
     return pos;
 }
 
-#endif
+}

@@ -39,20 +39,20 @@ int Widget_create_form(int parent_desc, Window parent_window,
 int Widget_create_activate(int parent_desc,
 			   int x, int y, int width, int height,
 			   int border,
-			   const char *str,
-			   int (*callback)(int, void *, const char **),
+			   String str,
+			   int (*callback)(int, void *, String *),
 			   void *user_data);
 int Widget_create_bool(int parent_desc,
 		       int x, int y, int width, int height,
 		       int border,
 		       bool val, int (*callback)(int, void *, bool *),
 		       void *user_data);
-int Widget_add_pulldown_entry(int menu_desc, const char *str,
-			      int (*callback)(int, void *, const char **),
+int Widget_add_pulldown_entry(int menu_desc, String str,
+			      int (*callback)(int, void *, String *),
 			      void *user_data);
 int Widget_create_menu(int parent_desc,
 		       int x, int y, int width, int height,
-		       int border, const char *str);
+		       int border, String str);
 int Widget_create_int(int parent_desc,
 		      int x, int y, int width, int height,
 		      int border, int *val, int min, int max,
@@ -71,12 +71,12 @@ int Widget_create_double(int parent_desc,
 int Widget_create_label(int parent_desc,
 			int x, int y,
 			int width, int height, bool centered,
-			int border, const char *str);
+			int border, String str);
 int Widget_create_colored_label(int parent_desc,
 				int x, int y,
 				int width, int height, bool centered,
 				int border, int bg, int bord,
-				const char *str);
+				String str);
 int Widget_create_arrow_right(int parent_desc, int x, int y,
 			      int width, int height,
 			      int border,
@@ -85,9 +85,9 @@ int Widget_create_arrow_left(int parent_desc, int x, int y,
 			     int width, int height,
 			     int border, int related_desc);
 int Widget_create_popup(int width, int height, int border,
-			const char *window_name, const char *icon_name);
-int Widget_create_confirm(const char *confirm_str,
-			  int (*callback)(int, void *, const char **));
+			String window_name, String icon_name);
+int Widget_create_confirm(String confirm_str,
+			  int (*callback)(int, void *, String *));
 int Widget_backing_store(int widget_desc, int mode);
 int Widget_set_background(int widget_desc, int bgcolor);
 int Widget_map_sub(int widget_desc);
@@ -95,10 +95,10 @@ int Widget_map(int widget_desc);
 int Widget_raise(int widget_desc);
 int Widget_get_dimensions(int widget_desc, int *width, int *height);
 int Widget_unmap(int widget_desc);
-int Widget_create_viewer(const char *buf, int len,
+int Widget_create_viewer(String buf, int len,
 			 int width, int height, int border,
-			 const char *window_name, const char *icon_name,
+			 String window_name, String icon_name,
 			 XFontStruct *font);
-int Widget_update_viewer(int popup_desc, const char *buf, int len);
+int Widget_update_viewer(int popup_desc, String buf, int len);
 
 #endif

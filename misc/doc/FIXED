@@ -72,7 +72,7 @@
 	pixels of the edge?
 <WORK>	930912: bert
 	The problem is that when the center of a player is close to the edge
-	then the expression "shot->pos = pl->pos + ships[dir].pts[0]" may
+	then the expression "shot.pos = pl.pos + ships[dir].pts[0]" may
 	result in a value bigger than the mapwidth/height.
 
 <BUG>	009

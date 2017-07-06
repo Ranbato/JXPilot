@@ -52,14 +52,14 @@ extern "C" {
     extern int received_self;
 
 /* requests from the xpilot "real code" to mfc */
-    extern void _Trace(char *lpszFormat, ...);
-    extern const char *mfcDoTalkWindow();
+    extern void _Trace(String lpszFormat, ...);
+    extern String mfcDoTalkWindow();
 
 #ifdef	_DEBUG
     extern void xpmemShutdown();
 #endif
 
-    extern void Progress(const char *s, ...);
+    extern void Progress(String s, ...);
 
 #ifdef __cplusplus
 };

@@ -32,7 +32,7 @@ int sock_closeRec(sock_t *sock)
 }
 
 
-int sock_connectRec(sock_t *sock, char *host, int port)
+int sock_connectRec(sock_t *sock, String host, int port)
 {
     int i;
 
@@ -65,7 +65,7 @@ int sock_get_last_portRec(sock_t *sock)
 }
 
 
-int sock_receive_anyRec(sock_t *sock, char *rbuf, int size)
+int sock_receive_anyRec(sock_t *sock, String rbuf, int size)
 {
     int i;
 
@@ -93,7 +93,7 @@ int sock_receive_anyRec(sock_t *sock, char *rbuf, int size)
 }
 
 
-int sock_readRec(sock_t *sock, char *rbuf, int size)
+int sock_readRec(sock_t *sock, String rbuf, int size)
 {
     int i;
 
@@ -121,7 +121,7 @@ int sock_readRec(sock_t *sock, char *rbuf, int size)
 }
 
 
-int sock_writeRec(sock_t *sock, char *wbuf, int size)
+int sock_writeRec(sock_t *sock, String wbuf, int size)
 {
     int i;
 
@@ -167,30 +167,30 @@ int Sockbuf_flushRec(sockbuf_t *sbuf)
     int			len,
 	i;
 
-    if (sbuf->state.get( SOCKBUF_WRITE) == 0) {
+    if (sbuf.state.get( SOCKBUF_WRITE) == 0) {
 	warn("No flush on non-writable socket buffer");
 	warn("(state=%02x,buf=%08x,ptr=%08x,size=%d,len=%d,sock=%d)",
-	      sbuf->state, sbuf->buf, sbuf->ptr, sbuf->size, sbuf->len,
-	      sbuf->sock);
+	      sbuf.state, sbuf.buf, sbuf.ptr, sbuf.size, sbuf.len,
+	      sbuf.sock);
 	return -1;
     }
-    if (sbuf->state.get( SOCKBUF_LOCK) != 0) {
-	warn("No flush on locked socket buffer (0x%02x)", sbuf->state);
+    if (sbuf.state.get( SOCKBUF_LOCK) != 0) {
+	warn("No flush on locked socket buffer (0x%02x)", sbuf.state);
 	return -1;
     }
-    if (sbuf->len <= 0) {
-	if (sbuf->len < 0) {
+    if (sbuf.len <= 0) {
+	if (sbuf.len < 0) {
 	    warn("Write socket buffer length negative");
-	    sbuf->len = 0;
-	    sbuf->ptr = sbuf->buf;
+	    sbuf.len = 0;
+	    sbuf.ptr = sbuf.buf;
 	}
 	return 0;
     }
 
-    if (sbuf->state.get( SOCKBUF_DGRAM) != 0) {
+    if (sbuf.state.get( SOCKBUF_DGRAM) != 0) {
 	errno = 0;
 	i = 0;
-	while ((len = sock_writeRec(&sbuf->sock, sbuf->buf, sbuf->len)) <= 0) {
+	while ((len = sock_writeRec(&sbuf.sock, sbuf.buf, sbuf.len)) <= 0) {
 	    if (len == 0
 		|| errno == EWOULDBLOCK
 		|| errno == EAGAIN) {
@@ -202,7 +202,7 @@ int Sockbuf_flushRec(sockbuf_t *sbuf)
 		continue;
 	    }
 	    if (++i > MAX_SOCKBUF_RETRIES) {
-		error("Can't send on socket (%d,%d)", sbuf->sock, sbuf->len);
+		error("Can't send on socket (%d,%d)", sbuf.sock, sbuf.len);
 		Sockbuf_clear(sbuf);
 		return -1;
 	    }
@@ -211,20 +211,20 @@ int Sockbuf_flushRec(sockbuf_t *sbuf)
 		error("send (%d)", i);
 	    }
 	    }
-	    if (sock_get_errorRec(&sbuf->sock) == -1) {
+	    if (sock_get_errorRec(&sbuf.sock) == -1) {
 		error("sock_get_error send");
 		return -1;
 	    }
 	    errno = 0;
 	}
-	if (len != sbuf->len) {
+	if (len != sbuf.len) {
 	    errno = 0;
-	    error("Can't write complete datagram (%d,%d)", len, sbuf->len);
+	    error("Can't write complete datagram (%d,%d)", len, sbuf.len);
 	}
 	Sockbuf_clear(sbuf);
     } else {
 	errno = 0;
-	while ((len = sock_writeRec(&sbuf->sock, sbuf->buf, sbuf->len)) <= 0) {
+	while ((len = sock_writeRec(&sbuf.sock, sbuf.buf, sbuf.len)) <= 0) {
 	    if (errno == EINTR) {
 		errno = 0;
 		continue;
@@ -248,28 +248,28 @@ int Sockbuf_readRec(sockbuf_t *sbuf)
 	i,
 	len;
 
-    if (sbuf->state.get( SOCKBUF_READ) == 0) {
-	warn("No read from non-readable socket buffer (%d)", sbuf->state);
+    if (sbuf.state.get( SOCKBUF_READ) == 0) {
+	warn("No read from non-readable socket buffer (%d)", sbuf.state);
 	return -1;
     }
-    if (sbuf->state.get( SOCKBUF_LOCK) != 0) {
+    if (sbuf.state.get( SOCKBUF_LOCK) != 0) {
 	return 0;
     }
-    if (sbuf->ptr > sbuf->buf) {
-	Sockbuf_advance(sbuf, sbuf->ptr - sbuf->buf);
+    if (sbuf.ptr > sbuf.buf) {
+	Sockbuf_advance(sbuf, sbuf.ptr - sbuf.buf);
     }
-    if ((max = sbuf->size - sbuf->len) <= 0) {
+    if ((max = sbuf.size - sbuf.len) <= 0) {
 	static int before;
 	if (before++ == 0) {
 	    warn("Read socket buffer not big enough (%d,%d)",
-		  sbuf->size, sbuf->len);
+		  sbuf.size, sbuf.len);
 	}
 	return -1;
     }
-    if (sbuf->state.get( SOCKBUF_DGRAM) != 0) {
+    if (sbuf.state.get( SOCKBUF_DGRAM) != 0) {
 	errno = 0;
 	i = 0;
-	while ((len = sock_readRec(&sbuf->sock, sbuf->buf + sbuf->len, max)) <= 0) {
+	while ((len = sock_readRec(&sbuf.sock, sbuf.buf + sbuf.len, max)) <= 0) {
 	    if (len == 0) {
 		return 0;
 	    }
@@ -293,16 +293,16 @@ int Sockbuf_readRec(sockbuf_t *sbuf)
 		error("recv (%d)", i);
 	    }
 	    }
-	    if (sock_get_errorRec(&sbuf->sock) == -1) {
+	    if (sock_get_errorRec(&sbuf.sock) == -1) {
 		error("sock_get_error recv");
 		return -1;
 	    }
 	    errno = 0;
 	}
-	sbuf->len += len;
+	sbuf.len += len;
     } else {
 	errno = 0;
-	while ((len = sock_readRec(&sbuf->sock, sbuf->buf + sbuf->len, max)) <= 0) {
+	while ((len = sock_readRec(&sbuf.sock, sbuf.buf + sbuf.len, max)) <= 0) {
 	    if (len == 0) {
 		return 0;
 	    }
@@ -317,32 +317,32 @@ int Sockbuf_readRec(sockbuf_t *sbuf)
 	    }
 	    return 0;
 	}
-	sbuf->len += len;
+	sbuf.len += len;
     }
 
-    return sbuf->len;
+    return sbuf.len;
 }
 
 
-int Sockbuf_writeRec(sockbuf_t *sbuf, char *buf, int len)
+int Sockbuf_writeRec(sockbuf_t *sbuf, String buf, int len)
 {
-    if (sbuf->state.get( SOCKBUF_WRITE) == 0) {
+    if (sbuf.state.get( SOCKBUF_WRITE) == 0) {
 	warn("No write to non-writable socket buffer");
 	return -1;
     }
-    if (sbuf->size - sbuf->len < len) {
-	if (sbuf->state.get( SOCKBUF_LOCK | SOCKBUF_DGRAM) != 0) {
+    if (sbuf.size - sbuf.len < len) {
+	if (sbuf.state.get( SOCKBUF_LOCK | SOCKBUF_DGRAM) != 0) {
 	    warn("No write to locked socket buffer (%d,%d,%d,%d)",
-		  sbuf->state, sbuf->size, sbuf->len, len);
+		  sbuf.state, sbuf.size, sbuf.len, len);
 	    return -1;
 	}
 	if (Sockbuf_flushRec(sbuf) == -1)
 	    return -1;
-	if (sbuf->size - sbuf->len < len)
+	if (sbuf.size - sbuf.len < len)
 	    return 0;
     }
-    memcpy(sbuf->buf + sbuf->len, buf, (size_t)len);
-    sbuf->len += len;
+    memcpy(sbuf.buf + sbuf.len, buf, (size_t)len);
+    sbuf.len += len;
 
     return len;
 }

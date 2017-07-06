@@ -89,23 +89,23 @@ void CXPreplayDoc::Serialize(CArchive& ar)
 		frm = rc.head;
 
 		char	*headerbuf;
-		headerbuf = new char[frm->filepos];
-		file.Read(headerbuf, frm->filepos);
-		ar.Write(headerbuf, frm->filepos);
+		headerbuf = new char[frm.filepos];
+		file.Read(headerbuf, frm.filepos);
+		ar.Write(headerbuf, frm.filepos);
 		delete[] headerbuf;
 
-		while(minSelection != frm->number)
-			frm = frm->next;
+		while(minSelection != frm.number)
+			frm = frm.next;
 
-		min = frm->filepos;
+		min = frm.filepos;
 
-		while(maxSelection != frm->number)
-			frm = frm->next;
+		while(maxSelection != frm.number)
+			frm = frm.next;
 
 		if(frm == rc.tail)
 			max = file.GetLength();
 		else
-			max = frm->next->filepos;
+			max = frm.next.filepos;
 
 		file.Seek(min, CFile::begin);
 
@@ -123,43 +123,43 @@ void CXPreplayDoc::Serialize(CArchive& ar)
 //		Now that the file is written, show the new file
 
 		frm = rc.head;
-		offset = frm->filepos;
+		offset = frm.filepos;
 
-		while(frm->number != minSelection)
+		while(frm.number != minSelection)
 		{
 			FreeShapes(frm);
-			frm = frm->next;
-			delete frm->prev;
+			frm = frm.next;
+			delete frm.prev;
 		}
-		frm->prev = NULL;
+		frm.prev = NULL;
 		rc.head = frm;
 		rc.cur = frm;
-		offset = frm->filepos - offset;
+		offset = frm.filepos - offset;
 
 		frm = rc.tail;
 
-		while(frm->number != maxSelection)
+		while(frm.number != maxSelection)
 		{
 			FreeShapes(frm);
-			frm = frm->prev;
-			delete frm->next;
+			frm = frm.prev;
+			delete frm.next;
 		}
-		frm->next = NULL;
+		frm.next = NULL;
 		rc.tail = frm;
 
 		frm = rc.head;
 		frame_count = 0;
 		while(frm)
 		{
-			frm->number = frame_count++;
-			frm->filepos -= offset;
-			frm = frm->next;
+			frm.number = frame_count++;
+			frm.filepos -= offset;
+			frm = frm.next;
 		}
 
 		minSelection = 0;
 		maxSelection = frame_count - 1;
 		UpdateAllViews(NULL);
-		filename = ar.GetFile()->GetFilePath();
+		filename = ar.GetFile().GetFilePath();
 
 		EndWaitCursor();
 	}
@@ -190,7 +190,7 @@ void CXPreplayDoc::Serialize(CArchive& ar)
 
 		max.x -= 20;
 		max.y -= 20;
-		filename = ar.GetFile()->GetFilePath();
+		filename = ar.GetFile().GetFilePath();
 		docOpened = 1;
 		EndWaitCursor();
 	}
@@ -216,12 +216,12 @@ void CXPreplayDoc::Dump(CDumpContext& dc) const
 
 void CXPreplayDoc::OnUpdateFileSave(CCmdUI* pCmdUI) 
 {
-	pCmdUI->Enable(docOpened);
+	pCmdUI.Enable(docOpened);
 }
 
 void CXPreplayDoc::OnUpdateFileSaveAs(CCmdUI* pCmdUI) 
 {
-	pCmdUI->Enable(docOpened);
+	pCmdUI.Enable(docOpened);
 }
 
 void CXPreplayDoc::ReadHeader(CArchive& ar)
@@ -310,10 +310,10 @@ void CXPreplayDoc::ReadHeader(CArchive& ar)
 	PropDlg.m_recorddate = rc.recorddate;
 }
 
-char *CXPreplayDoc::ReadString(CArchive& ar)
+String CXPreplayDoc::ReadString(CArchive& ar)
 {
 	unsigned short len;
-	char *string;
+	String string;
 
 	ar >> len;
 	string = new char[len + 1];
@@ -330,8 +330,8 @@ char *CXPreplayDoc::ReadString(CArchive& ar)
 void CXPreplayDoc::ReadFont(CArchive& ar, char **fontname, int *fontsize)
 {
 	unsigned short len;
-	char *string;
-	char *pointer;
+	String string;
+	String pointer;
 	int i;
 
 	ar >> len;
@@ -417,27 +417,27 @@ void CXPreplayDoc::ReadNextFrame(CArchive& ar)
 	f = new struct frame;
 
 	ar.Flush();
-	f->filepos = ar.GetFile()->GetPosition() - 1;	// starting at RC_NEWFRAME
-	ar >> f->width;
-	ar >> f->height;
-	f->shapes = NULL;
-	f->next = NULL;
-	f->prev = NULL;
-	f->number = frame_count;
+	f.filepos = ar.GetFile().GetPosition() - 1;	// starting at RC_NEWFRAME
+	ar >> f.width;
+	ar >> f.height;
+	f.shapes = NULL;
+	f.next = NULL;
+	f.prev = NULL;
+	f.number = frame_count;
 
 	ReadFrameData(ar, f);
 
 	if (rc.tail == NULL)
 	{
-		f->next = NULL;
-		f->prev = NULL;
+		f.next = NULL;
+		f.prev = NULL;
 		rc.tail = rc.head = rc.cur = f;
 	}
 	else
 	{
-		f->prev = rc.tail;
-		f->next = NULL;
-		rc.tail->next = f;
+		f.prev = rc.tail;
+		f.next = NULL;
+		rc.tail.next = f;
 		rc.tail = f;
 	}
 
@@ -493,8 +493,8 @@ void CXPreplayDoc::ReadFrameData(CArchive &ar, struct frame *f)
 		case RC_DRAWSEGMENTS:
 		case RC_DAMAGED:
 			newshp = new struct rShape;
-			newshp->next = NULL;
-			newshp->type = 0;
+			newshp.next = NULL;
+			newshp.type = 0;
 
 			if (shp == NULL)
 			{
@@ -503,41 +503,41 @@ void CXPreplayDoc::ReadFrameData(CArchive &ar, struct frame *f)
 			}
 			else
 			{
-				shp->next = newshp;
-				shp = shp->next;
+				shp.next = newshp;
+				shp = shp.next;
 			}
-			shp->type = c;
-			shp->gc = ReadGCValues(ar);
+			shp.type = c;
+			shp.gc = ReadGCValues(ar);
 
 			switch (c)
 			{
 			case RC_DRAWARC:
 			case RC_FILLARC:
-				ar >> shp->shape.arc.x1;
-				ar >> shp->shape.arc.y1;
-				SetMaxX(shp->shape.arc.x1);
-				SetMaxY(shp->shape.arc.y1);
+				ar >> shp.shape.arc.x1;
+				ar >> shp.shape.arc.y1;
+				SetMaxX(shp.shape.arc.x1);
+				SetMaxY(shp.shape.arc.y1);
 
 				ar >> width;
 				ar >> height;
-				shp->shape.arc.x2 = shp->shape.arc.x1 + width;
-				shp->shape.arc.y2 = shp->shape.arc.y1 + height;
-				SetMaxX(shp->shape.arc.x2);
-				SetMaxY(shp->shape.arc.y2);
+				shp.shape.arc.x2 = shp.shape.arc.x1 + width;
+				shp.shape.arc.y2 = shp.shape.arc.y1 + height;
+				SetMaxX(shp.shape.arc.x2);
+				SetMaxY(shp.shape.arc.y2);
 
 				ar >> angle1;
 				ar >> angle2;
-				shp->shape.arc.x3 = shp->shape.arc.x1 + width/2 + (int)(100*cos((double)angle1 / 3666.93));
-				shp->shape.arc.y3 = shp->shape.arc.y1 + height/2 + (int)(100*sin((double)angle1 / 3666.93));
-				shp->shape.arc.x4 = shp->shape.arc.x1 + width/2 + (int)(100*cos((angle1 + angle2 + 64) / 3666.93));
-				shp->shape.arc.y4 = shp->shape.arc.y1 + height/2 + (int)(100*sin((angle1 + angle2 + 64) / 3666.93));
+				shp.shape.arc.x3 = shp.shape.arc.x1 + width/2 + (int)(100*cos((double)angle1 / 3666.93));
+				shp.shape.arc.y3 = shp.shape.arc.y1 + height/2 + (int)(100*sin((double)angle1 / 3666.93));
+				shp.shape.arc.x4 = shp.shape.arc.x1 + width/2 + (int)(100*cos((angle1 + angle2 + 64) / 3666.93));
+				shp.shape.arc.y4 = shp.shape.arc.y1 + height/2 + (int)(100*sin((angle1 + angle2 + 64) / 3666.93));
 				break;
 
 			case RC_DRAWLINES:
 				ar >> ushort;
-				shp->shape.lines.npoints = ushort;
+				shp.shape.lines.npoints = ushort;
 				xpp = new CPoint[ushort];
-				shp->shape.lines.points = xpp;
+				shp.shape.lines.points = xpp;
 				while (ushort--)
 				{
 					short x, y;
@@ -546,55 +546,55 @@ void CXPreplayDoc::ReadFrameData(CArchive &ar, struct frame *f)
 
 					SetMaxX(x);
 					SetMaxY(y);
-					xpp->x = x;
-					xpp->y = y;
+					xpp.x = x;
+					xpp.y = y;
 					xpp++;
 				}
 				ar >> byte;
-				shp->shape.lines.mode = byte;
+				shp.shape.lines.mode = byte;
 				if(byte)
 				{
-					for(int i = 1; i < shp->shape.lines.npoints; i++)
+					for(int i = 1; i < shp.shape.lines.npoints; i++)
 					{
-						shp->shape.lines.points[i] += shp->shape.lines.points[i-1];
+						shp.shape.lines.points[i] += shp.shape.lines.points[i-1];
 					}
 				}
 				break;
 
 			case RC_DRAWLINE:
-				ar >> shp->shape.line.x1;
-				ar >> shp->shape.line.y1;
-				ar >> shp->shape.line.x2;
-				ar >> shp->shape.line.y2;
-				SetMaxX(shp->shape.line.x1);
-				SetMaxY(shp->shape.line.y1);
-				SetMaxX(shp->shape.line.x2);
-				SetMaxY(shp->shape.line.y2);
+				ar >> shp.shape.line.x1;
+				ar >> shp.shape.line.y1;
+				ar >> shp.shape.line.x2;
+				ar >> shp.shape.line.y2;
+				SetMaxX(shp.shape.line.x1);
+				SetMaxY(shp.shape.line.y1);
+				SetMaxX(shp.shape.line.x2);
+				SetMaxY(shp.shape.line.y2);
 				break;
 
 			case RC_DRAWRECTANGLE:
 			case RC_FILLRECTANGLE:
-				ar >> shp->shape.rectangle.x;
-				ar >> shp->shape.rectangle.y;
-				SetMaxX(shp->shape.rectangle.x);
-				SetMaxY(shp->shape.rectangle.y);
+				ar >> shp.shape.rectangle.x;
+				ar >> shp.shape.rectangle.y;
+				SetMaxX(shp.shape.rectangle.x);
+				SetMaxY(shp.shape.rectangle.y);
 				ar >> byte;
-				shp->shape.rectangle.width = (unsigned short)byte;
+				shp.shape.rectangle.width = (unsigned short)byte;
 				ar >> byte;
-				shp->shape.rectangle.height = (unsigned short)byte;
-				SetMaxX(shp->shape.rectangle.x + shp->shape.rectangle.width);
-				SetMaxY(shp->shape.rectangle.y + shp->shape.rectangle.height);
+				shp.shape.rectangle.height = (unsigned short)byte;
+				SetMaxX(shp.shape.rectangle.x + shp.shape.rectangle.width);
+				SetMaxY(shp.shape.rectangle.y + shp.shape.rectangle.height);
 				break;
 
 			case RC_DRAWSTRING:
-				ar >> shp->shape.string.x;
-				ar >> shp->shape.string.y;
-				ar >> shp->shape.string.font;
+				ar >> shp.shape.string.x;
+				ar >> shp.shape.string.y;
+				ar >> shp.shape.string.font;
 
 				ar >> ushort;
-				shp->shape.string.length = ushort;
+				shp.shape.string.length = ushort;
 				cp = new char[ushort + 1];
-				shp->shape.string.string = cp;
+				shp.shape.string.string = cp;
 				while (ushort--)
 				{
 					ar >> byte;
@@ -606,9 +606,9 @@ void CXPreplayDoc::ReadFrameData(CArchive &ar, struct frame *f)
 
 			case RC_FILLPOLYGON:
 				ar >> ushort;
-				shp->shape.polygon.npoints = ushort;
+				shp.shape.polygon.npoints = ushort;
 				xpp = new CPoint[ushort];
-				shp->shape.polygon.points = xpp;
+				shp.shape.polygon.points = xpp;
 				while (ushort--)
 				{
 					short x, y;
@@ -617,27 +617,27 @@ void CXPreplayDoc::ReadFrameData(CArchive &ar, struct frame *f)
 					SetMaxX(x);
 					SetMaxY(y);
 
-					xpp->x = x;
-					xpp->y = y;
+					xpp.x = x;
+					xpp.y = y;
 					xpp++;
 				}
-				ar >> shp->shape.polygon.shape;
-				ar >> shp->shape.polygon.mode;
+				ar >> shp.shape.polygon.shape;
+				ar >> shp.shape.polygon.mode;
 				break;
 
 			case RC_PAINTITEMSYMBOL:
-				ar >> shp->shape.symbol.type;
-				ar >> shp->shape.symbol.x;
-				ar >> shp->shape.symbol.y;
-				SetMaxX(shp->shape.symbol.x);
-				SetMaxY(shp->shape.symbol.y);
+				ar >> shp.shape.symbol.type;
+				ar >> shp.shape.symbol.x;
+				ar >> shp.shape.symbol.y;
+				SetMaxX(shp.shape.symbol.x);
+				SetMaxY(shp.shape.symbol.y);
 				break;
 
 			case RC_FILLRECTANGLES:
 				ar >> ushort;
-				shp->shape.rectangles.nrectangles = ushort;
+				shp.shape.rectangles.nrectangles = ushort;
 				xrp = new CRect[ushort+1];
-				shp->shape.rectangles.rectangles = xrp;
+				shp.shape.rectangles.rectangles = xrp;
 				while (ushort--)
 				{
 					short x, y;
@@ -651,50 +651,50 @@ void CXPreplayDoc::ReadFrameData(CArchive &ar, struct frame *f)
 					ar >> byte;
 					height = (unsigned short)byte;
 
-					xrp->left = x;
-					xrp->top = y;
-					xrp->right = x + width;
-					xrp->bottom = y + height;
-					SetMaxX(xrp->right);
-					SetMaxY(xrp->bottom);
+					xrp.left = x;
+					xrp.top = y;
+					xrp.right = x + width;
+					xrp.bottom = y + height;
+					SetMaxX(xrp.right);
+					SetMaxY(xrp.bottom);
 					xrp++;
 				}
 				break;
 
 			case RC_DRAWARCS:
 				ar >> ushort;
-				shp->shape.arcs.narcs = ushort;
+				shp.shape.arcs.narcs = ushort;
 				xap = new rArc[ushort];
-				shp->shape.arcs.arcs = xap;
+				shp.shape.arcs.arcs = xap;
 				while (ushort--)
 				{
-					ar >> xap->x1;
-					ar >> xap->y1;
-					SetMaxX(xap->x1);
-					SetMaxY(xap->y1);
+					ar >> xap.x1;
+					ar >> xap.y1;
+					SetMaxX(xap.x1);
+					SetMaxY(xap.y1);
 
 					ar >> width;
 					ar >> height;
-					xap->x2 = xap->x1 + width;
-					xap->y2 = xap->y1 + height;
-					SetMaxX(xap->x2);
-					SetMaxY(xap->y2);
+					xap.x2 = xap.x1 + width;
+					xap.y2 = xap.y1 + height;
+					SetMaxX(xap.x2);
+					SetMaxY(xap.y2);
 
 					ar >> angle1;
 					ar >> angle2;
 					if(angle2 == 19200)
 					{
-						xap->x3 = xap->x1 + width/2 + (int)(100*cos((angle1 + angle2 + 64) / 3666.93));
-						xap->y3 = xap->y1 + height/2 + (int)(100*sin((angle1 + angle2 + 64) / 3666.93));
-						xap->x4 = xap->x1 + width/2 + (int)(100*cos((double)angle1 / 3666.93));
-						xap->y4 = xap->y1 + height/2 + (int)(100*sin((double)angle1 / 3666.93));
+						xap.x3 = xap.x1 + width/2 + (int)(100*cos((angle1 + angle2 + 64) / 3666.93));
+						xap.y3 = xap.y1 + height/2 + (int)(100*sin((angle1 + angle2 + 64) / 3666.93));
+						xap.x4 = xap.x1 + width/2 + (int)(100*cos((double)angle1 / 3666.93));
+						xap.y4 = xap.y1 + height/2 + (int)(100*sin((double)angle1 / 3666.93));
 					}
 					else
 					{
-						xap->x3 = xap->x1 + width/2 + (int)(100*cos((double)angle1 / 3666.93));
-						xap->y3 = xap->y1 + height/2 + (int)(100*sin((double)angle1 / 3666.93));
-						xap->x4 = xap->x1 + width/2 + (int)(100*cos((angle1 + angle2 + 64) / 3666.93));
-						xap->y4 = xap->y1 + height/2 + (int)(100*sin((angle1 + angle2 + 64) / 3666.93));
+						xap.x3 = xap.x1 + width/2 + (int)(100*cos((double)angle1 / 3666.93));
+						xap.y3 = xap.y1 + height/2 + (int)(100*sin((double)angle1 / 3666.93));
+						xap.x4 = xap.x1 + width/2 + (int)(100*cos((angle1 + angle2 + 64) / 3666.93));
+						xap.y4 = xap.y1 + height/2 + (int)(100*sin((angle1 + angle2 + 64) / 3666.93));
 					}
 					xap++;
 				}
@@ -702,25 +702,25 @@ void CXPreplayDoc::ReadFrameData(CArchive &ar, struct frame *f)
 
 			case RC_DRAWSEGMENTS:
 				ar >> ushort;
-				shp->shape.segments.nsegments = ushort;
+				shp.shape.segments.nsegments = ushort;
 				xsp = new rSegment[ushort+1];
-				shp->shape.segments.segments = xsp;
+				shp.shape.segments.segments = xsp;
 				while (ushort--)
 				{
-					ar >> xsp->x1;
-					ar >> xsp->y1;
-					ar >> xsp->x2;
-					ar >> xsp->y2;
-					SetMaxX(xsp->x1);
-					SetMaxY(xsp->y1);
-					SetMaxX(xsp->x2);
-					SetMaxY(xsp->y2);
+					ar >> xsp.x1;
+					ar >> xsp.y1;
+					ar >> xsp.x2;
+					ar >> xsp.y2;
+					SetMaxX(xsp.x1);
+					SetMaxY(xsp.y1);
+					SetMaxX(xsp.x2);
+					SetMaxY(xsp.y2);
 					xsp++;
 				}
 				break;
 
 			case RC_DAMAGED:
-				ar >> shp->shape.damage.damaged;
+				ar >> shp.shape.damage.damaged;
 				break;
 			}
 
@@ -743,7 +743,7 @@ void CXPreplayDoc::ReadFrameData(CArchive &ar, struct frame *f)
 		return;
     }
 
-    f->shapes = shphead;
+    f.shapes = shphead;
 }
 
 CXPreplayDoc::miniGC *CXPreplayDoc::ReadGCValues(CArchive &ar)
@@ -773,8 +773,8 @@ CXPreplayDoc::miniGC *CXPreplayDoc::ReadGCValues(CArchive &ar)
 	else
 	{
 		gc = new CXPreplayDoc::miniGC;
-		gc->color = -1;
-		gc->width = prev_width;
+		gc.color = -1;
+		gc.width = prev_width;
 		ar >> byte;
 		input_mask = (short)byte;
 
@@ -787,7 +787,7 @@ CXPreplayDoc::miniGC *CXPreplayDoc::ReadGCValues(CArchive &ar)
 		if (input_mask & RC_GC_FG)
 		{
 			ar >> byte;
-			gc->color = byte;
+			gc.color = byte;
 			prev_color = byte;
 		}
 		if (input_mask & RC_GC_BG)
@@ -797,7 +797,7 @@ CXPreplayDoc::miniGC *CXPreplayDoc::ReadGCValues(CArchive &ar)
 		if (input_mask & RC_GC_LW)
 		{
 			ar >> byte;
-			gc->width = byte;
+			gc.width = byte;
 			prev_width = byte;
 		}
 		if (input_mask & RC_GC_LS)
@@ -810,7 +810,7 @@ CXPreplayDoc::miniGC *CXPreplayDoc::ReadGCValues(CArchive &ar)
 			if(byte == 0)
 				dashes = false;
 		}
-		gc->dashes = dashes;
+		gc.dashes = dashes;
 
 		if (input_mask & RC_GC_DO)
 		{
@@ -911,7 +911,7 @@ inline void CXPreplayDoc::SetMaxY(int y)
 
 void CXPreplayDoc::OnUpdateFileProperties(CCmdUI* pCmdUI) 
 {
-	pCmdUI->Enable(docOpened);
+	pCmdUI.Enable(docOpened);
 }
 
 void CXPreplayDoc::OnFileProperties() 
@@ -929,7 +929,7 @@ void CXPreplayDoc::FreeFrames()
 	{
 		FreeShapes(frm);
 		oldfrm = frm;
-		frm = frm->next;
+		frm = frm.next;
 		delete oldfrm;
 	}
 }
@@ -938,33 +938,33 @@ void CXPreplayDoc::FreeShapes(struct frame *f)
 {
 	struct rShape	*shp, *oldshp;
 
-	shp = f->shapes;
+	shp = f.shapes;
 	while(shp)
 	{
-			switch(shp->type)
+			switch(shp.type)
 		{
 		case RC_DRAWLINES:
-			delete[] shp->shape.lines.points;
+			delete[] shp.shape.lines.points;
 			break;
 		case RC_DRAWSTRING:
-			delete[] shp->shape.string.string;
+			delete[] shp.shape.string.string;
 			break;
 		case RC_FILLPOLYGON:
-			delete[] shp->shape.polygon.points;
+			delete[] shp.shape.polygon.points;
 			break;
 		case RC_FILLRECTANGLES:
-			delete[] shp->shape.rectangles.rectangles;
+			delete[] shp.shape.rectangles.rectangles;
 			break;
 		case RC_DRAWARCS:
-			delete[] shp->shape.arcs.arcs;
+			delete[] shp.shape.arcs.arcs;
 			break;
 		case RC_DRAWSEGMENTS:
-			delete[] shp->shape.segments.segments;
+			delete[] shp.shape.segments.segments;
 			break;
 		}
-		delete shp->gc;
+		delete shp.gc;
 		oldshp = shp;
-		shp = shp->next;
+		shp = shp.next;
 		delete oldshp;
 	}
 }
@@ -985,7 +985,7 @@ void CXPreplayDoc::OnUpdatePage(CCmdUI *pCmdUI)
 	if(docOpened)
 	{
 		CString	panetext;
-		panetext.Format("frame %d of %d", rc.cur->number + 1, frame_count);
-		pCmdUI->SetText(panetext);
+		panetext.Format("frame %d of %d", rc.cur.number + 1, frame_count);
+		pCmdUI.SetText(panetext);
 	}
 }

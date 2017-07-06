@@ -22,7 +22,7 @@
 #define	TEAMCUP_H
 
 void teamcup_init(void);
-void teamcup_log(const char *fmt, ...);
+void teamcup_log(String fmt, ...);
 void teamcup_game_start(void);
 void teamcup_round_start(void);
 void teamcup_round_end(int winning_team);

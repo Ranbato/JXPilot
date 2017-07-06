@@ -69,7 +69,7 @@ static void Handle_signal(int sig_no)
 int main(int argc, char **argv)
 {
     int timer_tick_rate;
-    char *addr;
+    String addr;
 
     /* world is a global now */
     world = &World;
@@ -108,7 +108,7 @@ int main(int argc, char **argv)
     Groups_init();
 
     /* Make trigonometric tables */
-    Make_table();
+//    Make_table(); static init
 
     if (!Parser(argc, argv))
 	exit(1);
@@ -280,7 +280,7 @@ void Main_loop(void)
     record = rrecord;
 
     if (playback && (*playback_ei == main_loops)) {
-	char *a, *b, *c, *d, *e;
+	String a, *b, *c, *d, *e;
 	int i;
 	unsigned j;
 	a = playback_es;
@@ -331,16 +331,16 @@ void End_game(void)
 
     while (NumPlayers > 0) {	/* Kick out all remaining players */
 	pl = Player_by_index(NumPlayers - 1);
-	if (pl->conn == NULL)
+	if (pl.conn == NULL)
 	    Delete_player(pl);
 	else
-	    Destroy_connection(pl->conn, msg);
+	    Destroy_connection(pl.conn, msg);
     }
 
     record = playback = 0;
     while (NumSpectators > 0) {
 	pl = Player_by_index(spectatorStart + NumSpectators - 1);
-	Destroy_connection(pl->conn, msg);
+	Destroy_connection(pl.conn, msg);
     }
     record = rrecord;
     playback = rplayback;
@@ -410,7 +410,7 @@ int Pick_team(int pick_for_type)
 	return TEAM_NOT_SET;
 
     for (i = 0; i < MAX_TEAMS; i++) {
-	free_bases[i] = world->teams[i].NumBases - world->teams[i].NumMembers;
+	free_bases[i] = world.teams[i].NumBases - world.teams[i].NumMembers;
 	playing[i] = 0;
 	team_score[i] = 0;
 	available_teams[i] = 0;
@@ -439,10 +439,10 @@ int Pick_team(int pick_for_type)
 	    continue;
 	if (Player_is_paused(pl))
 	    continue;
-	if (!playing[pl->team]++)
+	if (!playing[pl.team]++)
 	    playing_teams++;
 	if (Player_is_human(pl) || Player_is_robot(pl))
-	    team_score[pl->team] += Get_Score(pl);
+	    team_score[pl.team] += Get_Score(pl);
     }
     if (playing_teams <= 1) {
 	for (i = 0; i < MAX_TEAMS; i++) {
@@ -494,7 +494,7 @@ int Pick_team(int pick_for_type)
     return TEAM_NOT_SET;
 }
 
-const char *Describe_game_status(void)
+String Describe_game_status(void)
 {
     return (game_lock && ShutdownServer == -1) ? "locked"
 	: (!game_lock && ShutdownServer != -1) ? "shutting down"
@@ -507,7 +507,7 @@ const char *Describe_game_status(void)
  *
  * TODO
  */
-void Server_info(char *str, size_t max_size)
+void Server_info(String str, size_t max_size)
 {
     int i, j, k;
     player_t *pl, **order;
@@ -528,7 +528,7 @@ void Server_info(char *str, size_t max_size)
 	     VERSION,
 	     Describe_game_status(),
 	     FPS,
-	     world->name, world->author, world->width, world->height,
+	     world.name, world.author, world.width, world.height,
 	     NumPlayers, Num_bases());
 
     assert(strlen(str) < max_size);
@@ -565,12 +565,12 @@ void Server_info(char *str, size_t max_size)
     }
     for (i = 0; i < NumPlayers; i++) {
 	pl = order[i];
-	strlcpy(name, pl->name, MAX_CHARS);
+	strlcpy(name, pl.name, MAX_CHARS);
 	snprintf(lblstr, sizeof(lblstr), "%c%c %-19s%03d%6.0f",
-		 pl->mychar, pl->team == TEAM_NOT_SET ? ' ' : (pl->team + '0'),
-		 name, pl->pl_life, Get_Score(pl));
+		 pl.mychar, pl.team == TEAM_NOT_SET ? ' ' : (pl.team + '0'),
+		 name, pl.pl_life, Get_Score(pl));
 	snprintf(msg, sizeof(msg), "%2d... %-36s%s@%s\n",
-		 i + 1, lblstr, pl->username, pl->hostname);
+		 i + 1, lblstr, pl.username, pl.hostname);
 	if (strlen(msg) + strlen(str) >= max_size)
 	    break;
 	strlcat(str, msg, max_size);
@@ -579,7 +579,7 @@ void Server_info(char *str, size_t max_size)
 }
 
 /* kps - is this useful??? */
-void Log_game(const char *heading)
+void Log_game(String heading)
 {
     char str[1024];
     FILE *fp;
@@ -596,7 +596,7 @@ void Log_game(const char *heading)
 
     snprintf(str, sizeof(str),
 	     "%-50.50s\t%10.10s@%-15.15s\tWorld: %-25.25s\t%10.10s\n",
-	     timenow, Server.owner, Server.host, world->name, heading);
+	     timenow, Server.owner, Server.host, world.name, heading);
 
     if ((fp = fopen(Conf_logfile(), "a")) == NULL) {
 	error("Couldn't open log file, contact %s", Conf_localguru());
@@ -623,7 +623,7 @@ void Game_Over(void)
      */
     options.gameDuration = -1.0;
 
-    if (world->rules->mode.get( TEAM_PLAY)) {
+    if (world.rules.mode.get( TEAM_PLAY)) {
 	double teamscore[MAX_TEAMS];
 
 	for (i = 0; i < MAX_TEAMS; i++)
@@ -638,7 +638,7 @@ void Game_Over(void)
 
 	    if (Player_is_human(pl)
 		|| Player_is_robot(pl)) {
-		team = pl->team;
+		team = pl.team;
 		if (teamscore[team] == Float.MAX_VALUE)
 		    teamscore[team] = 0;
 		teamscore[team] += Get_Score(pl);
@@ -698,18 +698,18 @@ void Game_Over(void)
 	}
     }
     if (win_pl) {
-	snprintf(msg, sizeof(msg), "Best human player: %s", win_pl->name);
+	snprintf(msg, sizeof(msg), "Best human player: %s", win_pl.name);
 	Set_message(msg);
 	xpprintf("%s\n", msg);
     }
     if (lose_pl && lose_pl != win_pl) {
-	snprintf(msg, sizeof(msg), "Worst human player: %s", lose_pl->name);
+	snprintf(msg, sizeof(msg), "Worst human player: %s", lose_pl.name);
 	Set_message(msg);
 	xpprintf("%s\n", msg);
     }
 }
 
-void Server_shutdown(const char *user_name, int delay, const char *reason)
+void Server_shutdown(String user_name, int delay, String reason)
 {
     Set_message_f("|*******| %s (%s) |*******| \"%s\" [*Server notice*]",
 		  (delay > 0) ? "SHUTTING DOWN" : "SHUTDOWN STOPPED",
@@ -723,13 +723,13 @@ void Server_shutdown(const char *user_name, int delay, const char *reason)
 	ShutdownServer = -1;
 }
 
-void Server_log_admin_message(player_t *pl, const char *str)
+void Server_log_admin_message(player_t *pl, String str)
 {
     /*
      * Only log the message if logfile already exists,
      * is writable and less than some KBs in size.
      */
-    const char *logfilename = options.adminMessageFileName;
+    String logfilename = options.adminMessageFileName;
     const int logfile_size_limit = options.adminMessageFileSizeLimit;
     FILE *fp;
     struct stat st;
@@ -748,13 +748,13 @@ void Server_log_admin_message(player_t *pl, const char *str)
 		"%s[%s]{%s@%s(%s)|%s}:\n"
 		"\t%s\n",
 		showtime(),
-		pl->name,
-		pl->username, pl->hostname,
+		pl.name,
+		pl.username, pl.hostname,
 		Player_get_addr(pl),
 		Player_get_dpy(pl),
 		str);
 	fclose(fp);
-	snprintf(msg, sizeof(msg), "%s [%s]:[%s]", str, pl->name, "GOD");
+	snprintf(msg, sizeof(msg), "%s [%s]:[%s]", str, pl.name, "GOD");
 	Set_player_message(pl, msg);
     }
     else
@@ -834,10 +834,10 @@ void Team_immunity_init(void)
     for (group = 0; group < num_groups; group++) {
 	group_t *gp = groupptr_by_id(group);
 
-	if (gp->type == CANNON) {
-	    cannon_t *cannon = Cannon_by_index(gp->mapobj_ind);
+	if (gp.type == CANNON) {
+	    cannon_t *cannon = Cannon_by_index(gp.mapobj_ind);
 
-	    assert(cannon->group == group);
+	    assert(cannon.group == group);
 	    Cannon_set_hitmask(group, cannon);
 	}
     }

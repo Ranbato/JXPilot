@@ -172,19 +172,19 @@ int Join(Connect_param_t *conpar)
 
     IFWINDOWS( received_self = FALSE );
     IFWINDOWS( Progress("Client_init") );
-    if (Client_init(conpar->server_name, conpar->server_version) == -1)
+    if (Client_init(conpar.server_name, conpar.server_version) == -1)
 	return -1;
 
-    IFWINDOWS( Progress("Net_init %s", conpar->server_addr) );
-    if (Net_init(conpar->server_addr, conpar->login_port) == -1) {
+    IFWINDOWS( Progress("Net_init %s", conpar.server_addr) );
+    if (Net_init(conpar.server_addr, conpar.login_port) == -1) {
 	Client_cleanup();
 	return -1;
     }
     IFWINDOWS( Progress("Net_verify '%s'= '%s'",
-			conpar->nick_name, conpar->user_name) );
-    if (Net_verify(conpar->user_name,
-		   conpar->nick_name,
-		   conpar->disp_name) == -1) {
+			conpar.nick_name, conpar.user_name) );
+    if (Net_verify(conpar.user_name,
+		   conpar.nick_name,
+		   conpar.disp_name) == -1) {
 	Net_cleanup();
 	Client_cleanup();
 	return -1;

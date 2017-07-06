@@ -58,7 +58,7 @@
 #define XP_COLOR15		"#202020"
 
 static char		color_names[MAX_COLORS][MAX_COLOR_LEN];
-static const char	*color_defaults[MAX_COLORS] = {
+static String color_defaults[MAX_COLORS] = {
     XP_COLOR0,  XP_COLOR1,  XP_COLOR2,  XP_COLOR3,
     XP_COLOR4,  XP_COLOR5,  XP_COLOR6,  XP_COLOR7,
     XP_COLOR8,  XP_COLOR9,  XP_COLOR10, XP_COLOR11,
@@ -129,7 +129,7 @@ static unsigned long	RGB_TC(int r, int g, int b);
  */
 static struct Visual_class_name {
     int		visual_class;
-    const char	*visual_name;
+    String visual_name;
 } visual_class_names[MAX_VISUAL_CLASS] = {
     { StaticColor,	"StaticColor" },
     { PseudoColor,	"PseudoColor" },
@@ -179,7 +179,7 @@ static void Get_colormap(void)
 /*
  * Convert a visual class to its name.
  */
-static const char *Visual_class_name(int visual_class)
+static String Visual_class_name(int visual_class)
 {
     int			i;
 
@@ -273,7 +273,7 @@ static void Choose_visual(void)
     }
     if (visual_class < 0 && visual_id < 0) {
 	visual = DefaultVisual(dpy, DefaultScreen(dpy));
-	if (visual->class == TrueColor || visual->class == DirectColor) {
+	if (visual.class == TrueColor || visual.class == DirectColor) {
 	    visual_class = PseudoColor;
 	    strcpy(visualName, "PseudoColor");
 	}
@@ -304,7 +304,7 @@ static void Choose_visual(void)
 	else {
 	    best_vinfo = vinfo_ptr;
 	    for (i = 1; i < num; i++) {
-		best_size = best_vinfo->colormap_size;
+		best_size = best_vinfo.colormap_size;
 		cmap_size = vinfo_ptr[i].colormap_size;
 		if (cmap_size > best_size) {
 		    if (best_size < 256)
@@ -313,13 +313,13 @@ static void Choose_visual(void)
 		else if (cmap_size >= 256)
 		    best_vinfo = &vinfo_ptr[i];
 	    }
-	    visual = best_vinfo->visual;
-	    visual_class = best_vinfo->class;
-	    dispDepth = best_vinfo->depth;
+	    visual = best_vinfo.visual;
+	    visual_class = best_vinfo.class;
+	    dispDepth = best_vinfo.depth;
 	    XFree((void *) vinfo_ptr);
 	    printf("Using visual %s with depth %d and %d colors\n",
-		   Visual_class_name(visual->class), dispDepth,
-		   visual->map_entries);
+		   Visual_class_name(visual.class), dispDepth,
+		   visual.map_entries);
 	    Get_colormap();
 	}
     }
@@ -337,7 +337,7 @@ static void Choose_visual(void)
 static int Parse_colors(Colormap cmap)
 {
     int			i;
-    const char		**def = &color_defaults[0];
+    String *def = &color_defaults[0];
 
     /*
      * Get the color definitions.
@@ -386,7 +386,7 @@ static void Fill_colormap(void)
     cells_needed = (maxColors == 16) ? 256
 	: (maxColors == 8) ? 64
 	: 16;
-    max_fill = Math.max(256, visual->map_entries) - cells_needed;
+    max_fill = Math.max(256, visual.map_entries) - cells_needed;
     if (max_fill <= 0)
 	return;
 
@@ -433,21 +433,21 @@ int Colors_init(void)
     /*
      * Get misc. display info.
      */
-    if (visual->class == StaticColor ||
-	visual->class == TrueColor)
+    if (visual.class == StaticColor ||
+	visual.class == TrueColor)
 	colorSwitch = false;
 
-    if (visual->map_entries < 16)
+    if (visual.map_entries < 16)
 	colorSwitch = false;
 
     if (colorSwitch) {
-	maxColors = (maxColors >= 16 && visual->map_entries >= 256) ? 16
-	    : (maxColors >= 8 && visual->map_entries >= 64) ? 8
+	maxColors = (maxColors >= 16 && visual.map_entries >= 256) ? 16
+	    : (maxColors >= 8 && visual.map_entries >= 64) ? 8
 	    : 4;
     }
     else {
-	maxColors = (maxColors >= 16 && visual->map_entries >= 16) ? 16
-	    : (maxColors >= 8 && visual->map_entries >= 8) ? 8
+	maxColors = (maxColors >= 16 && visual.map_entries >= 16) ? 16
+	    : (maxColors >= 8 && visual.map_entries >= 8) ? 8
 	    : 4;
     }
     num_planes = (maxColors == 16) ? 4
@@ -512,11 +512,11 @@ int Colors_init(void)
     if (dbuf_state == NULL) {
 	/* Can't setup double buffering */
 	warn("Can't setup colors with visual %s and %d colormap entries",
-	     Visual_class_name(visual->class), visual->map_entries);
+	     Visual_class_name(visual.class), visual.map_entries);
 	return -1;
     }
 
-    switch (dbuf_state->type) {
+    switch (dbuf_state.type) {
     case COLOR_SWITCH:
 	printf("Using color switching\n");
 	break;
@@ -537,7 +537,7 @@ int Colors_init(void)
 #endif
 
     default:
-	fatal("Unknown dbuf state %d.", dbuf_state->type);
+	fatal("Unknown dbuf state %d.", dbuf_state.type);
     }
 
     for (i = maxColors; i < MAX_COLORS; i++)
@@ -565,7 +565,7 @@ static void Colors_init_radar_hack(void)
 	dpl_1[p] = dpl_2[p] = 0;
 
 	for (i = 0; i < 32; i++) {
-	    if (!((1 << i) & dbuf_state->drawing_plane_masks[p])) {
+	    if (!((1 << i) & dbuf_state.drawing_plane_masks[p])) {
 	        num++;
 		if (num == 1 || num == 3)
 		    dpl_1[p] |= 1<<i;   /* planes with moving radar objects */
@@ -587,7 +587,7 @@ static int Colors_init_bitmap_colors(void)
 {
     int r = -1;
 
-    switch (visual->class) {
+    switch (visual.class) {
     case PseudoColor:
 	r = Colors_init_color_cube();
 	break;
@@ -607,7 +607,7 @@ static int Colors_init_bitmap_colors(void)
 
     default:
 	warn("fullColor not implemented for visual \"%s\"",
-	     Visual_class_name(visual->class));
+	     Visual_class_name(visual.class));
 	fullColor = false;
 	texturedObjects = false;
 	break;
@@ -647,7 +647,7 @@ int Colors_init_bitmaps(void)
     if (dbuf_state == NULL)
 	return 0;
 
-    if (dbuf_state->type == COLOR_SWITCH) {
+    if (dbuf_state.type == COLOR_SWITCH) {
 	if (fullColor) {
 	    warn("Can't do texturedObjects if colorSwitch.");
 	    fullColor = false;
@@ -674,12 +674,12 @@ static unsigned long RGB_PC(int r, int g, int b)
 {
     int			i;
 
-    r = (r * color_cube->reds) >> 8;
-    g = (g * color_cube->greens) >> 8;
-    b = (b * color_cube->blues) >> 8;
-    i = (((r * color_cube->greens) + g) * color_cube->blues) + b;
+    r = (r * color_cube.reds) >> 8;
+    g = (g * color_cube.greens) >> 8;
+    b = (b * color_cube.blues) >> 8;
+    i = (((r * color_cube.greens) + g) * color_cube.blues) + b;
 
-    return color_cube->pixels[i];
+    return color_cube.pixels[i];
 }
 
 
@@ -690,9 +690,9 @@ static unsigned long RGB_TC(int r, int g, int b)
 {
     unsigned long	pixel = 0;
 
-    pixel |= true_color->red_bits[r];
-    pixel |= true_color->green_bits[g];
-    pixel |= true_color->blue_bits[b];
+    pixel |= true_color.red_bits[r];
+    pixel |= true_color.green_bits[g];
+    pixel |= true_color.blue_bits[b];
 
     return pixel;
 }
@@ -721,7 +721,7 @@ static void Fill_color_cube(int reds, int greens, int blues,
     for (r = 0; r < reds; r++) {
 	for (g = 0; g < greens; g++) {
 	    for (b = 0; b < blues; b++, i++) {
-		colorarray[i].pixel = color_cube->pixels[i];
+		colorarray[i].pixel = color_cube.pixels[i];
 		colorarray[i].flags = DoRed | DoGreen | DoBlue;
 		colorarray[i].red   = (((r * 256) + 128) / reds) * 0x101;
 		colorarray[i].green = (((g * 256) + 128) / greens) * 0x101;
@@ -730,9 +730,9 @@ static void Fill_color_cube(int reds, int greens, int blues,
 	}
     }
 
-    color_cube->reds = reds;
-    color_cube->greens = greens;
-    color_cube->blues = blues;
+    color_cube.reds = reds;
+    color_cube.greens = greens;
+    color_cube.blues = blues;
 }
 
 
@@ -770,7 +770,7 @@ static int Colors_init_color_cube(void)
 				 : DefaultColormap(dpy,
 						   DefaultScreen(dpy)),
 			     False, NULL, 0,
-			     &color_cube->pixels[0],
+			     &color_cube.pixels[0],
 			     (unsigned)n) == False) {
 	    /*printf("Could not alloc %d colors for RGB cube\n", n);*/
 	    continue;
@@ -779,7 +779,7 @@ static int Colors_init_color_cube(void)
 	printf("Got %d colors for a %d*%d*%d RGB cube\n",
 		n, r, g, b);
 
-	color_cube->mustfree = 1;
+	color_cube.mustfree = 1;
 
 	Fill_color_cube(r, g, b, &colorarray[0]);
 
@@ -808,17 +808,17 @@ static int Colors_init_color_cube(void)
 static void Colors_free_color_cube(void)
 {
     if (color_cube) {
-	if (color_cube->mustfree) {
+	if (color_cube.mustfree) {
 	    XFreeColors(
 		dpy,
 		(colormap != 0)
 		? colormap
 		: DefaultColormap(dpy,
 				  DefaultScreen(dpy)),
-		&color_cube->pixels[0],
-		color_cube->reds * color_cube->greens * color_cube->blues,
+		&color_cube.pixels[0],
+		color_cube.reds * color_cube.greens * color_cube.blues,
 		0);
-	    color_cube->mustfree = 0;
+	    color_cube.mustfree = 0;
 	}
 	free(color_cube);
 	color_cube = NULL;
@@ -834,19 +834,19 @@ static int Colors_init_true_color(void)
 {
     int			i, j, r, g, b;
 
-    if ((visual->red_mask == 0) ||
-	(visual->green_mask == 0) ||
-	(visual->blue_mask == 0) ||
-	((visual->red_mask &
-	  visual->green_mask &
-	  visual->blue_mask) != 0)) {
+    if ((visual.red_mask == 0) ||
+	(visual.green_mask == 0) ||
+	(visual.blue_mask == 0) ||
+	((visual.red_mask &
+	  visual.green_mask &
+	  visual.blue_mask) != 0)) {
 
 	printf("Your visual \"%s\" has weird characteristics:\n",
-		Visual_class_name(visual->class));
+		Visual_class_name(visual.class));
 	printf("\tred mask 0x%06lx, green mask 0x%06lx, blue mask 0x%06lx,\n",
-		visual->red_mask, visual->green_mask, visual->blue_mask);
+		visual.red_mask, visual.green_mask, visual.blue_mask);
 	printf("\toverlap mask 0x%06lx\n",
-		visual->red_mask & visual->green_mask & visual->blue_mask);
+		visual.red_mask & visual.green_mask & visual.blue_mask);
 	return -1;
     }
 
@@ -865,29 +865,29 @@ static int Colors_init_true_color(void)
     g = 7;
     b = 7;
     for (i = 31; i >= 0; --i) {
-	if ((visual->red_mask & (1UL << i)) != 0) {
+	if ((visual.red_mask & (1UL << i)) != 0) {
 	    if (r >= 0) {
 		for (j = 0; j < 256; j++) {
 		    if (j & (1 << r))
-			true_color->red_bits[j] |= (1UL << i);
+			true_color.red_bits[j] |= (1UL << i);
 		}
 		r--;
 	    }
 	}
-	if ((visual->green_mask & (1UL << i)) != 0) {
+	if ((visual.green_mask & (1UL << i)) != 0) {
 	    if (g >= 0) {
 		for (j = 0; j < 256; j++) {
 		    if (j & (1 << g))
-			true_color->green_bits[j] |= (1UL << i);
+			true_color.green_bits[j] |= (1UL << i);
 		}
 		g--;
 	    }
 	}
-	if ((visual->blue_mask & (1UL << i)) != 0) {
+	if ((visual.blue_mask & (1UL << i)) != 0) {
 	    if (b >= 0) {
 		for (j = 0; j < 256; j++) {
 		    if (j & (1 << b))
-			true_color->blue_bits[j] |= (1UL << i);
+			true_color.blue_bits[j] |= (1UL << i);
 		}
 		b--;
 	    }
@@ -969,9 +969,9 @@ void Colors_debug(void)
 
 	fprintf(fp, "\n\n  RGB  %d %d %d\n\n", r, g, b);
 	i = 0;
-	for (r = 0; r < color_cube->reds; r++) {
-	    for (g = 0; g < color_cube->greens; g++) {
-		for (b = 0; b < color_cube->blues; b++, i++)
+	for (r = 0; r < color_cube.reds; r++) {
+	    for (g = 0; g < color_cube.greens; g++) {
+		for (b = 0; b < color_cube.blues; b++, i++)
 		    fprintf(fp, "color %4d    %04X  %04X  %04X\n",
 			    i, cols[i].red, cols[i].green, cols[i].blue);
 	    }
@@ -1050,7 +1050,7 @@ void Init_spark_colors(void)
 }
 
 
-static bool Set_sparkColors (xp_option_t *opt, const char *val)
+static bool Set_sparkColors (xp_option_t *opt, String val)
 {
     UNUSED_PARAM(opt);
     strlcpy(sparkColors, val, sizeof sparkColors);
@@ -1071,11 +1071,11 @@ static bool Set_maxColors (xp_option_t *opt, int val)
     return true;
 }
 
-static bool Set_color(xp_option_t *opt, const char *val)
+static bool Set_color(xp_option_t *opt, String val)
 {
-    char *buf = Option_get_private_data(opt);
+    String buf = Option_get_private_data(opt);
 
-    /*warn("Set_color: name=%s, val=\"%s\", buf=%p", opt->name, val, buf);*/
+    /*warn("Set_color: name=%s, val=\"%s\", buf=%p", opt.name, val, buf);*/
     assert(val != NULL);
     strlcpy(buf, val, MAX_COLOR_LEN);
 

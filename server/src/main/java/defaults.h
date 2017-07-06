@@ -36,8 +36,8 @@ enum valType {
     valReal,		/* variable is type float */
     valBool,		/* variable is type bool */
     valIPos,		/* variable is type ipos */
-    valString,		/* variable is type char* */
-    valList		/* variable is a list of elements of type char* */
+    valString,		/* variable is type String  */
+    valList		/* variable is a list of elements of type String  */
 };
 
 
@@ -65,25 +65,25 @@ enum _optOriginAny {
 
 
 typedef struct _option_desc {
-    const char		*name;
-    const char		*commandLineOption;
-    const char		*defaultValue;
+    String name;
+    String commandLineOption;
+    String defaultValue;
     void		*variable;
     enum valType	type;
     void		(*tuner)(void);
-    const char		*helpLine;
+    String helpLine;
     int			flags;		/* allowable option origins. */
 } option_desc;
 
 
-option_desc*	Find_option_by_name(const char* name);
+option_desc*	Find_option_by_name(const String  name);
 option_desc*	Get_option_descs(int *count_ptr);
 bool		Option_add_desc(option_desc *desc);
 void		Option_set_value(
-			const char	*name,
-			const char	*value,
+			String name,
+			String value,
 			int		override,
 			optOrigin	opt_origin);
-char*		Option_get_value(const char *name, optOrigin *origin_ptr);
+String 		Option_get_value(String name, optOrigin *origin_ptr);
 
 #endif

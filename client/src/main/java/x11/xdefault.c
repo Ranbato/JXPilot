@@ -67,7 +67,7 @@ static char displayName[MAX_DISP_LEN];
 static char keyboardName[MAX_DISP_LEN];
 
 /* kps - this is quite useless currently */
-static bool Set_geometry(xp_option_t *opt, const char *value)
+static bool Set_geometry(xp_option_t *opt, String value)
 {
     UNUSED_PARAM(opt);
     XFREE(geometry);
@@ -75,7 +75,7 @@ static bool Set_geometry(xp_option_t *opt, const char *value)
     return true;
 }
 
-static const char *Get_geometry(xp_option_t *opt)
+static String Get_geometry(xp_option_t *opt)
 {
     static char buf[20]; /* should be enough */
     UNUSED_PARAM(opt);
@@ -181,10 +181,10 @@ static bool Set_mouseAccelThresh(xp_option_t *opt, int value)
     }
 }
 
-static bool Set_fontName(xp_option_t *opt, const char *val)
+static bool Set_fontName(xp_option_t *opt, String val)
 {
-    char *buf = (char *)Option_get_private_data(opt);
-    char *tmpval, *fontname;
+    String buf = (String )Option_get_private_data(opt);
+    String tmpval, *fontname;
 
     assert(val != NULL);
 
@@ -454,7 +454,7 @@ static int X_error_handler(Display *display, XErrorEvent *xev)
 
     fflush(stdout);
     fprintf(stderr, "X error\n");
-    XGetErrorText(display, xev->error_code, buf, sizeof buf);
+    XGetErrorText(display, xev.error_code, buf, sizeof buf);
     buf[sizeof(buf) - 1] = '\0';
     fprintf(stderr, "%s\n", buf);
     fflush(stderr);
@@ -475,7 +475,7 @@ static void X_after(Display *display)
 
 void Handle_X_options(void)
 {
-    char *ptr;
+    String ptr;
 
     /* handle display */
     assert(displayName);
@@ -561,7 +561,7 @@ bool Set_altScaleFactor(xp_option_t *opt, double val)
     return true;
 }
 
-xp_keysym_t String_to_xp_keysym(/*const*/ char *str)
+xp_keysym_t String_to_xp_keysym(/*const*/ String str)
 {
     KeySym ks;
     xp_keysym_t xpks;

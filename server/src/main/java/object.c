@@ -54,8 +54,8 @@ object_t *Object_allocate(void)
 	obj = Obj[ObjCount];
 	Object_incr_count();
 
-	obj->type = OBJ_DEBRIS;
-	obj->life = 0;
+	obj.type = OBJ_DEBRIS;
+	obj.life = 0;
     }
 
     return obj;
@@ -119,9 +119,9 @@ void Alloc_shots(int number)
 
     objArray = x;
     for (i = 0; i < number; i++) {
-	Obj[i] = &(x->obj);
+	Obj[i] = &(x.obj);
 	/* kps - shouldn't be necessary */
-	/*MINE_PTR(Obj[i])->mine_owner = NO_ID;*/
+	/*MINE_PTR(Obj[i]).mine_owner = NO_ID;*/
 	Cell_init_object(Obj[i]);
 	x++;
     }
@@ -134,14 +134,14 @@ void Free_shots(void)
 
 
 /* kps debug hack */
-const char *Object_typename(object_t *obj)
+String Object_typename(object_t *obj)
 {
     int type;
 
     if (!obj)
 	return "none";
 
-    type = obj->type;
+    type = obj.type;
 
     if (type == OBJ_PLAYER)
 	return "OBJ_PLAYER";

@@ -44,7 +44,7 @@ static char first_text[] = "<< First Server Page";
 static char ping_text[] = "Ping Servers";
 
 struct Label {
-  const char *label;
+  String label;
   int commas;
   int yoff;
   int height;
@@ -143,7 +143,7 @@ static int Welcome_process_one_event(XEvent * event,
 				     Connect_param_t * conpar);
 static int Welcome_show_server_list(Connect_param_t * conpar);
 static void Internet_widget_cleanup(void);
-static int Internet_cb(int widget, void *user_data, const char **text);
+static int Internet_cb(int widget, void *user_data, String *text);
 
 
 
@@ -166,7 +166,7 @@ static void Welcome_process_exposure_events(Connect_param_t * conpar)
  * 1 means middle
  * 2 means bottom.
  */
-static int Welcome_create_label(int pos, const char *label_text)
+static int Welcome_create_label(int pos, String label_text)
 {
     int label_x, label_y, label_width, label_height;
 
@@ -180,7 +180,7 @@ static int Welcome_create_label(int pos, const char *label_text)
 
     label_width = XTextWidth(textFont, label_text, (int)strlen(label_text));
     label_width += 40;
-    label_height = textFont->ascent + textFont->descent;
+    label_height = textFont.ascent + textFont.descent;
     label_x = (subform_width - label_width) / 2;
 
     switch (pos) {
@@ -190,12 +190,12 @@ static int Welcome_create_label(int pos, const char *label_text)
 	label_height += 10;
 	break;
     case 1:
-	label_y = subform_height / 2 - textFont->ascent - 10;
+	label_y = subform_height / 2 - textFont.ascent - 10;
 	label_height += 20;
 	break;
     case 2:
 	label_y =
-	    subform_height - 10 - textFont->ascent - textFont->descent;
+	    subform_height - 10 - textFont.ascent - textFont.descent;
 	label_height += 10;
 	break;
     }
@@ -219,7 +219,7 @@ static int Welcome_create_label(int pos, const char *label_text)
 /*
  * User clicked on a local server to join.
  */
-static int Local_join_cb(int widget, void *user_data, const char **text)
+static int Local_join_cb(int widget, void *user_data, String *text)
 {
     Connect_param_t *conpar = (Connect_param_t *) user_data;
     int result;
@@ -239,7 +239,7 @@ static int Local_join_cb(int widget, void *user_data, const char **text)
 /*
  * User asked for status on a local server.
  */
-static int Local_status_cb(int widget, void *user_data, const char **text)
+static int Local_status_cb(int widget, void *user_data, String *text)
 {
     /* Connect_param_t          *conpar = (Connect_param_t *) user_data; */
 
@@ -279,7 +279,7 @@ static void Internet_widget_cleanup(void)
 /*
  * User wants us to search for servers on the local net.
  */
-static int Localnet_cb(int widget, void *user_data, const char **text)
+static int Localnet_cb(int widget, void *user_data, String *text)
 {
     Connect_param_t *conpar = (Connect_param_t *) user_data;
     int i;
@@ -287,10 +287,10 @@ static int Localnet_cb(int widget, void *user_data, const char **text)
     int label;
     int label_y, label_height;
 
-    char *server_names;
-    char *server_addrs;
-    char *name_ptrs[MAX_LOCAL_SERVERS];
-    char *addr_ptrs[MAX_LOCAL_SERVERS];
+    String server_names;
+    String server_addrs;
+    String name_ptrs[MAX_LOCAL_SERVERS];
+    String addr_ptrs[MAX_LOCAL_SERVERS];
     unsigned server_versions[MAX_LOCAL_SERVERS];
     int max_width = 0;
     int button;
@@ -316,8 +316,8 @@ static int Localnet_cb(int widget, void *user_data, const char **text)
 			     "Searching for XPilot servers on your local network...");
     Widget_get_dimensions(subform_widget, &subform_width, &subform_height);
 
-    server_names = (char *) malloc(MAX_LOCAL_SERVERS * MAX_HOST_LEN);
-    server_addrs = (char *) malloc(MAX_LOCAL_SERVERS * MAX_HOST_LEN);
+    server_names = (String ) malloc(MAX_LOCAL_SERVERS * MAX_HOST_LEN);
+    server_addrs = (String ) malloc(MAX_LOCAL_SERVERS * MAX_HOST_LEN);
     if (!server_names || !server_addrs) {
         error("Not enough memory\n");
 	quitting = true;
@@ -341,7 +341,7 @@ static int Localnet_cb(int widget, void *user_data, const char **text)
 			     "The following local XPilot servers were found:");
 
     label_y = 10;
-    label_height = textFont->ascent + textFont->descent;
+    label_height = textFont.ascent + textFont.descent;
 
     if (n > 0) {
 	
@@ -370,7 +370,7 @@ static int Localnet_cb(int widget, void *user_data, const char **text)
 		    MAX_HOST_LEN);
 	    localnet_conpars[i].server_version = server_versions[i];
 	    button_width = max_width + 20;
-	    button_height = textFont->ascent + textFont->descent + 10;
+	    button_height = textFont.ascent + textFont.descent + 10;
 	    button_x = 20;
 	    button_y =
 		label_y * 2 + label_height + i * (button_height + label_y);
@@ -384,7 +384,7 @@ static int Localnet_cb(int widget, void *user_data, const char **text)
 	    /* button2_x = button_x + button_width + button_x;
 	     button2_y = button_y;
 	     button2_width = XTextWidth(buttonFont, "Status", 6) + 40;
-	     button2_height = buttonFont->ascent + buttonFont->descent + 10;
+	     button2_height = buttonFont.ascent + buttonFont.descent + 10;
 	     button2 =
 	      Widget_create_activate(subform_widget,
 	    			     button2_x, button2_y,
@@ -396,7 +396,7 @@ static int Localnet_cb(int widget, void *user_data, const char **text)
 	    button3_x = button_x + button_width + button_x;
 	    button3_y = button_y;
 	    button3_width = XTextWidth(buttonFont, "Join game", 7) + 40;
-	    button3_height = buttonFont->ascent + buttonFont->descent + 10;
+	    button3_height = buttonFont.ascent + buttonFont.descent + 10;
 	    button3 =
 	      Widget_create_activate(subform_widget,
 				     button3_x, button3_y,
@@ -418,22 +418,22 @@ static int Localnet_cb(int widget, void *user_data, const char **text)
  * User wants to join a server.
  */
 static int Internet_server_join_cb(int widget, void *user_data,
-				   const char **text)
+				   String *text)
 {
     server_info_t *sip = (server_info_t *) user_data;
     struct Connect_param connect_param;
     struct Connect_param *conpar = &connect_param;
     int result;
-    char *server_addr_ptr = conpar->server_addr;
+    String server_addr_ptr = conpar.server_addr;
 
     UNUSED_PARAM(widget); UNUSED_PARAM(text);
 
     /* structure copy */
     *conpar = *global_conpar;
-    strlcpy(conpar->server_name, sip->hostname,
-	    sizeof(conpar->server_name));
-    strlcpy(conpar->server_addr, sip->ip_str, sizeof(conpar->server_addr));
-    conpar->contact_port = sip->port;
+    strlcpy(conpar.server_name, sip.hostname,
+	    sizeof(conpar.server_name));
+    strlcpy(conpar.server_addr, sip.ip_str, sizeof(conpar.server_addr));
+    conpar.contact_port = sip.port;
     result = Contact_servers(1, &server_addr_ptr, 1, 0, 0, NULL,
 			     0, NULL, NULL, NULL, NULL, conpar);
     if (result) {
@@ -442,8 +442,8 @@ static int Internet_server_join_cb(int widget, void *user_data,
 	joining = true;
     } else {
 	printf("Server %s (%s) didn't respond on port %d\n",
-	       conpar->server_name, conpar->server_addr,
-	       conpar->contact_port);
+	       conpar.server_name, conpar.server_addr,
+	       conpar.contact_port);
     }
 
     return 0;
@@ -458,7 +458,7 @@ static int Internet_server_join_cb(int widget, void *user_data,
  * 
  */
 static int Internet_server_show_cb(int widget, void *user_data,
-				   const char **text)
+				   String *text)
 {
     server_info_t *sip = (server_info_t *) user_data;
     int subform_width = 0;
@@ -479,12 +479,12 @@ static int Internet_server_show_cb(int widget, void *user_data,
     /* large enough for ipv6 static, as the data is rendered after the closure
        of this routine, so memory has to be persistant */
     static char ipport[MAX_HOST_LEN];
-    static char *p = NULL;
-    char *eqptr = NULL;
-    char *playslist = xp_strdup(sip->playlist);
+    static String p = NULL;
+    String eqptr = NULL;
+    String playslist = xp_strdup(sip.playlist);
     static char longest_text[] = "                                 ";
 
-    char *s;
+    String s;
 
     UNUSED_PARAM(widget); UNUSED_PARAM(text);
     global_sip = sip;
@@ -501,7 +501,7 @@ static int Internet_server_show_cb(int widget, void *user_data,
     label_y = label_y_offset;
     label_border = 1;
     label_space = 5;
-    label_height = textFont->ascent + textFont->descent + 5;
+    label_height = textFont.ascent + textFont.descent + 5;
 
     data_label_width =
 	XTextWidth(buttonFont, longest_text, (int)strlen(longest_text));
@@ -519,7 +519,7 @@ static int Internet_server_show_cb(int widget, void *user_data,
 	label_y += label_height + label_space;
 	if (labels[i].commas) {
 	    labels[i].commas = 0;
-	    for (s = sip->playlist; (s = strchr(s, ',')) != NULL; s++) {
+	    for (s = sip.playlist; (s = strchr(s, ',')) != NULL; s++) {
 		labels[i].commas++;
 		label_y += label_height + label_space;
 	    }
@@ -536,7 +536,7 @@ static int Internet_server_show_cb(int widget, void *user_data,
 	/* if there are no players dont print the playlist label */
 
 	if (!strncmp(labels[i].label,"playlist",sizeof(labels[i].label)) 
-	    && (sip->users == 0)) {
+	    && (sip.users == 0)) {
 	  continue;	  
 	}
 	else
@@ -557,7 +557,7 @@ static int Internet_server_show_cb(int widget, void *user_data,
     (void) Widget_create_colored_label(subform_widget,
 			label_x + label_width, labels[i].yoff,
 			data_label_width, labels[i].height, true,
-			label_border, BLACK, WHITE, sip->hostname);
+			label_border, BLACK, WHITE, sip.hostname);
 
     /* Create a join button to join this server */
 
@@ -573,7 +573,7 @@ static int Internet_server_show_cb(int widget, void *user_data,
     
     /* Port and IP address */
 
-    sprintf(ipport,"%s:%d",sip->ip_str,sip->port);
+    sprintf(ipport,"%s:%d",sip.ip_str,sip.port);
 
     (void) Widget_create_colored_label(subform_widget,
 			       label_x + label_width, labels[i].yoff,
@@ -598,7 +598,7 @@ static int Internet_server_show_cb(int widget, void *user_data,
     (void) Widget_create_colored_label(subform_widget,
 			label_x + label_width, labels[i].yoff,
 			data_label_width, labels[i].height, true,
-			label_border,  BLACK, WHITE,sip->version);
+			label_border,  BLACK, WHITE,sip.version);
 
     i++;
 
@@ -607,7 +607,7 @@ static int Internet_server_show_cb(int widget, void *user_data,
     (void) Widget_create_colored_label(subform_widget,
 			label_x + label_width, labels[i].yoff,
 			data_label_width, labels[i].height, true,
-			label_border,  BLACK, WHITE,sip->users ? sip->users_str : "");
+			label_border,  BLACK, WHITE,sip.users ? sip.users_str : "");
     i++;
 
     /* Map name label */
@@ -615,7 +615,7 @@ static int Internet_server_show_cb(int widget, void *user_data,
     (void) Widget_create_colored_label(subform_widget,
 			label_x + label_width, labels[i].yoff,
 			data_label_width, labels[i].height, true,
-			label_border, BLACK, WHITE, sip->mapname);
+			label_border, BLACK, WHITE, sip.mapname);
     i++;
 
     /* Map size label */
@@ -623,7 +623,7 @@ static int Internet_server_show_cb(int widget, void *user_data,
     (void) Widget_create_colored_label(subform_widget,
 			label_x + label_width, labels[i].yoff,
 			data_label_width, labels[i].height, true,
-			label_border, BLACK, WHITE, sip->mapsize);
+			label_border, BLACK, WHITE, sip.mapsize);
     i++;
 
     /* Map author label */
@@ -631,7 +631,7 @@ static int Internet_server_show_cb(int widget, void *user_data,
     (void) Widget_create_colored_label(subform_widget,
 			label_x + label_width, labels[i].yoff,
 			data_label_width, labels[i].height, true,
-			label_border, BLACK, WHITE, sip->author);
+			label_border, BLACK, WHITE, sip.author);
 
     i++;
 
@@ -641,7 +641,7 @@ static int Internet_server_show_cb(int widget, void *user_data,
     (void) Widget_create_colored_label(subform_widget,
 			label_x + label_width, labels[i].yoff,
 			data_label_width, labels[i].height, true,
-			label_border,  BLACK, WHITE,sip->status);
+			label_border,  BLACK, WHITE,sip.status);
 
     i++;
 
@@ -650,7 +650,7 @@ static int Internet_server_show_cb(int widget, void *user_data,
     (void) Widget_create_colored_label(subform_widget,
 			label_x + label_width, labels[i].yoff,
 			data_label_width, labels[i].height, true,
-			label_border,  BLACK, WHITE, sip->bases_str);
+			label_border,  BLACK, WHITE, sip.bases_str);
     i++;
 
     /* Number of teambases label */
@@ -658,7 +658,7 @@ static int Internet_server_show_cb(int widget, void *user_data,
     (void) Widget_create_colored_label(subform_widget,
 			label_x + label_width, labels[i].yoff,
 			data_label_width, labels[i].height, true,
-			label_border, BLACK, WHITE, sip->teambases_str);
+			label_border, BLACK, WHITE, sip.teambases_str);
 
     i++;
 
@@ -667,7 +667,7 @@ static int Internet_server_show_cb(int widget, void *user_data,
     (void) Widget_create_colored_label(subform_widget,
 			label_x + label_width, labels[i].yoff,
 			data_label_width, labels[i].height, true,
-			label_border,  BLACK, WHITE, sip->freebases);
+			label_border,  BLACK, WHITE, sip.freebases);
     i++;
 
     /* Number in Queue label */
@@ -675,7 +675,7 @@ static int Internet_server_show_cb(int widget, void *user_data,
     (void) Widget_create_colored_label(subform_widget,
 			label_x + label_width, labels[i].yoff,
 			data_label_width, labels[i].height, true,
-			label_border,  BLACK, WHITE, sip->queue_str);
+			label_border,  BLACK, WHITE, sip.queue_str);
     i++;
 
     /* Number of frames per second label */
@@ -683,14 +683,14 @@ static int Internet_server_show_cb(int widget, void *user_data,
     (void) Widget_create_colored_label(subform_widget,
 			label_x + label_width, labels[i].yoff,
 			data_label_width, labels[i].height, true,
-			label_border,  BLACK, WHITE, sip->fps_str);
+			label_border,  BLACK, WHITE, sip.fps_str);
     i++;
     /* Is there sound label */
 
     (void) Widget_create_colored_label(subform_widget,
 			label_x + label_width, labels[i].yoff,
 			data_label_width, labels[i].height, true,
-			label_border,  BLACK, WHITE, sip->sound);
+			label_border,  BLACK, WHITE, sip.sound);
     i++;
 
     /* Is this a race map label  */
@@ -699,7 +699,7 @@ static int Internet_server_show_cb(int widget, void *user_data,
 			label_x + label_width, labels[i].yoff,
 			data_label_width, labels[i].height, true,
 				label_border, BLACK, WHITE,
-			((strcmp(sip->timing, "0") ==
+			((strcmp(sip.timing, "0") ==
 			  0) ? "Not a race" : "Race!"));
     i++;
 
@@ -713,7 +713,7 @@ static int Internet_server_show_cb(int widget, void *user_data,
     /* my_strtok destroys playslist */
     /* Could introduce new resources here, but lets force some color */
     /* changes instead */
-    if (sip->users != 0) {
+    if (sip.users != 0) {
 
       (void) Widget_create_colored_label(subform_widget,
 					 label_x + label_width,
@@ -771,7 +771,7 @@ static int Internet_server_show_cb(int widget, void *user_data,
  * User pressed next page button on the Internet page.
  */
 static int Internet_next_page_cb(int widget, void *user_data,
-				 const char **text)
+				 String *text)
 {
     Connect_param_t *conpar = (Connect_param_t *) user_data;
 
@@ -785,7 +785,7 @@ static int Internet_next_page_cb(int widget, void *user_data,
  * User pressed first page button on the Internet page.
  */
 static int Internet_first_page_cb(int widget, void *user_data,
-				  const char **text)
+				  String *text)
 {
     Connect_param_t *conpar = (Connect_param_t *) user_data;
 
@@ -800,7 +800,7 @@ static int Internet_first_page_cb(int widget, void *user_data,
 /*
  * User pressed "measure lag" button on the Internet page
  */
-static int Internet_ping_cb(int widget, void *user_data, const char **text)
+static int Internet_ping_cb(int widget, void *user_data, String *text)
 {
     Connect_param_t *conpar = (Connect_param_t *) user_data;
    
@@ -864,8 +864,8 @@ static int Welcome_show_server_list(Connect_param_t * conpar)
 	+ extra_width + 2 * border;
     int xoff = space_width;
     int yoff = space_height;
-    int text_height = textFont->ascent + textFont->descent;
-    int button_height = buttonFont->ascent + buttonFont->descent;
+    int text_height = textFont.ascent + textFont.descent;
+    int button_height = buttonFont.ascent + buttonFont.descent;
     int label_height = Math.max(text_height, button_height)
 	+ extra_height + 2 * border + 4;
     int player_offset = xoff;
@@ -982,65 +982,65 @@ static int Welcome_show_server_list(Connect_param_t * conpar)
 	Widget_create_label(subform_widget,
 			    player_offset, yoff,
 			    player_width, label_height, true,
-			    border, sip->users ? sip->users_str : "");
+			    border, sip.users ? sip.users_str : "");
 	Widget_create_label(subform_widget,
 			    queue_offset, yoff,
 			    queue_width, label_height, true,
-			    border, sip->queue ? sip->queue_str : "");
+			    border, sip.queue ? sip.queue_str : "");
 	if (all_offset < subform_width) {
 
 	    Widget_create_label(subform_widget,
 				bases_offset, yoff,
 				bases_width, label_height, true,
-				border, sip->bases_str);
+				border, sip.bases_str);
 	    Widget_create_label(subform_widget,
 				team_offset, yoff,
 				team_width, label_height, true,
 				border,
-				(sip->teambases >
-				 0) ? sip->teambases_str : "");
+				(sip.teambases >
+				 0) ? sip.teambases_str : "");
 	    Widget_create_label(subform_widget, fps_offset, yoff,
 				fps_width, label_height, true,
-				border, sip->fps_str);
-	    if (strlen(sip->status) > 4)
-		sip->status[4] = '\0';
+				border, sip.fps_str);
+	    if (strlen(sip.status) > 4)
+		sip.status[4] = '\0';
 
 	    Widget_create_label(subform_widget,
 				status_offset, yoff,
 				status_width, label_height, true,
 				border,
-				strcmp(sip->status,
-				       "ok") ? sip->status : "");
+				strcmp(sip.status,
+				       "ok") ? sip.status : "");
 
 	}
 
-	if (strlen(sip->version) > max_version_length)
-	    sip->version[max_version_length] = '\0';
+	if (strlen(sip.version) > max_version_length)
+	    sip.version[max_version_length] = '\0';
 
-	string_to_lower(sip->version);
+	string_to_lower(sip.version);
 	Widget_create_label(subform_widget,
 			    version_offset, yoff,
 			    version_width, label_height, true,
-			    border, sip->version);
+			    border, sip.version);
 	Widget_create_label(subform_widget,
 			    map_offset, yoff,
 			    map_width, label_height, true,
-			    border, sip->mapname);
+			    border, sip.mapname);
 	Widget_create_activate(subform_widget,
 			       server_offset,
 			       yoff - (border == 0),
 			       server_width, label_height,
-			       border ? border : 1, sip->hostname,
+			       border ? border : 1, sip.hostname,
 			       Internet_server_join_cb, (void *) sip);
-	sprintf(sip->pingtime_str, "%4d", sip->pingtime);
+	sprintf(sip.pingtime_str, "%4d", sip.pingtime);
 	Widget_create_label(subform_widget,
 			    ping_offset, yoff,
 			    ping_width, label_height, true,
-			    border, (sip->pingtime == PING_NORESP)
-			    ? "None" : ((sip->pingtime == PING_SLOW)
+			    border, (sip.pingtime == PING_NORESP)
+			    ? "None" : ((sip.pingtime == PING_SLOW)
 					? "Slow"
-					: ((sip->pingtime == PING_UNKNOWN)
-					   ? "" : sip->pingtime_str)));
+					: ((sip.pingtime == PING_UNKNOWN)
+					   ? "" : sip.pingtime_str)));
 
 	Widget_create_activate(subform_widget,
 			       stat_offset, yoff - (border == 0),
@@ -1115,7 +1115,7 @@ static void Internet_cleanup(void)
 /*
  * User pressed the Internet button.
  */
-static int Internet_cb(int widget, void *user_data, const char **text)
+static int Internet_cb(int widget, void *user_data, String *text)
 {
     Connect_param_t *conpar = (Connect_param_t *) user_data;
     
@@ -1153,7 +1153,7 @@ static int Internet_cb(int widget, void *user_data, const char **text)
 /*
  * User pressed the Configure button.
  */
-static int Configure_cb(int widget, void *user_data, const char **text)
+static int Configure_cb(int widget, void *user_data, String *text)
 {
     UNUSED_PARAM(widget); UNUSED_PARAM(text);
 
@@ -1167,7 +1167,7 @@ static int Configure_cb(int widget, void *user_data, const char **text)
  * User pressed the Server button.
  */
 #if 0
-static int Server_cb(int widget, void *user_data, const char **text)
+static int Server_cb(int widget, void *user_data, String *text)
 {
 
     Welcome_set_mode(ModeServer);
@@ -1180,7 +1180,7 @@ static int Server_cb(int widget, void *user_data, const char **text)
  * User pressed the Help button.
  */
 #if 0
-static int Help_cb(int widget, void *user_data, const char **text)
+static int Help_cb(int widget, void *user_data, String *text)
 {
     Welcome_set_mode(ModeHelp);
 
@@ -1197,7 +1197,7 @@ static int Help_cb(int widget, void *user_data, const char **text)
 /*
  * User pressed the Quit button.
  */
-static int Quit_cb(int widget, void *user_data, const char **text)
+static int Quit_cb(int widget, void *user_data, String *text)
 {
     UNUSED_PARAM(widget); UNUSED_PARAM(user_data); UNUSED_PARAM(text);
     Welcome_set_mode(ModeQuit);
@@ -1220,8 +1220,8 @@ static int Welcome_create_windows(Connect_param_t * conpar)
     int form_height = top_height - 2 * form_border;
 
     const int button_border = 4;
-    int button_height = buttonFont->ascent
-	+ buttonFont->descent + 2 * button_border;
+    int button_height = buttonFont.ascent
+	+ buttonFont.descent + 2 * button_border;
     int max_width;
     int text_width;
     int button_x;
@@ -1232,8 +1232,8 @@ static int Welcome_create_windows(Connect_param_t * conpar)
     int max_height_wanted;
     int height_per_button;
     struct MyButton {
-	const char *text;
-	int (*callback) (int, void *, const char **);
+	String text;
+	int (*callback) (int, void *, String *);
     };
     struct MyButton my_buttons[] = {
 	{"Local", Localnet_cb},
@@ -1386,12 +1386,12 @@ static int Welcome_process_one_event(XEvent * event,
     XClientMessageEvent *cmev;
     XConfigureEvent *conf;
 
-    switch (event->type) {
+    switch (event.type) {
 
     case ClientMessage:
 	cmev = (XClientMessageEvent *) event;
-	if (cmev->message_type == ProtocolAtom
-	    && cmev->format == 32 && cmev->data.l[0] == KillAtom) {
+	if (cmev.message_type == ProtocolAtom
+	    && cmev.format == 32 && cmev.data.l[0] == KillAtom) {
 	    /*
 	     * On HP-UX 10.20 with CDE strange things happen
 	     * sometimes when closing xpilot via the window
@@ -1431,19 +1431,19 @@ static int Welcome_process_one_event(XEvent * event,
 	break;
 
     case MappingNotify:
-	XRefreshKeyboardMapping(&event->xmapping);
+	XRefreshKeyboardMapping(&event.xmapping);
 	break;
 
     case ConfigureNotify:
       
-	conf = &event->xconfigure;
-	if (conf->window == topWindow) {
-	    if ((top_width == conf->width) && (top_height == conf->height)) {
+	conf = &event.xconfigure;
+	if (conf.window == topWindow) {
+	    if ((top_width == conf.width) && (top_height == conf.height)) {
 		/* This event came from a window move operation */
 		return 0;
 	    }
-	    top_width = conf->width;
-	    top_height = conf->height;
+	    top_width = conf.width;
+	    top_height = conf.height;
 	    LIMIT(top_width, MIN_TOP_WIDTH, MAX_TOP_WIDTH);
 	    LIMIT(top_height, MIN_TOP_HEIGHT, MAX_TOP_HEIGHT);
 

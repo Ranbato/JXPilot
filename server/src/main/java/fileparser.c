@@ -71,11 +71,11 @@ static int skipspace(char **map_ptr)
 /*
  * Read in a multiline value.
  */
-static char *getMultilineValue(char **map_ptr, char *delimiter)
+static String getMultilineValue(char **map_ptr, String delimiter)
 {
-    char *s = XMALLOC(char, 32768);
+    String s = XMALLOC(char, 32768);
     size_t i = 0, slen = 32768;
-    char *bol;
+    String bol;
     int ich;
 
     bol = s;
@@ -83,23 +83,23 @@ static char *getMultilineValue(char **map_ptr, char *delimiter)
 	ich = **map_ptr;
 	(*map_ptr)++;
 	if (ich == '\0') {
-	    s = (char *)realloc(s, i + 1);
+	    s = (String )realloc(s, i + 1);
 	    s[i] = '\0';
 	    return s;
 	}
 	if (i == slen) {
-	    char *t = s;
+	    String t = s;
 
 	    slen += (slen / 2) + 8192;
-	    s = (char *)realloc(s, slen);
+	    s = (String )realloc(s, slen);
 	    bol += s - t;
 	}
 	if (ich == '\n') {
 	    s[i] = 0;
 	    if (delimiter && !strcmp(bol, delimiter)) {
-		char *t = s;
+		String t = s;
 
-		s = (char *)realloc(s, (size_t) (bol - s + 1));
+		s = (String )realloc(s, (size_t) (bol - s + 1));
 		s[bol - t] = '\0';
 		return s;
 	    }
@@ -138,12 +138,12 @@ static char *getMultilineValue(char **map_ptr, char *delimiter)
  */
 #define EXPAND				\
     if (i == slen)			\
-	s = (char *)realloc(s, slen *= 2);
+	s = (String )realloc(s, slen *= 2);
 
 static void parseLine(char **map_ptr, optOrigin opt_origin)
 {
     int ich, override = 0, multiline = 0;
-    char *value, *head, *name, *s = XMALLOC(char, 128), *p;
+    String value, *head, *name, *s = XMALLOC(char, 128), *p;
     size_t slen = 128, i = 0;
 
     ich = **map_ptr;
@@ -331,7 +331,7 @@ static bool parseOpenFile(FILE * ifile, optOrigin opt_origin)
 {
     int n;
     size_t map_offset, map_size;
-    char *map_buf;
+    String map_buf;
 
     LineNumber = 1;
 
@@ -375,7 +375,7 @@ static bool parseOpenFile(FILE * ifile, optOrigin opt_origin)
 
 	if (map_size - map_offset < MAP_CHUNK_SIZE) {
 	    map_size += (map_size / 2) + MAP_CHUNK_SIZE;
-	    map_buf = (char *)realloc(map_buf, map_size + 1);
+	    map_buf = (String )realloc(map_buf, map_size + 1);
 	    if (!map_buf) {
 		error("Not enough memory to read the map!");
 		return false;
@@ -383,7 +383,7 @@ static bool parseOpenFile(FILE * ifile, optOrigin opt_origin)
 	}
     }
 
-    map_buf = (char *)realloc(map_buf, map_offset + 1);
+    map_buf = (String )realloc(map_buf, map_offset + 1);
     map_buf[map_offset] = '\0';	/* EOF */
 
     if (isdigit(*map_buf)) {
@@ -395,7 +395,7 @@ static bool parseOpenFile(FILE * ifile, optOrigin opt_origin)
 	/*
 	 * Parse all the lines in the file. 
 	 */
-	char *map_ptr = map_buf;
+	String map_ptr = map_buf;
 
 	while (*map_ptr)
 	    parseLine(&map_ptr, opt_origin);
@@ -407,7 +407,7 @@ static bool parseOpenFile(FILE * ifile, optOrigin opt_origin)
 }
 
 
-static int copyFilename(const char *file)
+static int copyFilename(String file)
 {
     XFREE(FileName);
     FileName = xp_strdup(file);
@@ -415,7 +415,7 @@ static int copyFilename(const char *file)
 }
 
 
-static FILE *fileOpen(const char *file)
+static FILE *fileOpen(String file)
 {
     FILE *fp = fopen(file, "r");
 
@@ -439,7 +439,7 @@ static void fileClose(FILE *fp)
 /*
  * Test if filename has the XPilot map extension.
  */
-static bool hasMapExtension(const char *filename)
+static bool hasMapExtension(String filename)
 {
     int             fnlen = strlen(filename);
     if (fnlen > 4 && !strcmp(&filename[fnlen - 4], ".xp2"))
@@ -455,7 +455,7 @@ static bool hasMapExtension(const char *filename)
 /*
  * Test if filename has a directory component.
  */
-static bool hasDirectoryPrefix(const char *filename)
+static bool hasDirectoryPrefix(String filename)
 {
     static const char sep = '/';
 
@@ -467,10 +467,10 @@ static bool hasDirectoryPrefix(const char *filename)
  * Combine a directory and a file.
  * Returns new path as dynamically allocated memory.
  */
-static char *fileJoin(const char *dir, const char *file)
+static String fileJoin(String dir, String file)
 {
     static const char sep = '/';
-    char *path;
+    String path;
 
     path = XMALLOC(char, strlen(dir) + 1 + strlen(file) + 1);
     if (path)
@@ -483,9 +483,9 @@ static char *fileJoin(const char *dir, const char *file)
  * Combine a file and a filename extension.
  * Returns new path as dynamically allocated memory.
  */
-static char *fileAddExtension(const char *file, const char *ext)
+static String fileAddExtension(String file, String ext)
 {
-    char *path;
+    String path;
 
     path = XMALLOC(char, strlen(file) + strlen(ext) + 1);
     if (path)
@@ -498,7 +498,7 @@ static char *fileAddExtension(const char *file, const char *ext)
 static bool     usePclose = false;
 
 
-static bool isCompressed(const char *filename)
+static bool isCompressed(String filename)
 {
     int fnlen = strlen(filename);
     int celen = strlen(Conf_zcat_ext());
@@ -520,11 +520,11 @@ static void closeCompressedFile(FILE * fp)
 }
 
 
-static FILE *openCompressedFile(const char *filename)
+static FILE *openCompressedFile(String filename)
 {
     FILE *fp = NULL;
-    char *cmdline = NULL;
-    char *newname = NULL;
+    String cmdline = NULL;
+    String newname = NULL;
 
     usePclose = false;
     if (!isCompressed(filename)) {
@@ -557,7 +557,7 @@ static FILE *openCompressedFile(const char *filename)
 
 #else
 
-static bool isCompressed(const char *filename)
+static bool isCompressed(String filename)
 {
     return false;
 }
@@ -567,7 +567,7 @@ static void closeCompressedFile(FILE * fp)
     fileClose(fp);
 }
 
-static FILE *openCompressedFile(const char *filename)
+static FILE *openCompressedFile(String filename)
 {
     return fileOpen(filename);
 }
@@ -595,10 +595,10 @@ static FILE *openCompressedFile(const char *filename)
  *      CONF_MAPDIR filename.map
  *      CONF_MAPDIR filename.map.gz   if CONF_COMPRESSED_MAPS is true
  */
-static FILE *openMapFile(const char *filename)
+static FILE *openMapFile(String filename)
 {
     FILE *fp = NULL;
-    char *newname, *newpath;
+    String newname, *newpath;
 
     fp = openCompressedFile(filename);
     if (fp)
@@ -645,7 +645,7 @@ static void closeMapFile(FILE *fp)
 }
 
 
-static FILE *openDefaultsFile(const char *filename)
+static FILE *openDefaultsFile(String filename)
 {
     return fileOpen(filename);
 }
@@ -660,7 +660,7 @@ static void closeDefaultsFile(FILE *fp)
 /*
  * Parse a file containing defaults.
  */
-bool parseDefaultsFile(const char *filename)
+bool parseDefaultsFile(String filename)
 {
     FILE *ifile;
     bool result;
@@ -678,7 +678,7 @@ bool parseDefaultsFile(const char *filename)
 /*
  * Parse a file containing password.
  */
-bool parsePasswordFile(const char *filename)
+bool parsePasswordFile(String filename)
 {
     FILE *ifile;
     bool result;
@@ -696,7 +696,7 @@ bool parsePasswordFile(const char *filename)
 /*
  * Parse a file containing a map.
  */
-bool parseMapFile(const char *filename)
+bool parseMapFile(String filename)
 {
     FILE *ifile;
     bool result;
@@ -711,10 +711,10 @@ bool parseMapFile(const char *filename)
 }
 
 
-void expandKeyword(const char *keyword)
+void expandKeyword(String keyword)
 {
     optOrigin expand_origin;
-    char *p;
+    String p;
 
     p = Option_get_value(keyword, &expand_origin);
     if (p == NULL)

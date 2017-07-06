@@ -105,7 +105,7 @@ static void Paint_checkpoint_radar(double xf, double yf)
     int			x, y;
     XPoint		points[5];
 
-    if (Setup->mode.get( TIMING)) {
+    if (Setup.mode.get( TIMING)) {
 	if (oldServer) {
 	    Check_pos_by_index(nextCheckPoint, &x, &y);
 	    x = ((int) (x * BLOCK_SZ * xf + 0.5)) - slidingradar_x;
@@ -158,7 +158,7 @@ static void Paint_self_radar(double xf, double yf)
 	y_1 = (int)(y - 8 * tsin(heading));
 	XDrawLine(dpy, radarPixmap, radarGC,
 		  x, y, x_1, y_1);
-	if (Setup->mode.get( WRAP_PLAY)) {
+	if (Setup.mode.get( WRAP_PLAY)) {
 	    xw = x_1 - (x_1 + 256) % 256;
 	    yw = y_1 - (y_1 + RadarHeight) % RadarHeight;
 	    if (xw != 0)
@@ -200,7 +200,7 @@ static void Paint_objects_radar(void)
 	    y += RadarHeight;
 
 	(*radarDrawRectanglePtr)(dpy, radarPixmap, radarGC, x, y, s, s);
-	if (Setup->mode.get( WRAP_PLAY)) {
+	if (Setup.mode.get( WRAP_PLAY)) {
 	    xw = (x < 0) ? -256 : (x + s >= 256) ? 256 : 0;
 	    yw = (y < 0) ? -RadarHeight
 			     : (y + s >= RadarHeight) ? RadarHeight : 0;
@@ -225,8 +225,8 @@ static void Paint_objects_radar(void)
 
 void Paint_radar(void)
 {
-    const double	xf = 256.0 / (double)Setup->width,
-			yf = (double)RadarHeight / (double)Setup->height;
+    const double	xf = 256.0 / (double)Setup.width,
+			yf = (double)RadarHeight / (double)Setup.height;
 
     if (radar_exposures == 0)
 	return;
@@ -259,7 +259,7 @@ void Paint_sliding_radar(void)
     if (!Setup)
 	return;
 
-    if (Setup->mode.get( WRAP_PLAY) == 0)
+    if (Setup.mode.get( WRAP_PLAY) == 0)
 	return;
 
     if (radarPixmap != radarPixmap2)
@@ -300,15 +300,15 @@ static void Paint_radar_block(int xi, int yi, int color)
     }
     XSetForeground(dpy, radarGC, colors[color].pixel);
 
-    if (Setup->x >= 256) {
-	xs = (double)(256 - 1) / (Setup->x - 1);
-	ys = (double)(RadarHeight - 1) / (Setup->y - 1);
+    if (Setup.x >= 256) {
+	xs = (double)(256 - 1) / (Setup.x - 1);
+	ys = (double)(RadarHeight - 1) / (Setup.y - 1);
 	xp = (int)(xi * xs + 0.5);
 	yp = RadarHeight - 1 - (int)(yi * ys + 0.5);
 	XDrawPoint(dpy, radarPixmap2, radarGC, xp, yp);
     } else {
-	xs = (double)(Setup->x - 1) / (256 - 1);
-	ys = (double)(Setup->y - 1) / (RadarHeight - 1);
+	xs = (double)(Setup.x - 1) / (256 - 1);
+	ys = (double)(Setup.y - 1) / (RadarHeight - 1);
 	/*
 	 * Calculate the min and max points on the radar that would show
 	 * block position 'xi' and 'yi'.  Note 'xp' is the minimum x coord
@@ -424,17 +424,17 @@ static void Paint_world_radar_old(void)
      * Another (and probably better) way to do this would be use
      * different segments and points arrays for each visible color.
      */
-    if (Setup->x >= 256) {
-	xs = (double)(256 - 1) / (Setup->x - 1);
-	ys = (double)(RadarHeight - 1) / (Setup->y - 1);
+    if (Setup.x >= 256) {
+	xs = (double)(256 - 1) / (Setup.x - 1);
+	ys = (double)(RadarHeight - 1) / (Setup.y - 1);
 	currColor = -1;
-	for (xi = 0; xi < Setup->x; xi++) {
+	for (xi = 0; xi < Setup.x; xi++) {
 	    start = end = -1;
 	    xp = (int)(xi * xs + 0.5);
-	    xioff = xi * Setup->y;
-	    for (yi = 0; yi < Setup->y; yi++) {
+	    xioff = xi * Setup.y;
+	    for (yi = 0; yi < Setup.y; yi++) {
 		visibleColorChange = 0;
-		type = Setup->map_data[xioff + yi];
+		type = Setup.map_data[xioff + yi];
 		if (type >= SETUP_TARGET && type < SETUP_TARGET + 10)
 		    vis = (Target_alive(xi, yi, &damage) == 0);
 		else
@@ -466,14 +466,14 @@ static void Paint_world_radar_old(void)
 		}
 
 		if (start != -1
-		    && (!vis || yi == Setup->y - 1 || visibleColorChange)) {
+		    && (!vis || yi == Setup.y - 1 || visibleColorChange)) {
 		    if (end > start) {
 			segments[nsegment].x1 = xp;
 			segments[nsegment].y1 = RadarHeight - 1 - start;
 			segments[nsegment].x2 = xp;
 			segments[nsegment].y2 = RadarHeight - 1 - end;
 			nsegment++;
-			if (nsegment >= max || yi == Setup->y - 1) {
+			if (nsegment >= max || yi == Setup.y - 1) {
 			    XDrawSegments(dpy, radarPixmap2, radarGC,
 					  segments, nsegment);
 			    nsegment = 0;
@@ -482,7 +482,7 @@ static void Paint_world_radar_old(void)
 			points[npoint].x = xp;
 			points[npoint].y = RadarHeight - 1 - start;
 			npoint++;
-			if (npoint >= max || yi == Setup->y - 1) {
+			if (npoint >= max || yi == Setup.y - 1) {
 			    XDrawPoints(dpy, radarPixmap2, radarGC,
 					points, npoint, CoordModeOrigin);
 			    npoint = 0;
@@ -509,18 +509,18 @@ static void Paint_world_radar_old(void)
 	    }
 	}
     } else {
-	xs = (double)(Setup->x - 1) / (256 - 1);
-	ys = (double)(Setup->y - 1) / (RadarHeight - 1);
+	xs = (double)(Setup.x - 1) / (256 - 1);
+	ys = (double)(Setup.y - 1) / (RadarHeight - 1);
 	currColor = -1;
 	for (xi = 0; xi < 256; xi++) {
 	    xm = (int)(xi * xs + 0.5);
-	    xmoff = xm * Setup->y;
+	    xmoff = xm * Setup.y;
 	    start = end = -1;
 	    xp = xi;
 	    for (yi = 0; yi < (int)RadarHeight; yi++) {
 		visibleColorChange = 0;
 		ym = (int)(yi * ys + 0.5);
-		type = Setup->map_data[xmoff + ym];
+		type = Setup.map_data[xmoff + ym];
 		vis = visible[type];
 		if (type >= SETUP_TARGET && type < SETUP_TARGET + 10)
 		    vis = (Target_alive(xm, ym, &damage) == 0);
@@ -618,22 +618,22 @@ static void Paint_world_radar_old(void)
 }
 
 
-static void Compute_radar_bounds(ipos_t *min, ipos_t *max, const Rectangle *b)
+static void Compute_radar_bounds(Point  *min, Point  *max, const Rectangle *b)
 {
-    min->x = (0 - (b->x + b->w)) / Setup->width;
-    if (0 > b->x + b->w) min->x++;
-    max->x = (0 + Setup->width - b->x) / Setup->width;
-    if (0 + Setup->width < b->x) max->x--;
-    min->y = (0 - (b->y + b->h)) / Setup->height;
-    if (0 > b->y + b->h) min->y++;
-    max->y = (0 + Setup->height - b->y) / Setup->height;
-    if (0 + Setup->height < b->y) max->y--;
+    min.x = (0 - (b.x + b.w)) / Setup.width;
+    if (0 > b.x + b.w) min.x++;
+    max.x = (0 + Setup.width - b.x) / Setup.width;
+    if (0 + Setup.width < b.x) max.x--;
+    min.y = (0 - (b.y + b.h)) / Setup.height;
+    if (0 > b.y + b.h) min.y++;
+    max.y = (0 + Setup.height - b.y) / Setup.height;
+    if (0 + Setup.height < b.y) max.y--;
 }
 
 static void Paint_world_radar_new(void)
 {
     int i, j, xoff, yoff;
-    ipos_t min, max;
+    Point  min, max;
     static XPoint poly[10000];
     
     /* what the heck is this? */
@@ -661,16 +661,16 @@ static void Paint_world_radar_new(void)
 		if (BIT(polygon_styles[polygons[i].style].flags,
 			STYLE_INVISIBLE_RADAR)) continue;
 
-		x = xoff * Setup->width;
-		y = yoff * Setup->height;
+		x = xoff * Setup.width;
+		y = yoff * Setup.height;
 		
 		/* loop through the points in the current polygon */
 		for (j = 0; j < polygons[i].num_points; j++) {		    
 		    x += polygons[i].points[j].x;
 		    y += polygons[i].points[j].y;
-		    poly[j].x = (x * 256) / Setup->width;
+		    poly[j].x = (x * 256) / Setup.width;
 		    poly[j].y = RadarHeight 
-			- ((y * RadarHeight) / Setup->height);
+			- ((y * RadarHeight) / Setup.height);
 		}
 
 		XSetForeground(dpy, radarGC, fullColor ?

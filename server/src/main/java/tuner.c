@@ -36,7 +36,7 @@ void tuner_shipmass(void)
     int i;
 
     for (i = 0; i < NumPlayers; i++)
-	Player_by_index(i)->emptymass = options.shipMass;
+	Player_by_index(i).emptymass = options.shipMass;
 }
 
 void tuner_ballmass(void)
@@ -44,8 +44,8 @@ void tuner_ballmass(void)
     int i;
 
     for (i = 0; i < NumObjs; i++) {
-	if (Obj[i]->type == OBJ_BALL)
-	    Obj[i]->mass = options.ballMass;
+	if (Obj[i].type == OBJ_BALL)
+	    Obj[i].mass = options.ballMass;
     }
 }
 
@@ -83,11 +83,11 @@ void tuner_allowshields(void)
 	    player_t *pl_i = Player_by_index(i);
 
 	    if (!Player_is_tank(pl_i)) {
-		if (!pl_i->used.get( HAS_SHOT))
-		    pl_i->used.get( HAS_SHIELD);
+		if (!pl_i.used.get( HAS_SHOT))
+		    pl_i.used.get( HAS_SHIELD);
 
-		pl_i->have.get( HAS_SHIELD);
-		pl_i->shield_time = 0;
+		pl_i.have.get( HAS_SHIELD);
+		pl_i.shield_time = 0;
 	    }
 	}
     }
@@ -96,7 +96,7 @@ void tuner_allowshields(void)
 
 	for (i = 0; i < NumPlayers; i++)
 	    /* approx 2 seconds to get to safety */
-	    Player_by_index(i)->shield_time = SHIELD_TIME;
+	    Player_by_index(i).shield_time = SHIELD_TIME;
     }
 }
 
@@ -114,7 +114,7 @@ void tuner_worldlives(void)
 
     Set_world_rules();
 
-    if (world->rules->mode.get( LIMITED_LIVES)) {
+    if (world.rules.mode.get( LIMITED_LIVES)) {
 	Reset_all_players();
 	if (options.gameDuration == -1)
 	    options.gameDuration = 0;
@@ -135,15 +135,15 @@ void tuner_teamcannons(void)
 	for (i = 0; i < Num_cannons(); i++) {
 	    cannon_t *cannon = Cannon_by_index(i);
 
-	    team = Find_closest_team(cannon->pos);
+	    team = Find_closest_team(cannon.pos);
 	    if (team == TEAM_NOT_SET)
 		warn("Couldn't find a matching team for the cannon.");
-	    cannon->team = team;
+	    cannon.team = team;
 	}
     }
     else {
 	for (i = 0; i < Num_cannons(); i++)
-	    Cannon_by_index(i)->team = TEAM_NOT_SET;
+	    Cannon_by_index(i).team = TEAM_NOT_SET;
     }
 }
 
@@ -168,7 +168,7 @@ void tuner_wormhole_stable_ticks(void)
 
     /* Make sure all wormholes get a new destination */
     for (i = 0; i < Num_wormholes(); i++)
-	Wormhole_by_index(i)->countdown = 0.0;
+	Wormhole_by_index(i).countdown = 0.0;
 }
 
 void tuner_modifiers(void)
@@ -178,7 +178,7 @@ void tuner_modifiers(void)
     Set_world_rules();
 
     for (i = 0; i < NumPlayers; i++)
-	Mods_filter(&(Player_by_index(i))->mods);
+	Mods_filter(&(Player_by_index(i)).mods);
 }
 
 void tuner_gameduration(void)
@@ -191,7 +191,7 @@ void tuner_gameduration(void)
 
 void tuner_racelaps(void)
 {
-    if (world->rules->mode.get( TIMING)) {
+    if (world.rules.mode.get( TIMING)) {
 	Reset_all_players();
 	if (options.gameDuration == -1)
 	    options.gameDuration = 0;
@@ -200,10 +200,10 @@ void tuner_racelaps(void)
 
 void tuner_allowalliances(void)
 {
-    if (world->rules->mode.get( TEAM_PLAY))
-	world->rules->mode.clear( ALLIANCES);
+    if (world.rules.mode.get( TEAM_PLAY))
+	world.rules.mode.clear( ALLIANCES);
 
-    if (!world->rules->mode.get( ALLIANCES) && NumAlliances > 0)
+    if (!world.rules.mode.get( ALLIANCES) && NumAlliances > 0)
 	Dissolve_all_alliances();
 }
 

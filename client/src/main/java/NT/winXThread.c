@@ -99,50 +99,50 @@ DWORD WINAPI DrawThreadProc(LPVOID data)
 
 	// Wait until the main application thread asks this thread to do
 	//      something
-	if (WaitForSingleObject(d->eventDraw, INFINITE)
+	if (WaitForSingleObject(d.eventDraw, INFINITE)
 	    != WAIT_OBJECT_0)
 	    break;
-//              d->isDrawing = TRUE;
+//              d.isDrawing = TRUE;
 
 	// Exit the thread if the main application sets the "kill server"
 	// event. The main application will set the "kill server" event
 	// before setting the "draw" event.
 
-	if (WaitForSingleObject(d->eventKillServerThread, 0)
+	if (WaitForSingleObject(d.eventKillServerThread, 0)
 	    == WAIT_OBJECT_0)
 	    break;		// Terminate this thread by existing the proc.
 
 	// Reset event to indicate "not done", that is, game is in progress.
-//              ResetEvent(d->m_hEventGameTerminated);
-	ResetEvent(d->eventNotDrawing);
-//              main(pServerInfo->argc, pServerInfo->argv);
-	myDC = GetDC(d->hWnd);
-	SelectPalette(myDC, d->myPal, FALSE);
+//              ResetEvent(d.m_hEventGameTerminated);
+	ResetEvent(d.eventNotDrawing);
+//              main(pServerInfo.argc, pServerInfo.argv);
+	myDC = GetDC(d.hWnd);
+	SelectPalette(myDC, d.myPal, FALSE);
 	RealizePalette(myDC);
-//              BitBlt(d->hDC, d->rect.left, d->rect.top, d->rect.right, d->rect.bottom,
-	BitBlt(myDC, d->rect.left, d->rect.top, d->rect.right,
-	       d->rect.bottom, d->hBmpDC, d->rect.left, d->rect.top,
+//              BitBlt(d.hDC, d.rect.left, d.rect.top, d.rect.right, d.rect.bottom,
+	BitBlt(myDC, d.rect.left, d.rect.top, d.rect.right,
+	       d.rect.bottom, d.hBmpDC, d.rect.left, d.rect.top,
 	       SRCCOPY);
-//              if (xid[d->w].hwnd.filling)
-//                      FillRect(myDC, &d->rect, GetStockObject(WHITE_BRUSH));
+//              if (xid[d.w].hwnd.filling)
+//                      FillRect(myDC, &d.rect, GetStockObject(WHITE_BRUSH));
 //              else
-//                      FillRect(myDC, &d->rect, GetStockObject(DKGRAY_BRUSH));
-	ReleaseDC(d->hWnd, myDC);
-	SetEvent(d->eventNotDrawing);
+//                      FillRect(myDC, &d.rect, GetStockObject(DKGRAY_BRUSH));
+	ReleaseDC(d.hWnd, myDC);
+	SetEvent(d.eventNotDrawing);
 
 	// Sleep(10*1000);                      // debug
 	// Set event to indicate that drawing is done (i.e., no longer in progres),
 	// even if perhaps interrupted by "kill recalc" event detected in the SlowAdd function.
-//              SetEvent(pServerInfo->m_hEventGameTerminated);
+//              SetEvent(pServerInfo.m_hEventGameTerminated);
 
 	if (ServerKilled)	// If interrupted by kill then...
 	    break;		// terminate this thread by exiting the proc.
 
-	//PostMessage(pServerInfo->m_hwndNotifyRecalcDone,
+	//PostMessage(pServerInfo.m_hwndNotifyRecalcDone,
 	//      WM_USER_RECALC_DONE, 0, 0);
     }
 
     if (ServerKilled)
-	SetEvent(d->eventServerThreadKilled);
+	SetEvent(d.eventServerThreadKilled);
     return 0;
 }

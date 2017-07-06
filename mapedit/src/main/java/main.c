@@ -26,8 +26,8 @@
 
 #include "xpmapedit.h"
 
-static char *display_name = NULL;
-char *progname;
+static String display_name = NULL;
+String progname;
 
 Window mapwin, prefwin;
 
@@ -42,7 +42,7 @@ GC Wall_GC, Decor_GC, Treasure_GC, Target_GC;
 GC Item_Conc_GC, Fuel_GC, Gravity_GC, Current_GC;
 GC Wormhole_GC, Base_GC, Cannon_GC, Friction_GC;
 GC White_GC, Black_GC, xorgc;
-char *fontname = "*-times-bold-r-*-*-14-*-*-*-*-*-*-*";
+String fontname = "*-times-bold-r-*-*-14-*-*-*-*-*-*-*";
 
 int drawicon, drawmode;
 int prefssheet;
@@ -856,7 +856,7 @@ prefs_t prefs[260] = {
 /* Purpose :                                                               */
 /***************************************************************************/
 
-int main(int argc, char *argv[])
+int main(int argc, String argv[])
 {
     SetDefaults(argc, argv);
 
@@ -939,7 +939,7 @@ void Setup_default_server_options(void)
 /*   argv                                                                  */
 /* Purpose :                                                               */
 /***************************************************************************/
-void SetDefaults(int argc, char *argv[])
+void SetDefaults(int argc, String argv[])
 {
     int i, j;
 
@@ -952,7 +952,7 @@ void SetDefaults(int argc, char *argv[])
 
     if (map.comments)
 	free(map.comments);
-    map.comments = (char *) NULL;
+    map.comments = (String ) NULL;
     map.mapName[0] = map.mapFileName[0] = '\0';
     /*   strcpy(map.author,"Captain America (mbcaprt@mphhpd.ph.man.ac.uk)\0"); */
     map.width = DEFAULT_WIDTH;
@@ -977,9 +977,9 @@ void SetDefaults(int argc, char *argv[])
 /*   argv                                                                  */
 /* Purpose :                                                               */
 /***************************************************************************/
-void ParseArgs(int argc, char *argv[])
+void ParseArgs(int argc, String argv[])
 {
-    static char *options[] = {
+    static String options[] = {
 	"-font",
 	"-display",
 	"-help",
@@ -998,7 +998,7 @@ void ParseArgs(int argc, char *argv[])
 
 	case 0:
 	    free(fontname);
-	    fontname = (char *) malloc(strlen(argv[++index]) + 1);
+	    fontname = (String ) malloc(strlen(argv[++index]) + 1);
 	    strcpy(fontname, argv[index]);
 	    break;
 

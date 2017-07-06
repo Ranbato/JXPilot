@@ -38,24 +38,6 @@ public static final int BLOCK_SZ = 35;
 
 public static final int TABLE_SIZE = RES;
 
-static double		tbl_sin[];
-static double		tbl_cos[];
-
-
-  /* New table lookup with optional range checking and no extra calculations. */
-# define tsin(x)	(tbl_sin[CHK2(x, TABLE_SIZE)])
-# define tcos(x)	(tbl_cos[CHK2(x, TABLE_SIZE)])
-
-#define NELEM(a)	((int)(sizeof(a) / sizeof((a)[0])))
-
-#define DELTA(a, b)		(((a) >= (b)) ? ((a) - (b)) : ((b) - (a)))
-#define LENGTH(x, y)		( hypot( (double) (x), (double) (y) ) )
-#define VECTOR_LENGTH(v)	( hypot( (double) (v).x, (double) (v).y ) )
-#define QUICK_LENGTH(x,y)	( Math.abs(x)+ABS(y) ) /*-BA Only approx, but v. quick */
-#define LIMIT(val, lo, hi)	( val=(val)>(hi)?(hi):((val)<(lo)?(lo):(val)) )
-
-
-static final public double MOD2(double x,double m){		( (x) & ((m) - 1) );}
 
 /* Do NOT change these! */
 public static final int OLD_MAX_CHECKS = 26;
@@ -87,7 +69,7 @@ public static final float SELF_DESTRUCT_DELAY = 150.0f;
  */
 public static final int SHIP_SZ = 16;
 
-public static final float VISIBILITY_DISTANCE = 1000.0;
+public static final float VISIBILITY_DISTANCE = 1000.0f;
 
 public static final int BALL_RADIUS = 10;
 

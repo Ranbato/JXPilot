@@ -93,14 +93,14 @@
  * function pointer to the robot_type_setups array.
  */
 typedef struct {
-    const char		*name;
+    String name;
     void		(*robot_round_tick)(void);
-    void		(*robot_create)(player_t *robot, char *str);
+    void		(*robot_create)(player_t *robot, String str);
     void		(*robot_go_home)(player_t *robot);
     void		(*robot_play)(player_t *robot);
     void		(*robot_set_war)(player_t *victim, int killer);
     int			(*robot_war_on_player)(player_t *robot);
-    void		(*robot_message)(player_t *robot, const char *str);
+    void		(*robot_message)(player_t *robot, String str);
     void		(*robot_destroy)(player_t *robot);
     void		(*robot_invite)(player_t *robot, player_t *inviter);
 } robot_type_t;
@@ -191,6 +191,6 @@ void Robot_reset_war(player_t *robot);
 int Robot_war_on_player(player_t *robot);
 void Robot_go_home(player_t *robot);
 void Robot_program(player_t *robot, int victim_id);
-void Robot_message(player_t *robot, const char *message);
+void Robot_message(player_t *robot, String message);
 
 #endif

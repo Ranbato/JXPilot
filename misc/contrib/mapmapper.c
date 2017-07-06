@@ -32,7 +32,7 @@ static char versionid[] =
 #define NUM_RULES	6
 #define HAS_RULE(n,r)	((rules[n].rules & r) == r)
 #define BOOL_RULE(n,r)	(HAS_RULE(n,r) ? "yes" : "no")
-#define YN(r)		BOOL_RULE(map->rule,(r))
+#define YN(r)		BOOL_RULE(map.rule,(r))
 #define RULE_LIVES(n)	(rules[n].lives)
 
 #define CRASH_WITH_PLAYER   (1<<0)
@@ -47,9 +47,9 @@ static char versionid[] =
 struct map {
     int x, y;
     int rule;
-    char *name;
-    char *author;
-    unsigned char *data;
+    String name;
+    String author;
+    unsigned String data;
 };
 
 static void *alloc_memory (unsigned size)
@@ -64,17 +64,17 @@ static void *alloc_memory (unsigned size)
     return p;
 }
 
-static char *new_string (char *str)
+static String new_string (String str)
 {
-    char *newstr;
+    String newstr;
 
-    newstr = (char *) alloc_memory (strlen (str) + 1);
+    newstr = (String ) alloc_memory (strlen (str) + 1);
     strcpy (newstr, str);
 
     return newstr;
 }
 
-static void next_line (char *buf, unsigned size, FILE *fp)
+static void next_line (String buf, unsigned size, FILE *fp)
 {
     if (fgets (buf, size, fp) == NULL)
     {
@@ -83,9 +83,9 @@ static void next_line (char *buf, unsigned size, FILE *fp)
     }
 }
 
-static void strip_newline (char *str)
+static void strip_newline (String str)
 {
-    char *nl;
+    String nl;
 
     if ((nl = strchr (str, '\n')) == NULL)
     {
@@ -101,60 +101,60 @@ static void read_old_map (FILE *fp, struct map *map)
     char buf[4096];
 
     next_line (buf, sizeof buf, fp);
-    if (sscanf (buf, "%dx%d\n", &map->x, &map->y) != 2)
+    if (sscanf (buf, "%dx%d\n", &map.x, &map.y) != 2)
     {
 	fprintf (stderr, "Can't get map dimensions\n");
 	exit (1);
     }
 
     next_line (buf, sizeof buf, fp);
-    map->rule = atoi (buf);
-    if (map->rule >= NUM_RULES || map->rule < 0)
+    map.rule = atoi (buf);
+    if (map.rule >= NUM_RULES || map.rule < 0)
     {
-	fprintf (stderr, "Unknown map rule %d, assuming rule 0\n", map->rule);
-	map->rule = 0;
+	fprintf (stderr, "Unknown map rule %d, assuming rule 0\n", map.rule);
+	map.rule = 0;
     }
 
     next_line (buf, sizeof buf, fp);
     strip_newline (buf);
-    map->name = new_string (buf);
+    map.name = new_string (buf);
 
     next_line (buf, sizeof buf, fp);
     strip_newline (buf);
-    map->author = new_string (buf);
+    map.author = new_string (buf);
 
-    map->data = (unsigned char *) alloc_memory (map->x * map->y);
+    map.data = (unsigned String ) alloc_memory (map.x * map.y);
 
     for (i = x = y = 0; (c = getc (fp)) != EOF; )
     {
 	if (c == '\n')
 	{
-	    if (x < map->x)
+	    if (x < map.x)
 	    {
 		fprintf (stderr, "Not enough data on map data line %d\n", y + 1);
 	    }
-	    if (++y >= map->y)
+	    if (++y >= map.y)
 	    {
 		break;
 	    }
 	    x = 0;
 	}
-	else if (x < map->x)
+	else if (x < map.x)
 	{
-	    map->data[i++] = c;
+	    map.data[i++] = c;
 	    x++;
 	}
     }
-    if (i != map->x * map->y)
+    if (i != map.x * map.y)
     {
-	if (x < map->x && y < map->y)
+	if (x < map.x && y < map.y)
 	{
 	    fprintf (stderr, "Not enough data on map data line %d\n", y);
 	}
-	if (y + (x >= map->x) < map->y)
+	if (y + (x >= map.x) < map.y)
 	{
 	    fprintf (stderr, "Could read only %d whole lines of map data\n",
-		y + (x >= map->x));
+		y + (x >= map.x));
 	}
 	fprintf (stderr, "Can't read all map data\n");
 	exit (1);
@@ -205,12 +205,12 @@ static void convert_map_data (struct map *map)
 	new = conversions[i][1];
 	buf[old] = new;
     }
-    n = map->x * map->y;
+    n = map.x * map.y;
     for (i = 0; i < n; i++)
     {
-	old = map->data[i];
+	old = map.data[i];
 	new = buf[old];
-	map->data[i] = new;
+	map.data[i] = new;
     }
 }
 
@@ -233,10 +233,10 @@ static void write_new_map (FILE *fp, struct map *map)
     int x, y;
 
     fprintf (fp, "# Map converted by mapmapper %s\n\n", versionid);
-    fprintf (fp, "mapWidth:            %d\n", map->x);
-    fprintf (fp, "mapHeight:           %d\n", map->y);
-    fprintf (fp, "mapName:             %s\n", map->name);
-    fprintf (fp, "mapAuthor:           %s\n", map->author);
+    fprintf (fp, "mapWidth:            %d\n", map.x);
+    fprintf (fp, "mapHeight:           %d\n", map.y);
+    fprintf (fp, "mapName:             %s\n", map.name);
+    fprintf (fp, "mapAuthor:           %s\n", map.author);
     fprintf (fp, "crashWithPayer:      %s\n", YN(CRASH_WITH_PLAYER));
     fprintf (fp, "playerKillings:      %s\n", YN(PLAYER_KILLINGS));
     fprintf (fp, "playerShielding:     %s\n", YN(PLAYER_SHIELDING));
@@ -245,13 +245,13 @@ static void write_new_map (FILE *fp, struct map *map)
     fprintf (fp, "timing:              %s\n", YN(TIMING));
     fprintf (fp, "onePlayerOnly:       %s\n", YN(ONE_PLAYER_ONLY));
     fprintf (fp, "limitedLives:        %s\n", YN(LIMITED_LIVES));
-    fprintf (fp, "worldLives:          %d\n", RULE_LIVES(map->rule));
+    fprintf (fp, "worldLives:          %d\n", RULE_LIVES(map.rule));
     fprintf (fp, "mapData: \\multiline: EndOfMapdata\n");
-    for (y = 0; y < map->y; y++)
+    for (y = 0; y < map.y; y++)
     {
-	for (x = 0; x < map->x; x++)
+	for (x = 0; x < map.x; x++)
 	{
-	    fputc (map->data[y * map->x + x], fp);
+	    fputc (map.data[y * map.x + x], fp);
 	}
 	fputc ('\n', fp);
     }
@@ -259,7 +259,7 @@ static void write_new_map (FILE *fp, struct map *map)
     fflush (fp);
 }
 
-static FILE *open_file (char *filename, char *mode, int overwrite)
+static FILE *open_file (String filename, String mode, int overwrite)
 {
     FILE *fp;
     int c;
@@ -283,7 +283,7 @@ static FILE *open_file (char *filename, char *mode, int overwrite)
     return fp;
 }
 
-static void usage (char *progname)
+static void usage (String progname)
 {
     fprintf (stderr, "Usage: %s [ -f ] [ oldmap [ newmap ] ]\n", progname);
     exit (1);

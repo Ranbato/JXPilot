@@ -89,7 +89,7 @@ BOOL CXPreplayApp::InitInstance()
 		return FALSE;
 
 	// Enable drag/drop open
-//	m_pMainWnd->DragAcceptFiles();
+//	m_pMainWnd.DragAcceptFiles();
 
 	return TRUE;
 }

@@ -81,10 +81,10 @@ typedef struct {
 typedef struct {
     const move_info_t	*mip;
     move_crash_t	crash;
-    clpos_t		pos;
+    Click 		pos;
     Point2D		vel;
-    clvec_t		todo;
-    clvec_t		done;
+    Click 		todo;
+    Click 		done;
     int			dir;
     int			cannon;
     int			wormhole;
@@ -133,7 +133,7 @@ typedef struct {
     int destroyed_style;
     int group;
     int edges;
-    clpos_t pos;
+    Click  pos;
     int num_points;
     int estyles_start;
     int num_echanges;
@@ -153,8 +153,8 @@ typedef struct {
 typedef uint32_t hitmask_t;
 
 typedef struct move {
-    clvec_t start;
-    clvec_t delta;
+    Click  start;
+    Click  delta;
     hitmask_t hitmask;
     const object_t *obj;
 } move_t;

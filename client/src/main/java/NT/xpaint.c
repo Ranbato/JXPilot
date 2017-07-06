@@ -217,7 +217,7 @@ void Paint_frame(void)
      */
     if (radarPixmap != radarWindow && radar_exposures > 0) {
 	if (!instruments.slidingRadar
-	    || Setup->mode.get( WRAP_PLAY) == 0) {
+	    || Setup.mode.get( WRAP_PLAY) == 0) {
 #ifndef _WINDOWS
 	    XCopyArea(dpy, radarPixmap, radarWindow, gameGC,
 		      0, 0, 256, RadarHeight, 0, 0);
@@ -230,8 +230,8 @@ void Paint_frame(void)
 	    double xp, yp, xo, yo;
 	    unsigned w1, h1, w2, h2;
 
-	    xp = (double) (selfPos.x * 256) / Setup->width;
-	    yp = (double) (selfPos.y * RadarHeight) / Setup->height;
+	    xp = (double) (selfPos.x * 256) / Setup.width;
+	    yp = (double) (selfPos.y * RadarHeight) / Setup.height;
 	    xo = (double) 256 / 2;
 	    yo = (double) RadarHeight / 2;
 
@@ -279,15 +279,15 @@ void Paint_frame(void)
 	Paint_world_radar();
 
 #ifndef _WINDOWS
-    if (dbuf_state->type == PIXMAP_COPY)
+    if (dbuf_state.type == PIXMAP_COPY)
 	XCopyArea(dpy, drawPixmap, drawWindow, gameGC,
 		  0, 0, draw_width, draw_height, 0, 0);
 
     dbuff_switch(dbuf_state);
 
-    if (dbuf_state->type == COLOR_SWITCH) {
-	XSetPlaneMask(dpy, gameGC, dbuf_state->drawing_planes);
-	XSetPlaneMask(dpy, messageGC, dbuf_state->drawing_planes);
+    if (dbuf_state.type == COLOR_SWITCH) {
+	XSetPlaneMask(dpy, gameGC, dbuf_state.drawing_planes);
+	XSetPlaneMask(dpy, messageGC, dbuf_state.drawing_planes);
     }
 #endif
 
@@ -299,7 +299,7 @@ void Paint_frame(void)
 	 * probably faster than XFillRectangle.
 	 */
 #ifndef _WINDOWS
-	if (dbuf_state->multibuffer_type != MULTIBUFFER_DBE) {
+	if (dbuf_state.multibuffer_type != MULTIBUFFER_DBE) {
 	    SET_FG(colors[BLACK].pixel);
 	    XFillRectangle(dpy, drawPixmap, gameGC,
 			   0, 0, draw_width, draw_height);
@@ -370,19 +370,19 @@ void Paint_score_start(void)
     char	headingStr[MSG_LEN];
     static int thisLine;
 
-    thisLine = SCORE_BORDER + scoreListFont->ascent;
+    thisLine = SCORE_BORDER + scoreListFont.ascent;
 
     if (showUserName)
 	strlcpy(headingStr, "NICK=USER@HOST", sizeof(headingStr));
-    else if (Setup->mode.get( TEAM_PLAY))
+    else if (Setup.mode.get( TEAM_PLAY))
 	strlcpy(headingStr, "     SCORE   NAME     LIFE", sizeof(headingStr));
     else {
 	strlcpy(headingStr, "  ", sizeof(headingStr));
-	if (Setup->mode.get( TIMING))
+	if (Setup.mode.get( TIMING))
 	    strcat(headingStr, "LAP ");
 	strlcpy(headingStr, " AL ", sizeof(headingStr));
 	strcat(headingStr, "  SCORE  ");
-	if (Setup->mode.get( LIMITED_LIVES))
+	if (Setup.mode.get( LIMITED_LIVES))
 	    strlcat(headingStr, "LIFE", sizeof(headingStr));
 	strlcat(headingStr, " NAME", sizeof(headingStr));
     }
@@ -426,9 +426,9 @@ void Paint_score_entry(int entry_num, other_t* other, bool is_team)
 	raceStr[2] = ' ';
 
 	lineSpacing
-	    = scoreListFont->ascent + scoreListFont->descent + 3;
+	    = scoreListFont.ascent + scoreListFont.descent + 3;
 	firstLine
-	    = 2*SCORE_BORDER + scoreListFont->ascent + lineSpacing;
+	    = 2*SCORE_BORDER + scoreListFont.ascent + lineSpacing;
     }
     thisLine = firstLine + lineSpacing * entry_num;
 
@@ -437,54 +437,54 @@ void Paint_score_entry(int entry_num, other_t* other, bool is_team)
      */
     if (showUserName)
 	sprintf(label, "%s=%s@%s",
-		other->nick_name, other->user_name, other->host_name);
+		other.nick_name, other.user_name, other.host_name);
     else {
-	if (Setup->mode.get( TIMING)) {
+	if (Setup.mode.get( TIMING)) {
 	    raceStr[0] = ' ';
 	    raceStr[1] = ' ';
-	    if ((other->mychar == ' ' || other->mychar == 'R')
-		&& other->round + other->check > 0) {
-		if (other->round > 99)
-		    sprintf(raceStr, "%3d", other->round);
+	    if ((other.mychar == ' ' || other.mychar == 'R')
+		&& other.round + other.check > 0) {
+		if (other.round > 99)
+		    sprintf(raceStr, "%3d", other.round);
 		else
 		    sprintf(raceStr, "%d.%c",
-			    other->round, other->check + 'a');
+			    other.round, other.check + 'a');
 	    }
 	}
-	if (Setup->mode.get( TEAM_PLAY))
-	    teamStr[0] = other->team + '0';
+	if (Setup.mode.get( TEAM_PLAY))
+	    teamStr[0] = other.team + '0';
 	else
-	    sprintf(teamStr, "%c", other->alliance);
+	    sprintf(teamStr, "%c", other.alliance);
 
-	if (Setup->mode.get( LIMITED_LIVES))
-	    sprintf(lifeStr, " %3d", other->life);
+	if (Setup.mode.get( LIMITED_LIVES))
+	    sprintf(lifeStr, " %3d", other.life);
 
 	if (Using_score_decimals())
 	    sprintf(scoreStr, "%*.*f",
 		    9 - showScoreDecimals, showScoreDecimals,
-		    other->score);
+		    other.score);
 	else {
-	    double score = other->score;
+	    double score = other.score;
 	    int sc = (int)(score >= 0.0 ? score + 0.5 : score - 0.5);
 	    sprintf(scoreStr, "%6d", sc);
 	}
 
-	if (Setup->mode.get( TEAM_PLAY))
+	if (Setup.mode.get( TEAM_PLAY))
 	    sprintf(label, "%c %s  %-18s%s",
-		    other->mychar, scoreStr, other->nick_name, lifeStr);
+		    other.mychar, scoreStr, other.nick_name, lifeStr);
 	else
 	    sprintf(label, "%c %s%s%s%s  %s",
-		    other->mychar, raceStr, teamStr,
+		    other.mychar, raceStr, teamStr,
 		    scoreStr, lifeStr,
-		    other->nick_name);
+		    other.nick_name);
     }
 
     /*
      * Draw the line
      * e94_msu eKthHacks
      */
-    if (!is_team && strchr("DPW", other->mychar)) {
-	if (self && other->id == self->id)
+    if (!is_team && strchr("DPW", other.mychar)) {
+	if (self && other.id == self.id)
 	    color = scoreInactiveSelfColor;
 	else
 	    color = scoreInactiveColor;
@@ -495,14 +495,14 @@ void Paint_score_entry(int entry_num, other_t* other, bool is_team)
 		    label, (int)strlen(label));
     } else {
 	if (!is_team) {
-	    if (self && other->id == self->id)
+	    if (self && other.id == self.id)
 		color = scoreSelfColor;
 	    else
 		color = scoreColor;
 	} else {
-	    color = Team_color(other->team);
+	    color = Team_color(other.team);
 	    if (!color) {
-		if (self && other->team == self->team)
+		if (self && other.team == self.team)
 		    color = scoreOwnTeamColor;
 		else
 		    color = scoreEnemyTeamColor;
@@ -547,7 +547,7 @@ static void Paint_clock(bool redraw)
     struct tm		*m;
     char		buf[16];
     static unsigned	width;
-    unsigned		height = scoreListFont->ascent + scoreListFont->descent
+    unsigned		height = scoreListFont.ascent + scoreListFont.descent
 				+ 3;
 
     if (!clockColor) {
@@ -566,9 +566,9 @@ static void Paint_clock(bool redraw)
 	return;
 
     m = localtime(&currentTime);
-    second = m->tm_sec;
-    minute = m->tm_min;
-    hour = m->tm_hour;
+    second = m.tm_sec;
+    minute = m.tm_min;
+    hour = m.tm_hour;
     /*warn("drawing clock at %02d:%02d:%02d", hour, minute, second);*/
 
     if (!instruments.clockAMPM)
@@ -590,7 +590,7 @@ static void Paint_clock(bool redraw)
 			      width + 2 * border, height));
     ShadowDrawString(dpy, playersWindow, scoreListGC,
 		     256 - (int)(width + border),
-		     scoreListFont->ascent + 4,
+		     scoreListFont.ascent + 4,
 		     buf,
 		     colors[clockColor].pixel,
 		     colors[BLACK].pixel);
@@ -598,7 +598,7 @@ static void Paint_clock(bool redraw)
 
 
 void ShadowDrawString(Display *display, Window w, GC gc,
-		      int x, int y, const char* str,
+		      int x, int y, const String  str,
 		      unsigned long fg, unsigned long bg)
 {
     XSetForeground(display, gc, bg);

@@ -47,7 +47,7 @@
 #include "bit.h"
 #endif
 #ifndef DRAW_H
-/* need shipshape_t */
+/* need ShipShape  */
 #include "shipshape.h"
 #endif
 #ifndef ITEM_H
@@ -66,14 +66,14 @@
 extern bool		updateScores;
 
 /*
- * These values are set in the player->pl_type field.
+ * These values are set in the player.pl_type field.
  */
 #define PL_TYPE_HUMAN		0
 #define PL_TYPE_ROBOT		1
 #define PL_TYPE_TANK		2
 
 /*
- * These values are set in the player->pl_state field.
+ * These values are set in the player.pl_state field.
  */
 #define PL_STATE_UNDEFINED	0
 #define PL_STATE_WAITING	1
@@ -85,7 +85,7 @@ extern bool		updateScores;
 
 /*
  * Different types of attributes a player can have.
- * These are the bits of the player->have and player->used fields.
+ * These are the bits of the player.have and player.used fields.
  */
 #define HAS_EMERGENCY_THRUST	(1U<<30)
 #define HAS_AUTOPILOT		(1U<<29)
@@ -220,7 +220,7 @@ typedef struct player {
     double	turnacc;		/* Current acceleration of turn */
     double	score;			/* Current score of player */
     bool    	update_score;	    	/* score table info needs to be sent */
-    shipshape_t	*ship;			/* wire model of ship shape */
+    ShipShape 	*ship;			/* wire model of ship shape */
     double	power;			/* Force of thrust */
     double	power_s;		/* Saved power fiks */
     double	turnspeed_s;		/* Saved turnspeed */
@@ -367,38 +367,38 @@ static inline player_t *Player_by_id(int id)
 
 static inline bool Player_is_waiting(player_t *pl)
 {
-    return pl->pl_state == PL_STATE_WAITING ? true : false;
+    return pl.pl_state == PL_STATE_WAITING ? true : false;
 }
 
 static inline bool Player_is_appearing(player_t *pl)
 {
-    return pl->pl_state == PL_STATE_APPEARING ? true : false;
+    return pl.pl_state == PL_STATE_APPEARING ? true : false;
 }
 
 static inline bool Player_is_alive(player_t *pl)
 {
-    return pl->pl_state == PL_STATE_ALIVE ? true : false;
+    return pl.pl_state == PL_STATE_ALIVE ? true : false;
 }
 
 /* player was killed this frame ? */
 static inline bool Player_is_killed(player_t *pl)
 {
-    return pl->pl_state == PL_STATE_KILLED ? true : false;
+    return pl.pl_state == PL_STATE_KILLED ? true : false;
 }
 
 static inline bool Player_is_dead(player_t *pl)
 {
-    return pl->pl_state == PL_STATE_DEAD ? true : false;
+    return pl.pl_state == PL_STATE_DEAD ? true : false;
 }
 
 static inline bool Player_is_paused(player_t *pl)
 {
-    return pl->pl_state == PL_STATE_PAUSED ? true : false;
+    return pl.pl_state == PL_STATE_PAUSED ? true : false;
 }
 
 static inline bool Player_is_hoverpaused(player_t *pl)
 {
-    if (pl->pl_status.get( HOVERPAUSE))
+    if (pl.pl_status.get( HOVERPAUSE))
 	return true;
     return false;
 }
@@ -409,100 +409,100 @@ extern void Add_Score(player_t *pl, double score);
 static inline void Player_add_score(player_t *pl, double points)
 {
     Add_Score(pl,points);
-    pl->update_score = true;
+    pl.update_score = true;
     updateScores = true;
 }
 
 static inline void Player_set_score(player_t *pl, double points)
 {
     Set_Score(pl,points);
-    pl->update_score = true;
+    pl.update_score = true;
     updateScores = true;
 }
 
 static inline void Player_set_mychar(player_t *pl, char mychar)
 {
-    pl->mychar = mychar;
-    pl->update_score = true;
+    pl.mychar = mychar;
+    pl.update_score = true;
     updateScores = true;
 }
 
 static inline void Player_set_life(player_t *pl, int life)
 {
-    pl->pl_life = life;
-    pl->update_score = true;
+    pl.pl_life = life;
+    pl.update_score = true;
     updateScores = true;
 }
 
 static inline void Player_set_alliance(player_t *pl, int alliance)
 {
-    pl->alliance = alliance;
-    pl->update_score = true;
+    pl.alliance = alliance;
+    pl.update_score = true;
     updateScores = true;
 }
 
 /*
  * Should be:
- * if (pl->item[ITEM_AFTERBURNER] > 0) return true; else return false;
+ * if (pl.item[ITEM_AFTERBURNER] > 0) return true; else return false;
  */
 static inline bool Player_has_afterburner(player_t *pl)
 {
-    if (pl->have.get( HAS_AFTERBURNER))
+    if (pl.have.get( HAS_AFTERBURNER))
 	return true;
     return false;
 }
 
 /*
  * Should be:
- * if (pl->item[ITEM_ARMOR] > 0) return true; else return false;
+ * if (pl.item[ITEM_ARMOR] > 0) return true; else return false;
  */
 static inline bool Player_has_armor(player_t *pl)
 {
-    if (pl->have.get( HAS_ARMOR))
+    if (pl.have.get( HAS_ARMOR))
 	return true;
     return false;
 }
 
 /*
  * Should be:
- * if (pl->item[ITEM_AUTOPILOT] > 0) return true; else return false;
+ * if (pl.item[ITEM_AUTOPILOT] > 0) return true; else return false;
  */
 static inline bool Player_has_autopilot(player_t *pl)
 {
-    if (pl->have.get( HAS_AUTOPILOT))
+    if (pl.have.get( HAS_AUTOPILOT))
 	return true;
     return false;
 }
 
 /*
  * Should be:
- * if (pl->item[ITEM_CLOAK] > 0) return true; else return false;
+ * if (pl.item[ITEM_CLOAK] > 0) return true; else return false;
  */
 static inline bool Player_has_cloaking_device(player_t *pl)
 {
-    if (pl->have.get( HAS_CLOAKING_DEVICE))
+    if (pl.have.get( HAS_CLOAKING_DEVICE))
 	return true;
     return false;
 }
 
 /*
  * Should be:
- * if (pl->item[ITEM_DEFLECTOR] > 0) return true; else return false;
+ * if (pl.item[ITEM_DEFLECTOR] > 0) return true; else return false;
  */
 static inline bool Player_has_deflector(player_t *pl)
 {
-    if (pl->have.get( HAS_DEFLECTOR))
+    if (pl.have.get( HAS_DEFLECTOR))
 	return true;
     return false;
 }
 
 /*
  * Should be:
- * if (pl->item[ITEM_MIRROR] > 0) return true; else return false;
+ * if (pl.item[ITEM_MIRROR] > 0) return true; else return false;
  */
 static inline bool Player_has_mirror(player_t *pl)
 {
-    if (pl->have.get( HAS_MIRROR))
+    if (pl.have.get( HAS_MIRROR))
 	return true;
     return false;
 }
@@ -510,39 +510,39 @@ static inline bool Player_has_mirror(player_t *pl)
 
 /*
  * Should be:
- * if (pl->item[ITEM_TRACTOR_BEAM] > 0) return true; else return false;
+ * if (pl.item[ITEM_TRACTOR_BEAM] > 0) return true; else return false;
  */
 static inline bool Player_has_tractor_beam(player_t *pl)
 {
-    if (pl->have.get( HAS_TRACTOR_BEAM))
+    if (pl.have.get( HAS_TRACTOR_BEAM))
 	return true;
     return false;
 }
 
 static inline bool Player_is_thrusting(player_t *pl)
 {
-    if (pl->obj_status.get( THRUSTING))
+    if (pl.obj_status.get( THRUSTING))
 	return true;
     return false;
 }
 
 static inline bool Player_is_refueling(player_t *pl)
 {
-    if (pl->used.get( USES_REFUEL))
+    if (pl.used.get( USES_REFUEL))
 	return true;
     return false;
 }
 
 static inline bool Player_is_repairing(player_t *pl)
 {
-    if (pl->used.get( USES_REPAIR))
+    if (pl.used.get( USES_REPAIR))
 	return true;
     return false;
 }
 
 static inline bool Player_is_self_destructing(player_t *pl)
 {
-    return (pl->self_destruct_count > 0.0) ? true : false;
+    return (pl.self_destruct_count > 0.0) ? true : false;
 }
 
 static inline void Player_self_destruct(player_t *pl, bool on)
@@ -550,32 +550,32 @@ static inline void Player_self_destruct(player_t *pl, bool on)
     if (on) {
 	if (Player_is_self_destructing(pl))
 	    return;
-	pl->self_destruct_count = SELF_DESTRUCT_DELAY;
+	pl.self_destruct_count = SELF_DESTRUCT_DELAY;
     }
     else
-	pl->self_destruct_count = 0.0;
+	pl.self_destruct_count = 0.0;
 }
 
 static inline bool Player_is_human(player_t *pl)
 {
-    return pl->pl_type == PL_TYPE_HUMAN ? true : false;
+    return pl.pl_type == PL_TYPE_HUMAN ? true : false;
 }
 
 static inline bool Player_is_robot(player_t *pl)
 {
-    return pl->pl_type == PL_TYPE_ROBOT ? true : false;
+    return pl.pl_type == PL_TYPE_ROBOT ? true : false;
 }
 
 static inline bool Player_is_tank(player_t *pl)
 {
-    return pl->pl_type == PL_TYPE_TANK ? true : false;
+    return pl.pl_type == PL_TYPE_TANK ? true : false;
 }
 
 static inline bool Player_owns_tank(player_t *pl, player_t *tank)
 {
     if (Player_is_tank(tank)
-	&& tank->lock.pl_id != NO_ID  /* kps - probably redundant */
-	&& tank->lock.pl_id == pl->id)
+	&& tank.lock.pl_id != NO_ID  /* kps - probably redundant */
+	&& tank.lock.pl_id == pl.id)
 	return true;
     return false;
 }
@@ -585,9 +585,9 @@ static inline bool Player_owns_tank(player_t *pl, player_t *tank)
  */
 static inline bool Players_are_teammates(player_t *pl1, player_t *pl2)
 {
-    if (world->rules->mode.get( TEAM_PLAY)
-	&& pl1->team != TEAM_NOT_SET
-	&& pl1->team == pl2->team)
+    if (world.rules.mode.get( TEAM_PLAY)
+	&& pl1.team != TEAM_NOT_SET
+	&& pl1.team == pl2.team)
 	return true;
     return false;
 }
@@ -597,43 +597,43 @@ static inline bool Players_are_teammates(player_t *pl1, player_t *pl2)
  */
 static inline bool Players_are_allies(player_t *pl1, player_t *pl2)
 {
-    if (pl1->alliance != ALLIANCE_NOT_SET
-	&& pl1->alliance == pl2->alliance)
+    if (pl1.alliance != ALLIANCE_NOT_SET
+	&& pl1.alliance == pl2.alliance)
 	return true;
     return false;
 }
 
 static inline bool Player_uses_autopilot(player_t *pl)
 {
-    if (pl->used.get( USES_AUTOPILOT))
+    if (pl.used.get( USES_AUTOPILOT))
 	return true;
     return false;
 }
 
 static inline bool Player_uses_compass(player_t *pl)
 {
-    if (pl->used.get( USES_COMPASS))
+    if (pl.used.get( USES_COMPASS))
 	return true;
     return false;
 }
 
 static inline bool Player_uses_connector(player_t *pl)
 {
-    if (pl->used.get( USES_CONNECTOR))
+    if (pl.used.get( USES_CONNECTOR))
 	return true;
     return false;
 }
 
 static inline bool Player_uses_tractor_beam(player_t *pl)
 {
-    if (pl->used.get( USES_TRACTOR_BEAM))
+    if (pl.used.get( USES_TRACTOR_BEAM))
 	return true;
     return false;
 }
 
 static inline bool Player_uses_emergency_shield(player_t *pl)
 {
-    if (pl->used.get( (HAS_SHIELD|HAS_EMERGENCY_SHIELD)) ==
+    if (pl.used.get( (HAS_SHIELD|HAS_EMERGENCY_SHIELD)) ==
 	(HAS_SHIELD|HAS_EMERGENCY_SHIELD))
 	return true;
     return false;
@@ -642,12 +642,12 @@ static inline bool Player_uses_emergency_shield(player_t *pl)
 static inline bool Player_has_emergency_thrust(player_t *pl)
 {
 #if 0
-    if (pl->item[ITEM_EMERGENCY_THRUST] > 0
-	|| pl->emergency_thrust_left > 0.0)
+    if (pl.item[ITEM_EMERGENCY_THRUST] > 0
+	|| pl.emergency_thrust_left > 0.0)
 	return true;
     return false;
 #else
-    if (pl->have.get( HAS_EMERGENCY_THRUST))
+    if (pl.have.get( HAS_EMERGENCY_THRUST))
 	return true;
     return false;
 #endif
@@ -655,7 +655,7 @@ static inline bool Player_has_emergency_thrust(player_t *pl)
 
 static inline bool Player_uses_emergency_thrust(player_t *pl)
 {
-    if (pl->used.get( USES_EMERGENCY_THRUST))
+    if (pl.used.get( USES_EMERGENCY_THRUST))
 	return true;
     return false;
 }
@@ -663,11 +663,11 @@ static inline bool Player_uses_emergency_thrust(player_t *pl)
 static inline bool Player_has_phasing_device(player_t *pl)
 {
 #if 0
-    if (pl->item[ITEM_PHASING] > 0
-	|| pl->phasing_left > 0.0)
+    if (pl.item[ITEM_PHASING] > 0
+	|| pl.phasing_left > 0.0)
 	return true;
 #else
-    if (pl->have.get( HAS_PHASING_DEVICE))
+    if (pl.have.get( HAS_PHASING_DEVICE))
 	return true;
     return false;
 #endif
@@ -676,14 +676,14 @@ static inline bool Player_has_phasing_device(player_t *pl)
 
 static inline bool Player_is_phasing(player_t *pl)
 {
-    if (pl->used.get( USES_PHASING_DEVICE))
+    if (pl.used.get( USES_PHASING_DEVICE))
 	return true;
     return false;
 }
 
 static inline bool Player_is_cloaked(player_t *pl)
 {
-    if (pl->used.get( USES_CLOAKING_DEVICE))
+    if (pl.used.get( USES_CLOAKING_DEVICE))
 	return true;
     return false;
 }
@@ -717,8 +717,8 @@ static inline bool Is_cannon_id(int id)
 
 void Pick_startpos(player_t *pl);
 void Go_home(player_t *pl);
-Item_t Item_by_option_name(const char *name);
-void Base_set_option(base_t *base, const char *name, const char *value);
+Item_t Item_by_option_name(String name);
+void Base_set_option(base_t *base, String name, String value);
 void Compute_sensor_range(player_t *pl);
 void Player_add_tank(player_t *pl, double tank_fuel);
 void Player_remove_tank(player_t *pl, int which_tank);
@@ -726,7 +726,7 @@ void Player_hit_armor(player_t *pl);
 void Player_used_kill(player_t *pl);
 void Player_set_mass(player_t *pl);
 void Player_init_items(player_t *pl);
-int Init_player(int ind, shipshape_t *ship, int type);
+int Init_player(int ind, ShipShape  *ship, int type);
 void Alloc_players(int number);
 void Free_players(void);
 void Update_score_table(void);
@@ -740,22 +740,22 @@ void Detach_ball(player_t *pl, ballobject_t *ball);
 void Kill_player(player_t *pl, bool add_rank_death);
 void Player_death_reset(player_t *pl, bool add_rank_death);
 void Count_rounds(void);
-void Team_game_over(int winning_team, const char *reason);
+void Team_game_over(int winning_team, String reason);
 void Individual_game_over(int winner);
 bool Team_immune(int id1, int id2);
 
 static inline void Player_set_float_dir(player_t *pl, double new_float_dir)
 {
-    if (options.ngControls && new_float_dir != pl->float_dir) {
-	pl->float_dir = new_float_dir;
-	pl->float_dir_cos = cos(pl->float_dir * 2.0 * Math.PI / RES);
-	pl->float_dir_sin = sin(pl->float_dir * 2.0 * Math.PI / RES);
+    if (options.ngControls && new_float_dir != pl.float_dir) {
+	pl.float_dir = new_float_dir;
+	pl.float_dir_cos = cos(pl.float_dir * 2.0 * Math.PI / RES);
+	pl.float_dir_sin = sin(pl.float_dir * 2.0 * Math.PI / RES);
     } else
-	pl->float_dir = new_float_dir;
+	pl.float_dir = new_float_dir;
 }
 
-void Player_print_state(player_t *pl, const char *funcname);
+void Player_print_state(player_t *pl, String funcname);
 void Player_set_state(player_t *pl, int state);
-void Player_set_modbank(player_t *pl, int bank, const char *str);
+void Player_set_modbank(player_t *pl, int bank, String str);
 
 #endif

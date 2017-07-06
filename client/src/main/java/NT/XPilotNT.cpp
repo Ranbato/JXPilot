@@ -100,11 +100,11 @@ BOOL CXpilotApp::InitInstance()
     int i = cs.ReverseFind('\\');
     if (i != -1) {
 	cs = cs.Left(i);
-	_chdir((const char *) cs);
+	_chdir((String ) cs);
     } else {
 	CString e;
 	e.Format("Can't determine startup directory from <%s>",
-		 (const char *) cs);
+		 (String ) cs);
 	AfxMessageBox(e);
     }
 
@@ -156,7 +156,7 @@ int CXpilotApp::ExitInstance()
 
 // interface routines to the xpilot "C" code
 extern "C"
-    void _Trace(char *lpszFormat, long a, long b, long c, long d, long e,
+    void _Trace(String lpszFormat, long a, long b, long c, long d, long e,
 		long f, long g, long h, long i, long j, long k)
 {
     AfxTrace(lpszFormat, a, b, c, d, e, f, g, h, i, j, k);
@@ -164,12 +164,12 @@ extern "C"
 
 
 #if 0
-extern "C" const char *_GetWSockErrText(int error)
+extern "C" String _GetWSockErrText(int error)
 {
     return (GetWSockErrText(error));
 }
 
-extern "C" void DisplayMOTD(const char *text, int len)
+extern "C" void DisplayMOTD(String text, int len)
 {
     CString cs;
 
@@ -181,16 +181,16 @@ extern "C" void DisplayMOTD(const char *text, int len)
     }
     if (!the_motd) {
 	the_motd = new motd;
-	the_motd->Create(IDD_MOTD, NULL);
-	the_motd->CenterWindow();
-	the_motd->isopen = TRUE;
-	the_motd->m_edit1.FmtLines(TRUE);
-	the_motd->m_edit1.SetWindowText(cs);
+	the_motd.Create(IDD_MOTD, NULL);
+	the_motd.CenterWindow();
+	the_motd.isopen = TRUE;
+	the_motd.m_edit1.FmtLines(TRUE);
+	the_motd.m_edit1.SetWindowText(cs);
     } else {
-	if (!the_motd->isopen) {
-	    the_motd->Create(IDD_MOTD, NULL);
-	    the_motd->CenterWindow();
-	    the_motd->isopen = TRUE;
+	if (!the_motd.isopen) {
+	    the_motd.Create(IDD_MOTD, NULL);
+	    the_motd.CenterWindow();
+	    the_motd.isopen = TRUE;
 	}
     }
 }
@@ -198,7 +198,7 @@ extern "C" void DisplayMOTD(const char *text, int len)
 
 CString talkstring;
 
-extern "C" const char *mfcDoTalkWindow(void)
+extern "C" String mfcDoTalkWindow(void)
 {
     CTalkWindow tw;
     int ret = tw.DoModal();
@@ -206,7 +206,7 @@ extern "C" const char *mfcDoTalkWindow(void)
 	talkstring = tw.m_text;
     else
 	talkstring = "";
-    return ((const char *) talkstring);
+    return ((String ) talkstring);
 }
 
 BOOL CXpilotApp::PreTranslateMessage(MSG * pMsg)
@@ -226,7 +226,7 @@ void CXpilotApp::OnAppAbout()
 }
 
 extern "C"
-    void Progress(const char *s, long a, long b, long c, long d, long e,
+    void Progress(String s, long a, long b, long c, long d, long e,
 		  long f, long g, long h, long i, long j, long k)
 {
     CString cs;

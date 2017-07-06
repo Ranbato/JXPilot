@@ -29,13 +29,13 @@ void Transfer_tag(player_t *oldtag_pl, player_t *newtag_pl)
 {
     char msg[MSG_LEN];
 
-    if (tagItPlayerId != oldtag_pl->id
- 	|| oldtag_pl->id == newtag_pl->id)
+    if (tagItPlayerId != oldtag_pl.id
+ 	|| oldtag_pl.id == newtag_pl.id)
  	return;
 
-    tagItPlayerId = newtag_pl->id;
+    tagItPlayerId = newtag_pl.id;
     sprintf(msg, " < %s killed %s and gets to be 'it' now. >",
-	    newtag_pl->name, oldtag_pl->name);
+	    newtag_pl.name, oldtag_pl.name);
     Set_message(msg);
 }
 
@@ -73,11 +73,11 @@ void Check_tag(void)
     }
 
     /* select first candidate for tag */
-    candidate = (int)(rfrac() * num);
+    candidate = (int)(Math.random() * num);
     for (i = candidate; i < NumPlayers; i++) {
 	player_t *pl = Player_by_index(i);
 	if (Player_can_be_tagged(pl)) {
-	    tagItPlayerId = pl->id;
+	    tagItPlayerId = pl.id;
 	    break;
 	}
     }
@@ -86,7 +86,7 @@ void Check_tag(void)
 	for (i = 0; i < candidate; i++) {
 	    player_t *pl = Player_by_index(i);
 	    if (Player_can_be_tagged(pl)) {
-		tagItPlayerId = pl->id;
+		tagItPlayerId = pl.id;
 		break;
 	    }
 	}

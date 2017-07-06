@@ -29,7 +29,7 @@
  * Fast conversion of 'num' into 'str' starting at position 'i', returns
  * index of character after converted number.
  */
-static int num2str(int num, char *str, int i)
+static int num2str(int num, String str, int i)
 {
     int	digits, t;
 
@@ -237,19 +237,19 @@ int Mods_set(modifiers_t *mods, modifier_t modifier, int val)
     if (val == 0)
 	allow = true;
     else if (modifier == ModsNuclear) {
-	if (world->rules->mode.get( ALLOW_NUKES)) 
+	if (world.rules.mode.get( ALLOW_NUKES))
 	    allow = true;
     }
     else if (modifier == ModsCluster) {
-	if (world->rules->mode.get( ALLOW_CLUSTERS)) 
+	if (world.rules.mode.get( ALLOW_CLUSTERS))
 	    allow = true;
     }
     else if (modifier == ModsLaser) {
-	if (world->rules->mode.get( ALLOW_LASER_MODIFIERS)) 
+	if (world.rules.mode.get( ALLOW_LASER_MODIFIERS))
 	    allow = true;
     }
     else {
-	if (world->rules->mode.get( ALLOW_MODIFIERS))
+	if (world.rules.mode.get( ALLOW_MODIFIERS))
 	    allow = true;
     }
 
@@ -319,7 +319,7 @@ int Mods_get(modifiers_t mods, modifier_t modifier)
 /*
  * modstr must be able to hold at least MAX_CHARS chars.
  */
-void Mods_to_string(modifiers_t mods, char *modstr, size_t size)
+void Mods_to_string(modifiers_t mods, String modstr, size_t size)
 {
     int i = 0, t;
 
@@ -373,13 +373,13 @@ void Mods_to_string(modifiers_t mods, char *modstr, size_t size)
 
 void Mods_filter(modifiers_t *mods)
 {
-    if (!world->rules->mode.get( ALLOW_NUKES))
+    if (!world.rules.mode.get( ALLOW_NUKES))
 	Mods_set(mods, ModsNuclear, 0);
 
-    if (!world->rules->mode.get( ALLOW_CLUSTERS))
+    if (!world.rules.mode.get( ALLOW_CLUSTERS))
 	Mods_set(mods, ModsCluster, 0);
 
-    if (!world->rules->mode.get( ALLOW_MODIFIERS)) {
+    if (!world.rules.mode.get( ALLOW_MODIFIERS)) {
 	Mods_set(mods, ModsImplosion, 0);
 	Mods_set(mods, ModsVelocity, 0);
 	Mods_set(mods, ModsMini, 0);
@@ -387,13 +387,13 @@ void Mods_filter(modifiers_t *mods)
 	Mods_set(mods, ModsPower, 0);
     }
 
-    if (!world->rules->mode.get( ALLOW_LASER_MODIFIERS))
+    if (!world.rules.mode.get( ALLOW_LASER_MODIFIERS))
 	Mods_set(mods, ModsLaser, 0);
 }
 
-static int str2num (const char **strp, int min, int max)
+static int str2num (String *strp, int min, int max)
 {
-    const char *str = *strp;
+    String str = *strp;
     int num = 0;
 
     while (isdigit(*str)) {
@@ -405,9 +405,9 @@ static int str2num (const char **strp, int min, int max)
     return num;
 }
 
-void Player_set_modbank(player_t *pl, int bank, const char *str)
+void Player_set_modbank(player_t *pl, int bank, String str)
 {
-    const char *cp;
+    String cp;
     modifiers_t mods;
     int mini, velocity, spread, power;
 
@@ -469,5 +469,5 @@ void Player_set_modbank(player_t *pl, int bank, const char *str)
 	    break;
 	}
     }
-    pl->modbank[bank] = mods;
+    pl.modbank[bank] = mods;
 }

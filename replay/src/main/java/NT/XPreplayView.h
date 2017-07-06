@@ -31,7 +31,7 @@ private:
 	CFont	gameFont;
 	CFont	msgFont;
 
-	short	*ConvertItem(unsigned char *c_bits);
+	short	*ConvertItem(unsigned String c_bits);
 	void DrawFrame(CXPreplayDoc::frame *frame);
 
 // Overrides

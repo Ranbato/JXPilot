@@ -35,7 +35,7 @@
  * Note that the correction needed shouldn't ever be bigger than one mapsize.
  */
 #define WRAP_XBLOCK(x_)	\
-	(World.rules->mode.get( WRAP_PLAY) \
+	(World.rules.mode.get( WRAP_PLAY) \
 	    ? ((x_) < 0 \
 		? (x_) + World.x \
 		: ((x_) >= World.x \
@@ -44,7 +44,7 @@
 	    : (x_))
 
 #define WRAP_YBLOCK(y_)	\
-	(World.rules->mode.get( WRAP_PLAY) \
+	(World.rules.mode.get( WRAP_PLAY) \
 	    ? ((y_) < 0 \
 		? (y_) + World.y \
 		: ((y_) >= World.y \
@@ -58,7 +58,7 @@
  * half the map size then it is wrapped.
  */
 #define WRAP_DX(dx)	\
-	(World.rules->mode.get( WRAP_PLAY) \
+	(World.rules.mode.get( WRAP_PLAY) \
 	    ? ((dx) < - (World.width >> 1) \
 		? (dx) + World.width \
 		: ((dx) > (World.width >> 1) \
@@ -67,7 +67,7 @@
 	    : (dx))
 
 #define WRAP_DY(dy)	\
-	(World.rules->mode.get( WRAP_PLAY) \
+	(World.rules.mode.get( WRAP_PLAY) \
 	    ? ((dy) < - (World.height >> 1) \
 		? (dy) + World.height \
 		: ((dy) > (World.height >> 1) \
@@ -77,7 +77,7 @@
 
 
 #define PSEUDO_TEAM(pl1,pl2)\
-	((pl1)->pseudo_team == (pl2)->pseudo_team)
+	((pl1).pseudo_team == (pl2).pseudo_team)
 
 /*
  * Used when we want to pass an index which is not in use.
@@ -126,7 +126,7 @@
 #define ED_LASER_HIT		(-100.0)
 
 #define MAX_PLAYER_FUEL		2600.0
-#define ENERGY_PACK_FUEL	(500.0 + rfrac() * 511.0)
+#define ENERGY_PACK_FUEL	(500.0 + Math.random() * 511.0)
 
 #define LG2_MAX_AFTERBURNER     4
 #define ALT_SPARK_MASS_FACT     4.2

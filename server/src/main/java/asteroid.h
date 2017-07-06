@@ -48,18 +48,18 @@
 #define ASTEROID_FUEL_HIT(fuel, size)	(((fuel) * ASTEROID_LIFE) / \
 				(25.0 * ASTEROID_HITS(size)))
 /* initial speed of asteroid */
-#define ASTEROID_START_SPEED	(8 + rfrac() * 10)
+#define ASTEROID_START_SPEED	(8 + Math.random() * 10)
 /* minimum distance asteroids start away from any player */
 #define ASTEROID_MIN_DIST	(5 * BLOCK_CLICKS)
 /* radius of asteroid size n */
 #define ASTEROID_RADIUS(size)	((0.8 * SHIP_SZ * (size)) * CLICK)
 
-extern shape_t asteroid_wire1;
-extern shape_t asteroid_wire2;
-extern shape_t asteroid_wire3;
-extern shape_t asteroid_wire4;
+extern Shape  asteroid_wire1;
+extern Shape  asteroid_wire2;
+extern Shape  asteroid_wire3;
+extern Shape  asteroid_wire4;
 
-static inline shape_t *Asteroid_get_shape_by_size(int size)
+static inline Shape  *Asteroid_get_shape_by_size(int size)
 {
     switch (size) {
     case 1:

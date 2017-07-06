@@ -77,7 +77,7 @@ static void print_ignorelist(void)
 	Add_message("Ignorelist is empty. [*Client reply*]");
 }
 
-static void print_help(const char *arg)
+static void print_help(String arg)
 {
     int i;
     char message[MAX_CHARS] = "";
@@ -144,7 +144,7 @@ static void print_help(const char *arg)
     }
 }
 
-static void ignorePlayer(const char *name, int level)
+static void ignorePlayer(String name, int level)
 {
     other_t *other = Other_by_name(name, true);
     char buf[64 + MAX_NAME_LEN];
@@ -153,36 +153,36 @@ static void ignorePlayer(const char *name, int level)
 	if (level == 1) {
 	    snprintf(buf, sizeof(buf),
 		     "Ignoring %s (textmask). [*Client reply*]",
-		     other->nick_name);
+		     other.nick_name);
 	    Add_message(buf);
 	} else {
 	    snprintf(buf, sizeof(buf),
 		     "Ignoring %s (completely). [*Client reply*]",
-		     other->nick_name);
+		     other.nick_name);
 	    Add_message(buf);
 	}
-	other->ignorelevel = level;
+	other.ignorelevel = level;
     }
 }
 
-static void unignorePlayer(const char *name)
+static void unignorePlayer(String name)
 {
     other_t *other = Other_by_name(name, true);
     char buf[64 + MAX_NAME_LEN];
 
     if (other != NULL) {
 	snprintf(buf, sizeof(buf),
-		 "Stopped ignoring %s. [*Client reply*]", other->nick_name);
+		 "Stopped ignoring %s. [*Client reply*]", other.nick_name);
 	Add_message(buf);
-	other->ignorelevel = 0;
+	other.ignorelevel = 0;
     }
 }
 
-void executeCommand(const char *talk_str)
+void executeCommand(String talk_str)
 {
     int i, command_num;
     char str[MAX_CHARS];
-    char *command, *argument = NULL;
+    String command, *argument = NULL;
 
     assert(talk_str);
     if (strlen(talk_str) == 0) {
@@ -253,7 +253,7 @@ void executeCommand(const char *talk_str)
     }
 }
 
-void crippleTalk(char *msg)
+void crippleTalk(String msg)
 {
     int i, msgEnd;
 

@@ -33,7 +33,7 @@
 #define	WSA_CONNECT		WM_USER+302
 #define	WSA_RECV		WM_USER+303
 
-extern "C" const char *GetWSockErrText(int error);
+extern "C" String GetWSockErrText(int error);
 
 class CXpilotView:public CView {
   protected:			// create from serialization only

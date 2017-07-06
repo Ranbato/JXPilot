@@ -39,12 +39,12 @@ static void sigcatch(int signum)
 
 }
 
-const char *Program_name(void)
+String Program_name(void)
 {
     return "xpilot-ng-sdl";
 }
 
-int main(int argc, char *argv[])
+int main(int argc, String argv[])
 {
     bool auto_shutdown = false;
     int result;

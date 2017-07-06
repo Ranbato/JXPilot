@@ -29,7 +29,7 @@
 int			dgram_one_socket = 0;
 
 
-int create_dgram_addr_socket(sock_t *sock, char *dotaddr, int port)
+int create_dgram_addr_socket(sock_t *sock, String dotaddr, int port)
 {
     static int		saved;
     static sock_t	save_sock;
@@ -45,7 +45,7 @@ int create_dgram_addr_socket(sock_t *sock, char *dotaddr, int port)
 	if (port || !clientPortStart || (clientPortStart > clientPortEnd)) {
 	    status = sock_open_udp(sock, dotaddr, port);
 	    if (status == SOCK_IS_ERROR) {
-		error("Cannot create datagram socket (%d)", sock->error.error);
+		error("Cannot create datagram socket (%d)", sock.error.error);
 		return -1;
 	    }
 	}

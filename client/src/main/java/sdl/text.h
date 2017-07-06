@@ -57,7 +57,7 @@ typedef struct {
 
 typedef struct {
     arraylist_t *tex_list;
-    char *text;
+    String text;
     int width;
     int height;
     int font_height;
@@ -78,7 +78,7 @@ typedef struct {
 /* The init function will create a font of
  * of the height h from the file fname.
  */
-int fontinit(font_data *ft_font, const char * fname, unsigned int size);
+int fontinit(font_data *ft_font, String  fname, unsigned int size);
 
 /* Free all the resources assosiated with the font.*/
 void fontclean(font_data *ft_font);
@@ -89,27 +89,27 @@ GLuint SDL_GL_LoadTexture(SDL_Surface *surface, texcoord_t *texcoord);
 /* Calcs the bounding width,height for the text if it were printed
  * to screen with given font
  */
-fontbounds nprintsize(font_data *ft_font, int length, const char *fmt, ...);
-fontbounds printsize(font_data *ft_font, const char *fmt, ...);
+fontbounds nprintsize(font_data *ft_font, int length, String fmt, ...);
+fontbounds printsize(font_data *ft_font, String fmt, ...);
 
 /* 
  * NOTE: passing color 0x00000000 causes the painting to *not* set color,
  * it does *not* mean the text will be drawn with color 0x00000000, you
  * should check for that before calling this function.
  */
-void HUDnprint(font_data *ft_font, int color, int XALIGN, int YALIGN, int x, int y, int length, const char *fmt, ...);
-void mapnprint(font_data *ft_font, int color, int XALIGN, int YALIGN, int x, int y, int length, const char *fmt,...);
-void HUDprint(font_data *ft_font, int color, int XALIGN, int YALIGN, int x, int y, const char *fmt, ...);
-void mapprint(font_data *ft_font, int color, int XALIGN, int YALIGN, int x, int y, const char *fmt,...);
+void HUDnprint(font_data *ft_font, int color, int XALIGN, int YALIGN, int x, int y, int length, String fmt, ...);
+void mapnprint(font_data *ft_font, int color, int XALIGN, int YALIGN, int x, int y, int length, String fmt,...);
+void HUDprint(font_data *ft_font, int color, int XALIGN, int YALIGN, int x, int y, String fmt, ...);
+void mapprint(font_data *ft_font, int color, int XALIGN, int YALIGN, int x, int y, String fmt,...);
 
-bool draw_text(font_data *ft_font, int color, int XALIGN, int YALIGN, int x, int y, const char *text, bool savetex, string_tex_t *string_tex, bool onHUD);
-bool draw_text_fraq(font_data *ft_font, int color, int XALIGN, int YALIGN, int x, int y, const char *text
+bool draw_text(font_data *ft_font, int color, int XALIGN, int YALIGN, int x, int y, String text, bool savetex, string_tex_t *string_tex, bool onHUD);
+bool draw_text_fraq(font_data *ft_font, int color, int XALIGN, int YALIGN, int x, int y, String text
     	    	    , float xstart
     	    	    , float xstop
     	    	    , float ystart
     	    	    , float ystop
 		    , bool savetex, string_tex_t *string_tex, bool onHUD);
-bool render_text(font_data *ft_font, const char *text, string_tex_t *string_tex);
+bool render_text(font_data *ft_font, String text, string_tex_t *string_tex);
 void disp_text(string_tex_t *string_tex, int color, int XALIGN, int YALIGN, int x, int y, bool onHUD);
 void disp_text_fraq(string_tex_t *string_tex, int color, int XALIGN, int YALIGN, int x, int y
     	    	    , float xstart
@@ -125,7 +125,7 @@ extern font_data mapfont;
 extern int gameFontSize;
 extern int mapFontSize;
 
-extern char *gamefontname;
+extern String gamefontname;
 
 extern string_tex_t score_object_texs[];
 

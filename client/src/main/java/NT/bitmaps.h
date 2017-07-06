@@ -106,7 +106,7 @@ typedef struct {
  * are rotated copies of the original image.
  */
 typedef struct {
-    const char		*filename;     /* the file containing the image */
+    String filename;     /* the file containing the image */
     int			count;         /* amount of images (see above) */
     int			state;         /* the state of the image (BMS_*) */
     unsigned		width, height; /* the (scaled) dimensions */

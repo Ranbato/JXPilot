@@ -33,7 +33,7 @@
 #endif
 
 #ifndef DRAW_H
-/* need shipshape_t */
+/* need ShipShape  */
 #include "shipshape.h"
 #endif
 #ifndef ITEM_H
@@ -208,7 +208,7 @@ typedef struct {
     short	max_chars_in_names;	/* name_width was calculated
 					   for this value of maxCharsInNames */
     short	ignorelevel;
-    shipshape_t	*ship;
+    ShipShape 	*ship;
     char	nick_name[MAX_CHARS];
     char	user_name[MAX_CHARS];
     char	host_name[MAX_CHARS];
@@ -263,7 +263,7 @@ typedef struct {
 } polygon_style_t;
 
 typedef struct {
-    ipos_t *points;		/* points[0] is absolute, rest are relative */
+    Point  *points;		/* points[0] is absolute, rest are relative */
     int num_points;		/* number of points */
     Rectangle bounds;		/* bounding box for the polygon */
     int *edge_styles;		/* optional array of indexes to edge_styles */
@@ -465,8 +465,8 @@ extern score_object_t	score_objects[MAX_SCORE_OBJECTS];
 extern int		score_object;
 
 extern int      oldServer; /* Compatibility mode for old block-based servers */
-extern ipos_t	selfPos;
-extern ipos_t	selfVel;
+extern Point 	selfPos;
+extern Point 	selfVel;
 extern short	heading;
 extern short	nextCheckPoint;
 extern u_byte	numItems[NUM_ITEMS];
@@ -654,8 +654,8 @@ extern int protocolVersion;
 /*
  * somewhere
  */
-const char *Program_name(void);
-int Bitmap_add(const char *filename, int count, bool scalable);
+String Program_name(void);
+int Bitmap_add(String filename, int count, bool scalable);
 void Pointer_control_newbie_message(void);
 
 /*
@@ -695,9 +695,9 @@ int Alloc_msgs(void);
 void Free_msgs(void);
 int Alloc_history(void);
 void Free_selectionAndHistory(void);
-void Add_message(const char *message);
-void Add_newbie_message(const char *message);
-extern void Add_alert_message(const char *message, double timeout);
+void Add_message(String message);
+void Add_newbie_message(String message);
+extern void Add_alert_message(String message, double timeout);
 extern void Clear_alert_messages(void);
 void Add_pending_messages(void);
 void Add_roundend_messages(other_t **order);
@@ -719,15 +719,15 @@ int Check_pos_by_index(int ind, int *xp, int *yp);
 int Check_index_by_pos(int x, int y);
 homebase_t *Homebase_by_id(int id);
 other_t *Other_by_id(int id);
-other_t *Other_by_name(const char *name, bool show_error_msg);
-shipshape_t *Ship_by_id(int id);
+other_t *Other_by_name(String name, bool show_error_msg);
+ShipShape  *Ship_by_id(int id);
 int Handle_leave(int id);
 int Handle_player(int id, int team, int mychar,
-		  char *nick_name, char *user_name, char *host_name,
-		  char *shape, int myself);
+		  String nick_name, String user_name, String host_name,
+		  String shape, int myself);
 int Handle_team(int id, int pl_team);
 int Handle_score(int id, double score, int life, int mychar, int alliance);
-int Handle_score_object(double score, int x, int y, char *msg);
+int Handle_score_object(double score, int x, int y, String msg);
 int Handle_team_score(int team, double score);
 int Handle_timing(int id, int check, int round, long loops);
 int Handle_seek(int programmer_id, int robot_id, int sought_id);
@@ -741,7 +741,7 @@ int Handle_self(int x, int y, int vx, int vy, int newHeading,
 		double newFuelSum, double newFuelMax, int newPacketSize, 
 		int status);
 int Handle_self_items(u_byte *newNumItems);
-int Handle_modifiers(char *m);
+int Handle_modifiers(String m);
 int Handle_damaged(int dam);
 int Handle_destruct(int count);
 int Handle_shutdown(int count, int delay);
@@ -774,14 +774,14 @@ int Handle_vcannon(int x, int y, int type);
 int Handle_vfuel(int x, int y, double fuel);
 int Handle_vbase(int x, int y, int xi, int yi, int type);
 int Handle_vdecor(int x, int y, int xi, int yi, int type);
-int Handle_message(char *msg);
+int Handle_message(String msg);
 int Handle_eyes(int id);
 int Handle_time_left(long sec);
 void Map_dots(void);
 void Map_restore(int startx, int starty, int width, int height);
 void Map_blue(int startx, int starty, int width, int height);
 bool Using_score_decimals(void);
-int Client_init(char *server, unsigned server_version);
+int Client_init(String server, unsigned server_version);
 int Client_setup(void);
 void Client_cleanup(void);
 int Client_start(void);
@@ -805,7 +805,7 @@ int Check_client_fps(void);
 /*
  * about.c
  */
-extern int Handle_motd(long off, char *buf, int len, long filesize);
+extern int Handle_motd(long off, String buf, int len, long filesize);
 extern void aboutCleanup(void);
 
 #ifdef _WINDOWS
@@ -829,7 +829,7 @@ extern bool Set_scaleFactor(xp_option_t *opt, double val);
 extern bool Set_altScaleFactor(xp_option_t *opt, double val);
 
 #ifdef _WINDOWS
-extern char *Get_xpilotini_file(int level);
+extern String Get_xpilotini_file(int level);
 #endif
 
 /*
@@ -846,7 +846,7 @@ extern void xpilotShutdown(void);
 /*
  * mapdata.c
  */
-extern int Mapdata_setup(const char *);
+extern int Mapdata_setup(String );
 
 
 /*
@@ -871,7 +871,7 @@ extern int Init_asteroids(void);
 /*
  * query.c
  */
-extern int Query_all(sock_t *sockfd, int port, char *msg, size_t msglen);
+extern int Query_all(sock_t *sockfd, int port, String msg, size_t msglen);
 
 
 
@@ -879,11 +879,11 @@ extern int Query_all(sock_t *sockfd, int port, char *msg, size_t msglen);
  * textinterface.c
  */
 extern int Connect_to_server(int auto_connect, int list_servers,
-			     int auto_shutdown, char *shutdown_reason,
+			     int auto_shutdown, String shutdown_reason,
 			     Connect_param_t *conpar);
 extern int Contact_servers(int count, char **servers,
 			   int auto_connect, int list_servers,
-			   int auto_shutdown, char *shutdown_message,
+			   int auto_shutdown, String shutdown_message,
 			   int find_max, int *num_found,
 			   char **server_addresses, char **server_names,
 			   unsigned *server_versions,

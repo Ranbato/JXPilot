@@ -33,27 +33,27 @@ const char separators[] = " \t\n";
 
 CBSString::CBSString()
 {
-    this->CString::CString();
+    this.CString::CString();
 }
 
-CBSString::CBSString(const char *psz)
+CBSString::CBSString(String psz)
 {
-    this->CString::CString(psz);
+    this.CString::CString(psz);
 }
 
 CBSString::CBSString(const CBSString & stringSrc)
 {
-    this->CString::CString((const CString &) stringSrc);
+    this.CString::CString((const CString &) stringSrc);
 }
 
 CBSString::CBSString(const CString & stringSrc)
 {
-    this->CString::CString(stringSrc);
+    this.CString::CString(stringSrc);
 }
 
 CBSString::CBSString(const CBSString * cbs)
 {
-    this->CString::CString((const char *) cbs);
+    this.CString::CString((String ) cbs);
 }
 
 CBSString CBSString::GetToken()
@@ -63,7 +63,7 @@ CBSString CBSString::GetToken()
     if (ct.GetLength())
 	ct = Mid(ct.GetLength());
     else
-	ct = (const char *) this[0];
+	ct = (String ) this[0];
     ct = ct.SpanExcluding(separators);
     return (ct);
 }
@@ -85,12 +85,12 @@ CBSString CBSString::SkipToken()
     return (cs);
 }
 
-int CBSString::MatchToken(const char *list[])
+int CBSString::MatchToken(String list[])
 {
     int i = 0;
     while (*list != NULL) {
-//              TRACE("MatchToken: <%s> <%s>\n", *list, (const char*)*this);
-	if (!strcmp((const char *) *list, (const char *) *this))
+//              TRACE("MatchToken: <%s> <%s>\n", *list, (const String )*this);
+	if (!strcmp((String ) *list, (String ) *this))
 //              if (this == *list)
 	    return (i);
 	list++;

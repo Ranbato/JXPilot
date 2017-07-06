@@ -191,7 +191,7 @@ Marcus Sundberg's ChangeLog:
 
 2002-05-19 19:54  e94_msu
 
-	* src/server/object.h (1.4): We must increase (pl)->shots in
+	* src/server/object.h (1.4): We must increase (pl).shots in
 	FireShot() macro.
 
 2002-05-19 19:53  e94_msu

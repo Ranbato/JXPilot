@@ -48,7 +48,7 @@ extern int screennum, root_width, root_height;
 extern Display *display;
 extern GC T_Back_GC, T_Fore_GC, T_Hlgt_GC, T_Shdw_GC;
 extern XFontStruct *T_Font;
-extern char *T_Background, *T_Foreground, *T_Shadow, *T_Highlight;
+extern String T_Background, *T_Foreground, *T_Shadow, *T_Highlight;
 extern Atom ProtocolAtom;
 extern Atom KillAtom;
 
@@ -72,12 +72,12 @@ typedef struct HandlerInfo HandlerInfo_t;
 typedef int (*handler_t)(HandlerInfo_t);
 
 typedef struct T_Field {
-    char *name, *label;
+    String name, *label;
     short type, active;
     short x, y, width, height, x2, y2;
     handler_t handler;
     int *intvar;
-    char *charvar;
+    String charvar;
     int charvar_length;
     short null;
     struct T_Field *next;
@@ -88,7 +88,7 @@ typedef struct T_Form {
     T_Field_t *field;
     T_Field_t *entry;
     int entry_cursor, entry_pos;
-    char *entry_restore;
+    String entry_restore;
     struct T_Form *next;
 } T_Form_t;
 
@@ -113,13 +113,13 @@ extern T_Popup_t *T_Popup;
 
 
 /* T_Toolkit.c prototypes */
-void T_ConnectToServer(char *display_name);
+void T_ConnectToServer(String display_name);
 void T_CloseServerConnection(void);
-void T_SetToolkitFont(char *font);
-int T_GetGC(GC * gc, char *foreground);
-int T_FontInit(XFontStruct ** fontinfo, char *fontname);
+void T_SetToolkitFont(String font);
+int T_GetGC(GC * gc, String foreground);
+int T_FontInit(XFontStruct ** fontinfo, String fontname);
 Window T_MakeWindow(int x, int y, int width, int height,
-		    char *fg, char *bg);
+		    String fg, String bg);
 void T_SetWindowName(Window window, char windowname[], char iconname[]);
 void T_SetWindowSizeLimits(Window window, int minwidth,
 			   int minheight, int maxwidth, int maxheight,
@@ -131,12 +131,12 @@ void T_DrawButton(Window win, int x, int y, int width,
 void T_PopButton(Window win, int x, int y, int width,
 		 int height, int zheight);
 void T_DrawTextButton(Window win, int x, int y, int width,
-		      int height, int zheight, char *string);
+		      int height, int zheight, String string);
 void T_DrawString(Window win, int x, int y, int width,
-		  int height, GC gc, char *string, int justify,
+		  int height, GC gc, String string, int justify,
 		  int crop, int cursorpos);
 void T_DrawText(Window win, int x, int y, int width, int height,
-		GC gc, char *text);
+		GC gc, String text);
 
 /* T_Form.c prototypes */
 void T_FormEventCheck(XEvent * report);
@@ -149,38 +149,38 @@ void CallFieldHandler(T_Form_t * form, T_Field_t * field, int x,
 void T_FormClear(Window win);
 void T_FormCloseWindow(Window win);
 T_Form_t **SeekForm(Window win, short add);
-void ChangeField(Window win, char *name, char *label,
+void ChangeField(Window win, String name, String label,
 		 short type, short active, short x, short y, short width,
 		 short height, short x2, short y2, handler_t handler,
-		 int *intvar, char *charvar, int charvar_length,
+		 int *intvar, String charvar, int charvar_length,
 		 short null);
-void T_FormButton(Window win, char *name, short x, short y, short width,
-		  short height, char *label, handler_t handler);
-void T_FormHoldButton(Window win, char *name, short x, short y,
-		      short width, short height, char *label,
+void T_FormButton(Window win, String name, short x, short y, short width,
+		  short height, String label, handler_t handler);
+void T_FormHoldButton(Window win, String name, short x, short y,
+		      short width, short height, String label,
 		      handler_t handler);
-void T_FormMultiButton(Window win, char *name, short x, short y,
+void T_FormMultiButton(Window win, String name, short x, short y,
 		       short width, short height, short x2, short y2,
-		       char *label, int *intvar, short no_null);
-void T_FormScrollArea(Window win, char *name, short type, short x, short y,
+		       String label, int *intvar, short no_null);
+void T_FormScrollArea(Window win, String name, short type, short x, short y,
 		      short width, short height, handler_t handler);
-void T_FormText(Window win, char *name, short x, short y, short width,
-		short height, char *label, short justify);
-void T_FormStringEntry(Window win, char *name, short x, short y,
+void T_FormText(Window win, String name, short x, short y, short width,
+		short height, String label, short justify);
+void T_FormStringEntry(Window win, String name, short x, short y,
 		       short width, short height, short x2, short y2,
-		       char *label, char *charvar, int charvar_length,
+		       String label, String charvar, int charvar_length,
 		       handler_t handler);
 void T_DrawEntryField(T_Form_t * form, T_Field_t * field);
 void T_SetEntryField(T_Form_t * form, T_Field_t * field, int x);
-void T_FormRedrawEntryField(char *charvar);
+void T_FormRedrawEntryField(String charvar);
 
 /* T_Popup.c prototypes */
-Window T_PopupCreate(int x, int y, int width, int height, char *title);
-Window T_PopupAlert(int type, char *message, char *btn1,
-		    char *btn2, handler_t handler1, handler_t handler2);
+Window T_PopupCreate(int x, int y, int width, int height, String title);
+Window T_PopupAlert(int type, String message, String btn1,
+		    String btn2, handler_t handler1, handler_t handler2);
 Window T_PopupPrompt(int x, int y, int width, int height,
-		     char *title, char *message, char *btn1, char *btn2,
-		     char *charvar, int length, handler_t handler);
+		     String title, String message, String btn1, String btn2,
+		     String charvar, int length, handler_t handler);
 int T_IsPopupOpen(Window win);
 void T_PopupClose(Window win);
 
