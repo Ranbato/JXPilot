@@ -113,7 +113,7 @@ static void Set_item_chance(int item)
  * This function is also called when option itemProbMult or
  * option maxItemDensity changes.
  */
-void Tune_item_probs(void)
+void Tune_item_probs()
 {
     int i, j, excess;
 
@@ -139,7 +139,7 @@ void Tune_item_probs(void)
     }
 }
 
-void Tune_asteroid_prob(void)
+void Tune_asteroid_prob()
 {
     double max = options.maxAsteroidDensity * world.x * world.y;
 
@@ -168,7 +168,7 @@ void Tune_asteroid_prob(void)
 /*
  * Postprocess a change command for the number of items per pack.
  */
-void Tune_item_packs(void)
+void Tune_item_packs()
 {
     world.items[ITEM_MINE].max_per_pack = options.maxMinesPerPack;
     world.items[ITEM_MISSILE].max_per_pack = options.maxMissilesPerPack;
@@ -197,7 +197,7 @@ static void Init_item(int item, int minpp, int maxpp)
  * the availability of initial items.
  * Limit the initial resources between minimum and maximum possible values.
  */
-void Set_initial_resources(void)
+void Set_initial_resources()
 {
     int i;
 
@@ -263,7 +263,7 @@ void Set_initial_resources(void)
 }
 
 
-void Set_misc_item_limits(void)
+void Set_misc_item_limits()
 {
     LIMIT(options.dropItemOnKillProb, 0.0, 1.0);
     LIMIT(options.detonateItemOnKillProb, 0.0, 1.0);
@@ -284,7 +284,7 @@ void Set_misc_item_limits(void)
 /*
  * First time initialization of all global item stuff.
  */
-void Set_world_items(void)
+void Set_world_items()
 {
     Init_item(ITEM_FUEL, 0, 0);
     Init_item(ITEM_TANK, 1, 1);
@@ -314,7 +314,7 @@ void Set_world_items(void)
 }
 
 
-void Set_world_rules(void)
+void Set_world_rules()
 {
     static rules_t rules;
 
@@ -350,7 +350,7 @@ void Set_world_rules(void)
     DEF_USED &= DEF_HAVE;
 }
 
-void Set_world_asteroids(void)
+void Set_world_asteroids()
 {
     world.asteroids.num = 0;
     Tune_asteroid_prob();

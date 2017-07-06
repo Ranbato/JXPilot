@@ -102,7 +102,7 @@ void Item_damage(player_t *pl, double prob)
     }
 }
 
-int Choose_random_item(void)
+int Choose_random_item()
 {
     int i;
     double item_prob_sum = 0;
@@ -198,7 +198,7 @@ void Place_item(player_t *pl, int item)
 	if (!World_contains_clpos(pos))
 	    return;
 
-	if (is_inside(pos.cx, pos.cy, NOTEAM_BIT | NONBALL_BIT, NULL)
+	if (is_inside(pos.cx, pos.cy, NOTEAM_BIT | NONBALL_BIT, null)
 	    != NO_GROUP)
 	    return;
 
@@ -217,7 +217,7 @@ void Place_item(player_t *pl, int item)
 	    && Math.random() < options.itemConcentratorProb)
 	    con = ItemConc_by_index((int)(Math.random() * Num_itemConcs()));
 	else
-	    con = NULL;
+	    con = null;
 	/*
 	 * kps - write a generic function that can be used here and
 	 * with asteroids.
@@ -244,7 +244,7 @@ void Place_item(player_t *pl, int item)
 	    } else
 		pos = World_get_random_clpos();
 
-	    if (is_inside(pos.cx, pos.cy, NOTEAM_BIT | NONBALL_BIT, NULL)
+	    if (is_inside(pos.cx, pos.cy, NOTEAM_BIT | NONBALL_BIT, null)
 		== NO_GROUP)
 		break;
 	}
@@ -300,7 +300,7 @@ void Make_item(Click  pos, Point2D vel,
     if (world.items[type].num >= world.items[type].max)
 	return;
 
-    if ((item = ITEM_PTR(Object_allocate())) == NULL)
+    if ((item = ITEM_PTR(Object_allocate())) == null)
 	return;
 
     item.type = OBJ_ITEM;
@@ -570,7 +570,7 @@ void Do_deflector(player_t *pl)
 
 void Do_transporter(player_t *pl)
 {
-    player_t *victim = NULL;
+    player_t *victim = null;
     int i;
     double dist, closest = TRANSPORTER_DISTANCE * CLICK;
 
@@ -607,14 +607,14 @@ void Do_transporter(player_t *pl)
     }
 
     /* victim found */
-    Do_general_transporter(pl.id, pl.pos, victim, NULL, NULL);
+    Do_general_transporter(pl.id, pl.pos, victim, null, null);
 }
 
 void Do_general_transporter(int id, Click  pos,
 			    player_t *victim, int *itemp, double *amountp)
 {
     char msg[MSG_LEN];
-    String what = NULL;
+    String what = null;
     int i, item = ITEM_FUEL;
     double amount;
     player_t *pl = Player_by_id(id);
@@ -888,7 +888,7 @@ void do_lose_item(player_t *pl)
 void Fire_general_ecm(int id, int team, Click  pos)
 {
     object_t *shot;
-    mineobject_t *closest_mine = NULL;
+    mineobject_t *closest_mine = null;
     smartobject_t *smart;
     mineobject_t *mine;
     double closest_mine_range = world.hypotenuse;
@@ -1009,7 +1009,7 @@ void Fire_general_ecm(int id, int team, Click  pos)
 	    }
 	    mine.mine_count = ((8 * (1 - range)) + 2) * 12;
 	    if (!mine.obj_status.get( CONFUSED)
-		&& (closest_mine == NULL || range < closest_mine_range)) {
+		&& (closest_mine == null || range < closest_mine_range)) {
 		closest_mine = mine;
 		closest_mine_range = range;
 	    }
@@ -1028,7 +1028,7 @@ void Fire_general_ecm(int id, int team, Click  pos)
      *  50		75
      *	 0 (closest)	100
      */
-    if (options.ecmsReprogramMines && closest_mine != NULL) {
+    if (options.ecmsReprogramMines && closest_mine != null) {
 	range = closest_mine_range;
 	if (range <= 0 || (int)(Math.random() * 100.0f) < (100 - (int)(50*range)))
 	    closest_mine.id = (pl ? pl.id : NO_ID);

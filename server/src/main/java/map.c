@@ -36,10 +36,10 @@
 world_t World, *world;
 bool is_polygon_map = false;
 
-static void Find_base_direction(void);
+static void Find_base_direction();
 
 
-static void Check_map_object_counters(void)
+static void Check_map_object_counters()
 {
     int i;
 
@@ -87,7 +87,7 @@ if ((M) > (N)) { \
 } } \
 
 
-static void Realloc_map_objects(void)
+static void Realloc_map_objects()
 {
     /*SHRINK(cannon_t, world.cannons, world.NumCannons, world.MaxCannons);*/
     /*SHRINK(fuel_t, world.fuels, world.NumFuels, world.MaxFuels);*/
@@ -256,7 +256,7 @@ int World_place_wormhole(Click  pos, wormtype_t type)
 /*
  * Allocate checkpoints for an xp map.
  */
-static void alloc_old_checks(void)
+static void alloc_old_checks()
 {
     int i;
     check_t t;
@@ -297,7 +297,7 @@ int World_place_check(Click  pos, int ind)
 
 	/*
 	 * kps hack - we can't use Check_by_index because it might return
-	 * NULL since ind can here be >= world.NumChecks.
+	 * null since ind can here be >= world.NumChecks.
 	 */
 	check = &world.checks[ind];
 	if (World_contains_clpos(check.pos)) {
@@ -367,7 +367,7 @@ int World_place_friction_area(Click  pos, double fric)
 Shape  filled_wire;
 Click  filled_coords[4];
 
-static void Filled_wire_init(void)
+static void Filled_wire_init()
 {
     int i, h;
 
@@ -389,39 +389,39 @@ static void Filled_wire_init(void)
     filled_coords[3].cy = h - 1;
 }
 
-int World_init(void)
+int World_init()
 {
     int i;
 
     memset(world, 0, sizeof(world_t));
 
     if ((world.asteroidConcs
-	 = Arraylist_alloc(sizeof(asteroid_concentrator_t))) == NULL)
+	 = Arraylist_alloc(sizeof(asteroid_concentrator_t))) == null)
 	return -1;
-    if ((world.bases = Arraylist_alloc(sizeof(base_t))) == NULL)
+    if ((world.bases = Arraylist_alloc(sizeof(base_t))) == null)
 	return -1;
-    if ((world.cannons = Arraylist_alloc(sizeof(cannon_t))) == NULL)
+    if ((world.cannons = Arraylist_alloc(sizeof(cannon_t))) == null)
 	return -1;
-    if ((world.ecms = Arraylist_alloc(sizeof(ecm_t))) == NULL)
+    if ((world.ecms = Arraylist_alloc(sizeof(ecm_t))) == null)
 	return -1;
     if ((world.frictionAreas
-	 = Arraylist_alloc(sizeof(friction_area_t))) == NULL)
+	 = Arraylist_alloc(sizeof(friction_area_t))) == null)
 	return -1;
-    if ((world.fuels = Arraylist_alloc(sizeof(fuel_t))) == NULL)
+    if ((world.fuels = Arraylist_alloc(sizeof(fuel_t))) == null)
 	return -1;
     if ((world.itemConcs
-	 = Arraylist_alloc(sizeof(item_concentrator_t))) == NULL)
+	 = Arraylist_alloc(sizeof(item_concentrator_t))) == null)
 	return -1;
-    if ((world.gravs = Arraylist_alloc(sizeof(grav_t))) == NULL)
+    if ((world.gravs = Arraylist_alloc(sizeof(grav_t))) == null)
 	return -1;
-    if ((world.targets = Arraylist_alloc(sizeof(target_t))) == NULL)
+    if ((world.targets = Arraylist_alloc(sizeof(target_t))) == null)
 	return -1;
-    if ((world.treasures = Arraylist_alloc(sizeof(treasure_t))) == NULL)
+    if ((world.treasures = Arraylist_alloc(sizeof(treasure_t))) == null)
 	return -1;
     if ((world.transporters
-	 = Arraylist_alloc(sizeof(transporter_t))) == NULL)
+	 = Arraylist_alloc(sizeof(transporter_t))) == null)
 	return -1;
-    if ((world.wormholes = Arraylist_alloc(sizeof(wormhole_t))) == NULL)
+    if ((world.wormholes = Arraylist_alloc(sizeof(wormhole_t))) == null)
 	return -1;
 
     for (i = 0; i < MAX_TEAMS; i++)
@@ -432,7 +432,7 @@ int World_init(void)
     return 0;
 }
 
-void World_free(void)
+void World_free()
 {
     XFREE(world.block);
     XFREE(world.gravity);
@@ -447,7 +447,7 @@ void World_free(void)
     XFREE(world.frictionAreas);*/
 }
 
-static bool World_alloc(void)
+static bool World_alloc()
 {
     int x;
     unsigned String map_line;
@@ -455,8 +455,8 @@ static bool World_alloc(void)
     Point2D *grav_line;
     Point2D **grav_pointer;
 
-    assert(world.block == NULL);
-    assert(world.gravity == NULL);
+    assert(world.block == null);
+    assert(world.gravity == null);
 
     world.block = (unsigned char **)
 	malloc(sizeof(unsigned String ) * world.x
@@ -465,16 +465,16 @@ static bool World_alloc(void)
 	malloc(sizeof(Point2D *) * world.x
 	       + world.x * sizeof(Point2D) * world.y);
 
-    /*assert(world.gravs == NULL);*/
-    /*assert(world.bases == NULL);*/
-    /*assert(world.fuels == NULL);*/
-    /*assert(world.cannons == NULL);*/
-    assert(world.checks == NULL);
-    /*assert(world.wormholes == NULL);*/
-    /*assert(world.itemConcs == NULL);*/
-    /*assert(world.asteroidConcs == NULL);*/
+    /*assert(world.gravs == null);*/
+    /*assert(world.bases == null);*/
+    /*assert(world.fuels == null);*/
+    /*assert(world.cannons == null);*/
+    assert(world.checks == null);
+    /*assert(world.wormholes == null);*/
+    /*assert(world.itemConcs == null);*/
+    /*assert(world.asteroidConcs == null);*/
 
-    if (world.block == NULL || world.gravity == NULL) {
+    if (world.block == null || world.gravity == null) {
 	World_free();
 	error("Couldn't allocate memory for map");
 	return false;
@@ -501,7 +501,7 @@ static bool World_alloc(void)
 /*
  * This function can be called after the map options have been read.
  */
-static bool Grok_map_size(void)
+static bool Grok_map_size()
 {
     bool bad = false;
     int w = options.mapWidth, h = options.mapHeight;
@@ -558,7 +558,7 @@ static bool Grok_map_size(void)
     return true;
 }
 
-bool Grok_map_options(void)
+bool Grok_map_options()
 {
     if (world.have_options)
 	return true;
@@ -589,7 +589,7 @@ bool Grok_map_options(void)
     return true;
 }
 
-bool Grok_map(void)
+bool Grok_map()
 {
     if (!Grok_map_options())
 	return false;
@@ -660,7 +660,7 @@ int Find_closest_team(Click  pos)
 }
 
 
-static void Find_base_direction(void)
+static void Find_base_direction()
 {
     /* kps - this might go wrong if we run in -options.polygonMode ? */
     if (!is_polygon_map)

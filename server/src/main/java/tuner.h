@@ -30,24 +30,24 @@
 # include "map.h"
 #endif
 
-void tuner_plock(void);
-void tuner_shipmass(void);
-void tuner_ballmass(void);
-void tuner_maxrobots(void);
-void tuner_minrobots(void);
-void tuner_allowshields(void);
-void tuner_playerstartsshielded(void);
-void tuner_worldlives(void);
-void tuner_cannonsmartness(void);
-void tuner_teamcannons(void);
-void tuner_mincannonshotlife(void);
-void tuner_maxcannonshotlife(void);
-void tuner_wormhole_stable_ticks(void);
-void tuner_modifiers(void);
-void tuner_gameduration(void);
-void tuner_racelaps(void);
-void tuner_allowalliances(void);
-void tuner_announcealliances(void);
-void tuner_playerwallbouncetype(void);
+void tuner_plock();
+void tuner_shipmass();
+void tuner_ballmass();
+void tuner_maxrobots();
+void tuner_minrobots();
+void tuner_allowshields();
+void tuner_playerstartsshielded();
+void tuner_worldlives();
+void tuner_cannonsmartness();
+void tuner_teamcannons();
+void tuner_mincannonshotlife();
+void tuner_maxcannonshotlife();
+void tuner_wormhole_stable_ticks();
+void tuner_modifiers();
+void tuner_gameduration();
+void tuner_racelaps();
+void tuner_allowalliances();
+void tuner_announcealliances();
+void tuner_playerwallbouncetype();
 
 #endif

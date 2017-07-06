@@ -25,7 +25,7 @@
 
 #include "xpserver.h"
 
-void Target_update(void)
+void Target_update()
 {
     int i, j;
 
@@ -190,7 +190,7 @@ void Object_hits_target(object_t *obj, target_t *targ, double player_cost)
     if (!somebody)
 	return;
 	
-    Handle_Scoring(SCORE_TARGET,kp,NULL,targ,NULL);
+    Handle_Scoring(SCORE_TARGET,kp,null,targ,null);
 
     sound_play_sensors(targ.pos, DESTROY_TARGET_SOUND);
 
@@ -234,7 +234,7 @@ void Target_set_hitmask(int group, target_t *targ)
     P_set_hitmask(targ.group, Target_hitmask(targ));
 }
 
-void Target_init(void)
+void Target_init()
 {
     int group;
 

@@ -34,7 +34,7 @@ int concat (String name, String files[], int fcount) {
 
     printf("creating xpilot data file %s.xpd\n", name);
     sprintf(xpd_name, "%s.xpd", name);
-    if ((out = gzopen(xpd_name, "wb")) == NULL) {
+    if ((out = gzopen(xpd_name, "wb")) == null) {
         error("failed to open %s for writing", xpd_name);
         return 0;
     }
@@ -53,7 +53,7 @@ int concat (String name, String files[], int fcount) {
             return 0;
         }
 
-        if ((in = fopen(files[i], "r")) == NULL) {
+        if ((in = fopen(files[i], "r")) == null) {
             error("failed to open %s for reading", files[i]);
             gzclose(out);
             return 0;
@@ -123,7 +123,7 @@ int split (String name) {
     }
 
     sprintf(xpd_name, "%s.xpd", name);
-    if ((in = gzopen(xpd_name, "rb")) == NULL) {
+    if ((in = gzopen(xpd_name, "rb")) == null) {
         error("failed to open %s for reading", xpd_name);
         return 0;
     }
@@ -155,7 +155,7 @@ int split (String name) {
 
         printf("extracting %s (%ld)\n", fname, size);
 
-        if ((out = fopen(fname, "w")) == NULL) {
+        if ((out = fopen(fname, "w")) == null) {
             error("failed to open %s for writing", buf);
             gzclose(in);
             return 0;

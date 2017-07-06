@@ -98,7 +98,7 @@ struct map {
 
 static struct map	map;
 
-static unsigned fuzz(void)
+static unsigned fuzz()
 {
     /*
      * Implement a private pseudo-random generator to be able
@@ -122,11 +122,11 @@ static unsigned fuzz_bound(unsigned max)
     return (unsigned)(((double) fuzz() * (double) max) / (double) MAX_FUZZ);
 }
 
-static void Default_map(void)
+static void Default_map()
 {
     map.width = 100;
     map.height = 100;
-    map.seed = (unsigned)getpid() ^ (unsigned)time(NULL) * (unsigned)getppid();
+    map.seed = (unsigned)getpid() ^ (unsigned)time(null) * (unsigned)getppid();
     map.seed_ratio = 0.16;
     map.fill_ratio = 0.20;
     map.num_bases = 26;
@@ -165,12 +165,12 @@ static void Option_map(int argc, char **argv)
 			intval;
     unsigned		unsval;
     char		*opt,
-			*arg = NULL;
+			*arg = null;
     double		dblval;
 
     for (i = 1; i < argc; i += 2) {
 	opt = argv[i];
-	arg = NULL;
+	arg = null;
 	if (*opt != '-') {
 	    break;
 	}
@@ -250,7 +250,7 @@ static void Option_map(int argc, char **argv)
     }
 }
 
-static void Alloc_map(void)
+static void Alloc_map()
 {
     /*
      * Allocate the map data.
@@ -293,22 +293,22 @@ static void Flood_map(int i)
 	return;
     }
     map.data[i] = map.flood_marker;
-    putp.next = NULL;
+    putp.next = null;
     putp.n = 1;
     putp.arr[0] = i;
 
-    for (getp = &intarr; getp != NULL; getp = tmpp) {
+    for (getp = &intarr; getp != null; getp = tmpp) {
 
 	while (getp.n > 0) {
 	    k = getp.arr[--getp.n];
 	    if (putp.n + 4 > INTARR_SIZE) {
 		if ((putp.next = (struct int_arr *)
-				  malloc(sizeof(struct int_arr))) == NULL) {
+				  malloc(sizeof(struct int_arr))) == null) {
 		    fprintf(stderr, "No mem\n");
 		    exit(1);
 		}
 		putp = putp.next;
-		putp.next = NULL;
+		putp.next = null;
 		putp.n = 0;
 	    }
 	    j = MAPOFFUP(k);
@@ -339,7 +339,7 @@ static void Flood_map(int i)
     }
 }
 
-static void Generate_map(void)
+static void Generate_map()
 {
     /* 
      * Initialize the map with noise.
@@ -400,7 +400,7 @@ static void Generate_map(void)
     }
 }
 
-static void Connect_map(void)
+static void Connect_map()
 {
     /*
      * Connect small constructs to another if they are very close
@@ -575,7 +575,7 @@ static void Connect_map(void)
     } while (n > 0);
 }
 
-static void Count_labels(void)
+static void Count_labels()
 {
     /*
      * For each possible map value count the number of occurences.
@@ -662,7 +662,7 @@ static void Label_map(int label)
     }
 }
 
-static void Partition_map(void)
+static void Partition_map()
 {
     /*
      * Remove all the inaccessible holes from the map.
@@ -722,7 +722,7 @@ static void Partition_map(void)
     }
 }
 
-static void Smooth_map(void)
+static void Smooth_map()
 {
     /*
      * Round all sharp edges and corners.
@@ -833,7 +833,7 @@ static void Smooth_map(void)
     } while (n > 0);
 }
 
-static void Decorate_map(void)
+static void Decorate_map()
 {
     /*
      * Add the cannons, fuelstations, homebases,
@@ -871,7 +871,7 @@ static void Decorate_map(void)
     unsigned		size;
 
     size = map.num_bases * sizeof(struct xy);
-    if ((home = (struct xy *) malloc(size)) == NULL) {
+    if ((home = (struct xy *) malloc(size)) == null) {
 	fprintf(stderr, "No mem\n");
 	exit(1);
     }
@@ -1153,7 +1153,7 @@ static void Decorate_map(void)
     free(home);
 }
 
-static void Border_map(void)
+static void Border_map()
 {
     int			i;
     char		*left, *middle, *right;
@@ -1194,7 +1194,7 @@ static void Border_map(void)
     map.data[map.datasize] = '\0';
 }
 
-static void Dump_map(void)
+static void Dump_map()
 {
 
     printf("mapWidth:	%d\n", map.width);
@@ -1206,7 +1206,7 @@ static void Dump_map(void)
     printf("%sEndOfMapData\n", map.data);
 }
 
-static void Picture_map(void)
+static void Picture_map()
 {
 #ifdef DEVELOPMENT
     char		name[1024];
@@ -1310,7 +1310,7 @@ static void Picture_map(void)
 #endif
 }
 
-void Dealloc_map(void)
+void Dealloc_map()
 {
     free(map.data);
 }

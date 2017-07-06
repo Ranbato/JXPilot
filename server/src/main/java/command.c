@@ -36,19 +36,19 @@
  * Look if any player's name is exactly 'str',
  * If not, look if any player's name contains 'str'.
  * The matching is case insensitive. If there is an
- * error (no matches or several matches) NULL is returned
- * and the error code is stored in 'error' if that is not NULL
+ * error (no matches or several matches) null is returned
+ * and the error code is stored in 'error' if that is not null
  * and a string describing the error is stored in
- * 'errorstr_p' if that is not NULL.
+ * 'errorstr_p' if that is not null.
  */
 player_t *Get_player_by_name(String str,
 			     int *error_p, String *errorstr_p)
 {
     int i, id;
-    player_t *found_pl = NULL, *pl;
+    player_t *found_pl = null, *pl;
     size_t len;
 
-    if (str == NULL || (len = strlen(str)) == 0)
+    if (str == null || (len = strlen(str)) == 0)
 	goto match_none;
 
     /* Get player by id */
@@ -102,18 +102,18 @@ player_t *Get_player_by_name(String str,
 	return found_pl;
 
  match_none:
-    if (error_p != NULL)
+    if (error_p != null)
 	*error_p = -1;
-    if (errorstr_p != NULL)
+    if (errorstr_p != null)
 	*errorstr_p = "Name does not match any player.";
-    return NULL;
+    return null;
 
  match_several:
-    if (error_p != NULL)
+    if (error_p != null)
 	*error_p = -2;
-    if (errorstr_p != NULL)
+    if (errorstr_p != null)
 	*errorstr_p = "Name matches several players.";
-    return NULL;
+    return null;
 }
 
 
@@ -129,12 +129,12 @@ void Send_info_about_player(player_t *pl)
 	    continue;
 	}
 	pl_i = Player_by_index(i);
-	if (pl_i.conn != NULL) {
+	if (pl_i.conn != null) {
 	    Send_team(pl_i.conn, pl.id, pl.team);
 	    /*if we do either, we do both... but is either necessary?*/
 	    updateScores = true;
 	    pl.update_score = true;
-	    if (pl.home_base != NULL)
+	    if (pl.home_base != null)
 		Send_base(pl_i.conn, pl.id, pl.home_base.ind);
 	}
     }
@@ -144,7 +144,7 @@ void Send_info_about_player(player_t *pl)
 void Set_swapper_state(player_t *pl)
 {
     if (pl.have.get( HAS_BALL))
-	Detach_ball(pl, NULL);
+	Detach_ball(pl, null);
 
     if (world.rules.mode.get( LIMITED_LIVES)) {
 	int i;
@@ -454,7 +454,7 @@ void Handle_player_command(player_t *pl, String cmd)
 
 static int Cmd_addr(String arg, player_t *pl, bool oper, String msg, size_t size)
 {
-    player_t *pl2 = NULL;
+    player_t *pl2 = null;
     String errorstr;
 
     UNUSED_PARAM(pl);
@@ -465,11 +465,11 @@ static int Cmd_addr(String arg, player_t *pl, bool oper, String msg, size_t size
     if (!arg || !*arg)
 	return CMD_RESULT_NO_NAME;
 
-    pl2 = Get_player_by_name(arg, NULL, &errorstr);
+    pl2 = Get_player_by_name(arg, null, &errorstr);
     if (pl2) {
 	String addr = Player_get_addr(pl2);
 
-	if (addr == NULL)
+	if (addr == null)
 	    snprintf(msg, size, "Unable to get address for %s.", pl2.name);
 	else
 	    snprintf(msg, size, "%s plays from: %s.", pl2.name, addr);
@@ -555,7 +555,7 @@ static int Cmd_ally(String arg, player_t *pl, bool oper, String msg, size_t size
 	result = CMD_RESULT_ERROR;
     }
     else {
-	if ((arg = strtok(NULL, "")) != NULL) {
+	if ((arg = strtok(null, "")) != null) {
 	    while (*arg == ' ')
 		++arg;
 	}
@@ -571,7 +571,7 @@ static int Cmd_ally(String arg, player_t *pl, bool oper, String msg, size_t size
 	else if (arg) {
 	    /* a name is specified */
 	    String errorstr;
-	    player_t *pl2 = Get_player_by_name(arg, NULL, &errorstr);
+	    player_t *pl2 = Get_player_by_name(arg, null, &errorstr);
 
 	    if (pl2) {
 		if (cmd == AllyInvite)
@@ -708,11 +708,11 @@ static int Cmd_kick(String arg, player_t *pl, bool oper, String msg, size_t size
     if (!arg || !*arg)
 	return CMD_RESULT_NO_NAME;
 
-    kicked_pl = Get_player_by_name(arg, NULL, &errorstr);
+    kicked_pl = Get_player_by_name(arg, null, &errorstr);
     if (kicked_pl) {
 	snprintf(msg, size, "%s kicked %s out! [*Server notice*]",
 		 pl.name, kicked_pl.name);
-	if (kicked_pl.conn == NULL)
+	if (kicked_pl.conn == null)
 	    Delete_player(kicked_pl);
 	else
 	    Destroy_connection(kicked_pl.conn, "kicked out");
@@ -808,7 +808,7 @@ static int Cmd_mute(String arg, player_t *pl, bool oper, String msg, size_t size
 	new_mute = true;
     else if (!strcmp(arg, "0"))
 	new_mute = false;
-    else if ((mutee = Get_player_by_name(arg, NULL, &errorstr)) != NULL) {
+    else if ((mutee = Get_player_by_name(arg, null, &errorstr)) != null) {
     	mutee.muted = mutee.muted ? false : true;
 	snprintf(msg, size, "Player %s is now %s.",
 		 mutee.name, mutee.muted ? "muted" : "unmuted");
@@ -856,7 +856,7 @@ static int Cmd_op(String arg, player_t *pl, bool oper, String msg, size_t size)
 	while (isspace(*name))
 	    name++;
 
-	pl = Get_player_by_name(name, NULL, &errorstr);
+	pl = Get_player_by_name(name, null, &errorstr);
 	if (!pl) {
 	    strlcpy(msg, errorstr, size);
 	    return CMD_RESULT_ERROR;
@@ -938,13 +938,13 @@ static int Cmd_pause(String arg, player_t *pl, bool oper, String msg, size_t siz
     if (!arg || !*arg)
 	return CMD_RESULT_NO_NAME;
 
-    pl2 = Get_player_by_name(arg, NULL, &errorstr);
+    pl2 = Get_player_by_name(arg, null, &errorstr);
     if (!pl2) {
 	strlcpy(msg, errorstr, size);
 	return CMD_RESULT_ERROR;
     }
 
-    if (pl2.conn != NULL) {
+    if (pl2.conn != null) {
 	if (Player_is_alive(pl2))
 	    Kill_player(pl2, false);
 	Pause_player(pl2, true);
@@ -970,7 +970,7 @@ static int Cmd_plinfo(String arg, player_t *pl, bool oper, String msg, size_t si
     if (!arg || !*arg)
 	return CMD_RESULT_NO_NAME;
 
-    pl2 = Get_player_by_name(arg, NULL, &errorstr);
+    pl2 = Get_player_by_name(arg, null, &errorstr);
     if (!pl2) {
 	strlcpy(msg, errorstr, size);
 	return CMD_RESULT_ERROR;
@@ -1110,7 +1110,7 @@ static int Cmd_team(String arg, player_t *pl, bool oper, String msg, size_t size
 	    }
 	    while (isspace(*arg2))
 		arg2++;
-	    pl = Get_player_by_name(arg2, NULL, &errorstr);
+	    pl = Get_player_by_name(arg2, null, &errorstr);
 	    if (!pl) {
 		strlcpy(msg, errorstr, size);
 		return CMD_RESULT_ERROR;
@@ -1125,11 +1125,11 @@ static int Cmd_team(String arg, player_t *pl, bool oper, String msg, size_t size
 		t.SwapperId = NO_ID;
 	}
 
-	if (game_lock && pl.home_base == NULL)
+	if (game_lock && pl.home_base == null)
 	    snprintf(msg, size, "Playing teams are locked.");
 	else if (team < 0 || team >= MAX_TEAMS)
 	    snprintf(msg, size, "Team %d is not a valid team.", team);
-	else if (team == pl.team && pl.home_base != NULL)
+	else if (team == pl.team && pl.home_base != null)
 	    snprintf(msg, size, "You already are on team %d.", team);
 	else if (world.teams[team].NumBases == 0)
 	    snprintf(msg, size,
@@ -1153,7 +1153,7 @@ static int Cmd_team(String arg, player_t *pl, bool oper, String msg, size_t size
 	pl.team = team;
 	world.teams[pl.team].NumMembers++;
 	Set_swapper_state(pl);
-	if (pl.home_base == NULL) {
+	if (pl.home_base == null) {
 	    Pick_startpos(pl);
 	    Pause_player(pl, false);
 	}
@@ -1166,7 +1166,7 @@ static int Cmd_team(String arg, player_t *pl, bool oper, String msg, size_t size
     }
 
     i = world.teams[pl.team].SwapperId;
-    while (i != -1 && pl.home_base != NULL) {
+    while (i != -1 && pl.home_base != null) {
 	if ((i = Player_by_id(i).team) != team)
 	    i = world.teams[i].SwapperId;
 	else {
@@ -1207,8 +1207,8 @@ static int Cmd_team(String arg, player_t *pl, bool oper, String msg, size_t size
     for (i = NumPlayers - 1; i >= 0; i--) {
 	player_t *pl2 = Player_by_index(i);
 
-	if (pl2.conn != NULL && Player_is_paused(pl2)
-	    && (pl2.team == team) && pl2.home_base != NULL) {
+	if (pl2.conn != null && Player_is_paused(pl2)
+	    && (pl2.team == team) && pl2.home_base != null) {
 	    base_t *temp;
 
 	    pl2.team = pl.team;
@@ -1246,7 +1246,7 @@ static int Cmd_set(String arg, player_t *pl, bool oper, String msg, size_t size)
      */
     if (!arg
 	|| !(option = strtok(arg, " "))
-	|| !(value = strtok(NULL, ""))) {
+	|| !(value = strtok(null, ""))) {
 
 	snprintf(msg, size, "Usage: /set option value.");
 	return CMD_RESULT_ERROR;
@@ -1306,8 +1306,8 @@ static int Cmd_shutdown(String arg, player_t *pl, bool oper,
 	return CMD_RESULT_ERROR;
     }
 
-    reason = strtok(NULL, "");
-    if (reason == NULL)
+    reason = strtok(null, "");
+    if (reason == null)
 	reason = "";
 
     delay = atoi(delaystr);

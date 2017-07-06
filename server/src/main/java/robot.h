@@ -180,8 +180,8 @@ typedef struct robot_suibot_data {
 /*
  * Prototypes for robot.c
  */
-void Parse_robot_file(void);
-void Robot_init(void);
+void Parse_robot_file();
+void Robot_init();
 void Robot_delete(player_t *robot, bool kicked);
 void Robot_destroy(player_t *robot);
 void Robot_update(bool tick);

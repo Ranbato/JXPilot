@@ -62,9 +62,9 @@ static int Create_group(int type, int team, hitmask_t hitmask,
     return current_group;
 }
 
-void Groups_init(void)
+void Groups_init()
 {
-    Create_group(FILLED, TEAM_NOT_SET, 0, NULL, NO_IND);
+    Create_group(FILLED, TEAM_NOT_SET, 0, null, NO_IND);
     current_group = 0;
 }
 
@@ -226,7 +226,7 @@ void P_style(String state, int style)
     }
 }
 
-void P_end_polygon(void)
+void P_end_polygon()
 {
     if (ptscount < 3) {
 	warn("Polygon with less than 3 edges?? (start %d, %d)",
@@ -243,16 +243,16 @@ void P_end_polygon(void)
     ptscount = -1;
 }
 
-int P_start_ballarea(void)
+int P_start_ballarea()
 {
     return Create_group(TREASURE,
 			TEAM_NOT_SET,
 			BALL_BIT,
-			NULL,
+			null,
 			NO_IND);
 }
 
-void P_end_ballarea(void)
+void P_end_ballarea()
 {
     current_group = 0;
 }
@@ -266,7 +266,7 @@ int P_start_balltarget(int team, int treasure_ind)
 			treasure_ind);
 }
 
-void P_end_balltarget(void)
+void P_end_balltarget()
 {
     current_group = 0;
 }
@@ -278,12 +278,12 @@ int P_start_target(int target_ind)
     targ.group = Create_group(TARGET,
 			       targ.team,
 			       Target_hitmask(targ),
-			       NULL,
+			       null,
 			       target_ind);
     return targ.group;
 }
 
-void P_end_target(void)
+void P_end_target()
 {
     current_group = 0;
 }
@@ -300,7 +300,7 @@ int P_start_cannon(int cannon_ind)
     return cannon.group;
 }
 
-void P_end_cannon(void)
+void P_end_cannon()
 {
     current_group = 0;
 }
@@ -317,7 +317,7 @@ int P_start_wormhole(int wormhole_ind)
     return wormhole.group;
 }
 
-void P_end_wormhole(void)
+void P_end_wormhole()
 {
     current_group = 0;
 }
@@ -334,17 +334,17 @@ int P_start_friction_area(int fa_ind)
     return fa.group;
 }
 
-void P_end_friction_area(void)
+void P_end_friction_area()
 {
     current_group = 0;
 }
 
-void P_start_decor(void)
+void P_start_decor()
 {
     is_decor = 1;
 }
 
-void P_end_decor(void)
+void P_end_decor()
 {
     is_decor = 0;
 }

@@ -422,7 +422,7 @@ static void openErrorWindow(struct errorwin *, String , ...);
 /*
  * Print memory statistics when debugging.
  */
-static void MemPrint(void)
+static void MemPrint()
 {
     if (!debug)
 	return;
@@ -486,14 +486,14 @@ void *MyMalloc(size_t size, enum MemTypes mt)
 	    /*
 	     * caller shouldn't actually be using zero-sized memory anyway.
 	     */
-	    return NULL;
+	    return null;
 	}
 	if (debug) {
 	    printf("no memory\n");
 	    MemPrint();
 	}
 	max_mem = mem_typed_used[MEM_FRAME] / 2;
-	if (purge_argument != NULL)
+	if (purge_argument != null)
 	    Purge(purge_argument);
 
 	if (!(p = malloc(size))) {
@@ -678,7 +678,7 @@ static Pixmap RReadTile(struct xprc *rc)
     if (ch == RC_TILE) {
 	if (tile_id == 0)
 	    return None;
-	for (lptr = rc.tlist; lptr != NULL; lptr = lptr.next) {
+	for (lptr = rc.tlist; lptr != null; lptr = lptr.next) {
 	    if (lptr.tile_id == tile_id)
 		return lptr.tile;
 	}
@@ -693,7 +693,7 @@ static Pixmap RReadTile(struct xprc *rc)
     depth = DefaultDepth(dpy, screen_num);
     img = XCreateImage(dpy, DefaultVisual(dpy, screen_num),
 		       depth, ZPixmap,
-		       0, NULL,
+		       0, null,
 		       width, height,
 		       (depth <= 8) ? 8 : (depth <= 16) ? 16 : 32,
 		       0);
@@ -746,7 +746,7 @@ static struct rGC *RReadGCValues(struct xprc *rc)
     else if (c != RC_GC) {
 	openErrorWindow(rc.ewin, "GC expected on position %ld, not %d",
 			ftell(rc.fp), c);
-	return NULL;
+	return null;
     }
     else {
 	input_mask = RReadByte(rc.fp);
@@ -784,7 +784,7 @@ static struct rGC *RReadGCValues(struct xprc *rc)
 	    int i;
 	    gc.num_dashes = RReadByte(rc.fp);
 	    if (gc.num_dashes == 0) {
-		gc.dash_list = NULL;
+		gc.dash_list = null;
 	    } else {
 		gc.dash_list = (String )MyMalloc(gc.num_dashes, MEM_GC);
 		for (i = 0; i < gc.num_dashes; i++)
@@ -816,7 +816,7 @@ static struct rGC *RReadGCValues(struct xprc *rc)
      * big recordings.
      */
 #ifdef USE_GCLIST
-    for (gcp = gclist; gcp != NULL; gcp = gcp.next) {
+    for (gcp = gclist; gcp != null; gcp = gcp.next) {
 	if (gcp.mask != gc.mask)
 	    continue;
 	if ((gc.mask & GCForeground) && gc.foreground != gcp.foreground)
@@ -863,25 +863,25 @@ static struct rGC *RReadGCValues(struct xprc *rc)
 
 static void RemoveFrameFromLRU(struct xprc *rc, struct frame *f)
 {
-    if (f.older != NULL)
+    if (f.older != null)
 	f.older.newer = f.newer;
 
     if (rc.newest == f)
 	rc.newest = f.older;
 
-    if (f.newer != NULL)
+    if (f.newer != null)
 	f.newer.older = f.older;
 
     if (rc.oldest == f)
 	rc.oldest = f.newer;
 
-    f.newer = NULL;
-    f.older = NULL;
+    f.newer = null;
+    f.older = null;
 }
 
 static void AddFrameToLRU(struct xprc *rc, struct frame *f)
 {
-    f.newer = NULL;
+    f.newer = null;
     f.older = rc.newest;
 
     if (rc.newest)
@@ -910,7 +910,7 @@ static void FreeShapes(struct shape *shp)
     while (shp) {
 
 	nextshp = shp.next;
-	shp.next = NULL;
+	shp.next = null;
 
 	switch (shp.type) {
 
@@ -972,7 +972,7 @@ static void FreeFrameData(struct frame *f)
 	return;
 
     FreeShapes(f.shapes);
-    f.shapes = NULL;
+    f.shapes = null;
 
     frames_in_core--;
 }
@@ -999,10 +999,10 @@ static void FreeFrame(struct xprc *rc, struct frame *f)
 	rc.tail = f.prev;
 
     if (f == rc.cur)
-	rc.cur = (f.next != NULL) ? f.next : f.prev;
+	rc.cur = (f.next != null) ? f.next : f.prev;
 
-    f.next = NULL;
-    f.prev = NULL;
+    f.next = null;
+    f.prev = null;
     RemoveFrameFromLRU(rc, f);
     MyFree(f, sizeof(struct frame), MEM_FRAME);
 }
@@ -1059,8 +1059,8 @@ static void Purge(struct xprc *rc)
 static int readFrameData(struct xprc *rc, struct frame *f)
 {
     int			c = 0, prev_c;
-    struct shape	*shp = NULL,
-			*shphead = NULL,
+    struct shape	*shp = null,
+			*shphead = null,
 			*newshp;
     XPoint		*xpp;
     XRectangle		*xrp;
@@ -1107,14 +1107,14 @@ static int readFrameData(struct xprc *rc, struct frame *f)
 	case RC_DRAWSEGMENTS:
 	case RC_DAMAGED:
 	    newshp = (struct shape *)MyMalloc(sizeof(struct shape), MEM_SHAPE);
-	    newshp.next = NULL;
+	    newshp.next = null;
 	    newshp.type = 0;
-	    if ((newshp.gc = RReadGCValues(rc)) == NULL) {
+	    if ((newshp.gc = RReadGCValues(rc)) == null) {
 		MyFree(newshp, sizeof(struct shape), MEM_SHAPE);
 		done = True;
 		continue;
 	    }
-	    if (shp == NULL) {
+	    if (shp == null) {
 		shp = newshp;
 		shphead = shp;
 	    }
@@ -1275,7 +1275,7 @@ static int readFrameData(struct xprc *rc, struct frame *f)
 static int readNewFrame(struct xprc *rc)
 {
     int			c;
-    struct frame	*f = NULL;
+    struct frame	*f = null;
 
     if (rc.eof)
 	return -1;
@@ -1294,11 +1294,11 @@ static int readNewFrame(struct xprc *rc)
     f = (struct frame *)MyMalloc(sizeof(struct frame), MEM_FRAME);
     f.width = RReadUShort(rc.fp);
     f.height = RReadUShort(rc.fp);
-    f.shapes = NULL;
-    f.next = NULL;
-    f.prev = NULL;
-    f.newer = NULL;
-    f.older = NULL;
+    f.shapes = null;
+    f.next = null;
+    f.prev = null;
+    f.newer = null;
+    f.older = null;
     f.number = frame_count;
     if (rc.seekable && (f.filepos = ftell(rc.fp)) == -1) {
 	openErrorWindow(rc.ewin, "Can't get file position. Truncating.");
@@ -1312,14 +1312,14 @@ static int readNewFrame(struct xprc *rc)
 	return -1;
     }
 
-    if (rc.tail == NULL) {
-	f.next = NULL;
-	f.prev = NULL;
+    if (rc.tail == null) {
+	f.next = null;
+	f.prev = null;
 	rc.tail = rc.head = rc.cur = f;
     }
     else {
 	f.prev = rc.tail;
-	f.next = NULL;
+	f.next = null;
 	rc.tail.next = f;
 	rc.tail = f;
     }
@@ -1361,10 +1361,10 @@ static XFontStruct *loadQueryFont(String fontName, GC gc)
 {
     XFontStruct		*font;
 
-    if ((font = XLoadQueryFont(dpy, fontName)) == NULL) {
+    if ((font = XLoadQueryFont(dpy, fontName)) == null) {
 	fprintf(stderr, "Can't load font \"%s\", using \"%s\" instead.\n",
 		fontName, alternative_font);
-	if ((font = XLoadQueryFont(dpy, alternative_font)) == NULL) {
+	if ((font = XLoadQueryFont(dpy, alternative_font)) == null) {
 	    fprintf(stderr, "Can't load alternative font \"%s\".\n",
 		    alternative_font);
 	    font = XQueryFont(dpy, XGContextFromGC(gc));
@@ -1454,8 +1454,8 @@ static void drawShapes(struct frame *f, XID drawable, struct xprc *rc)
     struct shape	*sp;
     XGCValues		values;
 
-    for (sp = f.shapes; sp != NULL; sp = sp.next) {
-	if (sp.gc != NULL) {
+    for (sp = f.shapes; sp != null; sp = sp.next) {
+	if (sp.gc != null) {
 	    if (sp.gc.mask != 0) {
 		values.foreground = sp.gc.foreground;
 		values.background = sp.gc.background;
@@ -1673,14 +1673,14 @@ static void Init_wm_prop(Window win,
     xsh.height_inc = 1;
     xsh.y = y;
 
-    xclh.res_name = NULL;		/* NULL: Automatically uses Argv[0], */
+    xclh.res_name = null;		/* null: Automatically uses Argv[0], */
     xclh.res_class = myClass;		/* stripped of directory prefixes. */
 
     /*
      * Set the above properties.
      */
     XSetWMProperties(dpy, win,
-		     NULL, NULL,
+		     null, null,
 		     Argv, Argc,
 		     &xsh, &xwmh, &xclh);
 
@@ -1720,7 +1720,7 @@ static struct recordwin *Init_recordwindow(unsigned long bg, void *data)
 				    1,
 				    BlackPixel(dpy, screen_num),
 				    bg);
-    rwin.gc = XCreateGC(dpy, rwin.win, 0, NULL);
+    rwin.gc = XCreateGC(dpy, rwin.win, 0, null);
     XSetForeground(dpy, rwin.gc, BlackPixel(dpy, screen_num));
     XSelectInput(dpy, rwin.win,
 		 KeyPressMask | KeyReleaseMask | ButtonPressMask);
@@ -1887,7 +1887,7 @@ static struct errorwin *Init_errorwindow(unsigned long bg)
 				    1,
 				    BlackPixel(dpy, screen_num),
 				    bg);
-    ewin.gc = XCreateGC(dpy, ewin.win, 0, NULL);
+    ewin.gc = XCreateGC(dpy, ewin.win, 0, null);
     ewin.font = loadQueryFont("-*-helvetica-medium-r-*-*-18-*-*-*-*-*-*-*",
 			       ewin.gc);
     XSetForeground(dpy, ewin.gc, BlackPixel(dpy, screen_num));
@@ -1933,7 +1933,7 @@ static void Init_topview(struct xprc *rc)
 		 0, 0,
 		 PSize | PPosition);
 
-    rc.gc = XCreateGC(dpy, rc.topview, 0, NULL);
+    rc.gc = XCreateGC(dpy, rc.topview, 0, null);
 
     XSelectInput(dpy, rc.topview,
 		 ExposureMask |
@@ -1980,7 +1980,7 @@ static void Init_topmain(struct xui *ui, struct xprc *rc)
 				     BlackPixel(dpy, screen_num),
 				     ui.mainbg);
 
-    ui.gc = XCreateGC(dpy, ui.topmain, 0, NULL);
+    ui.gc = XCreateGC(dpy, ui.topmain, 0, null);
 
     XSelectInput(dpy, ui.topmain,
 		 ExposureMask |
@@ -2434,11 +2434,11 @@ static void SaveFramesPPM(struct xprc *rc)
     if (rc.scale > 0) {
 	rgbdata = (unsigned String )
 	    MyMalloc((size_t)(3 * rc.view_width * rc.view_height), MEM_MISC);
-	line = NULL;
+	line = null;
     } else {
 	line = (unsigned String )
 	    MyMalloc((size_t)(3 * rc.view_width), MEM_MISC);
-	rgbdata = NULL;
+	rgbdata = null;
     }
 
     for (save = begin; !done; save = save.next) {
@@ -2462,7 +2462,7 @@ static void SaveFramesPPM(struct xprc *rc)
 		perror(buf);
 		break;
 	    } else
-		setvbuf(fp, NULL, _IOFBF, (size_t)(8 * 1024));
+		setvbuf(fp, null, _IOFBF, (size_t)(8 * 1024));
 	} else {
 	    sprintf(buf, "compress > xp%05d.ppm.Z", save.number);
 	    if (!(fp = popen(buf, "w"))) {
@@ -2615,14 +2615,14 @@ static XImage *pixmap2image(Pixmap pixmap)
 		      &x, &y,
 		      &width, &height,
 		      &border_width, &depth))
-	return NULL;
+	return null;
 
     img = XGetImage(dpy, pixmap,
 		    0, 0,
 		    width, height,
 		    AllPlanes, ZPixmap);
     if (!img)
-	return NULL;
+	return null;
 
     return img;
 }
@@ -2792,7 +2792,7 @@ static void WriteFrame(struct xprc *rc, struct frame *f, FILE *fp)
     RWriteUShort((int)f.width, fp);
     RWriteUShort((int)f.height, fp);
 
-    for (sp = f.shapes; sp != NULL; sp = sp.next) {
+    for (sp = f.shapes; sp != null; sp = sp.next) {
 
 	switch(sp.type) {
 
@@ -2977,7 +2977,7 @@ static void SaveFramesXPR(struct xprc *rc)
 	    perror(buf);
 	    return;
 	} else
-	    setvbuf(fp, NULL, _IOFBF, (size_t)(8 * 1024));
+	    setvbuf(fp, null, _IOFBF, (size_t)(8 * 1024));
     } else {
 	sprintf(buf, "compress > xp%d-%d.xpr.Z", begin.number, end.number);
 	if (!(fp = popen(buf, "w"))) {
@@ -3026,7 +3026,7 @@ static void dox(struct xui *ui, struct xprc *rc)
     Init_topview(rc);
 
     readNewFrame(rc);
-    if (rc.cur == NULL) {
+    if (rc.cur == null) {
 	fprintf(stderr, "No frames, nothing to do.\n");
 	return;
     }
@@ -3041,7 +3041,7 @@ static void dox(struct xui *ui, struct xprc *rc)
 
     rc.ewin = ui.ewin;
 
-    gettimeofday(&tv0, NULL);
+    gettimeofday(&tv0, null);
 
     for (;;) {
 
@@ -3205,7 +3205,7 @@ static void dox(struct xui *ui, struct xprc *rc)
 	    frameStep = -rc.cur.number;
 	}
 
-	gettimeofday(&tv1, NULL);
+	gettimeofday(&tv1, null);
 	if (frameStep != 0)
 	    tv0 = tv1;
 	else if (!forceRedraw && currentSpeed != 0) {
@@ -3223,7 +3223,7 @@ static void dox(struct xui *ui, struct xprc *rc)
 		tv1.tv_usec = frame_rate - delta_time;
 		FD_ZERO(&rset);
 		FD_SET(rfd, &rset);
-		num = select(rfd + 1, &rset, NULL, NULL, &tv1);
+		num = select(rfd + 1, &rset, null, null, &tv1);
 		if (num == 1)
 		    continue;
 		tv0.tv_usec = tv0.tv_usec + frame_rate;
@@ -3238,11 +3238,11 @@ static void dox(struct xui *ui, struct xprc *rc)
 	}
 
 	while (frameStep > 0) {
-	    if (rc.cur.next == NULL) {
+	    if (rc.cur.next == null) {
 		if (rc.eof == False)
 		    readNewFrame(rc);
 	    }
-	    if (rc.cur.next != NULL) {
+	    if (rc.cur.next != null) {
 		rc.cur = rc.cur.next;
 		forceRedraw = True;
 		frameStep--;
@@ -3251,8 +3251,8 @@ static void dox(struct xui *ui, struct xprc *rc)
 		frameStep = 0;
 	}
 	while (frameStep < 0) {
-	    if (rc.cur.prev != NULL) {
-		if (!rc.seekable && rc.cur.prev.shapes == NULL) {
+	    if (rc.cur.prev != null) {
+		if (!rc.seekable && rc.cur.prev.shapes == null) {
 		    static int before;
 		    if (!before++)
 			openErrorWindow(rc.ewin,
@@ -3307,7 +3307,7 @@ static void TestInput(struct xprc *rc)
 		fclose(rc.fp);
 		sprintf(buf, "compress -d < %s", rc.filename);
 	    }
-	    if ((rc.fp = popen(buf, "r")) == NULL) {
+	    if ((rc.fp = popen(buf, "r")) == null) {
 		perror("Unable to start compress");
 		exit(1);
 	    }
@@ -3325,7 +3325,7 @@ static void TestInput(struct xprc *rc)
 		fclose(rc.fp);
 		sprintf(buf, "gzip -d < %s", rc.filename);
 	    }
-	    if ((rc.fp = popen(buf, "r")) == NULL) {
+	    if ((rc.fp = popen(buf, "r")) == null) {
 		perror("Unable to start gzip");
 		exit(1);
 	    }
@@ -3344,7 +3344,7 @@ static void TestInput(struct xprc *rc)
 		fclose(rc.fp);
 		sprintf(buf, "bzip2 -d < %s", rc.filename);
 	    }
-	    if ((rc.fp = popen(buf, "r")) == NULL) {
+	    if ((rc.fp = popen(buf, "r")) == null) {
 		perror("Unable to start bzip2");
 		exit(1);
 	    }
@@ -3362,7 +3362,7 @@ static void TestInput(struct xprc *rc)
     }
 }
 
-static void usage(void)
+static void usage()
 {
     printf("Usage: %s [options] filename\n", *Argv);
     printf(
@@ -3403,7 +3403,7 @@ static void usage(void)
     exit(0);
 }
 
-static void version(void)
+static void version()
 {
     printf("xpilot-ng-replay %s\n", VERSION);
     exit(0);
@@ -3492,15 +3492,15 @@ int main(int argc, char **argv)
     if (!strcmp(filename, "-"))
 	fp = stdin;
     else {
-	if ((fp = fopen(filename, "r")) == NULL) {
+	if ((fp = fopen(filename, "r")) == null) {
 	    perror("Unable to open record file");
 	    fprintf(stderr, "Type: \"%s -help\" to get some help.\n", *argv);
 	    return 1;
 	}
     }
 
-    if ((dpy = XOpenDisplay(NULL)) == NULL) {
-	fprintf(stderr, "Cannot connect to X server %s\n", XDisplayName(NULL));
+    if ((dpy = XOpenDisplay(null)) == null) {
+	fprintf(stderr, "Cannot connect to X server %s\n", XDisplayName(null));
 	exit(1);
     }
 
@@ -3527,7 +3527,7 @@ int main(int argc, char **argv)
     MyFree(ui, sizeof(struct xui), MEM_UI);
     XCloseDisplay(dpy);
 
-    if (fp != NULL && fp != stdin)
+    if (fp != null && fp != stdin)
 	fclose(fp);
 
     MemPrint();

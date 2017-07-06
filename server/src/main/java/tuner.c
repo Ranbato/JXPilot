@@ -25,13 +25,13 @@
 
 #include "xpserver.h"
 
-void tuner_plock(void)
+void tuner_plock()
 {
     options.pLockServer
 	= (plock_server(options.pLockServer) == 1) ? true : false;
 }
 
-void tuner_shipmass(void)
+void tuner_shipmass()
 {
     int i;
 
@@ -39,7 +39,7 @@ void tuner_shipmass(void)
 	Player_by_index(i).emptymass = options.shipMass;
 }
 
-void tuner_ballmass(void)
+void tuner_ballmass()
 {
     int i;
 
@@ -49,7 +49,7 @@ void tuner_ballmass(void)
     }
 }
 
-void tuner_maxrobots(void)
+void tuner_maxrobots()
 {
     if (options.maxRobots < 0)
 	options.maxRobots = Num_bases();
@@ -58,10 +58,10 @@ void tuner_maxrobots(void)
 	options.minRobots = options.maxRobots;
 
     while (options.maxRobots < NumRobots)
-	Robot_delete(NULL, true);
+	Robot_delete(null, true);
 }
 
-void tuner_minrobots(void)
+void tuner_minrobots()
 {
     if (options.minRobots < 0)
 	options.minRobots = options.maxRobots;
@@ -70,7 +70,7 @@ void tuner_minrobots(void)
 	options.maxRobots = options.minRobots;
 }
 
-void tuner_allowshields(void)
+void tuner_allowshields()
 {
     int i;
 
@@ -100,14 +100,14 @@ void tuner_allowshields(void)
     }
 }
 
-void tuner_playerstartsshielded(void)
+void tuner_playerstartsshielded()
 {
     if (options.allowShields)
 	/* Doesn't make sense to turn off when shields are on. */
 	options.playerStartsShielded = true;
 }
 
-void tuner_worldlives(void)
+void tuner_worldlives()
 {
     if (options.worldLives < 0)
 	options.worldLives = 0;
@@ -121,12 +121,12 @@ void tuner_worldlives(void)
     }
 }
 
-void tuner_cannonsmartness(void)
+void tuner_cannonsmartness()
 {
     LIMIT(options.cannonSmartness, 0, CANNON_SMARTNESS_MAX);
 }
 
-void tuner_teamcannons(void)
+void tuner_teamcannons()
 {
     int i;
     int team;
@@ -147,19 +147,19 @@ void tuner_teamcannons(void)
     }
 }
 
-void tuner_mincannonshotlife(void)
+void tuner_mincannonshotlife()
 {
     LIMIT(options.minCannonShotLife, 0, Float.MAX_VALUE);
     LIMIT(options.maxCannonShotLife, options.minCannonShotLife, Float.MAX_VALUE);
 }
 
-void tuner_maxcannonshotlife(void)
+void tuner_maxcannonshotlife()
 {
     LIMIT(options.maxCannonShotLife, 0, Float.MAX_VALUE);
     LIMIT(options.minCannonShotLife, 0, options.maxCannonShotLife);
 }
 
-void tuner_wormhole_stable_ticks(void)
+void tuner_wormhole_stable_ticks()
 {
     int i;
 
@@ -171,7 +171,7 @@ void tuner_wormhole_stable_ticks(void)
 	Wormhole_by_index(i).countdown = 0.0;
 }
 
-void tuner_modifiers(void)
+void tuner_modifiers()
 {
     int i;
 
@@ -181,15 +181,15 @@ void tuner_modifiers(void)
 	Mods_filter(&(Player_by_index(i)).mods);
 }
 
-void tuner_gameduration(void)
+void tuner_gameduration()
 {
     if (options.gameDuration <= 0.0)
-	gameOverTime = time(NULL);
+	gameOverTime = time(null);
     else
-	gameOverTime = (time_t) (options.gameDuration * 60) + time(NULL);
+	gameOverTime = (time_t) (options.gameDuration * 60) + time(null);
 }
 
-void tuner_racelaps(void)
+void tuner_racelaps()
 {
     if (world.rules.mode.get( TIMING)) {
 	Reset_all_players();
@@ -198,7 +198,7 @@ void tuner_racelaps(void)
     }
 }
 
-void tuner_allowalliances(void)
+void tuner_allowalliances()
 {
     if (world.rules.mode.get( TEAM_PLAY))
 	world.rules.mode.clear( ALLIANCES);
@@ -207,12 +207,12 @@ void tuner_allowalliances(void)
 	Dissolve_all_alliances();
 }
 
-void tuner_announcealliances(void)
+void tuner_announcealliances()
 {
     updateScores = true;
 }
 
-void tuner_playerwallbouncetype(void)
+void tuner_playerwallbouncetype()
 {
     int type = options.playerWallBounceType;
 

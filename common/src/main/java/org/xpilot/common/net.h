@@ -23,47 +23,41 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef	NET_H
-#define	NET_H
+public class Net{
 
-#ifndef SOCKLIB_H
-/* need sock_t */
-#include "socklib.h"
-#endif
+public static final int MIN_SOCKBUF_SIZE = 1024;
+public static final int MAX_SOCKBUF_SIZE = (50*1024);
 
-#define MIN_SOCKBUF_SIZE	1024
-#define MAX_SOCKBUF_SIZE	(50*1024)
+public static final int SERVER_RECV_SIZE = MIN_SOCKBUF_SIZE;
+public static final int SERVER_SEND_SIZE = (4*1024);
 
-#define SERVER_RECV_SIZE	MIN_SOCKBUF_SIZE
-#define SERVER_SEND_SIZE	(4*1024)
-
-#define CLIENT_SEND_SIZE	SERVER_RECV_SIZE
+public static final int CLIENT_SEND_SIZE = SERVER_RECV_SIZE;
 /* I added 1024 to this because the client can get 4 1035 byte packets
    at once when starting a game (from Handle_setup). Seems there is some
    overhead in storing multiple packets - I had to increase this by at
    least 657 to avoid losing packets on Linux. That's why the change here
    instead of changing the size to 1024 in netserver.c */
-#define CLIENT_RECV_SIZE	(SERVER_SEND_SIZE + 1024)
+public static final int CLIENT_RECV_SIZE = (SERVER_SEND_SIZE + 1024);
 
 /*
  * Definitions for the states a socket buffer can be in.
  */
-#define SOCKBUF_READ		0x01	/* if readable */
-#define SOCKBUF_WRITE		0x02	/* if writeable */
-#define SOCKBUF_LOCK		0x04	/* if locked against kernel i/o */
-#define SOCKBUF_ERROR		0x08	/* if i/o error occurred */
-#define SOCKBUF_DGRAM		0x10	/* if datagram socket */
+public static final int SOCKBUF_READ = 0x01	/* if readable */;
+public static final int SOCKBUF_WRITE = 0x02	/* if writeable */;
+public static final int SOCKBUF_LOCK = 0x04	/* if locked against kernel i/o */;
+public static final int SOCKBUF_ERROR = 0x08	/* if i/o error occurred */;
+public static final int SOCKBUF_DGRAM = 0x10	/* if datagram socket */;
 
 /*
  * Hack: leave some spare room for the last terminating packet
  * of a frame update.
  */
-#define SOCKBUF_WRITE_SPARE	8
+public static final int SOCKBUF_WRITE_SPARE = 8;
 
 /*
  * Maximum number of socket i/o retries if datagram socket.
  */
-#define MAX_SOCKBUF_RETRIES	2
+public static final int MAX_SOCKBUF_RETRIES = 2;
 
 /*
  * A buffer to reduce the number of system calls made and to reduce
@@ -77,20 +71,4 @@ typedef struct {
     char	*ptr;		/* current position in buffer (reading) */
     int		state;		/* read/write/locked/error status flags */
 } sockbuf_t;
-
-extern int last_packet_of_frame;
-
-int Sockbuf_init(sockbuf_t *sbuf, sock_t *sock, size_t size, int state);
-int Sockbuf_cleanup(sockbuf_t *sbuf);
-int Sockbuf_clear(sockbuf_t *sbuf);
-int Sockbuf_advance(sockbuf_t *sbuf, int len);
-int Sockbuf_flush(sockbuf_t *sbuf);
-int Sockbuf_write(sockbuf_t *sbuf, String buf, int len);
-int Sockbuf_read(sockbuf_t *sbuf);
-int Sockbuf_copy(sockbuf_t *dest, sockbuf_t *src, int len);
-
-int Packet_printf(sockbuf_t *, String fmt, ...);
-int Packet_scanf(sockbuf_t *, String fmt, ...);
-
-#endif
-
+}

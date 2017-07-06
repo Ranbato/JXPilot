@@ -37,5 +37,5 @@ typedef struct {
 } optionDesc;
 
 extern Window filepromptwin;
-extern String StrToFloat(void);
+extern String StrToFloat();
 extern char oldmap[90];

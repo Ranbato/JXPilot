@@ -43,7 +43,7 @@ void Make_treasure_ball(treasure_t *t)
 	return;
     }
 
-    if ((ball = BALL_PTR(Object_allocate())) == NULL)
+    if ((ball = BALL_PTR(Object_allocate())) == null)
 	return;
 
     ball.life = 1;  	  	/* doesn't matter, as long as it is > 0 */
@@ -70,7 +70,7 @@ void Make_treasure_ball(treasure_t *t)
     t.have = true;
 }
 
-void Treasure_init(void)
+void Treasure_init()
 {
     int i;
 
@@ -126,7 +126,7 @@ static int Punish_team(player_t *pl, treasure_t *td, Click  pos)
     if (td.team == pl.team)
 	return 0;
 	
-    Handle_Scoring(SCORE_TREASURE,pl,NULL,td,NULL);
+    Handle_Scoring(SCORE_TREASURE,pl,null,td,null);
 
     if (world.rules.mode.get( TEAM_PLAY)) {
     	for (i = 0; i < NumPlayers; i++) {
@@ -279,11 +279,11 @@ extern bool in_legacy_mode_ball_hack;
  */
 bool Balltarget_hitfunc(group_t *gp, const move_t *move)
 {
-    const ballobject_t *ball = NULL;
+    const ballobject_t *ball = null;
 
     /* this can happen if is_inside is called for a balltarget with
-       a NULL obj */
-    if (move.obj == NULL)
+       a null obj */
+    if (move.obj == null)
 	return true;
 
     assert(move.obj.type == OBJ_BALL);

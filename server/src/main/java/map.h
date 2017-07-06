@@ -296,7 +296,7 @@ static inline bool World_contains_clpos(Click  pos)
     return true;
 }
 
-static inline Click  World_get_random_clpos(void)
+static inline Click  World_get_random_clpos()
 {
     Click  pos;
 
@@ -436,7 +436,7 @@ static inline check_t *Check_by_index(int ind)
 {
     if (ind >= 0 && ind < world.NumChecks)
 	return &world.checks[ind];
-    return NULL;
+    return null;
 }
 
 /*
@@ -446,7 +446,7 @@ static inline team_t *Team_by_index(int ind)
 {
     if (ind >= 0 && ind < MAX_TEAMS)
 	return &world.teams[ind];
-    return NULL;
+    return null;
 }
 
 #endif

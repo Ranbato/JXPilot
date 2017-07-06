@@ -53,7 +53,7 @@ static cell_dist_t *cell_dist;
 static size_t cell_dist_size;
 
 
-static void Free_cell_dist(void)
+static void Free_cell_dist()
 {
     XFREE(cell_dist);
 }
@@ -83,7 +83,7 @@ static int Compare_cell_dist(const void *a, const void *b)
 }
 
 
-static void Init_cell_dist(void)
+static void Init_cell_dist()
 {
     cell_dist_t *dists;
     int x, y;
@@ -112,7 +112,7 @@ static void Init_cell_dist(void)
     cell_dist_size = cell_dist_width * cell_dist_height;
 
     cell_dist = XMALLOC(cell_dist_t, cell_dist_size);
-    if (cell_dist == NULL) {
+    if (cell_dist == null) {
 	error("No cell dist mem");
 	End_game();
     }
@@ -132,14 +132,14 @@ static void Init_cell_dist(void)
 }
 
 
-void Free_cells(void)
+void Free_cells()
 {
     XFREE(Cells);
     Free_cell_dist();
 }
 
 
-void Alloc_cells(void)
+void Alloc_cells()
 {
     size_t size;
     cell_node_t *cell_ptr;
@@ -289,8 +289,8 @@ void Cell_get_objects(Click  pos,
 	}
     }
 
-    ObjectList[count] = NULL;
+    ObjectList[count] = null;
     *obj_list = &ObjectList[0];
-    if (count_ptr != NULL)
+    if (count_ptr != null)
 	*count_ptr = count;
 }

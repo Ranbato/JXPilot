@@ -42,7 +42,7 @@ typedef struct {
 static alliance_t	*Alliances[MAX_TEAMS];
 
 
-static int New_alliance_ID(void);
+static int New_alliance_ID();
 static void Alliance_add_player(alliance_t *alliance, player_t *pl);
 static int Alliance_remove_player(alliance_t *alliance, player_t *pl);
 static void Set_alliance_message(alliance_t *alliance, String msg);
@@ -222,7 +222,7 @@ static alliance_t *Find_alliance(int id)
 	}
     }
 
-    return NULL;
+    return null;
 }
 
 /*
@@ -232,7 +232,7 @@ int Get_alliance_member_count(int id)
 {
     alliance_t	*alliance = Find_alliance(id);
 
-    if (alliance != NULL)
+    if (alliance != null)
 	return alliance.NumMembers;
 
     return 0;
@@ -254,7 +254,7 @@ static void Set_alliance_message(alliance_t *alliance, String msg)
 }
 
 /* returns an unused ID for an alliance */
-static int New_alliance_ID(void)
+static int New_alliance_ID()
 {
     int i, try_id;
 
@@ -278,7 +278,7 @@ static int Create_alliance(player_t *pl1, player_t *pl2)
     alliance_t	*alliance = (alliance_t *)malloc(sizeof(alliance_t));
     char	msg[MSG_LEN];
 
-    if (alliance == NULL) {
+    if (alliance == null) {
 	error("Not enough memory for new alliance.\n");
 	return 0;
     }
@@ -439,7 +439,7 @@ static void Dissolve_alliance(int id)
 /*
  * Destroy all alliances.
  */
-void Dissolve_all_alliances(void)
+void Dissolve_all_alliances()
 {
     int		i;
 

@@ -114,7 +114,7 @@ extern T_Popup_t *T_Popup;
 
 /* T_Toolkit.c prototypes */
 void T_ConnectToServer(String display_name);
-void T_CloseServerConnection(void);
+void T_CloseServerConnection();
 void T_SetToolkitFont(String font);
 int T_GetGC(GC * gc, String foreground);
 int T_FontInit(XFontStruct ** fontinfo, String fontname);

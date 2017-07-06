@@ -70,7 +70,7 @@ int Meta_from(String addr, int port)
     return 0;
 }
 
-void Meta_gone(void)
+void Meta_gone()
 {
     char msg[MSG_LEN];
 
@@ -80,7 +80,7 @@ void Meta_gone(void)
     }
 }
 
-void Meta_init(void)
+void Meta_init()
 {
     int i;
     String addr;
@@ -129,7 +129,7 @@ static void asciidump(void *p, size_t size)
 
 static char meta_update_string[MAX_STR_LEN];
 
-void Meta_update_max_size_tuner(void)
+void Meta_update_max_size_tuner()
 {
     LIMIT(options.metaUpdateMaxSize, 1, (int) sizeof(meta_update_string));
 }
@@ -150,7 +150,7 @@ void Meta_update(bool change)
     if (!options.reportToMetaServer)
 	return;
 
-    currentTime = time(NULL);
+    currentTime = time(null);
     if (!change) {
 	if (currentTime - lastMetaSendTime < GIVE_META_SERVER_A_HINT) {
 	    if (NumQueuedPlayers == queue_length ||
@@ -233,7 +233,7 @@ void Meta_update(bool change)
 	     Num_bases(), FPS, options.contactPort,
 	     game_mode, world.NumTeamBases, freebases,
 	     world.rules.mode.get( TIMING) ? 1:0,
-	     (long)(time(NULL) - serverStartTime),
+	     (long)(time(null) - serverStartTime),
 	     queue_length, options.sound ? "yes" : "no");
 
 

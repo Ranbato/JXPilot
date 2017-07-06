@@ -182,7 +182,7 @@ static inline group_t *groupptr_by_id(int group)
 {
     if (group >= 0 && group < num_groups)
 	return &groups[group];
-    return NULL;
+    return null;
 }
 
 extern int num_polys, num_pstyles, num_estyles, num_bstyles;

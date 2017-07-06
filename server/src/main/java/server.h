@@ -38,7 +38,7 @@
 #define STORE(T,P,N,M,V)						\
     if (N >= M && ((M <= 0)						\
 	? (P = (T *) malloc((M = 1) * sizeof(*P)))			\
-	: (P = (T *) realloc(P, (M += M) * sizeof(*P)))) == NULL) {	\
+	: (P = (T *) realloc(P, (M += M) * sizeof(*P)))) == null) {	\
 	warn("No memory");						\
 	exit(1);							\
     } else								\
@@ -121,8 +121,8 @@ static inline double SHOT_MULT(object_t *obj)
 /*
  * Prototypes for cell.c
  */
-void Free_cells(void);
-void Alloc_cells(void);
+void Free_cells();
+void Alloc_cells();
 void Cell_init_object(object_t *obj);
 void Cell_add_object(object_t *obj);
 void Cell_remove_object(object_t *obj);
@@ -131,7 +131,7 @@ void Cell_get_objects(Click  pos, int r, int max, object_t ***list, int *count);
 /*
  * Prototypes for collision.c
  */
-void Check_collision(void);
+void Check_collision();
 int IsOffensiveItem(enum Item i);
 int IsDefensiveItem(enum Item i);
 int CountOffensiveItems(player_t *pl);
@@ -140,17 +140,17 @@ int CountDefensiveItems(player_t *pl);
 /*
  * Prototypes for id.c
  */
-int peek_ID(void);
-int request_ID(void);
+int peek_ID();
+int request_ID();
 void release_ID(int id);
 
 /*
  * Prototypes for walls.c
  */
-void Groups_init(void);
-void Walls_init(void);
-void Treasure_init(void);
-void Move_init(void);
+void Groups_init();
+void Walls_init();
+void Treasure_init();
+void Move_init();
 void Move_object(object_t *obj);
 void Move_player(player_t *pl);
 void Turn_player(player_t *pl, bool push);
@@ -158,7 +158,7 @@ int is_inside(int x, int y, hitmask_t hitmask, const object_t *obj);
 int shape_is_inside(int cx, int cy, hitmask_t hitmask, const object_t *obj,
 		    Shape  *s, int dir);
 int Polys_to_client(unsigned char **);
-void Ball_line_init(void);
+void Ball_line_init();
 void Player_crash(player_t *pl, int crashtype, int mapobj_ind, int pt);
 void Object_crash(object_t *obj, int crashtype, int mapobj_ind);
 
@@ -173,10 +173,10 @@ bool team_dead(int team);
 /*
  * Prototypes for map.c
  */
-int World_init(void);
-void World_free(void);
-bool Grok_map(void);
-bool Grok_map_options(void);
+int World_init();
+void World_free();
+bool Grok_map();
+bool Grok_map_options();
 
 int World_place_base(Click  pos, int dir, int team, int order);
 int World_place_cannon(Click  pos, int dir, int team);
@@ -190,9 +190,9 @@ int World_place_item_concentrator(Click  pos);
 int World_place_asteroid_concentrator(Click  pos);
 int World_place_friction_area(Click  pos, double fric);
 
-void Wormhole_line_init(void);
+void Wormhole_line_init();
 
-void Compute_gravity(void);
+void Compute_gravity();
 double Wrap_findDir(double dx, double dy);
 double Wrap_cfindDir(int dx, int dy);
 double Wrap_length(int dx, int dy);
@@ -202,15 +202,15 @@ int Find_closest_team(Click  pos);
 /*
  * Prototypes for xpmap.c
  */
-void Create_blockmap_from_polygons(void);
-setup_t *Xpmap_init_setup(void);
-void Xpmap_print(void);
-void Xpmap_grok_map_data(void);
-void Xpmap_allocate_checks(void);
-void Xpmap_tags_to_internal_data(void);
-void Xpmap_find_map_object_teams(void);
-void Xpmap_find_base_direction(void);
-void Xpmap_blocks_to_polygons(void);
+void Create_blockmap_from_polygons();
+setup_t *Xpmap_init_setup();
+void Xpmap_print();
+void Xpmap_grok_map_data();
+void Xpmap_allocate_checks();
+void Xpmap_tags_to_internal_data();
+void Xpmap_find_map_object_teams();
+void Xpmap_find_base_direction();
+void Xpmap_blocks_to_polygons();
 
 
 /*
@@ -223,12 +223,12 @@ bool parseXp2MapFile(String  fname, optOrigin opt_origin);
 /*
  * Prototypes for cmdline.c
  */
-void tuner_none(void);
-void tuner_dummy(void);
-void Check_playerlimit(void);
-void Timing_setup(void);
-bool Init_options(void);
-void Free_options(void);
+void tuner_none();
+void tuner_dummy();
+void Check_playerlimit();
+void Timing_setup();
+bool Init_options();
+void Free_options();
 
 /*
  * Prototypes for player.c
@@ -243,7 +243,7 @@ static inline void Player_add_fuel(player_t *pl, double amount)
 }
 
 void Place_item(player_t *pl, int type);
-int Choose_random_item(void);
+int Choose_random_item();
 void Tractor_beam(player_t *pl);
 void General_tractor_beam(int id, Click  pos,
 			  int items, player_t *victim, bool pressor);
@@ -269,8 +269,8 @@ void Fire_right_rshot(player_t *pl, int type, int dir, int gun);
 
 bool Friction_area_hitfunc(group_t *groupptr, const move_t *move);
 
-void Team_immunity_init(void);
-void Hitmasks_init(void);
+void Team_immunity_init();
+void Hitmasks_init();
 
 void Delete_shot(int ind);
 void Do_deflector(player_t *pl);
@@ -331,9 +331,9 @@ void Explode_fighter(player_t *pl);
  * Prototypes for asteroid.c
  */
 void Break_asteroid(wireobject_t *asteroid);
-void Asteroid_update(void);
-list_t Asteroid_get_list(void);
-void Asteroid_line_init(void);
+void Asteroid_update();
+list_t Asteroid_get_list();
+void Asteroid_line_init();
 
 
 /*
@@ -348,8 +348,8 @@ void Set_swapper_state(player_t *pl);
 /*
  * Prototypes for race.c
  */
-void Race_compute_game_status(void);
-void Race_game_over(void);
+void Race_compute_game_status();
+void Race_game_over();
 void Player_reset_timing(player_t *pl);
 void Player_pass_checkpoint(player_t *pl);
 void PlayerCheckpointCollision(player_t *pl);
@@ -358,56 +358,56 @@ void PlayerCheckpointCollision(player_t *pl);
 /*
  * Prototypes for rules.c
  */
-void Tune_item_probs(void);
-void Tune_item_packs(void);
-void Set_initial_resources(void);
-void Set_world_items(void);
-void Set_world_rules(void);
-void Set_world_asteroids(void);
-void Set_misc_item_limits(void);
-void Tune_asteroid_prob(void);
+void Tune_item_probs();
+void Tune_item_packs();
+void Set_initial_resources();
+void Set_world_items();
+void Set_world_rules();
+void Set_world_asteroids();
+void Set_misc_item_limits();
+void Tune_asteroid_prob();
 
 /*
  * Prototypes for server.c
  */
-void End_game(void);
+void End_game();
 int Pick_team(int pick_for_type);
 void Server_info(String str, size_t max_size);
 void Log_game(String heading);
-String Describe_game_status(void);
-void Game_Over(void);
+String Describe_game_status();
+void Game_Over();
 void Server_shutdown(String user_name, int delay, String reason);
 void Server_log_admin_message(player_t *pl, String str);
 int plock_server(bool on);
-void Main_loop(void);
+void Main_loop();
 
 
 /*
  * Prototypes for contact.c
  */
-void Contact_cleanup(void);
-int Contact_init(void);
+void Contact_cleanup();
+int Contact_init();
 void Contact(int fd, void *arg);
 void Queue_kick(String nick);
-void Queue_loop(void);
+void Queue_loop();
 int Queue_advance_player(String name, String msg, size_t size);
 int Queue_show_list(String msg, size_t size);
-void Set_deny_hosts(void);
+void Set_deny_hosts();
 
 /*
  * Prototypes for metaserver.c
  */
 void Meta_send(String mesg, size_t len);
 int Meta_from(String addr, int port);
-void Meta_gone(void);
-void Meta_init(void);
+void Meta_gone();
+void Meta_init();
 void Meta_update(bool change);
-void Meta_update_max_size_tuner(void);
+void Meta_update_max_size_tuner();
 
 /*
  * Prototypes for frame.c
  */
-void Frame_update(void);
+void Frame_update();
 void Set_message(String message);
 void Set_player_message(player_t *pl, String message);
 void Set_message_f(String format, ...);
@@ -416,7 +416,7 @@ void Set_player_message_f(player_t *pl, String format, ...);
 /*
  * Prototypes for update.c
  */
-void Update_objects(void);
+void Update_objects();
 void Autopilot(player_t *pl, bool on);
 void Cloak(player_t *pl, bool on);
 void Deflector(player_t *pl, bool on);
@@ -460,18 +460,18 @@ int Accept_alliance(player_t *pl, player_t *ally);
 int Accept_all_alliances(player_t *pl);
 int Get_alliance_member_count(int id);
 void Player_join_alliance(player_t *pl, player_t *ally);
-void Dissolve_all_alliances(void);
+void Dissolve_all_alliances();
 int Leave_alliance(player_t *pl);
 void Alliance_player_list(player_t *pl);
 
 /*
  * Prototypes for object.c
  */
-object_t *Object_allocate(void);
+object_t *Object_allocate();
 void Object_free_ind(int ind);
 void Object_free_ptr(object_t *obj);
 void Alloc_shots(int number);
-void Free_shots(void);
+void Free_shots();
 String Object_typename(object_t *obj);
 
 /*
@@ -485,21 +485,21 @@ void P_start_polygon(Click  pos, int style);
 void P_offset(Click  offset, int edgestyle);
 void P_vertex(Click  pos, int edgestyle);
 void P_style(String state, int style);
-void P_end_polygon(void);
-int P_start_ballarea(void);
-void P_end_ballarea(void);
+void P_end_polygon();
+int P_start_ballarea();
+void P_end_ballarea();
 int P_start_balltarget(int team, int treasure_ind);
-void P_end_balltarget(void);
+void P_end_balltarget();
 int P_start_target(int target_ind);
-void P_end_target(void);
+void P_end_target();
 int P_start_cannon(int cannon_ind);
-void P_end_cannon(void);
+void P_end_cannon();
 int P_start_wormhole(int wormhole_ind);
-void P_end_wormhole(void);
-void P_start_decor(void);
-void P_end_decor(void);
+void P_end_wormhole();
+void P_start_decor();
+void P_end_decor();
 int P_start_friction_area(int fa_ind);
-void P_end_friction_area(void);
+void P_end_friction_area();
 int P_get_bmp_id(String s);
 int P_get_edge_id(String s);
 int P_get_poly_id(String s);
@@ -509,29 +509,29 @@ void P_set_hitmask(int group, hitmask_t hitmask);
 /*
  * Prototypes for showtime.c
  */
-String showtime(void);
+String showtime();
 
 /*
  * Prototypes for srecord.c
  */
-void Init_recording(void);
-void Handle_recording_buffers(void);
-void Get_recording_data(void);
+void Init_recording();
+void Handle_recording_buffers();
+void Get_recording_data();
 
 /*
  * Prototypes for tag.c
  */
 void Transfer_tag(player_t *oldtag_pl, player_t *newtag_pl);
-void Check_tag(void);
+void Check_tag();
 
 /*
  * Prototypes for target.c
  */
-void Target_update(void);
+void Target_update();
 void Object_hits_target(object_t *obj, target_t *targ, double player_cost);
 hitmask_t Target_hitmask(target_t *targ);
 void Target_set_hitmask(int group, target_t *targ);
-void Target_init(void);
+void Target_init();
 void World_restore_target(target_t *targ);
 void World_remove_target(target_t *targ);
 
@@ -555,6 +555,6 @@ void Object_finish_warp(object_t *obj);
 void Object_hits_wormhole(object_t *obj, int ind);
 hitmask_t Wormhole_hitmask(wormhole_t *wormhole);
 bool Wormhole_hitfunc(group_t *groupptr, const move_t *move);
-bool Verify_wormhole_consistency(void);
+bool Verify_wormhole_consistency();
 
 #endif

@@ -47,10 +47,10 @@ String T_Background = COLOR_BACKGROUND,
 /***************************************************************************/
 void T_ConnectToServer(String display_name)
 {
-    if (display_name == NULL) {
+    if (display_name == null) {
 	display_name = getenv("DISPLAY");
     }
-    if ((display = XOpenDisplay(display_name)) == NULL) {
+    if ((display = XOpenDisplay(display_name)) == null) {
 	fprintf(stderr, "cannot connect to X server %s\n",
 		XDisplayName(display_name));
 	exit(-1);
@@ -72,7 +72,7 @@ void T_ConnectToServer(String display_name)
 /* Arguments :                                                             */
 /* Purpose : Close X server connection, unload toolkit font and free GCs.  */
 /***************************************************************************/
-void T_CloseServerConnection(void)
+void T_CloseServerConnection()
 {
     XUnloadFont(display, T_Font.fid);
     XFreeGC(display, T_Back_GC);
@@ -141,7 +141,7 @@ int T_GetGC(GC * gc, String foreground)
 /***************************************************************************/
 int T_FontInit(XFontStruct ** fontinfo, String fontname)
 {
-    if ((*fontinfo = XLoadQueryFont(display, fontname)) == NULL) {
+    if ((*fontinfo = XLoadQueryFont(display, fontname)) == null) {
 	*fontinfo = XLoadQueryFont(display, "9x15");
 	fprintf(stderr, "Could not find font %s, using 9x15\n", fontname);
 	return 1;
@@ -365,7 +365,7 @@ void T_DrawTextButton(Window win, int x, int y, int width, int height,
 		      int zheight, String string)
 {
     T_DrawButton(win, x, y, width, height, zheight, 1);
-    if (string != NULL)
+    if (string != null)
 	T_DrawString(win, x + zheight, y + zheight, width, height, BKGR,
 		     string, JUSTIFY_CENTER, CROP_RIGHT, -1);
 }

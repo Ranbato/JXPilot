@@ -31,7 +31,7 @@ Shape  wormhole_wire;
  * Initialization functions.
  */
 
-void Wormhole_line_init(void)
+void Wormhole_line_init()
 {
     int i;
     static Click  coords[MAX_SHIP_PTS];
@@ -46,7 +46,7 @@ void Wormhole_line_init(void)
     return;
 }
 
-bool Verify_wormhole_consistency(void)
+bool Verify_wormhole_consistency()
 {
     int i, worm_in = 0, worm_out = 0, worm_norm = 0;
 
@@ -110,7 +110,7 @@ bool Wormhole_hitfunc(group_t *gp, const move_t *move)
     if (wormhole.type == WORM_OUT)
 	return false;
 
-    if (obj == NULL)
+    if (obj == null)
 	return true;
 
     if (obj.obj_status.get( WARPED|WARPING))
@@ -134,7 +134,7 @@ static void Warp_balls(player_t *pl, Click  dest)
      * Don't connect to balls while warping.
      */
     if (Player_uses_connector(pl))
-	pl.ball = NULL;
+	pl.ball = null;
 
     if (pl.have.get( HAS_BALL)) {
 	/*

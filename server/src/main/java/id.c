@@ -31,7 +31,7 @@ static int		ID_inited = 0;
 static unsigned		get_ID;
 static unsigned		put_ID;
 
-static void init_ID(void)
+static void init_ID()
 {
     int			i, id;
 
@@ -50,7 +50,7 @@ static void init_ID(void)
     }
 }
 
-int peek_ID(void)
+int peek_ID()
 {
     int			id;
 
@@ -64,7 +64,7 @@ int peek_ID(void)
     return id;
 }
 
-int request_ID(void)
+int request_ID()
 {
     int			id;
 

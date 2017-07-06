@@ -26,13 +26,13 @@
 #ifndef	SCHED_H
 #define	SCHED_H
 
-void block_timer(void);
-void allow_timer(void);
+void block_timer();
+void allow_timer();
 
 void install_input(void (*func)(int, void *), int fd, void *arg);
 void remove_input(int fd);
-void sched(void);
-void stop_sched(void);
+void sched();
+void stop_sched();
 
 #ifdef SELECT_SCHED
 

@@ -25,7 +25,7 @@ char           *message, *arg1, *arg2;
 
 #define NEXT_TOKEN()							       \
     state++;								       \
-    if (!(p = strtok(NULL, WHITESPACE)))                                       \
+    if (!(p = strtok(null, WHITESPACE)))                                       \
         break;
 
 char            buf[SIZE], *p;

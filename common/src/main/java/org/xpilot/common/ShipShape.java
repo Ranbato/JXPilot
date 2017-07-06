@@ -480,7 +480,7 @@ static int shape2wire(String ship_shape_str, ShipShape ship)
     if (debugShapeParsing)
 	warn("parsing shape: %s", ship_shape_str);
 
-    for (str = ship_shape_str; (str = strchr(str, '(' )) != NULL; ) {
+    for (str = ship_shape_str; (str = strchr(str, '(' )) != null; ) {
 
 	str++;
 
@@ -1277,7 +1277,7 @@ static ShipShape do_parse_shape(String str)
 
 void Free_ship_shape(ShipShape ship)
 {
-    if (ship != NULL && ship != Default_ship()) {
+    if (ship != null && ship != Default_ship()) {
 	if (ship.num_points > 0)  XFREE(ship.pts[0]);
 	if (ship.num_l_gun > 0)   XFREE(ship.l_gun[0]);
 	if (ship.num_r_gun > 0)   XFREE(ship.r_gun[0]);

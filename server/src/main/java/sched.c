@@ -67,7 +67,7 @@ static int			input_inited = false;
 #if !defined(_WINDOWS)
 static volatile bool sched_running = false;
 
-void stop_sched(void)
+void stop_sched()
 {
 	sched_running = false;
 }
@@ -156,7 +156,7 @@ void remove_input(int fd)
     }
 }
 
-static void sched_select_error(void)
+static void sched_select_error()
 {
     error("sched select error");
 
@@ -170,7 +170,7 @@ static void	(*timer_handler)(void);
 static double	frametime;	/* time between 2 frames in seconds */
 static double	t_nextframe;
 
-static void setup_timer(void)
+static void setup_timer()
 {
     struct timeval tv;
     double t;
@@ -182,7 +182,7 @@ static void setup_timer(void)
 
     frametime = 1.0 / (double)timer_freq;
 
-    gettimeofday(&tv, NULL);
+    gettimeofday(&tv, null);
     t = timeval_to_seconds(&tv);
     t_nextframe = t + frametime;
 }
@@ -192,7 +192,7 @@ static void setup_timer(void)
  */
 void install_timer_tick(void (*func)(void), int freq)
 {
-    if (func != NULL) /* NULL to change freq, keep same handler */
+    if (func != null) /* null to change freq, keep same handler */
 	timer_handler = func;
     timer_freq = freq;
     setup_timer();
@@ -210,7 +210,7 @@ unsigned long skip_to = 0;
 /*
  * I/O + timer dispatcher.
  */
-void sched(void)
+void sched()
 {
     int i, n;
     double t_now, t_wait;
@@ -223,14 +223,14 @@ void sched(void)
     else
 	sched_running = true;
 
-    gettimeofday(&tv, NULL);
+    gettimeofday(&tv, null);
     t_now = timeval_to_seconds(&tv);
     t_nextframe = t_now + frametime;
 
     while (sched_running) {
 	fd_set readmask = input_mask;
 
-	gettimeofday(&tv, NULL);
+	gettimeofday(&tv, null);
 	t_now = timeval_to_seconds(&tv);
 	t_wait = t_nextframe - t_now;
 
@@ -260,7 +260,7 @@ void sched(void)
 	/* RECORDING STUFF END */
 
 	wait_tv = seconds_to_timeval(t_wait);
-	n = select(max_fd + 1, &readmask, NULL, NULL, &wait_tv);
+	n = select(max_fd + 1, &readmask, null, null, &wait_tv);
 
 	if (n <= 0) {
 	    if (n == -1 && errno != EINTR)
@@ -351,7 +351,7 @@ static void sig_ok(int signum, int flag)
 
     sigemptyset(&sigset);
     sigaddset(&sigset, signum);
-    if (sigprocmask((flag) ? SIG_UNBLOCK : SIG_BLOCK, &sigset, NULL) == -1) {
+    if (sigprocmask((flag) ? SIG_UNBLOCK : SIG_BLOCK, &sigset, null) == -1) {
 	error("sigprocmask(%d,%d)", signum, flag);
 	exit(1);
     }
@@ -362,7 +362,7 @@ static void sig_ok(int signum, int flag)
  * Prevent the real-time timer from interrupting system calls.
  * Globally accessible.
  */
-void block_timer(void)
+void block_timer()
 {
 #ifndef _WINDOWS
     sig_ok(SIGALRM, 0);
@@ -373,7 +373,7 @@ void block_timer(void)
  * Unblock the real-time timer.
  * Globally accessible.
  */
-void allow_timer(void)
+void allow_timer()
 {
 #ifndef _WINDOWS
     sig_ok(SIGALRM, 1);
@@ -407,7 +407,7 @@ static void catch_timer(int signum)
  * Setup the handling of the SIGALRM signal
  * and setup the real-time interval timer.
  */
-static void setup_timer(void)
+static void setup_timer()
 {
 #ifndef _WINDOWS
 
@@ -426,7 +426,7 @@ static void setup_timer(void)
     act.sa_flags = 0;
     sigemptyset(&act.sa_mask);
     sigaddset(&act.sa_mask, SIGALRM);
-    if (sigaction(SIGALRM, &act, (struct sigaction *)NULL) == -1) {
+    if (sigaction(SIGALRM, &act, (struct sigaction *)null) == -1) {
 	error("sigaction SIGALRM");
 	exit(1);
     }
@@ -442,7 +442,7 @@ static void setup_timer(void)
     itv.it_interval.tv_sec = 0;
     itv.it_interval.tv_usec = 1000000 / timer_freq;
     itv.it_value = itv.it_interval;
-    if (setitimer(ITIMER_REAL, &itv, NULL) == -1) {
+    if (setitimer(ITIMER_REAL, &itv, null) == -1) {
 	error("setitimer");
 	exit(1);
     }
@@ -452,8 +452,8 @@ static void setup_timer(void)
     ticks_till_second = timer_freq;
 #else
 /*
-    UINT cr = SetTimer(NULL, 0, 1000/timer_freq, timer_handler);
-    UINT cr = SetTimer(NULL, 0, 20, (TIMERPROC)ServerThreadTimerProc);
+    UINT cr = SetTimer(null, 0, 1000/timer_freq, timer_handler);
+    UINT cr = SetTimer(null, 0, 20, (TIMERPROC)ServerThreadTimerProc);
     if (!cr)
 	error("Can't create timer");
 */
@@ -470,7 +470,7 @@ static void setup_timer(void)
 #ifndef _WINDOWS
 void install_timer_tick(void (*func)(void), int freq)
 {
-    if (func != NULL) /* NULL to change freq, keep same handler */
+    if (func != null) /* null to change freq, keep same handler */
 	timer_handler = func;
     timer_freq = freq;
     setup_timer();
@@ -481,7 +481,7 @@ typedef void (__stdcall *windows_timer_t)(void *, unsigned int, unsigned int, un
 
 void install_timer_tick(windows_timer_t func, int freq)
 {
-    if (func != NULL)
+    if (func != null)
 	timer_handler = (TIMERPROC)func;
     timer_freq = freq;
     setup_timer();
@@ -498,13 +498,13 @@ struct to_handler {
     void		(*func)(void *);
     void		*arg;
 };
-static struct to_handler *to_busy_list = NULL;
-static struct to_handler *to_free_list = NULL;
+static struct to_handler *to_busy_list = null;
+static struct to_handler *to_free_list = null;
 static int		to_min_free = 3;
 static int		to_max_free = 5;
 static int		to_cur_free = 0;
 
-static void to_fill(void)
+static void to_fill()
 {
     if (to_cur_free < to_min_free) {
 	do {
@@ -520,7 +520,7 @@ static void to_fill(void)
     }
 }
 
-static struct to_handler *to_alloc(void)
+static struct to_handler *to_alloc()
 {
     struct to_handler *top;
 
@@ -560,7 +560,7 @@ void install_timeout(void (*func)(void *), int offset, void *arg)
     top.when = current_time + offset;
     top.arg = arg;
     if (!to_busy_list || to_busy_list.when >= top.when) {
-	top.next = NULL;
+	top.next = null;
 	to_busy_list = top;
     }
     else {
@@ -597,7 +597,7 @@ void remove_timeout(void (*func)(void *), void *arg)
     }
 }
 
-static void timeout_chime(void)
+static void timeout_chime()
 {
     while (to_busy_list && to_busy_list.when <= current_time) {
 	struct to_handler *top = to_busy_list;
@@ -617,7 +617,7 @@ static void timeout_chime(void)
 long skip_to = 0;
 
 #ifndef _WINDOWS
-void sched(void)
+void sched()
 {
     int			i, n, io_todo = 3;
     struct timeval	tv, *tvp = &tv;
@@ -704,13 +704,13 @@ void sched(void)
 		    io_todo--;
 	    }
 	    if (io_todo == 0)
-		tvp = NULL;
+		tvp = null;
 	}
     }
 }
 
 #else /* _WINDOWS */
-void sched(void)
+void sched()
 {
     int			i, n, io_todo = 3;
     struct timeval	tv, *tvp = &tv;
@@ -771,7 +771,7 @@ void sched(void)
 	    }
 	}
 	if (io_todo == 0) {
-	    tvp = NULL;
+	    tvp = null;
 	}
     }
 }

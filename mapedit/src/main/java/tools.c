@@ -37,7 +37,7 @@ int prefx = PREF_X, prefy = PREF_Y;
 int prevdraw_x, prevdraw_y;
 int prevline_x, prevline_y, prevlinend_x, prevlinend_y;
 int selectfrom_x = -1, selectfrom_y, selectto_x, selectto_y;
-undo_t *undolist = NULL;
+undo_t *undolist = null;
 
 /***************************************************************************/
 /* DrawMapIcon                                                             */
@@ -558,7 +558,7 @@ int ExitApplication(HandlerInfo_t info)
 	return 0;
     if (T_IsPopupOpen(changedwin)) {
 	T_PopupClose(changedwin);
-	changedwin = (Window) NULL;
+	changedwin = (Window) null;
     }
     T_FormCloseWindow(mapwin);
     T_FormCloseWindow(prefwin);
@@ -592,7 +592,7 @@ int ExitApplication(HandlerInfo_t info)
 /***************************************************************************/
 int SaveUndoIcon(int x, int y, char icon)
 {
-    struct undo_t *undo = NULL;
+    struct undo_t *undo = null;
 
     undo = (struct undo_t *) undolist;
     undolist = (undo_t *) malloc(sizeof(undo_t));
@@ -616,14 +616,14 @@ int Undo(HandlerInfo_t info)
 
     ClearSelectArea();
     /* if the first icon is a breakpoint, skip it */
-    if (undolist != NULL) {
+    if (undolist != null) {
 	if (undolist.icon == '\n') {
 	    traverse = (undo_t *) undolist.next;
 	    free(undolist);
 	    undolist = traverse;
 	}
     }
-    while (undolist != NULL) {
+    while (undolist != null) {
 
 	/* check if we are at a breakpoint */
 	if (undolist.icon == '\n') {
@@ -642,7 +642,7 @@ int Undo(HandlerInfo_t info)
 /* Arguments :                                                             */
 /* Purpose :                                                               */
 /***************************************************************************/
-void ClearUndo(void)
+void ClearUndo()
 {
     /* insert a breakpoint */
     SaveUndoIcon(0, 0, '\n');
@@ -664,10 +664,10 @@ int NewMap(HandlerInfo_t info)
 	return 1;
     if (T_IsPopupOpen(changedwin)) {
 	T_PopupClose(changedwin);
-	changedwin = (Window) NULL;
+	changedwin = (Window) null;
     }
     free(map.comments);
-    map.comments = (String ) NULL;
+    map.comments = (String ) null;
     map.mapName[0] = map.mapAuthor[0] = map.mapFileName[0] =
 	map.gravity[0] = '\0';
     map.shipMass[0] = map.maxRobots[0] = map.worldLives[0] = '\0';
@@ -966,7 +966,7 @@ char MapData(int x, int y)
 /***************************************************************************/
 int ChangedPrompt(handler_t handler)
 {
-    if (changedwin != (Window) NULL)
+    if (changedwin != (Window) null)
 	return 0;
     if (map.changed == 0)
 	return 0;
@@ -983,7 +983,7 @@ int ChangedPrompt(handler_t handler)
 /* Arguments :                                                             */
 /* Purpose : Remove the select rectangle and turn the select box off.      */
 /***************************************************************************/
-void ClearSelectArea(void)
+void ClearSelectArea()
 {
     DrawSelectArea();
     selectfrom_x = -1;
@@ -994,7 +994,7 @@ void ClearSelectArea(void)
 /* Arguments :                                                             */
 /* Purpose : Draw the select rectangle.                                    */
 /***************************************************************************/
-void DrawSelectArea(void)
+void DrawSelectArea()
 {
     int x, y, w, h;
 

@@ -31,7 +31,7 @@
 /* Arguments :                                                             */
 /* Purpose :                                                               */
 /***************************************************************************/
-void MainEventLoop(void)
+void MainEventLoop()
 {
     XEvent report;
 

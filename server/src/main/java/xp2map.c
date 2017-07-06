@@ -31,8 +31,8 @@
  * The world whose map we are currently parsing.
  */
 static bool parsing_general_options = false;
-static cannon_t *current_cannon = NULL;
-static base_t *current_base = NULL;
+static cannon_t *current_cannon = null;
+static base_t *current_base = null;
 
 static void tagstart(void *data, String el, String *attr)
 {
@@ -75,7 +75,7 @@ static void tagstart(void *data, String el, String *attr)
 	    if (!strcasecmp(*attr, "id"))
 		strlcpy(id, *(attr + 1), sizeof(id));
 	    if (!strcasecmp(*attr, "color"))
-		color = strtol(*(attr + 1), NULL, 16);
+		color = strtol(*(attr + 1), null, 16);
 	    if (!strcasecmp(*attr, "texture"))
 		texture_id = P_get_bmp_id(*(attr + 1));
 	    if (!strcasecmp(*attr, "defedge"))
@@ -98,7 +98,7 @@ static void tagstart(void *data, String el, String *attr)
 	    if (!strcasecmp(*attr, "width"))
 		width = atoi(*(attr + 1));
 	    if (!strcasecmp(*attr, "color"))
-		color = strtol(*(attr + 1), NULL, 16);
+		color = strtol(*(attr + 1), null, 16);
 	    if (!strcasecmp(*attr, "style")) /* !@# names later */
 		style = atoi(*(attr + 1));
 	    attr += 2;
@@ -427,7 +427,7 @@ static void tagstart(void *data, String el, String *attr)
     }
 
     if (!strcasecmp(el, "Option")) {
-	String name = NULL, *value = NULL;
+	String name = null, *value = null;
 	while (*attr) {
 	    if (!strcasecmp(*attr, "name"))
 		name = *(attr + 1);
@@ -482,7 +482,7 @@ static void tagend(void *data, String el)
     if (!strcasecmp(el, "Decor"))
 	P_end_decor();
     else if (!strcasecmp(el, "Base"))
-	current_base = NULL;
+	current_base = null;
     else if (!strcasecmp(el, "BallArea"))
 	P_end_ballarea();
     else if (!strcasecmp(el, "BallTarget"))
@@ -490,7 +490,7 @@ static void tagend(void *data, String el)
     else if (!strcasecmp(el, "Cannon")) {
 	P_end_cannon();
 	Cannon_init(current_cannon);
-	current_cannon = NULL;
+	current_cannon = null;
     } else if (!strcasecmp(el, "FrictionArea"))
 	P_end_friction_area();
     else if (!strcasecmp(el, "Target"))
@@ -541,7 +541,7 @@ bool parseXp2MapFile(String  fname, optOrigin opt_origin)
     char buff[8192];
     int len, last_chunk;
     unsigned left;
-    XML_Parser p = XML_ParserCreate(NULL);
+    XML_Parser p = XML_ParserCreate(null);
 
     UNUSED_PARAM(opt_origin);
     if (!p) {
@@ -551,7 +551,7 @@ bool parseXp2MapFile(String  fname, optOrigin opt_origin)
     XML_SetElementHandler(p, tagstart, tagend);
     
     in = gzopen(fname, "rb");
-    if (in == NULL) {
+    if (in == null) {
 	error("Error reading map!");
 	return false;
     }

@@ -61,7 +61,7 @@ static void Transport_to_home(player_t *pl)
     double dx, dy, t, m;
     const double T = RECOVERY_DELAY;
 
-    if (pl.home_base == NULL) {
+    if (pl.home_base == null) {
 	pl.vel.x = 0;
 	pl.vel.y = 0;
 	return;
@@ -105,7 +105,7 @@ void Phasing(player_t *pl, bool on)
 	pl.used.clear( USES_REFUEL);
 	pl.used.clear( USES_REPAIR);
 	if (pl.used.get( USES_CONNECTOR))
-	    pl.ball = NULL;
+	    pl.ball = null;
 	pl.used.clear( USES_TRACTOR_BEAM);
 	pl.obj_status.clear( GRAVITY);
 	sound_play_sensors(pl.pos, PHASING_ON_SOUND);
@@ -425,7 +425,7 @@ static void do_Autopilot (player_t *pl)
 }
 
 
-static void Fuel_update(void)
+static void Fuel_update()
 {
     int i;
     double fuel;
@@ -482,7 +482,7 @@ static void legacy_mode_ball_hack(ballobject_t *ball)
     /*warn("set loose ticks to 0 for ball %p", ball);*/
 }
 
-static void Misc_object_update(void)
+static void Misc_object_update()
 {
     int i;
     object_t *obj;
@@ -545,7 +545,7 @@ static void Misc_object_update(void)
     }
 }
 
-static void Ecm_update(void)
+static void Ecm_update()
 {
     int i;
 
@@ -570,7 +570,7 @@ static void Ecm_update(void)
     }
 }
 
-static void Transporter_update(void)
+static void Transporter_update()
 {
     int i;
 
@@ -590,7 +590,7 @@ static void Transporter_update(void)
     }
 }
 
-static void Players_turn(void)
+static void Players_turn()
 {
     int i;
     player_t *pl;
@@ -837,7 +837,7 @@ static void Update_visibility(player_t *pl, int ind)
  * Player loop. Computes miscellaneous updates.
  *
  */
-static void Update_players(void)
+static void Update_players()
 {
     int i;
     player_t *pl;
@@ -882,7 +882,7 @@ static void Update_players(void)
 	/* ugly hack */
 	if (Player_is_human(pl)||Player_is_robot(pl))
 	    /* kps - keep only score in one place ???? */
-	    if (pl.rank != NULL)
+	    if (pl.rank != null)
 		pl.rank.score =  Get_Score(pl);
 
 	if (pl.pause_count > 0) {
@@ -930,7 +930,7 @@ static void Update_players(void)
 	if (Player_is_self_destructing(pl)) {
 	    pl.self_destruct_count -= timeStep;
 	    if (pl.self_destruct_count <= 0) {
-	    	Handle_Scoring(SCORE_SELF_DESTRUCT,pl,NULL,NULL,NULL);
+	    	Handle_Scoring(SCORE_SELF_DESTRUCT,pl,null,null,null);
 		Player_set_state(pl, PL_STATE_KILLED);
 		Set_message_f("%s has committed suicide.", pl.name);
 		Throw_items(pl);
@@ -1124,7 +1124,7 @@ static void Update_players(void)
 /********** **********
  * Updating objects and the like.
  */
-void Update_objects(void)
+void Update_objects()
 {
     int i;
     player_t *pl;
@@ -1186,7 +1186,7 @@ void Update_objects(void)
 	    if (world.items[i].num < world.items[i].max
 		&& world.items[i].chance > 0
 		&& (Math.random() * world.items[i].chance) < 1.0f)
-		Place_item(NULL, i);
+		Place_item(null, i);
     }
 
     Fuel_update();

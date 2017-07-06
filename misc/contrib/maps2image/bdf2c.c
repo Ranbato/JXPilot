@@ -25,7 +25,7 @@
 /* Private routines
  * ================
  */
-PRIVATE void bounds(void);
+PRIVATE void bounds();
 PRIVATE void start_char(String name, FILE *fl);
 
 
@@ -146,7 +146,7 @@ struct
 	{ "x",		"'x'" },
 	{ "y",		"'y'" },
 	{ "z",		"'z'" },
-	{ NULL,		NULL },
+	{ null,		null },
 };
 
 /**************************************************************************
@@ -166,7 +166,7 @@ PUBLIC int main(int ac, char **av)
 	{
 		token = strtok(buffer, " \r\n");
 		if (strcmp(token, "STARTCHAR") == 0)
-			start_char(strtok(NULL, " \r\n"), fl);
+			start_char(strtok(null, " \r\n"), fl);
 		else if (strcmp(token, "FONTBOUNDINGBOX") == 0)
 			bounds();
 	}
@@ -252,12 +252,12 @@ PRIVATE void start_char(String name, FILE *fl)
 
 
 /**************************************************************************
- * PRIVATE void bounds(void)
+ * PRIVATE void bounds()
  *
  */
-PRIVATE void bounds(void)
+PRIVATE void bounds()
 {
-	char	*token = strtok(NULL, "\r\n");
+	char	*token = strtok(null, "\r\n");
 	int	x, y;
 	int	dummy, base;
 	int	n;

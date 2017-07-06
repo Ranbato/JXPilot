@@ -94,7 +94,7 @@
 
 #include "xpserver.h"
 
-static int Init_setup(void);
+static int Init_setup();
 static int Handle_listening(connection_t *connp);
 static int Handle_setup(connection_t *connp);
 static int Handle_login(connection_t *connp, String errmsg, size_t errsize);
@@ -129,10 +129,10 @@ static int Send_motd(connection_t *connp);
 #define MAX_MOTD_SIZE			(30*1024)
 #define MAX_MOTD_LOOPS			(10*FPS)
 
-static connection_t	*Conn = NULL;
+static connection_t	*Conn = null;
 static int		max_connections = 0;
-static setup_t		*Setup = NULL;
-static setup_t		*Oldsetup = NULL;
+static setup_t		*Setup = null;
+static setup_t		*Oldsetup = null;
 static int		(*playing_receive[256])(connection_t *connp),
 			(*login_receive[256])(connection_t *connp),
 			(*drain_receive[256])(connection_t *connp);
@@ -192,7 +192,7 @@ static void Feature_init(connection_t *connp)
  * We only setup this structure once to save time when new
  * players log in during play.
  */
-static int Init_setup(void)
+static int Init_setup()
 {
     size_t size;
     unsigned String mapdata;
@@ -210,7 +210,7 @@ static int Init_setup(void)
     xpprintf("%s Server.client polygon map transfer size is %d bytes.\n",
 	     showtime(), size);
 
-    if ((Setup = (setup_t *)malloc(sizeof(setup_t) + size)) == NULL) {
+    if ((Setup = (setup_t *)malloc(sizeof(setup_t) + size)) == null) {
 	error("No memory to hold setup");
 	free(mapdata);
 	return -1;
@@ -235,7 +235,7 @@ static int Init_setup(void)
  * Initialize the function dispatch tables for the various client
  * connection states.  Some states use the same table.
  */
-static void Init_receive(void)
+static void Init_receive()
 {
     int i;
 
@@ -296,7 +296,7 @@ static void Init_receive(void)
 /*
  * Initialize the connection structures.
  */
-int Setup_net_server(void)
+int Setup_net_server()
 {
     Init_receive();
 
@@ -311,7 +311,7 @@ int Setup_net_server(void)
     max_connections
 	= MIN((int)MAX_SELECT_FD - 5,
 	      options.playerLimit_orig + MAX_SPECTATORS * !!rplayback);
-    if ((Conn = XCALLOC(connection_t, max_connections)) == NULL) {
+    if ((Conn = XCALLOC(connection_t, max_connections)) == null) {
 	error("Cannot allocate memory for connections");
 	return -1;
     }
@@ -399,7 +399,7 @@ void Destroy_connection(connection_t *connp, String reason)
 	id = connp.id;
 	connp.id = NO_ID;
 	pl = Player_by_id(id);
-	pl.conn = NULL;
+	pl.conn = null;
 	if (pl.rectype != 2)
 	    Delete_player(pl);
 	else
@@ -512,10 +512,10 @@ static void dcase(String str)
     }
 }
 
-String banned_users[] = { "<", ">", "\"", "'", NULL };
-String banned_nicks[] = { "<", ">", "\"", "'", NULL };
-String banned_addrs[] = { NULL };
-String banned_hosts[] = { "<", ">", "\"", "'", NULL };
+String banned_users[] = { "<", ">", "\"", "'", null };
+String banned_nicks[] = { "<", ">", "\"", "'", null };
+String banned_addrs[] = { null };
+String banned_hosts[] = { "<", ">", "\"", "'", null };
 
 int CheckBanned(String user, String nick, String addr, String host)
 {
@@ -530,26 +530,26 @@ int CheckBanned(String user, String nick, String addr, String host)
     dcase(addr);
     dcase(host);
 
-    for (i = 0; banned_users[i] != NULL; i++) {
-	if (strstr(user, banned_users[i]) != NULL) {
+    for (i = 0; banned_users[i] != null; i++) {
+	if (strstr(user, banned_users[i]) != null) {
 	    ret = 1;
 	    goto out;
 	}
     }
-    for (i = 0; banned_nicks[i] != NULL; i++) {
-	if (strstr(nick, banned_nicks[i]) != NULL) {
+    for (i = 0; banned_nicks[i] != null; i++) {
+	if (strstr(nick, banned_nicks[i]) != null) {
 	    ret = 1;
 	    goto out;
 	}
     }
-    for (i = 0; banned_addrs[i] != NULL; i++) {
-	if (strstr(addr, banned_addrs[i]) != NULL) {
+    for (i = 0; banned_addrs[i] != null; i++) {
+	if (strstr(addr, banned_addrs[i]) != null) {
 	    ret = 1;
 	    goto out;
 	}
     }
-    for (i = 0; banned_hosts[i] != NULL; i++) {
-	if (strstr(host, banned_hosts[i]) != NULL) {
+    for (i = 0; banned_hosts[i] != null; i++) {
+	if (strstr(host, banned_hosts[i]) != null) {
 	    ret = 1;
 	    goto out;
 	}
@@ -570,22 +570,22 @@ struct restrict {
 };
 
 struct restrict restricted[] = {
-    { NULL, NULL, NULL }
+    { null, null, null }
 };
 
 int CheckAllowed(String user, String nick, String addr, String host)
 {
     int i, allowed = 1;
     /*String realnick = nick;*/
-    String mail = NULL;
+    String mail = null;
 
     nick = strdup(nick);
     addr = strdup(addr);
     dcase(nick);
     dcase(addr);
 
-    for (i = 0; restricted[i].nick != NULL; i++) {
-	if (strstr(nick, restricted[i].nick) != NULL) {
+    for (i = 0; restricted[i].nick != null; i++) {
+	if (strstr(nick, restricted[i].nick) != null) {
 	    if (strncmp(addr, restricted[i].addr, strlen(restricted[i].addr))
 		== 0) {
 		allowed = 1;
@@ -699,7 +699,7 @@ int Setup_connection(String user, String nick, String dpy, int team,
     Sockbuf_init(&connp.r, &sock, SERVER_RECV_SIZE,
 		 SOCKBUF_READ | SOCKBUF_DGRAM);
 
-    Sockbuf_init(&connp.c, (sock_t *) NULL, MAX_SOCKBUF_SIZE,
+    Sockbuf_init(&connp.c, (sock_t *) null, MAX_SOCKBUF_SIZE,
 		 SOCKBUF_WRITE | SOCKBUF_READ | SOCKBUF_LOCK);
 
     connp.ind = free_conn_index;
@@ -709,7 +709,7 @@ int Setup_connection(String user, String nick, String dpy, int team,
     connp.dpy = xp_strdup(dpy);
     connp.addr = xp_strdup(addr);
     connp.host = xp_strdup(host);
-    connp.ship = NULL;
+    connp.ship = null;
     connp.team = team;
     connp.version = version;
     Feature_init(connp);
@@ -737,14 +737,14 @@ int Setup_connection(String user, String nick, String dpy, int team,
     connp.last_mouse_pos = 0;
     connp.rectype = rplayback ? 2-playback : 0;
     Conn_set_state(connp, CONN_LISTENING, CONN_FREE);
-    if (connp.w.buf == NULL
-	|| connp.r.buf == NULL
-	|| connp.c.buf == NULL
-	|| connp.user == NULL
-	|| connp.nick == NULL
-	|| connp.dpy == NULL
-	|| connp.addr == NULL
-	|| connp.host == NULL
+    if (connp.w.buf == null
+	|| connp.r.buf == null
+	|| connp.c.buf == null
+	|| connp.user == null
+	|| connp.nick == null
+	|| connp.dpy == null
+	|| connp.addr == null
+	|| connp.host == null
 	) {
 	error("Not enough memory for connection");
 	/* socket is not yet connected, but it doesn't matter much. */
@@ -947,10 +947,10 @@ static void UglyHack(String string)
 	String s;
 
 	/* not really needed, but here for safety */
-	if (substr == NULL)
+	if (substr == null)
 	    break;
 
-	while ((s = strstr(string, substr)) != NULL)
+	while ((s = strstr(string, substr)) != null)
 	    *s = 'X';
     }
 }
@@ -1051,7 +1051,7 @@ static int Handle_login(connection_t *connp, String errmsg, size_t errsize)
     if (pl.rectype < 2) {
 	if (world.rules.mode.get( TEAM_PLAY) && pl.team == TEAM_NOT_SET) {
 	    Player_set_state(pl, PL_STATE_PAUSED);
-	    pl.home_base = NULL;
+	    pl.home_base = null;
 	    pl.team = 0;
 	}
 	else {
@@ -1059,7 +1059,7 @@ static int Handle_login(connection_t *connp, String errmsg, size_t errsize)
 	    Go_home(pl);
 	}
 	Rank_get_saved_score(pl);
-	if (pl.team != TEAM_NOT_SET && pl.home_base != NULL) {
+	if (pl.team != TEAM_NOT_SET && pl.home_base != null) {
 	    team_t *teamp = Team_by_index(pl.team);
 
 	    teamp.NumMembers++;
@@ -1116,7 +1116,7 @@ static int Handle_login(connection_t *connp, String errmsg, size_t errsize)
 	Send_player(pl.conn, pl_i.id);
 	Send_score(pl.conn, pl_i.id, Get_Score(pl_i),
 		   pl_i.pl_life, pl_i.mychar, pl_i.alliance);
-	if (!Player_is_tank(pl_i) && pl_i.home_base != NULL)
+	if (!Player_is_tank(pl_i) && pl_i.home_base != null)
 	    Send_base(pl.conn, pl_i.id, pl_i.home_base.ind);
     }
     /*
@@ -1132,7 +1132,7 @@ static int Handle_login(connection_t *connp, String errmsg, size_t errsize)
 	pl_i = Player_by_index(i);
 	if (pl_i.rectype == 1 && pl.rectype == 2)
 	    continue;
-	if (pl_i.conn != NULL) {
+	if (pl_i.conn != null) {
 	    Send_player(pl_i.conn, pl.id);
 	    Send_score(pl_i.conn, pl.id,  Get_Score(pl),
 		       pl.pl_life, pl.mychar, pl.alliance);
@@ -1271,8 +1271,8 @@ static void Handle_input(int fd, void *arg)
 {
     connection_t *connp = (connection_t *)arg;
     int type, result, (**receive_tbl)(connection_t *);
-    short *pbscheck = NULL;
-    String pbdcheck = NULL;
+    short *pbscheck = null;
+    String pbdcheck = null;
 
     UNUSED_PARAM(fd);
     if (connp.state & (CONN_PLAYING | CONN_READY))
@@ -1372,7 +1372,7 @@ static void Handle_input(int fd, void *arg)
     }
 }
 
-int Input(void)
+int Input()
 {
     int i, num_reliable = 0;
     connection_t *input_reliable[MAX_SELECT_FD], *connp;
@@ -2590,18 +2590,18 @@ static void Handle_talk(connection_t *connp, String str)
 
     pl.flooding += FPS/3;
 
-    if ((cp = strchr (str, ':')) == NULL
+    if ((cp = strchr (str, ':')) == null
 	|| cp == str
 	|| strchr("-_~)(/\\}{[]", cp[1])	/* smileys are smileys */
 	) {
 	sprintf(msg, "%s [%s]", str, pl.name);
-	if (!(mute_baseless && pl.home_base == NULL) && !pl.muted)
+	if (!(mute_baseless && pl.home_base == null) && !pl.muted)
 	    Set_message(msg);
 	else {
 	    for (sent = i = 0; i < NumPlayers; i++) {
 		player_t *pl_i = Player_by_index(i);
 
-		if (pl_i.home_base == NULL)
+		if (pl_i.home_base == null)
 		    Set_player_message (pl_i, msg);
 	    }
 	}
@@ -2617,7 +2617,7 @@ static void Handle_talk(connection_t *connp, String str)
 	team = atoi (str);
 	sprintf(msg + strlen(msg), ":[%d]", team);
 	sent = 0;
-	if (!(mute_baseless && pl.home_base == NULL)) {
+	if (!(mute_baseless && pl.home_base == null)) {
 	    for (i = 0; i < NumPlayers; i++) {
 		player_t *pl_i = Player_by_index(i);
 
@@ -2631,7 +2631,7 @@ static void Handle_talk(connection_t *connp, String str)
 	    if (pl.team != team)
 		Set_player_message (pl, msg);
 	} else {
-	    if (!(mute_baseless && pl.home_base == NULL))
+	    if (!(mute_baseless && pl.home_base == null))
 		sprintf(msg, "Message not sent, nobody in team %d!", team);
 	    else
 		sprintf(msg, "You may not send messages to active teams!");
@@ -2643,7 +2643,7 @@ static void Handle_talk(connection_t *connp, String str)
 	Server_log_admin_message(pl, cp);
     else {						/* Player message */
 	String errmsg;
-	player_t *other_pl = Get_player_by_name(str, NULL, &errmsg);
+	player_t *other_pl = Get_player_by_name(str, null, &errmsg);
 
 	if (!other_pl) {
 	    sprintf(msg, "Message not sent. ");
@@ -2654,8 +2654,8 @@ static void Handle_talk(connection_t *connp, String str)
 	}
 
 	if (other_pl != pl) {
-	    if (!(mute_baseless && pl.home_base == NULL &&
-		  other_pl.home_base != NULL)) {
+	    if (!(mute_baseless && pl.home_base == null &&
+		  other_pl.home_base != null)) {
 		sprintf(msg + strlen(msg), ":[%s]", other_pl.name);
 		Set_player_message(other_pl, msg);
 	    } else {
@@ -2760,16 +2760,16 @@ int Get_player_id(connection_t *connp)
 
 String Player_get_addr(player_t *pl)
 {
-    if (pl.conn != NULL)
+    if (pl.conn != null)
 	return pl.conn.addr;
-    return NULL;
+    return null;
 }
 
 String Player_get_dpy(player_t *pl)
 {
-    if (pl.conn != NULL)
+    if (pl.conn != null)
 	return pl.conn.dpy;
-    return NULL;
+    return null;
 }
 
 static int Receive_shape(connection_t *connp)
@@ -2787,7 +2787,7 @@ static int Receive_shape(connection_t *connp)
 	    Destroy_connection(connp, "read shape ext");
 	return n;
     }
-    if (connp.state == CONN_LOGIN && connp.ship == NULL)
+    if (connp.state == CONN_LOGIN && connp.ship == null)
 	connp.ship = Parse_shape_str(str);
     return 1;
 }
@@ -2869,7 +2869,7 @@ static int Get_motd(String buf, int offset, int maxlen, int *size_ptr)
 		return 0;
 	    }
 	    XFREE(motd_buf);
-	    if ((motd_buf = XMALLOC(char, size)) == NULL) {
+	    if ((motd_buf = XMALLOC(char, size)) == null) {
 		close(fd);
 		return -1;
 	    }

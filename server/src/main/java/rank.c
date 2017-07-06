@@ -107,7 +107,7 @@ static String encode(String str, int xml)
 }
 
 /* Here's where we calculate the ranks. Figure it out yourselves! */
-static void SortRankings(void)
+static void SortRankings()
 {
     double lowSC = 0.0, highSC = 0.0;
     double lowKD = 0.0, highKD = 0.0;
@@ -235,7 +235,7 @@ static String Rank_get_logout_message(ranknode_t *rank)
     player_t *pl;
 
     assert(strlen(rank.name) > 0);
-    pl = Get_player_by_name(rank.name, NULL, NULL);
+    pl = Get_player_by_name(rank.name, null, null);
     if (pl) {
 	if (Player_is_paused(pl))
 	    snprintf(msg, sizeof(msg), "paused");
@@ -249,7 +249,7 @@ static String Rank_get_logout_message(ranknode_t *rank)
 }
 
 /* Sort the ranks and save them to the webpage. */
-void Rank_write_webpage(void)
+void Rank_write_webpage()
 {
     static const char stdcss[] =
 	"  <style type=\"text/css\">\n"
@@ -320,7 +320,7 @@ void Rank_write_webpage(void)
 	    "content=\"text/html; charset=ISO-8859-1\">\n",
 	options.mapName, Server.host);
 
-    if (options.rankWebpageCSS != NULL)
+    if (options.rankWebpageCSS != null)
 	fprintf(file,
 	    "  <link rel=\"StyleSheet\" type=\"text/css\" href=\"%s\" />\n",
 	    options.rankWebpageCSS);
@@ -419,7 +419,7 @@ void Rank_write_webpage(void)
 	"  </p>\n"
 	"</body>\n"
 	"</html>\n",
-	rank_showtime(time(NULL)));
+	rank_showtime(time(null)));
 
     fclose(file);
 }
@@ -429,7 +429,7 @@ bool Rank_get_stats(String name, String buf, size_t size)
 {
     ranknode_t *r = Rank_get_by_name(name);
 
-    if (r == NULL)
+    if (r == null)
 	return false;
 
     snprintf(buf, size,
@@ -444,7 +444,7 @@ bool Rank_get_stats(String name, String buf, size_t size)
 
 
 /* Send a line with the ranks of the current players to the game. */
-void Rank_show_ranks(void)
+void Rank_show_ranks()
 {
     char msg[MSG_LEN];
     char tmpbuf[MSG_LEN];
@@ -458,7 +458,7 @@ void Rank_show_ranks(void)
 	if (strlen(rank.name) > 0)
 	    numranks++;
 
-	if (rank.pl != NULL) {
+	if (rank.pl != null) {
 	    if (num > 0)
 		strlcat(msg, ", ", sizeof(msg));
 	    snprintf(tmpbuf, sizeof(tmpbuf), "%s [%d]", rank.name, i + 1);
@@ -513,7 +513,7 @@ ranknode_t *Rank_get_by_name(String name)
     int i;
     player_t *pl;
 
-    assert(name != NULL);
+    assert(name != null);
 
     for (i = 0; i < MAX_SCORES; i++) {
 	ranknode_t *rank = &ranknodes[i];
@@ -527,16 +527,16 @@ ranknode_t *Rank_get_by_name(String name)
      * let's see if it could be an abbreviation of the nick of some player
      * who is currently playing.
      */
-    pl = Get_player_by_name(name, NULL, NULL);
+    pl = Get_player_by_name(name, null, null);
     if (pl && pl.rank)
 	return pl.rank;
 
-    return NULL;
+    return null;
 }
 
 /* Read scores from disk, and zero-initialize the ones that are not used.
    Call this on startup. */
-void Rank_init_saved_scores(void)
+void Rank_init_saved_scores()
 {
     int i;
     FILE *file;
@@ -586,7 +586,7 @@ void Rank_init_saved_scores(void)
  */
 void Rank_get_saved_score(player_t * pl)
 {
-    ranknode_t *rank, *unused = NULL;
+    ranknode_t *rank, *unused = null;
     int i;
 
     updateScores = true;
@@ -594,7 +594,7 @@ void Rank_get_saved_score(player_t * pl)
     for (i = 0; i < MAX_SCORES; i++) {
 	rank = &ranknodes[i];
 	if (!strcasecmp(pl.name, rank.name)) {
-	    if (rank.pl == NULL) {
+	    if (rank.pl == null) {
 		/* Ok, found it. */
 		rank.pl = pl;
 		Player_set_score(pl,rank.score);
@@ -602,7 +602,7 @@ void Rank_get_saved_score(player_t * pl)
 	    } else {
 		/* That ranknode is already in use by another player! */
 		Player_set_score(pl,0);
-		pl.rank = NULL;
+		pl.rank = null;
 	    }
 	    return;
 	}
@@ -640,7 +640,7 @@ void Rank_get_saved_score(player_t * pl)
 
     Init_ranknode(rank, pl.name, pl.username, pl.hostname);
     rank.pl = pl;
-    rank.timestamp = time(NULL);
+    rank.timestamp = time(null);
     Player_set_score(pl,0);
     pl.rank = rank;
 }
@@ -651,14 +651,14 @@ void Rank_save_score(player_t * pl)
     ranknode_t *rank = pl.rank;
 
     rank.score =  Get_Score(pl);
-    rank.pl = NULL;
-    rank.timestamp = time(NULL);
+    rank.pl = null;
+    rank.timestamp = time(null);
 }
 
 /* Save the scores to disk (not the webpage). */
-void Rank_write_rankfile(void)
+void Rank_write_rankfile()
 {
-    FILE *file = NULL;
+    FILE *file = null;
     char tmp_file[PATH_MAX];
     int i;
 
@@ -668,7 +668,7 @@ void Rank_write_rankfile(void)
     snprintf(tmp_file, sizeof(tmp_file), "%s-new", options.rankFileName);
 
     file = fopen(tmp_file, "w");
-    if (file == NULL) {
+    if (file == null) {
 	error("Open temporary file \"%s\"", tmp_file);
 	goto failed;
     }
@@ -764,7 +764,7 @@ void Rank_write_rankfile(void)
 	error("Close temporary file \"%s\"", tmp_file);
 	goto failed;
     }
-    file = NULL;
+    file = null;
 
     /* Overwrite old rank file. */
     if (rename(tmp_file, options.rankFileName) < 0) {
@@ -894,7 +894,7 @@ static bool Rank_parse_rankfile(FILE *file)
 {
     char buf[8192];
     int len, fd;
-    XML_Parser p = XML_ParserCreate(NULL);
+    XML_Parser p = XML_ParserCreate(null);
 
     fd = fileno(file);
     if (fd == -1)

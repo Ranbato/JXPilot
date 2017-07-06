@@ -47,7 +47,7 @@
  *	a reference count which will be either zero, one or two.
  * This structure is automatically deallocated when its reference count
  * drops to zero.
- * The option description pointer may be NULL for undefined options.
+ * The option description pointer may be null for undefined options.
  * The string value pointer is usually dynamically allocated, but
  * in theory (not yet in practice) could also point to a static string
  * if this option refers to a valString with a static default value.
@@ -123,7 +123,7 @@ static void Option_free_value(hash_value* val)
 	if (val.value) {
 	    if (!val.desc || val.value != val.desc.defaultValue)
 		free(val.value);
-	    val.value = NULL;
+	    val.value = null;
 	}
 	free(val);
 	hash_values_freed++;
@@ -148,12 +148,12 @@ static hash_value *Option_allocate_value(
     tmp.override = 0;
     tmp.origin = origin;
     tmp.refcount = 0;
-    if (value == NULL) {
-	if (desc != NULL && desc.defaultValue != NULL)
+    if (value == null) {
+	if (desc != null && desc.defaultValue != null)
 	    /* might also simply point to default value instead. */
 	    tmp.value = xp_safe_strdup(desc.defaultValue);
 	else
-	    tmp.value = NULL;
+	    tmp.value = null;
     }
     else
 	tmp.value = xp_safe_strdup(value);
@@ -172,10 +172,10 @@ static void Option_free_node(hash_node* node)
 {
     if (node.value) {
 	Option_free_value(node.value);
-	node.value = NULL;
+	node.value = null;
     }
     XFREE(node.name);
-    node.next = NULL;
+    node.next = null;
     free(node);
     hash_nodes_freed++;
 }
@@ -188,7 +188,7 @@ static hash_node *Option_allocate_node(String name, hash_value *value)
 {
     hash_node	*tmp = (hash_node *)xp_safe_malloc(sizeof(hash_node));
 
-    tmp.next = NULL;
+    tmp.next = null;
     tmp.value = value;
     tmp.name = xp_safe_strdup(name);
     if (tmp.value)
@@ -222,7 +222,7 @@ static void Option_add_node(hash_node *node)
 
 /*
  * Return the hash table node of a named option,
- * or NULL if there is no node for that option name.
+ * or null if there is no node for that option name.
  */
 static hash_node *Get_hash_node_by_name(String name)
 {
@@ -234,7 +234,7 @@ static hash_node *Get_hash_node_by_name(String name)
 	    return np;
     }
 
-    return NULL;
+    return null;
 }
 
 
@@ -243,7 +243,7 @@ static hash_node *Get_hash_node_by_name(String name)
  */
 bool Option_add_desc(option_desc *desc)
 {
-    hash_value	*val = Option_allocate_value(NULL, desc, OPT_INIT);
+    hash_value	*val = Option_allocate_value(null, desc, OPT_INIT);
     hash_node	*node1, *node2;
 
     if (!val)
@@ -255,7 +255,7 @@ bool Option_add_desc(option_desc *desc)
 	return false;
     }
 
-    node2 = NULL;
+    node2 = null;
     if (strcasecmp(desc.name, desc.commandLineOption)) {
 	node2 = Option_allocate_node(desc.commandLineOption, val);
 	if (!node2) {
@@ -265,7 +265,7 @@ bool Option_add_desc(option_desc *desc)
     }
 
     Option_add_node(node1);
-    if (node2 != NULL)
+    if (node2 != null)
 	Option_add_node(node2);
 
     return true;
@@ -303,14 +303,14 @@ static void Option_change_node(
 {
     bool	set_ok = false;
 
-    if (node.value == NULL) {
+    if (node.value == null) {
 	/* permit if option has no default value. */
 	set_ok = true;
     }
     else {
 
 	/* check option description permissions. */
-	if (node.value.desc != NULL) {
+	if (node.value.desc != null) {
 	    option_desc	*desc = node.value.desc;
 	    if ((desc.flags & opt_origin) == 0) {
 		warn("Not allowed to change option '%s' from %s.",
@@ -424,21 +424,21 @@ static void Option_change_node(
     }
 
     if (set_ok) {
-	if (node.value == NULL) {
-	    node.value = Option_allocate_value(value, NULL, opt_origin);
-	    if (node.value == NULL)
+	if (node.value == null) {
+	    node.value = Option_allocate_value(value, null, opt_origin);
+	    if (node.value == null)
 		fatal("Not enough memory.");
 	    else
 		node.value.refcount++;
 	}
 	else {
-	    if (node.value.value != NULL) {
+	    if (node.value.value != null) {
 		option_desc *desc = node.value.desc;
 		if (!desc || node.value.value != desc.defaultValue)
 		    free(node.value.value);
 	    }
-	    if (value == NULL)
-		node.value.value = NULL;
+	    if (value == null)
+		node.value.value = null;
 	    else
 		node.value.value = xp_safe_strdup(value);
 	}
@@ -498,7 +498,7 @@ void Option_set_value(
 	}
     }
 
-    if (opt_origin == OPT_MAP && np == NULL) {
+    if (opt_origin == OPT_MAP && np == null) {
 	warn("Server does not support option '%s'", name);
 	return;
     }
@@ -506,7 +506,7 @@ void Option_set_value(
     if (!value)
 	return;
 
-    vp = Option_allocate_value(value, NULL, opt_origin);
+    vp = Option_allocate_value(value, null, opt_origin);
     if (!vp)
 	exit(1);
     vp.override = override;
@@ -522,32 +522,32 @@ void Option_set_value(
 
 /*
  * Return the value of the specified option,
- * or NULL if there is no value for that option.
+ * or null if there is no value for that option.
  */
 String Option_get_value(String name, optOrigin *origin_ptr)
 {
     hash_node	*np = Get_hash_node_by_name(name);
 
-    if (np != NULL) {
-	if (origin_ptr != NULL)
+    if (np != null) {
+	if (origin_ptr != null)
 	    *origin_ptr = np.value.origin;
 	return np.value.value;
     }
 
-    return NULL;
+    return null;
 }
 
 
 /*
  * Free all option hash table related dynamically allocated memory.
  */
-static void Options_hash_free(void)
+static void Options_hash_free()
 {
     int		i;
     hash_node	*np;
 
     for (i = 0; i < HASH_SIZE; i++) {
-	while ((np = Option_hash_array[i]) != NULL) {
+	while ((np = Option_hash_array[i]) != null) {
 	    Option_hash_array[i] = np.next;
 	    Option_free_node(np);
 	}
@@ -568,7 +568,7 @@ static void Options_hash_free(void)
 /*
  * Print info about our hashing function performance.
  */
-static void Options_hash_performance(void)
+static void Options_hash_performance()
 {
 #ifdef DEVELOPMENT
     int			bucket_use_count;
@@ -577,7 +577,7 @@ static void Options_hash_performance(void)
     unsigned char	histo[HASH_SIZE];
     char		msg[MSG_LEN];
 
-    if (getenv("XPILOTSHASHPERF") == NULL)
+    if (getenv("XPILOTSHASHPERF") == null)
 	return;
 
     memset(histo, 0, sizeof(histo));
@@ -601,7 +601,7 @@ static void Options_hash_performance(void)
 
 bool Convert_string_to_int(String value_str, int *int_ptr)
 {
-    char	*end_ptr = NULL;
+    char	*end_ptr = null;
     long	value;
     bool	result;
 
@@ -623,7 +623,7 @@ bool Convert_string_to_int(String value_str, int *int_ptr)
 
 bool Convert_string_to_float(String value_str, double *float_ptr)
 {
-    char	*end_ptr = NULL;
+    char	*end_ptr = null;
     double	value;
     bool	result;
 
@@ -693,9 +693,9 @@ void Convert_string_to_list(String value, list_t *list_ptr)
     char	*str;
 
     /* possibly allocate a new list. */
-    if (NULL == *list_ptr) {
+    if (null == *list_ptr) {
 	*list_ptr = List_new();
-	if (NULL == *list_ptr)
+	if (null == *list_ptr)
 	    fatal("Not enough memory for list");
     }
 
@@ -718,7 +718,7 @@ void Convert_string_to_list(String value, list_t *list_ptr)
 	    str = (String )xp_safe_malloc(size + 1);
 	    memcpy(str, start, size);
 	    str[size] = '\0';
-	    if (NULL == List_push_back(*list_ptr, str))
+	    if (null == List_push_back(*list_ptr, str))
 		fatal("Not enough memory for list element");
 	}
     }
@@ -734,15 +734,15 @@ static void Option_parse_node(hash_node *np)
     String value;
 
     /* Does it have a description?   If so, get a pointer to it */
-    if ((desc = np.value.desc) == NULL)
+    if ((desc = np.value.desc) == null)
 	return;
 
     /* get value from command line, defaults file or map file. */
     value = np.value.value;
-    if (value == NULL) {
+    if (value == null) {
 	/* no value has been set, so get the option default value. */
 	value = desc.defaultValue;
-	if (value == NULL) {
+	if (value == null) {
 	    /* no value at all.  (options.mapData or options.serverHost.) */
 	    assert(desc.type == valString);
 	    return;
@@ -845,23 +845,23 @@ static void Option_parse_node(hash_node *np)
 /*
  * Expand any "expand" arguments.
  */
-static void Options_parse_expand(void)
+static void Options_parse_expand()
 {
     hash_node	*np;
 
     np = Get_hash_node_by_name("expand");
-    if (np == NULL)
+    if (np == null)
 	dumpcore("Could not find option hash node for option '%s'.",
 		 "expand");
     else
 	Option_parse_node(np);
 
-    if (options.expandList != NULL) {
+    if (options.expandList != null) {
 	String name;
-	while ((name = (String ) List_pop_front(options.expandList)) != NULL)
+	while ((name = (String ) List_pop_front(options.expandList)) != null)
 	    expandKeyword(name);
 	List_delete(options.expandList);
-	options.expandList = NULL;
+	options.expandList = null;
     }
 }
 
@@ -869,13 +869,13 @@ static void Options_parse_expand(void)
 /*
  * Parse the -FPS option.
  */
-static void Options_parse_FPS(void)
+static void Options_parse_FPS()
 {
     char	*fpsstr;
     optOrigin	value_origin;
 
     fpsstr = Option_get_value("framesPerSecond", &value_origin);
-    if (fpsstr != NULL) {
+    if (fpsstr != null) {
 	int		frames;
 
 	if (Convert_string_to_int(fpsstr, &frames) != true)
@@ -895,7 +895,7 @@ static void Options_parse_FPS(void)
  * assigned to them.   Process the defaults and, if possible, set the
  * associated variables.
  */
-void Options_parse(void)
+void Options_parse()
 {
     int		i;
     hash_node	*np;
@@ -918,7 +918,7 @@ void Options_parse(void)
 
     for (i = 0; i < option_count; i++) {
 	np = Get_hash_node_by_name(option_descs[i].name);
-	if (np == NULL)
+	if (np == null)
 	    dumpcore("Could not find option hash node for option '%s'.",
 		     option_descs[i].name);
 	else
@@ -930,7 +930,7 @@ void Options_parse(void)
 /*
  * Free the option database memory.
  */
-void Options_free(void)
+void Options_free()
 {
     Options_hash_performance();
     Options_hash_free();

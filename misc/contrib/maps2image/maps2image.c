@@ -305,12 +305,12 @@ PRIVATE void build_image(String image, int x, int y, FILE *fl)
 		if (strncasecmp(buffer, "mapwidth", 8) == 0)
 		{
 			token = strtok(buffer, " :\r\t\n");
-			width = atoi(strtok(NULL, " :\t\r\n"));
+			width = atoi(strtok(null, " :\t\r\n"));
 		}
 		else if (strncasecmp(buffer, "mapheight", 9) == 0)
 		{
 			token = strtok(buffer, " :\r\t\n");
-			height = atoi(strtok(NULL, " :\t\r\n"));
+			height = atoi(strtok(null, " :\t\r\n"));
 		}
 		else if (strncasecmp(buffer, "mapdata", 7) == 0)
 		{

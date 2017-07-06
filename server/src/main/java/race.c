@@ -25,7 +25,7 @@
 
 #include "xpserver.h"
 
-void Race_compute_game_status(void)
+void Race_compute_game_status()
 {
     /*
      * We need a completely separate scoring system for race mode.
@@ -48,7 +48,7 @@ void Race_compute_game_status(void)
      * fastest lap get points.
      */
 
-    player_t *alive = NULL, *pl;
+    player_t *alive = null, *pl;
     int num_alive_players = 0, num_active_players = 0,
 	num_finished_players = 0, num_race_over_players = 0,
 	num_waiting_players = 0, pos = 1, total_pts, i;
@@ -266,7 +266,7 @@ void Race_compute_game_status(void)
     Race_game_over();
 }
 
-void Race_game_over(void)
+void Race_game_over()
 {
     player_t *pl;
     int i, j, k,
@@ -277,7 +277,7 @@ void Race_game_over(void)
      * Reassign players's starting positions based upon
      * personal best lap times.
      */
-    if ((order = XMALLOC(int, NumPlayers)) != NULL) {
+    if ((order = XMALLOC(int, NumPlayers)) != null) {
 	for (i = 0; i < NumPlayers; i++) {
 	    pl = Player_by_index(i);
 	    if (Player_is_tank(pl))
@@ -314,7 +314,7 @@ void Race_game_over(void)
 			else
 			    break;
 		    }
-		    if (Player_by_index(j).conn != NULL)
+		    if (Player_by_index(j).conn != null)
 			Send_base(Player_by_index(j).conn,
 				  pl.id, pl.home_base.ind);
 		}

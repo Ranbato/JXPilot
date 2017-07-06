@@ -88,8 +88,8 @@ int main(int argc, char **argv)
      * Make output always linebuffered.  By default pipes
      * and remote shells cause stdout to be fully buffered.
      */
-    setvbuf(stdout, NULL, _IOLBF, BUFSIZ);
-    setvbuf(stderr, NULL, _IOLBF, BUFSIZ);
+    setvbuf(stdout, null, _IOLBF, BUFSIZ);
+    setvbuf(stderr, null, _IOLBF, BUFSIZ);
 
     /*
      * --- Output copyright notice ---
@@ -102,7 +102,7 @@ int main(int argc, char **argv)
 
     init_error(argv[0]);
 
-    /*seedMT((unsigned)time(NULL) * Get_process_id());*/
+    /*seedMT((unsigned)time(null) * Get_process_id());*/
     /* Removed seeding random number generator because of server recordings. */
 
     Groups_init();
@@ -139,7 +139,7 @@ int main(int argc, char **argv)
      */
     if (options.serverHost) {
 	addr = sock_get_addr_by_name(options.serverHost);
-	if (addr == NULL) {
+	if (addr == null) {
 	    warn("Failed name lookup on: %s", options.serverHost);
 	    exit(1);
 	}
@@ -182,7 +182,7 @@ int main(int argc, char **argv)
     /*
      * Set the time the server started
      */
-    serverStartTime = time(NULL);
+    serverStartTime = time(null);
 
     xpprintf("%s Server runs at %d frames per second\n",
 	     showtime(), options.framesPerSecond);
@@ -213,12 +213,12 @@ int main(int argc, char **argv)
     abort();
 }
 
-void Main_loop(void)
+void Main_loop()
 {
     struct timeval tv1, tv2;
     double t1, t2;
 
-    gettimeofday(&tv1, NULL);
+    gettimeofday(&tv1, null);
 
     main_loops++;
 
@@ -248,7 +248,7 @@ void Main_loop(void)
 		    xpprintf("%s Server will stop in %g minutes.\n",
 			     showtime(), options.gameDuration);
 		    gameOverTime
-			= (time_t)(options.gameDuration * 60) + time(NULL);
+			= (time_t)(options.gameDuration * 60) + time(null);
 		}
 	    }
 	}
@@ -267,7 +267,7 @@ void Main_loop(void)
 	if (!NoPlayersEnteredYet)
 	    End_game();
 
-	if (serverStartTime + 5*60 < time(NULL)) {
+	if (serverStartTime + 5*60 < time(null)) {
 	    error("First player has yet to show his butt, I'm bored... Bye!");
 	    Log_game("NOSHOW");
 	    End_game();
@@ -299,7 +299,7 @@ void Main_loop(void)
 	Setup_connection(a, b, c, i, d, e, j);
     }
 
-    gettimeofday(&tv2, NULL);
+    gettimeofday(&tv2, null);
     t1 = timeval_to_seconds(&tv1);
     t2 = timeval_to_seconds(&tv2);
     options.mainLoopTime = (t2 - t1) * 1e3;
@@ -309,7 +309,7 @@ void Main_loop(void)
 /*
  *  Last function, exit with grace.
  */
-void End_game(void)
+void End_game()
 {
     player_t *pl;
     char msg[MSG_LEN];
@@ -331,7 +331,7 @@ void End_game(void)
 
     while (NumPlayers > 0) {	/* Kick out all remaining players */
 	pl = Player_by_index(NumPlayers - 1);
-	if (pl.conn == NULL)
+	if (pl.conn == null)
 	    Delete_player(pl);
 	else
 	    Destroy_connection(pl.conn, msg);
@@ -494,7 +494,7 @@ int Pick_team(int pick_for_type)
     return TEAM_NOT_SET;
 }
 
-String Describe_game_status(void)
+String Describe_game_status()
 {
     return (game_lock && ShutdownServer == -1) ? "locked"
 	: (!game_lock && ShutdownServer != -1) ? "shutting down"
@@ -547,7 +547,7 @@ void Server_info(String str, size_t max_size)
     strlcat(str, msg, max_size);
 
     if ((order = (player_t **) malloc(NumPlayers * sizeof(player_t *)))
-	== NULL) {
+	== null) {
 	error("No memory for order");
 	return;
     }
@@ -590,7 +590,7 @@ void Log_game(String heading)
     if (!options.Log)
 	return;
 
-    lt = time(NULL);
+    lt = time(null);
     ptr = localtime(&lt);
     strftime(timenow, 79, "%I:%M:%S %p %Z %A, %B %d, %Y", ptr);
 
@@ -598,7 +598,7 @@ void Log_game(String heading)
 	     "%-50.50s\t%10.10s@%-15.15s\tWorld: %-25.25s\t%10.10s\n",
 	     timenow, Server.owner, Server.host, world.name, heading);
 
-    if ((fp = fopen(Conf_logfile(), "a")) == NULL) {
+    if ((fp = fopen(Conf_logfile(), "a")) == null) {
 	error("Couldn't open log file, contact %s", Conf_localguru());
 	return;
     }
@@ -607,12 +607,12 @@ void Log_game(String heading)
     fclose(fp);
 }
 
-void Game_Over(void)
+void Game_Over()
 {
     double maxsc, minsc;
     int i, win_team = TEAM_NOT_SET, lose_team = TEAM_NOT_SET;
     char msg[MSG_LEN];
-    player_t *win_pl = NULL, *lose_pl = NULL;
+    player_t *win_pl = null, *lose_pl = null;
 
     Set_message("Game over...");
 
@@ -735,14 +735,14 @@ void Server_log_admin_message(player_t *pl, String str)
     struct stat st;
     char msg[MSG_LEN * 2];
 
-    if ((logfilename != NULL) &&
+    if ((logfilename != null) &&
 	(logfilename[0] != '\0') &&
 	(logfile_size_limit > 0) &&
 	(access(logfilename, 2) == 0) &&
 	(stat(logfilename, &st) == 0) &&
 	(st.st_size + 80 < logfile_size_limit) &&
 	((size_t)(logfile_size_limit - st.st_size - 80) > strlen(str)) &&
-	((fp = fopen(logfilename, "a")) != NULL))
+	((fp = fopen(logfilename, "a")) != null))
     {
 	fprintf(fp,
 		"%s[%s]{%s@%s(%s)|%s}:\n"
@@ -827,7 +827,7 @@ bool Friction_area_hitfunc(group_t *groupptr, const move_t *move)
 /*
  * Handling of group properties
  */
-void Team_immunity_init(void)
+void Team_immunity_init()
 {
     int group;
 
@@ -849,7 +849,7 @@ void Team_immunity_init(void)
 }
 
 /* kps - called at server startup to initialize hit masks */
-void Hitmasks_init(void)
+void Hitmasks_init()
 {
     Target_init();
     Team_immunity_init();

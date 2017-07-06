@@ -27,7 +27,7 @@
 
 #define GRAV_RANGE  10
 
-static void Compute_global_gravity(void)
+static void Compute_global_gravity()
 {
     int xi, yi, dx, dy;
     double xforce, yforce, strength, theta;
@@ -95,7 +95,7 @@ static void Compute_grav_tab(Point2D grav_tab[GRAV_RANGE+1][GRAV_RANGE+1])
 }
 
 
-static void Compute_local_gravity(void)
+static void Compute_local_gravity()
 {
     int xi, yi, i, gx, gy, ax, ay, dx, dy, gtype;
     int first_xi, last_xi, first_yi, last_yi, mod_xi, mod_yi;
@@ -190,14 +190,14 @@ static void Compute_local_gravity(void)
      * We may want to free the world.gravity memory here
      * as it is not used anywhere else.
      * e.g.: free(world.gravity);
-     *       world.gravity = NULL;
+     *       world.gravity = null;
      *       world.NumGravs = 0;
      * Some of the more modern maps have quite a few gravity symbols.
      */
 }
 
 
-void Compute_gravity(void)
+void Compute_gravity()
 {
     Compute_global_gravity();
     Compute_local_gravity();

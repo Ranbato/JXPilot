@@ -71,7 +71,7 @@ static inline Shape  *Asteroid_get_shape_by_size(int size)
     case 4:
 	return &asteroid_wire4;
     default:
-	return NULL;
+	return null;
     }
 }
 

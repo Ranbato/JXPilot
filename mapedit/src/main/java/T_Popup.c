@@ -26,7 +26,7 @@
 
 #include "xpmapedit.h"
 
-T_Popup_t *T_Popup = NULL;
+T_Popup_t *T_Popup = null;
 
 /***************************************************************************/
 /* T_PopupCreate                                                           */
@@ -43,13 +43,13 @@ Window T_PopupCreate(int x, int y, int width, int height, String title)
     T_Popup_t **popup;
 
     popup = &T_Popup;
-    while ((*popup) != NULL) {
+    while ((*popup) != null) {
 	popup = (T_Popup_t **) & ((*popup).next);
     }
 
     /* add a popup window to stack */
     (*popup) = (T_Popup_t *) malloc(sizeof(T_Popup_t));
-    (*popup).next = NULL;
+    (*popup).next = null;
     if (x < 0)
 	x = (root_width - width) / 2;
     if (y < 0)
@@ -90,15 +90,15 @@ Window T_PopupAlert(int type, String message, String btn1, String btn2,
 		     POPUPBTNWIDTH, POPUPBTNHEIGHT, "Ok",
 		     PopupCloseHandler);
     } else if (type == 2) {
-	if (btn1 == NULL) {
+	if (btn1 == null) {
 	    btn1 = malloc(3);
 	    strcpy(btn1, "Ok");
 	}
-	if (btn2 == NULL) {
+	if (btn2 == null) {
 	    btn2 = malloc(7);
 	    strcpy(btn2, "Cancel");
 	}
-	if (handler2 == NULL) {
+	if (handler2 == null) {
 	    handler2 = PopupCloseHandler;
 	}
 	x = width / 2 - POPUPBTNWIDTH - 5;
@@ -141,11 +141,11 @@ Window T_PopupPrompt(int x, int y, int width, int height, String title,
 
     win = T_PopupCreate(x, y, width, height, title);
 
-    if (btn1 == NULL) {
+    if (btn1 == null) {
 	btn1 = (String ) malloc(3);
 	strcpy(btn1, "Ok");
     }
-    if (btn2 == NULL) {
+    if (btn2 == null) {
 	btn2 = (String ) malloc(7);
 	strcpy(btn2, "Cancel");
     }
@@ -187,7 +187,7 @@ int T_IsPopupOpen(Window win)
     T_Popup_t *popup;
 
     popup = T_Popup;
-    while (popup != NULL) {
+    while (popup != null) {
 	if (popup.window == win)
 	    return 1;
 	else
@@ -208,11 +208,11 @@ void T_PopupClose(Window win)
     T_Popup_t *last;
 
     popup = &T_Popup;
-    while (((*popup) != NULL) && ((*popup).window != win)) {
+    while (((*popup) != null) && ((*popup).window != win)) {
 	popup = (T_Popup_t **) & ((*popup).next);
     }
 
-    if ((*popup) == NULL)
+    if ((*popup) == null)
 	return;
 
     /* erase this popup */

@@ -55,7 +55,7 @@ char oldmap[90] = {
 /* Arguments :                                                             */
 /* Purpose :                                                               */
 /***************************************************************************/
-static String GetMapDir(void)
+static String GetMapDir()
 {
     static String mapdir;
     String src, *dst;
@@ -103,7 +103,7 @@ int SavePrompt(HandlerInfo_t info)
 
     strcpy(filepromptname, map.mapFileName);
     filepromptwin = T_PopupPrompt(-1, -1, 300, 150, "Save Map",
-				  "Enter file name to save:", "Save", NULL,
+				  "Enter file name to save:", "Save", null,
 				  filepromptname, sizeof(max_str_t),
 				  SaveOk);
     return 0;
@@ -150,7 +150,7 @@ int SaveOk(HandlerInfo_t info)
 /***************************************************************************/
 int SaveMap(String file)
 {
-    FILE *ofile = NULL;
+    FILE *ofile = null;
     int n, i, j;
     String tmpstr;
     time_t tim;
@@ -159,20 +159,20 @@ int SaveMap(String file)
 	return 1;
     }
     ofile = fopen(file, "w");
-    if (ofile == NULL) {
+    if (ofile == null) {
 	tmpstr = (String ) malloc(strlen(file) + 20);
 	sprintf(tmpstr, "Error saving file: %s", file);
-	T_PopupAlert(1, tmpstr, NULL, NULL, NULL, NULL);
+	T_PopupAlert(1, tmpstr, null, null, null, null);
 	free(tmpstr);
 	return 1;
     }
     time(&tim);
     fprintf(ofile, "# Created by %s on %s\n", progname, ctime(&tim));
-    if (map.comments != NULL) {
+    if (map.comments != null) {
 	fprintf(ofile, "%s\n", map.comments);
     }
 
-    if ((map.worldLives != NULL) && (atoi(map.worldLives) != 0))
+    if ((map.worldLives != null) && (atoi(map.worldLives) != 0))
 	fprintf(ofile, "limitedlives : yes\n");
 
     for (n = 0; n < numprefs; n++) {
@@ -187,7 +187,7 @@ int SaveMap(String file)
 	case POSFLOAT:
 	case COORD:
 
-	    if (strlen(prefs[n].charvar) != (int) NULL)
+	    if (strlen(prefs[n].charvar) != (int) null)
 		fprintf(ofile, "%s : %s\n", prefs[n].name,
 			prefs[n].charvar);
 	    break;
@@ -235,14 +235,14 @@ int LoadPrompt(HandlerInfo_t info)
     }
     if (T_IsPopupOpen(changedwin)) {
 	T_PopupClose(changedwin);
-	changedwin = (Window) NULL;
+	changedwin = (Window) null;
     }
     if (T_IsPopupOpen(filepromptwin)) {
 	T_PopupClose(filepromptwin);
     }
     filepromptname[0] = '\0';
     filepromptwin = T_PopupPrompt(-1, -1, 300, 150, "Load Map",
-				  "Enter file name to load:", "Load", NULL,
+				  "Enter file name to load:", "Load", null,
 				  filepromptname, sizeof(max_str_t),
 				  LoadOk);
     return 0;
@@ -277,7 +277,7 @@ int LoadOk(HandlerInfo_t info)
 /***************************************************************************/
 int LoadMap(String file)
 {
-    FILE *ifile = NULL;
+    FILE *ifile = null;
     int ich;
     int corrupted = 0;
     String filename, *tmpstr;
@@ -292,33 +292,33 @@ int LoadMap(String file)
     strcpy(filename, file);
     ifile = fopen(filename, "r");	/* "FILE" */
 
-    if (ifile == NULL) {
+    if (ifile == null) {
 	free(filename);
 	filename = (String ) malloc(strlen(file) + 4);
 	sprintf(filename, "%s.xp", file);
 	ifile = fopen(filename, "r");	/* "FILE.xp" */
 
-	if (ifile == NULL) {
+	if (ifile == null) {
 	    free(filename);
 	    filename = (String ) malloc(strlen(file) + 5);
 	    sprintf(filename, "%s.map", file);
 	    ifile = fopen(filename, "r");	/* "FILE.map" */
 
-	    if (ifile == NULL) {
+	    if (ifile == null) {
 		free(filename);
 		filename =
 		    (String ) malloc(strlen(file) + strlen(mapdir) + 2);
 		sprintf(filename, "%s/%s", mapdir, file);
 		ifile = fopen(filename, "r");	/* "MAPDIR/FILE" */
 
-		if (ifile == NULL) {
+		if (ifile == null) {
 		    free(filename);
 		    filename =
 			(String ) malloc(strlen(file) + strlen(mapdir) + 5);
 		    sprintf(filename, "%s/%s.xp", mapdir, file);
 		    ifile = fopen(filename, "r");	/* "MAPDIR/FILE.xp" */
 
-		    if (ifile == NULL) {
+		    if (ifile == null) {
 			free(filename);
 			filename =
 			    (String ) malloc(strlen(file) + strlen(mapdir) +
@@ -326,12 +326,12 @@ int LoadMap(String file)
 			sprintf(filename, "%s/%s.map", mapdir, file);
 			ifile = fopen(filename, "r");	/* "MAPDIR/FILE.map" */
 
-			if (ifile == NULL) {
+			if (ifile == null) {
 			    tmpstr = (String ) malloc(strlen(file) + 21);
 			    sprintf(tmpstr, "Couldn't find file: %s",
 				    file);
-			    T_PopupAlert(1, tmpstr, NULL, NULL, NULL,
-					 NULL);
+			    T_PopupAlert(1, tmpstr, null, null, null,
+					 null);
 			    free(tmpstr);
 			    return 1;
 			}
@@ -342,7 +342,7 @@ int LoadMap(String file)
     }
     if (map.comments)
 	free(map.comments);
-    map.comments = (String ) NULL;
+    map.comments = (String ) null;
     map.mapName[0] = map.mapAuthor[0] = map.gravity[0] = map.shipMass[0] =
 	'\0';
     map.maxRobots[0] = map.worldLives[0] = '\0';
@@ -356,7 +356,7 @@ int LoadMap(String file)
 
     strcpy(map.mapFileName, filename);
     tmpstr = strrchr(filename, (int) '.');
-    if (tmpstr != NULL) {
+    if (tmpstr != null) {
 	if (strcmp(tmpstr, ".xbm") == 0) {
 	    fclose(ifile);
 	    return LoadXbmFile(filename);
@@ -377,7 +377,7 @@ int LoadMap(String file)
     if (ifile)
 	fclose(ifile);
     if (corrupted) {
-	T_PopupAlert(1, "Corrupted map file.", NULL, NULL, NULL, NULL);
+	T_PopupAlert(1, "Corrupted map file.", null, null, null, null);
     }
     return 0;
 }
@@ -395,16 +395,16 @@ int LoadXbmFile(String file)
     String tmpstr, *tmp;
     int bits, x = 0, y = 0;
 
-    if ((fp = fopen(file, "r")) == NULL) {
+    if ((fp = fopen(file, "r")) == null) {
 	tmpstr = (String ) malloc(strlen(file) + 21);
 	sprintf(tmpstr, "Couldn't find file: %s", file);
-	T_PopupAlert(1, tmpstr, NULL, NULL, NULL, NULL);
+	T_PopupAlert(1, tmpstr, null, null, null, null);
 	free(tmpstr);
 	return 1;
     }
     fgets(line, sizeof(max_str_t), fp);
     tmp = strrchr(line, (int) ' ');
-    if (tmp == NULL)
+    if (tmp == null)
 	return 1;
     tmp++;
     map.width = atoi(tmp);
@@ -412,7 +412,7 @@ int LoadXbmFile(String file)
 
     fgets(line, sizeof(max_str_t), fp);
     tmp = strrchr(line, (int) ' ');
-    if (tmp == NULL)
+    if (tmp == null)
 	return 1;
     tmp++;
     map.height = atoi(tmp);
@@ -420,7 +420,7 @@ int LoadXbmFile(String file)
 
     while ((fgets(line, sizeof(max_str_t), fp)) != 0) {
 	tmp = strstr(line, "0x");
-	while (tmp != NULL) {
+	while (tmp != null) {
 	    tmp += 2;
 	    if ((int) tmp[0] > 96) {
 		bits = ((int) (tmp[0]) - 87) * 16;
@@ -475,10 +475,10 @@ int LoadOldMap(String file)
     String tmpstr;
 
     strcpy(filenm, file);
-    if ((fp = fopen(filenm, "r")) == NULL) {
+    if ((fp = fopen(filenm, "r")) == null) {
 	tmpstr = (String ) malloc(strlen(file) + 21);
 	sprintf(tmpstr, "Couldn't find file: %s", file);
-	T_PopupAlert(1, tmpstr, NULL, NULL, NULL, NULL);
+	T_PopupAlert(1, tmpstr, null, null, null, null);
 	free(tmpstr);
 	return 1;
     }
@@ -529,7 +529,7 @@ int LoadOldMap(String file)
     }
 
     if (corrupted == 1) {
-	T_PopupAlert(1, "Corrupted map file.", NULL, NULL, NULL, NULL);
+	T_PopupAlert(1, "Corrupted map file.", null, null, null, null);
     }
     fclose(fp);
     return 0;
@@ -671,8 +671,8 @@ int ParseLine(FILE * ifile)
 	}
 
 	/* only add comment lines not created by xmapedit */
-	if (strstr(commentline, "Created by") == NULL) {
-	    if (map.comments == NULL) {
+	if (strstr(commentline, "Created by") == null) {
+	    if (map.comments == null) {
 		map.comments = malloc(strlen(commentline) + 1);
 		map.comments = commentline;
 	    } else {
@@ -788,7 +788,7 @@ int AddOption(String name, String value)
 	    break;
     }
     if (option >= numprefs) {
-	if (map.comments == NULL) {
+	if (map.comments == null) {
 	    map.comments = malloc(strlen(name) + strlen(value) + 3);
 	    sprintf(map.comments, "%s:%s\n", name, value);
 	} else {

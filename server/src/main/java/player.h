@@ -311,7 +311,7 @@ typedef struct player {
 
     int		ecmcount;		/* number of active ecms */
 
-    connection_t *conn;			/* connection index, NULL if robot */
+    connection_t *conn;			/* connection index, null if robot */
     unsigned	version;		/* XPilot version number of client */
 
     BITV_DECL(last_keyv, NUM_KEYS);	/* Keyboard state */
@@ -356,7 +356,7 @@ int GetInd(int id);
 static inline player_t *Player_by_index(int ind)
 {
     if (ind < 0 || ind >= playerArrayNumber)
-	return NULL;
+	return null;
     return PlayersArray[ind];
 }
 
@@ -728,18 +728,18 @@ void Player_set_mass(player_t *pl);
 void Player_init_items(player_t *pl);
 int Init_player(int ind, ShipShape  *ship, int type);
 void Alloc_players(int number);
-void Free_players(void);
-void Update_score_table(void);
-void Reset_all_players(void);
+void Free_players();
+void Update_score_table();
+void Reset_all_players();
 void Check_team_members(int);
-void Compute_game_status(void);
+void Compute_game_status();
 void Delete_player(player_t *pl);
 void Add_spectator(player_t *pl);
 void Delete_spectator(player_t *pl);
 void Detach_ball(player_t *pl, ballobject_t *ball);
 void Kill_player(player_t *pl, bool add_rank_death);
 void Player_death_reset(player_t *pl, bool add_rank_death);
-void Count_rounds(void);
+void Count_rounds();
 void Team_game_over(int winning_team, String reason);
 void Individual_game_over(int winner);
 bool Team_immune(int id1, int id2);

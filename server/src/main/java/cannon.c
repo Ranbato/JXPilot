@@ -93,7 +93,7 @@ void Cannon_update(bool tick)
 	if (c.tractor_count > 0) {
 	    player_t *tpl = Player_by_id(c.tractor_target_id);
 
-	    if (tpl == NULL) {
+	    if (tpl == null) {
 		c.tractor_target_id = NO_ID;
 		c.tractor_count = 0;
 	    }
@@ -176,7 +176,7 @@ void Cannon_throw_items(cannon_t *c)
 					    - world.items[i].min_per_pack));
 	    LIMIT(amount, 0, c.item[i]);
 	    if (Math.random() < (options.dropItemOnKillProb * CANNON_DROP_ITEM_PROB)
-		&& (item = ITEM_PTR(Object_allocate())) != NULL) {
+		&& (item = ITEM_PTR(Object_allocate())) != null) {
 
 		item.type = OBJ_ITEM;
 		item.item_type = i;
@@ -242,7 +242,7 @@ void Cannon_check_defense(cannon_t *c)
 
 void Cannon_check_fire(cannon_t *c)
 {
-    player_t *pl = NULL;
+    player_t *pl = null;
     int	dir = 0,
 	weapon = Cannon_select_weapon(c);
 
@@ -536,7 +536,7 @@ static void Cannon_aim(cannon_t *c, int weapon, player_t **pl_p, int *dir)
 	}
     }
     if (!(found || ready)) {
-	*pl_p = NULL;
+	*pl_p = null;
 	return;
     }
 
@@ -824,7 +824,7 @@ void Cannon_dies(cannon_t *c, player_t *pl)
 		  8.0, 68.0);
 
     if (pl) {
-    	Handle_Scoring(SCORE_CANNON_KILL,pl,NULL,c,NULL);
+    	Handle_Scoring(SCORE_CANNON_KILL,pl,null,c,null);
     }
 }
 
@@ -913,7 +913,7 @@ bool Cannon_hitfunc(group_t *gp, const move_t *move)
     if (cannon.used.get( USES_PHASING_DEVICE))
 	return false;
 
-    if (obj == NULL)
+    if (obj == null)
 	return true;
 
     cannon_mask = mp.obj_cannon_mask | OBJ_PLAYER_BIT;

@@ -50,30 +50,30 @@ struct options	options;
  * The tuner_dummy can be specified if it is OK to modify the option
  * during runtime and no follow up action is needed.
  */
-void tuner_none(void)  { ; }
-void tuner_dummy(void) { ; }
+void tuner_none()  { ; }
+void tuner_dummy() { ; }
 
 
-static void Tune_robot_user_name(void)
+static void Tune_robot_user_name()
 {
     Fix_user_name(options.robotUserName);
 }
-static void Tune_robot_host_name(void)
+static void Tune_robot_host_name()
 {
     UNUSED_PARAM(world);
     Fix_host_name(options.robotHostName);
 }
-static void Tune_tank_user_name(void)
+static void Tune_tank_user_name()
 {
     UNUSED_PARAM(world);
     Fix_user_name(options.tankUserName);
 }
-static void Tune_tank_host_name(void)
+static void Tune_tank_host_name()
 {
     UNUSED_PARAM(world);
     Fix_host_name(options.tankHostName);
 }
-static void Tune_tagGame(void)
+static void Tune_tagGame()
 {
     UNUSED_PARAM(world);
     if (!options.tagGame)
@@ -81,14 +81,14 @@ static void Tune_tagGame(void)
 }
 
 
-static void Check_baseless(void);
+static void Check_baseless();
 
 static option_desc opts[] = {
     {
 	"help",
 	"help",
 	"0",
-	NULL,
+	null,
 	valVoid,
 	tuner_none,
 	"Print out this help message.\n",
@@ -98,7 +98,7 @@ static option_desc opts[] = {
 	"version",
 	"version",
 	"0",
-	NULL,
+	null,
 	valVoid,
 	tuner_none,
 	"Print version information.\n",
@@ -108,7 +108,7 @@ static option_desc opts[] = {
 	"dump",
 	"dump",
 	"0",
-	NULL,
+	null,
 	valVoid,
 	tuner_none,
 	"Print all options and their default values in defaultsfile format.\n",
@@ -315,7 +315,7 @@ static option_desc opts[] = {
     {
 	"robotFile",
 	"robotFile",
-	NULL,
+	null,
 	&options.robotFile,
 	valString,
 	tuner_none,
@@ -557,7 +557,7 @@ static option_desc opts[] = {
     {
 	"mapFileName",
 	"map",
-	NULL,
+	null,
 	&options.mapFileName,
 	valString,
 	tuner_none,
@@ -587,7 +587,7 @@ static option_desc opts[] = {
     {
 	"mapData",
 	"mapData",
-	NULL,
+	null,
 	&options.mapData,
 	valString,
 	tuner_none,
@@ -607,7 +607,7 @@ static option_desc opts[] = {
     {
 	"serverHost",
 	"serverHost",
-	NULL,
+	null,
 	&options.serverHost,
 	valString,
 	tuner_none,
@@ -617,7 +617,7 @@ static option_desc opts[] = {
     {
 	"greeting",
 	"xpilotGreeting",
-	NULL,
+	null,
 	&options.greeting,
 	valString,
 	tuner_dummy,
@@ -1877,7 +1877,7 @@ static option_desc opts[] = {
     {
 	"defaultsFileName",
 	"defaults",
-	NULL,
+	null,
 	&options.defaultsFileName,
 	valString,
 	tuner_none,
@@ -1887,7 +1887,7 @@ static option_desc opts[] = {
     {
 	"passwordFileName",
 	"passwordFileName",
-	NULL,
+	null,
 	&options.passwordFileName,
 	valString,
 	tuner_none,
@@ -1897,7 +1897,7 @@ static option_desc opts[] = {
     {
 	"motdFileName",
 	"motd",
-	NULL,
+	null,
 	&options.motdFileName,
 	valString,
 	tuner_none,
@@ -1907,7 +1907,7 @@ static option_desc opts[] = {
     {
 	"scoreTableFileName",
 	"scoretable",
-	NULL,
+	null,
 	&options.scoreTableFileName,
 	valString,
 	tuner_none,
@@ -1941,7 +1941,7 @@ static option_desc opts[] = {
     {
 	"rankFileName",
 	"rankFileName",
-	NULL,
+	null,
 	&options.rankFileName,
 	valString,
 	tuner_none,
@@ -1952,7 +1952,7 @@ static option_desc opts[] = {
     {
 	"rankWebpageFileName",
 	"rankWebpage",
-	NULL,
+	null,
 	&options.rankWebpageFileName,
 	valString,
 	tuner_none,
@@ -1962,7 +1962,7 @@ static option_desc opts[] = {
     {
 	"rankWebpageCSS",
 	"rankCSS",
-	NULL,
+	null,
 	&options.rankWebpageCSS,
 	valString,
 	tuner_none,
@@ -3526,7 +3526,7 @@ static option_desc opts[] = {
     {
 	"password",
 	"password",
-	NULL,
+	null,
 	&options.password,
 	valString,
 	tuner_dummy,
@@ -3626,7 +3626,7 @@ static option_desc opts[] = {
     {
 	"recordFileName",
 	"recordFile",
-	NULL,
+	null,
 	&options.recordFileName,
 	valString,
 	tuner_none,
@@ -3957,33 +3957,33 @@ option_desc* Get_option_descs(int *count_ptr)
 }
 
 
-static void Init_default_options(void)
+static void Init_default_options()
 {
     option_desc *desc;
 
-    if ((desc = Find_option_by_name("mapFileName")) == NULL)
+    if ((desc = Find_option_by_name("mapFileName")) == null)
 	dumpcore("Could not find map file option");
     desc.defaultValue = Conf_default_map();
 
-    if ((desc = Find_option_by_name("motdFileName")) == NULL)
+    if ((desc = Find_option_by_name("motdFileName")) == null)
 	dumpcore("Could not find motd file option");
     desc.defaultValue = Conf_servermotdfile();
 
-    if ((desc = Find_option_by_name("robotFile")) == NULL)
+    if ((desc = Find_option_by_name("robotFile")) == null)
 	dumpcore("Could not find robot file option");
     desc.defaultValue = Conf_robotfile();
 
-    if ((desc = Find_option_by_name("defaultsFileName")) == NULL)
+    if ((desc = Find_option_by_name("defaultsFileName")) == null)
 	dumpcore("Could not find defaults file option");
     desc.defaultValue = Conf_defaults_file_name();
 
-    if ((desc = Find_option_by_name("passwordFileName")) == NULL)
+    if ((desc = Find_option_by_name("passwordFileName")) == null)
 	dumpcore("Could not find password file option");
     desc.defaultValue = Conf_password_file_name();
 }
 
 
-bool Init_options(void)
+bool Init_options()
 {
     int i, option_count = NELEM(opts);
 
@@ -4003,7 +4003,7 @@ bool Init_options(void)
 }
 
 
-void Free_options(void)
+void Free_options()
 {
     int i, option_count = NELEM(opts);
 
@@ -4014,9 +4014,9 @@ void Free_options(void)
 		char **str_ptr = (char **)opts[i].variable;
 		String str = *str_ptr;
 
-		if (str != NULL && str != opts[i].defaultValue) {
+		if (str != null && str != opts[i].defaultValue) {
 		    free(str);
-		    *str_ptr = NULL;
+		    *str_ptr = null;
 		}
 	    }
 	}
@@ -4033,11 +4033,11 @@ option_desc *Find_option_by_name(const String  name)
 	    || !strcasecmp(opts[j].name, name))
 	    return(&opts[j]);
     }
-    return NULL;
+    return null;
 }
 
 
-void Check_playerlimit(void)
+void Check_playerlimit()
 {
     if (options.playerLimit == 0)
 	options.playerLimit = Num_bases() + 10;
@@ -4050,13 +4050,13 @@ void Check_playerlimit(void)
 	options.playerLimit = options.playerLimit_orig;
 }
 
-static void Check_baseless(void)
+static void Check_baseless()
 {
     if (!world.rules.mode.get( TEAM_PLAY))
 	options.baselessPausing = false;
 }
 
-void Timing_setup(void)
+void Timing_setup()
 {
     LIMIT(FPS, 1, MAX_SERVER_FPS);
     LIMIT(options.gameSpeed, 0.0, FPS);
@@ -4127,9 +4127,9 @@ void Timing_setup(void)
     }
 
 #ifdef SELECT_SCHED
-    install_timer_tick(NULL, FPS);
+    install_timer_tick(null, FPS);
 #else
-    install_timer_tick(NULL, options.timerResolution ? options.timerResolution
+    install_timer_tick(null, options.timerResolution ? options.timerResolution
 		       : FPS);
 #endif
 }

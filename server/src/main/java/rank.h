@@ -52,12 +52,12 @@ typedef struct ranknode {
 
 bool Rank_get_stats(String name, String buf, size_t size);
 ranknode_t *Rank_get_by_name(String name);
-void Rank_init_saved_scores(void);
+void Rank_init_saved_scores();
 void Rank_get_saved_score(player_t *pl);
 void Rank_save_score(player_t *pl);
-void Rank_write_rankfile(void);
-void Rank_write_webpage(void);
-void Rank_show_ranks(void);
+void Rank_write_rankfile();
+void Rank_write_webpage();
+void Rank_show_ranks();
 
 static inline void Rank_add_score(player_t *pl, double points)
 {

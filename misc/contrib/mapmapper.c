@@ -56,7 +56,7 @@ static void *alloc_memory (unsigned size)
 {
     void *p;
 
-    if ((p = malloc (size)) == NULL)
+    if ((p = malloc (size)) == null)
     {
 	perror ("malloc");
 	exit (1);
@@ -76,7 +76,7 @@ static String new_string (String str)
 
 static void next_line (String buf, unsigned size, FILE *fp)
 {
-    if (fgets (buf, size, fp) == NULL)
+    if (fgets (buf, size, fp) == null)
     {
 	fprintf (stderr, "Unexpected end of file\n");
 	exit (1);
@@ -87,7 +87,7 @@ static void strip_newline (String str)
 {
     String nl;
 
-    if ((nl = strchr (str, '\n')) == NULL)
+    if ((nl = strchr (str, '\n')) == null)
     {
 	fprintf (stderr, "Line too long\n");
 	exit (1);
@@ -275,7 +275,7 @@ static FILE *open_file (String filename, String mode, int overwrite)
 	    exit (1);
 	}
     }
-    if ((fp = fopen (filename, mode)) == NULL)
+    if ((fp = fopen (filename, mode)) == null)
     {
 	perror (filename);
 	exit (1);

@@ -31,7 +31,7 @@
 /* Arguments :                                                             */
 /* Purpose :                                                               */
 /***************************************************************************/
-void BuildMapwinForm(void)
+void BuildMapwinForm()
 {
     int w, h, y;
 
@@ -85,11 +85,11 @@ void BuildMapwinForm(void)
 
     T_FormStringEntry(mapwin, "map_name", 5, TOOLSHEIGHT - TOOLSWIDTH - 90,
 		      TOOLSWIDTH - 10, 20, 0, -20, "Map Name:",
-		      map.mapName, sizeof(max_str_t) - 1, NULL);
+		      map.mapName, sizeof(max_str_t) - 1, null);
     T_FormStringEntry(mapwin, "map_author", 5,
 		      TOOLSHEIGHT - TOOLSWIDTH - 50, TOOLSWIDTH - 10, 20,
 		      0, -20, "Map Author:", map.mapAuthor,
-		      sizeof(max_str_t) - 1, NULL);
+		      sizeof(max_str_t) - 1, null);
     T_FormStringEntry(mapwin, "map_width", (int) (TOOLSWIDTH / 2 - 45),
 		      TOOLSHEIGHT - TOOLSWIDTH - 25, 40, 20, -50, 0,
 		      "Width:", map.width_str, 3, ResizeWidth);
@@ -104,7 +104,7 @@ void BuildMapwinForm(void)
 /* Arguments :                                                             */
 /* Purpose :                                                               */
 /***************************************************************************/
-void BuildPrefsForm(void)
+void BuildPrefsForm()
 {
     int w, h, t, i;
 
@@ -168,8 +168,8 @@ void BuildPrefsForm(void)
 void BuildPrefsSheet(int num)
 {
     int w, h, t, i;
-    String tmpstr = NULL;
-    Window *temp = NULL;
+    String tmpstr = null;
+    Window *temp = null;
 
     switch (num) {
     case 0:
@@ -234,7 +234,7 @@ void BuildPrefsSheet(int num)
 				  10 + w + prefs[i].column * (w * 2 + 20),
 				  10 + prefs[i].row * h + prefs[i].space +
 				  t, w, 20, -w, 0, prefs[i].label,
-				  prefs[i].charvar, prefs[i].length, NULL);
+				  prefs[i].charvar, prefs[i].length, null);
 		break;
 
 	    case YESNO:
@@ -275,7 +275,7 @@ void BuildPrefsSheet(int num)
 				  10 + w + prefs[i].column * (w * 2 + 20),
 				  10 + prefs[i].row * h + prefs[i].space +
 				  t, w, 20, -w, 0, prefs[i].label,
-				  prefs[i].charvar, prefs[i].length, NULL);
+				  prefs[i].charvar, prefs[i].length, null);
 		break;
 
 	    case POSFLOAT:
@@ -283,7 +283,7 @@ void BuildPrefsSheet(int num)
 				  10 + w + prefs[i].column * (w * 2 + 20),
 				  10 + prefs[i].row * h + prefs[i].space +
 				  t, w, 20, -w, 0, prefs[i].label,
-				  prefs[i].charvar, prefs[i].length, NULL);
+				  prefs[i].charvar, prefs[i].length, null);
 		break;
 
 	    case COORD:

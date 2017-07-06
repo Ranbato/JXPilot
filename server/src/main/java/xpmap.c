@@ -100,7 +100,7 @@ static int Compress_map(unsigned String map, size_t size)
 }
 
 
-void Create_blockmap_from_polygons(void)
+void Create_blockmap_from_polygons()
 {
     int i, h, type;
     Dimension blk;
@@ -186,19 +186,19 @@ void Create_blockmap_from_polygons(void)
 
 	    pos = Block_get_center_clpos(blk);
 
-	    if (shape_is_inside(pos.cx+1, pos.cy, 0, NULL, &r_wire, 0) == 0) {
+	    if (shape_is_inside(pos.cx+1, pos.cy, 0, null, &r_wire, 0) == 0) {
 		r_inside = true;
 		num_inside++;
 	    }
-	    if (shape_is_inside(pos.cx, pos.cy+1, 0, NULL, &u_wire, 0) == 0) {
+	    if (shape_is_inside(pos.cx, pos.cy+1, 0, null, &u_wire, 0) == 0) {
 		u_inside = true;
 		num_inside++;
 	    }
-	    if (shape_is_inside(pos.cx-1, pos.cy, 0, NULL, &l_wire, 0) == 0) {
+	    if (shape_is_inside(pos.cx-1, pos.cy, 0, null, &l_wire, 0) == 0) {
 		l_inside = true;
 		num_inside++;
 	    }
-	    if (shape_is_inside(pos.cx, pos.cy-1, 0, NULL, &d_wire, 0) == 0) {
+	    if (shape_is_inside(pos.cx, pos.cy-1, 0, null, &d_wire, 0) == 0) {
 		d_inside = true;
 		num_inside++;
 	    }
@@ -274,11 +274,11 @@ void Create_blockmap_from_polygons(void)
 
 	    pos = Block_get_center_clpos(blk);
 	    group = shape_is_inside(pos.cx, pos.cy,
-				    BALL_BIT, NULL, &filled_wire, 0);
+				    BALL_BIT, null, &filled_wire, 0);
 	    if (group == NO_GROUP || group == 0)
 		continue;
 	    gp = groupptr_by_id(group);
-	    if (gp == NULL)
+	    if (gp == null)
 		continue;
 	    if (gp.type == TREASURE && gp.hitmask == NONBALL_BIT)
 		World_set_block(blk, TREASURE);
@@ -359,7 +359,7 @@ void Create_blockmap_from_polygons(void)
     }
 }
 
-setup_t *Xpmap_init_setup(void)
+setup_t *Xpmap_init_setup()
 {
     int i, x, y, team, type = -1, dir, wtype;
     int wormhole_i = 0, treasure_i = 0, target_i = 0, base_i = 0, cannon_i = 0;
@@ -368,9 +368,9 @@ setup_t *Xpmap_init_setup(void)
     setup_t *setup;
 
     numblocks = world.x * world.y;
-    if ((mapdata = XMALLOC(unsigned char, numblocks)) == NULL) {
+    if ((mapdata = XMALLOC(unsigned char, numblocks)) == null) {
 	error("No memory for mapdata");
-	return NULL;
+	return null;
     }
     memset(mapdata, SETUP_SPACE, numblocks);
     mapptr = mapdata;
@@ -580,11 +580,11 @@ setup_t *Xpmap_init_setup(void)
 	if (size <= 0 || size > numblocks) {
 	    warn("Map compression error (%d)", size);
 	    free(mapdata);
-	    return NULL;
+	    return null;
 	}
-	if ((mapdata = XREALLOC(unsigned char, mapdata, size)) == NULL) {
+	if ((mapdata = XREALLOC(unsigned char, mapdata, size)) == null) {
 	    error("Cannot reallocate mapdata");
-	    return NULL;
+	    return null;
 	}
     }
 
@@ -592,10 +592,10 @@ setup_t *Xpmap_init_setup(void)
 	xpprintf("%s Block map compression ratio is %-4.2f%%\n",
 		 showtime(), 100.0 * size / numblocks);
 
-    if ((setup = (setup_t *)malloc(sizeof(setup_t) + size)) == NULL) {
+    if ((setup = (setup_t *)malloc(sizeof(setup_t) + size)) == null) {
 	error("No memory to hold oldsetup");
 	free(mapdata);
-	return NULL;
+	return null;
     }
     memset(setup, 0, sizeof(setup_t) + size);
     memcpy(setup.map_data, mapdata, size);
@@ -623,13 +623,13 @@ setup_t *Xpmap_init_setup(void)
  * Create world.block using options.mapData.
  * Free options.mapData.
  */
-void Xpmap_grok_map_data(void)
+void Xpmap_grok_map_data()
 {
     int x = -1, y = world.y - 1, c;
     String s = options.mapData;
     Dimension blk;
 
-    if (options.mapData == NULL) {
+    if (options.mapData == null) {
 	warn("Map didn't have any mapData.");
 	return;
     }
@@ -803,7 +803,7 @@ static void Xpmap_place_block(Dimension blk, int type)
 /*
  * Change read tags to internal data, create objects if 'create' is true.
  */
-void Xpmap_tags_to_internal_data(void)
+void Xpmap_tags_to_internal_data()
 {
     int x, y;
     char c;
@@ -968,7 +968,7 @@ void Xpmap_tags_to_internal_data(void)
 }
 
 
-void Xpmap_find_map_object_teams(void)
+void Xpmap_find_map_object_teams()
 {
     int i;
     Click  pos = { 0, 0 };
@@ -991,7 +991,7 @@ void Xpmap_find_map_object_teams(void)
 
 	treasure.team = Find_closest_team(treasure.pos);
 	teamp = Team_by_index(treasure.team);
-	assert(teamp != NULL);
+	assert(teamp != null);
 
 	teamp.NumTreasures++;
 	if (treasure.empty)
@@ -1029,7 +1029,7 @@ void Xpmap_find_map_object_teams(void)
  * If a base attractor is adjacent to a base then the base will point
  * to the attractor.
  */
-void Xpmap_find_base_direction(void)
+void Xpmap_find_base_direction()
 {
     int	i;
     Dimension blk;
@@ -1421,7 +1421,7 @@ static void Xpmap_wall_poly(int bx, int by,
 }
 
 
-static void Xpmap_walls_to_polygons(void)
+static void Xpmap_walls_to_polygons()
 {
     int x, y, x0 = 0;
     int numblocks = 0;
@@ -1524,7 +1524,7 @@ static void Xpmap_walls_to_polygons(void)
 }
 
 
-void Xpmap_blocks_to_polygons(void)
+void Xpmap_blocks_to_polygons()
 {
     int i;
 

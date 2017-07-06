@@ -331,8 +331,8 @@ extern struct options {
 /*
  * Prototypes for option.c
  */
-void Options_parse(void);
-void Options_free(void);
+void Options_parse();
+void Options_free();
 bool Convert_string_to_int(String value_str, int *int_ptr);
 bool Convert_string_to_float(String value_str, double *float_ptr);
 bool Convert_string_to_bool(String value_str, bool *bool_ptr);

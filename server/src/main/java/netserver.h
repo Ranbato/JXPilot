@@ -31,13 +31,13 @@
 #include "player.h"
 #endif
 
-int Setup_net_server(void);
+int Setup_net_server();
 void Conn_change_nick(connection_t *connp, String nick);
 void Destroy_connection(connection_t *connp, String reason);
 int Check_connection(String real, String nick, String dpy, String addr);
 int Setup_connection(String real, String nick, String dpy, int team,
 		     String addr, String host, unsigned version);
-int Input(void);
+int Input();
 int Send_reply(connection_t *connp, int replyto, int result);
 int Send_self(connection_t *connp, player_t *pl,
 	      int lock_id,

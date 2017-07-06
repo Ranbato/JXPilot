@@ -53,8 +53,8 @@ bool team_dead(int team)
  */
 static bool Player_lock_allowed(player_t *pl, player_t *lock_pl)
 {
-    /* we can never lock on ourselves, nor on NULL. */
-    if (lock_pl == NULL || pl.id == lock_pl.id)
+    /* we can never lock on ourselves, nor on null. */
+    if (lock_pl == null || pl.id == lock_pl.id)
 	return false;
 
     /* Spectators can watch freely */
@@ -130,7 +130,7 @@ int Player_lock_closest(player_t *pl, bool next)
 {
     int i;
     double dist = 0.0, best, l;
-    player_t *lock_pl = NULL, *new_pl = NULL;
+    player_t *lock_pl = null, *new_pl = null;
 
     if (!next)
 	pl.lock.tagged.clear( LOCK_PLAYER);
@@ -159,7 +159,7 @@ int Player_lock_closest(player_t *pl, bool next)
 	    new_pl = pl_i;
 	}
     }
-    if (new_pl == NULL)
+    if (new_pl == null)
 	return 0;
 
     pl.lock.tagged.get( LOCK_PLAYER);
@@ -170,9 +170,9 @@ int Player_lock_closest(player_t *pl, bool next)
 
 static void Player_change_home(player_t *pl)
 {
-    player_t *pl2 = NULL;
-    base_t *base2 = NULL;
-    base_t *enemybase = NULL;
+    player_t *pl2 = null;
+    base_t *base2 = null;
+    base_t *enemybase = null;
     double l, dist = 1e19;
     int i;
 
@@ -193,7 +193,7 @@ static void Player_change_home(player_t *pl)
 	}
     }
 
-    if (base2 == NULL) {
+    if (base2 == null) {
 	if (enemybase)
 	    Set_player_message_f(pl, "Base belongs to team %d. "
 				 "Enemy home bases can't be occupied. "
@@ -223,7 +223,7 @@ static void Player_change_home(player_t *pl)
 
 #if 0
     /* kps - perhaps this isn't a good idea. */
-    if (pl2 != NULL
+    if (pl2 != null
 	&& Players_are_teammates(pl, pl2)
 	&& Get_Score(pl) <= Get_Score(pl2)) {
 	Set_player_message(pl, "You must have a higher score than your "
@@ -236,7 +236,7 @@ static void Player_change_home(player_t *pl)
     pl.home_base = base2;
     sound_play_all(CHANGE_HOME_SOUND);
 
-    if (pl2 != NULL) {
+    if (pl2 != null) {
 	Pick_startpos(pl2);
 	Set_message_f("%s has taken over %s's home base.",
 		      pl.name, pl2.name);
@@ -249,7 +249,7 @@ static void Player_change_home(player_t *pl)
     for (i = 0; i < NumPlayers; i++) {
 	player_t *pl_i = Player_by_index(i);
 
-	if (pl_i.conn != NULL)
+	if (pl_i.conn != null)
 	    Send_base(pl_i.conn, pl.id, pl.home_base.ind);
     }
     for (i = 0; i < NumSpectators; i++)
@@ -260,7 +260,7 @@ static void Player_change_home(player_t *pl)
 	for (i = 0; i < NumPlayers; i++) {
 	    player_t *pl_i = Player_by_index(i);
 
-	    if (pl_i.conn != NULL)
+	    if (pl_i.conn != null)
 		Send_base(pl_i.conn, pl2.id, pl2.home_base.ind);
 	}
 	for (i = 0; i < NumSpectators; i++)
@@ -482,7 +482,7 @@ void Pause_player(player_t *pl, bool on)
 	    for (i = 0; i < NumPlayers; i++) {
 		player_t *pl_i = Player_by_index(i);
 
-		if (pl_i.conn != NULL) {
+		if (pl_i.conn != null) {
 		    Send_base(pl_i.conn, NO_ID, pl.home_base.ind);
 		    Send_team(pl_i.conn, pl.id, 0);
 		}
@@ -493,11 +493,11 @@ void Pause_player(player_t *pl, bool on)
 		Send_base(pl_i.conn, NO_ID, pl.home_base.ind);
 		Send_team(pl_i.conn, pl.id, 0);
 	    }
-	    pl.home_base = NULL;
+	    pl.home_base = null;
 	}
 	updateScores = true;
 
-	Detach_ball(pl, NULL);
+	Detach_ball(pl, null);
 	if (Player_uses_autopilot(pl)
 	    || Player_is_hoverpaused(pl)) {
 	    pl.pl_status.clear( HOVERPAUSE);
@@ -540,7 +540,7 @@ void Pause_player(player_t *pl, bool on)
 	/* there seems to be a race condition if idleTime is set later */
 	pl.idleTime = 0;
 
-	if (pl.home_base == NULL) {
+	if (pl.home_base == null) {
 	    int team = pl.pl_prev_team;
 
 	    /* kps - code copied from Cmd_team() */
@@ -745,7 +745,7 @@ int Handle_keyboard(player_t *pl)
 		break;
 
 	    case KEY_DROP_BALL:
-		Detach_ball(pl, NULL);
+		Detach_ball(pl, null);
 		break;
 
 	    case KEY_FIRE_SHOT:

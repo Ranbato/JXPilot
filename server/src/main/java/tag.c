@@ -52,7 +52,7 @@ static inline bool Player_can_be_tagged(player_t *pl)
  * Called from update during tag game to check that a non-paused
  * player is tagged.
  */
-void Check_tag(void)
+void Check_tag()
 {
     int num = 0, i, candidate;
     player_t *tag_pl = Player_by_id(tagItPlayerId);

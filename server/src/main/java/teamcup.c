@@ -21,12 +21,12 @@
 #include "xpserver.h"
 
 static char teamcup_score_file_name[1024];
-static FILE *teamcup_score_file = NULL;
+static FILE *teamcup_score_file = null;
 
-static void teamcup_open_score_file(void);
-static void teamcup_close_score_file(void);
+static void teamcup_open_score_file();
+static void teamcup_close_score_file();
 
-static void teamcup_check_options(void)
+static void teamcup_check_options()
 {
     bool ok = true;
 
@@ -51,12 +51,12 @@ static void teamcup_check_options(void)
     }
 }
 
-void teamcup_init(void)
+void teamcup_init()
 {
     teamcup_check_options();
 }
 
-static void teamcup_open_score_file(void)
+static void teamcup_open_score_file()
 {
     char msg[MSG_LEN];
     player_t *pl;
@@ -66,8 +66,8 @@ static void teamcup_open_score_file(void)
     if (!options.teamcup)
 	return;
 
-/*    if (teamcup_score_file != NULL) {
-	error("teamcup_score_file != NULL");
+/*    if (teamcup_score_file != null) {
+	error("teamcup_score_file != null");
 	End_game();
 */
 
@@ -76,7 +76,7 @@ static void teamcup_open_score_file(void)
     
 
     teamcup_score_file = fopen(teamcup_score_file_name, "w");
-    if (teamcup_score_file == NULL) {
+    if (teamcup_score_file == null) {
 	error("fopen() failed, could not create score file");
 	End_game();
     }
@@ -110,13 +110,13 @@ static void teamcup_open_score_file(void)
 
 }
 
-static void teamcup_close_score_file(void)
+static void teamcup_close_score_file()
 {
     char msg[MSG_LEN];
 
 
     fclose(teamcup_score_file);
-    teamcup_score_file = NULL;
+    teamcup_score_file = null;
 
     snprintf(msg, sizeof(msg),
 	     "Score file \"%s\" closed.", teamcup_score_file_name);
@@ -126,16 +126,16 @@ static void teamcup_close_score_file(void)
     strcpy(teamcup_score_file_name, "");
 }
 
-void teamcup_game_start(void)
+void teamcup_game_start()
 {
     teamcup_open_score_file();
     teamcup_round_start();
 }
 
-void teamcup_game_over(void)
+void teamcup_game_over()
 {
 
-    if (!options.teamcup || teamcup_score_file == NULL)
+    if (!options.teamcup || teamcup_score_file == null)
 	return;
 
     teamcup_close_score_file();
@@ -148,7 +148,7 @@ void teamcup_log(String fmt, ...)
     if (!options.teamcup)
 	return;
 
-    if (teamcup_score_file == NULL)
+    if (teamcup_score_file == null)
 	return;
 
     va_start(ap, fmt);
@@ -156,7 +156,7 @@ void teamcup_log(String fmt, ...)
     va_end(ap);
 }
 
-void teamcup_round_start(void)
+void teamcup_round_start()
 {
     if (!options.teamcup)
 	return;
@@ -177,7 +177,7 @@ void teamcup_round_end(int winning_team)
 	return;
 
     list = XMALLOC(int, NumPlayers);
-    if (list == NULL) {
+    if (list == null) {
 	error("Can't allocate memory for list");
 	End_game();
     }
@@ -225,7 +225,7 @@ void teamcup_round_end(int winning_team)
         }
     }
      teamcup_log("Advantage Team %d\n",best_team);
-    if (teamcup_score_file != NULL)
+    if (teamcup_score_file != null)
 	fflush(teamcup_score_file);
 
     free(list);

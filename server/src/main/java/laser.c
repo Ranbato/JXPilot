@@ -47,7 +47,7 @@ void Fire_laser(player_t *pl)
 	    pos.cy = pl.pos.cy + m_gun.cy
 		+ FLOAT_TO_CLICK(pl.vel.y * timeStep);
 	    pos = World_wrap_clpos(pos);
-	    if (is_inside(pos.cx, pos.cy, NONBALL_BIT | NOTEAM_BIT, NULL)
+	    if (is_inside(pos.cx, pos.cy, NONBALL_BIT | NOTEAM_BIT, null)
 		!= NO_GROUP)
 		return;
 	    Fire_general_laser(pl.id, pl.team, pos,
@@ -72,7 +72,7 @@ void Fire_general_laser(int id, int team, Click  pos, int dir,
     if (NumObjs >= MAX_TOTAL_SHOTS)
 	return;
 
-    if ((pulse = PULSE_PTR(Object_allocate())) == NULL)
+    if ((pulse = PULSE_PTR(Object_allocate())) == null)
 	return;
 
     if (pl) {
@@ -119,9 +119,9 @@ void Fire_general_laser(int id, int team, Click  pos, int dir,
 void Laser_pulse_hits_player(player_t *pl, pulseobject_t *pulse)
 {
     player_t *kp = Player_by_id(pulse.id);
-    cannon_t *cannon = NULL;
+    cannon_t *cannon = null;
 
-    if (kp == NULL)
+    if (kp == null)
 	/* Perhaps it was a cannon pulse? */
 	cannon = Cannon_by_id(pulse.id);
 
@@ -177,13 +177,13 @@ void Laser_pulse_hits_player(player_t *pl, pulseobject_t *pulse)
 	if (!pl.used.get( HAS_SHIELD)
 	    && !Player_has_armor(pl)) {
 	    Player_set_state(pl, PL_STATE_KILLED);
-    	    Handle_Scoring(SCORE_LASER,kp,pl,cannon,NULL);
+    	    Handle_Scoring(SCORE_LASER,kp,pl,cannon,null);
 	    if (kp) {
 		Set_message_f("%s got roasted alive by %s's laser.%s",
 			      pl.name, kp.name,
 			      pl.id == kp.id ? " How strange!" : "");
 	    }
-	    else if (cannon != NULL) {
+	    else if (cannon != null) {
 		Set_message_f("%s got roasted alive by cannonfire.", pl.name);
 	    }
 	    else {

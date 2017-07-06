@@ -26,7 +26,7 @@
 
 #include "xpmapedit.h"
 
-static String display_name = NULL;
+static String display_name = null;
 String progname;
 
 Window mapwin, prefwin;
@@ -845,7 +845,7 @@ prefs_t prefs[260] = {
     {"teamsharescore", "", "TeamShareScore?", 0, YESNO, 0,
      &map.teamShareScore, 6, 1, 8, 0},
 
-    {"mapdata", "", NULL, 0, MAPDATA, NULL, 0, 0, 0, 0, 0}
+    {"mapdata", "", null, 0, MAPDATA, null, 0, 0, 0, 0, 0}
 };
 
 /***************************************************************************/
@@ -920,7 +920,7 @@ int main(int argc, String argv[])
 
 
 /* RTT allow setting of server options from the default_settings array above */
-void Setup_default_server_options(void)
+void Setup_default_server_options()
 {
     int i;
 
@@ -952,7 +952,7 @@ void SetDefaults(int argc, String argv[])
 
     if (map.comments)
 	free(map.comments);
-    map.comments = (String ) NULL;
+    map.comments = (String ) null;
     map.mapName[0] = map.mapFileName[0] = '\0';
     /*   strcpy(map.author,"Captain America (mbcaprt@mphhpd.ph.man.ac.uk)\0"); */
     map.width = DEFAULT_WIDTH;
@@ -1052,7 +1052,7 @@ void ParseArgs(int argc, String argv[])
 /* Arguments :                                                             */
 /* Purpose :                                                               */
 /***************************************************************************/
-void ResetMap(void)
+void ResetMap()
 {
     map.view_x = map.view_y = 0;
     while (((mapwin_width - TOOLSWIDTH) > (map.width * map.view_zoom)) ||
@@ -1076,7 +1076,7 @@ void ResetMap(void)
 /* Arguments :                                                             */
 /* Purpose :                                                               */
 /***************************************************************************/
-void SizeMapwin(void)
+void SizeMapwin()
 {
     /* try for geometry settings */
     mapwin_width = geometry_width;
@@ -1097,7 +1097,7 @@ void SizeMapwin(void)
 /* Arguments :                                                             */
 /* Purpose :                                                               */
 /***************************************************************************/
-void SizeSmallMap(void)
+void SizeSmallMap()
 {
     smlmap_width = smlmap_height = TOOLSWIDTH - 20;
     smlmap_xscale = (float) (map.width) / (float) (smlmap_width);

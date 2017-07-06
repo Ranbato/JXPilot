@@ -159,11 +159,11 @@ static inline bool in_range(object_t *obj1, object_t *obj2, double range)
     return hit;
 }
 
-static void PlayerCollision(void);
+static void PlayerCollision();
 static void PlayerObjectCollision(player_t *pl);
-static void AsteroidCollision(void);
-static void BallCollision(void);
-static void MineCollision(void);
+static void AsteroidCollision();
+static void BallCollision();
+static void MineCollision();
 static void Player_collides_with_ball(player_t *pl, ballobject_t *ball);
 static void Player_collides_with_item(player_t *pl, itemobject_t *item);
 static void Player_collides_with_mine(player_t *pl, mineobject_t *mine);
@@ -172,7 +172,7 @@ static void Player_collides_with_asteroid(player_t *pl, wireobject_t *obj);
 static void Player_collides_with_killing_shot(player_t *pl, object_t *obj);
 
 
-void Check_collision(void)
+void Check_collision()
 {
     BallCollision();
     MineCollision();
@@ -181,7 +181,7 @@ void Check_collision(void)
 }
 
 
-static void PlayerCollision(void)
+static void PlayerCollision()
 {
     int i, j;
     player_t *pl;
@@ -195,7 +195,7 @@ static void PlayerCollision(void)
 	if (!World_contains_clpos(pl.pos)) {
 	    Player_set_state(pl, PL_STATE_KILLED);
 	    Set_message_f("%s left the known universe.", pl.name);
-	    Handle_Scoring(SCORE_WALL_DEATH,NULL,pl,NULL,NULL);
+	    Handle_Scoring(SCORE_WALL_DEATH,null,pl,null,null);
 	    continue;
 	}
 
@@ -277,18 +277,18 @@ static void PlayerCollision(void)
 		    if (Player_is_killed(pl)) {
 			Set_message_f("%s and %s crashed.",
 				      pl.name, pl_j.name);
-			Handle_Scoring(SCORE_COLLISION,pl,pl_j,NULL,NULL);
+			Handle_Scoring(SCORE_COLLISION,pl,pl_j,null,null);
 		    } else {
 			Set_message_f("%s ran over %s.", pl.name, pl_j.name);
 			sound_play_sensors(pl_j.pos, PLAYER_RAN_OVER_PLAYER_SOUND);
-			Handle_Scoring(SCORE_ROADKILL,pl,pl_j,NULL,NULL);
+			Handle_Scoring(SCORE_ROADKILL,pl,pl_j,null,null);
 		    }
 
 		} else {
 		    if (Player_is_killed(pl)) {
 			Set_message_f("%s ran over %s.", pl_j.name, pl.name);
 			sound_play_sensors(pl.pos, PLAYER_RAN_OVER_PLAYER_SOUND);
-			Handle_Scoring(SCORE_ROADKILL,pl_j,pl,NULL,NULL);
+			Handle_Scoring(SCORE_ROADKILL,pl_j,pl,null,null);
 		    }
 		}
 
@@ -315,12 +315,12 @@ static void PlayerCollision(void)
 	if (!pl.used.get( HAS_CONNECTOR)
 	    || Player_is_phasing(pl)
 	    ||(!options.multipleConnectors && pl.have.get( HAS_BALL)))
-	    pl.ball = NULL;
-	else if (pl.ball != NULL) {
+	    pl.ball = null;
+	else if (pl.ball != null) {
 	    ballobject_t *ball = pl.ball;
 
 	    if (ball.life <= 0.0 || ball.id != NO_ID)
-		pl.ball = NULL;
+		pl.ball = null;
 	    else {
 		double distance = Wrap_length(pl.pos.cx - ball.pos.cx,
 					      pl.pos.cy - ball.pos.cy);
@@ -338,7 +338,7 @@ static void PlayerCollision(void)
 		    ball.obj_status.get( GRAVITY);
 		    ball.ball_treasure.have = false;
 		    pl.have.get( HAS_BALL);
-		    pl.ball = NULL;
+		    pl.ball = null;
 		    sound_play_sensors(pl.pos, CONNECT_BALL_SOUND);
 		    {
 			/* The ball might already be inside the team's ball
@@ -706,7 +706,7 @@ static void Player_collides_with_ball(player_t *pl, ballobject_t *ball)
     /* Player has died */
     if (ball.ball_owner == NO_ID) {
 	Set_message_f("%s was killed by a ball.", pl.name);
-	Handle_Scoring(SCORE_BALL_KILL,NULL,pl,NULL,NULL);
+	Handle_Scoring(SCORE_BALL_KILL,null,pl,null,null);
     } else {
 	player_t *kp = Player_by_id(ball.ball_owner);
 
@@ -714,7 +714,7 @@ static void Player_collides_with_ball(player_t *pl, ballobject_t *ball)
 		      pl.name, kp.name,
 		      kp.id == pl.id ? "  How strange!" : "");
 	
-	Handle_Scoring(SCORE_BALL_KILL,kp,pl,NULL,NULL);
+	Handle_Scoring(SCORE_BALL_KILL,kp,pl,null,null);
 
 	if (kp.id != pl.id) {
 	    Robot_war(pl, kp);
@@ -909,7 +909,7 @@ static void Player_collides_with_item(player_t *pl, itemobject_t *item)
 
 static void Player_collides_with_mine(player_t *pl, mineobject_t *mine)
 {
-    player_t *kp = NULL;
+    player_t *kp = null;
 
     sound_play_sensors(pl.pos, PLAYER_HIT_MINE_SOUND);
     if (mine.id == NO_ID && mine.mine_owner == NO_ID)
@@ -958,14 +958,14 @@ static void Player_collides_with_mine(player_t *pl, mineobject_t *mine)
 	 * for a low-scored-player hitting a high-scored-player's mine.
 	 * Maybe not.
 	 */
-	Handle_Scoring(SCORE_HIT_MINE,kp,pl,NULL,NULL);
+	Handle_Scoring(SCORE_HIT_MINE,kp,pl,null,null);
     }
 }
 
 
 static void Player_collides_with_debris(player_t *pl, object_t *obj)
 {
-    player_t *kp = NULL;
+    player_t *kp = null;
     double cost;
     char msg[MSG_LEN];
 
@@ -987,7 +987,7 @@ static void Player_collides_with_debris(player_t *pl, object_t *obj)
 		sprintf(msg + strlen(msg), "  How strange!");
 	}
 	Set_message(msg);
-	Handle_Scoring(SCORE_EXPLOSION,kp,pl,NULL,NULL);
+	Handle_Scoring(SCORE_EXPLOSION,kp,pl,null,null);
 	obj.life = 0.0;
 	return;
     }
@@ -1008,7 +1008,7 @@ static void Player_collides_with_asteroid(player_t *pl, wireobject_t *ast)
     if (ast.life < 0.0)
 	ast.life = 0.0;
     if (ast.life == 0.0) {
-    	Handle_Scoring(SCORE_ASTEROID_KILL,pl,NULL,ast,NULL);
+    	Handle_Scoring(SCORE_ASTEROID_KILL,pl,null,ast,null);
     }
 
     if (!Player_uses_emergency_shield(pl))
@@ -1024,10 +1024,10 @@ static void Player_collides_with_asteroid(player_t *pl, wireobject_t *ast)
 	    Set_message_f("%s smashed into an asteroid.", pl.name);
 	else
 	    Set_message_f("%s was hit by an asteroid.", pl.name);
-	Handle_Scoring(SCORE_ASTEROID_DEATH,NULL,pl,NULL,NULL);
+	Handle_Scoring(SCORE_ASTEROID_DEATH,null,pl,null,null);
 	if (Player_is_tank(pl)) {
 	    player_t *owner_pl = Player_by_id(pl.lock.pl_id);
-	    Handle_Scoring(SCORE_ASTEROID_KILL,owner_pl,NULL,ast,NULL);
+	    Handle_Scoring(SCORE_ASTEROID_KILL,owner_pl,null,ast,null);
 	}
 	return;
     }
@@ -1046,8 +1046,8 @@ static inline double Missile_hit_drain(missileobject_t *missile)
 
 static void Player_collides_with_killing_shot(player_t *pl, object_t *obj)
 {
-    player_t *kp = NULL;
-    cannon_t *cannon = NULL; 
+    player_t *kp = null;
+    cannon_t *cannon = null;
     double drainfactor, drain;
 
     /*
@@ -1159,7 +1159,7 @@ static void Player_collides_with_killing_shot(player_t *pl, object_t *obj)
 		}
 	    }
     	    
-	    Handle_Scoring(SCORE_SHOT_DEATH,kp,pl,obj,NULL);
+	    Handle_Scoring(SCORE_SHOT_DEATH,kp,pl,obj,null);
 
 	    if ((!obj.obj_status.get( FROMCANNON)) && (!(obj.id == NO_ID || kp.id == pl.id))) {
 		Robot_war(pl, kp);
@@ -1197,11 +1197,11 @@ static void Player_collides_with_killing_shot(player_t *pl, object_t *obj)
     }
 }
 
-static void AsteroidCollision(void)
+static void AsteroidCollision()
 {
     int j, radius, obj_count;
     object_t *ast;
-    object_t *obj = NULL, **obj_list;
+    object_t *obj = null, **obj_list;
     list_t list;
     list_iter_t iter;
     double damage = 0.0;
@@ -1231,7 +1231,7 @@ static void AsteroidCollision(void)
 
 	for (j = 0; j < obj_count; j++) {
 	    obj = obj_list[j];
-	    assert(obj != NULL);
+	    assert(obj != null);
 
 	    /* asteroids don't hit these objects */
 	    if ((obj.type == OBJ_ITEM
@@ -1334,7 +1334,7 @@ static void AsteroidCollision(void)
 					? BALL_PTR(obj).ball_owner
 					: obj.id);
 			player_t *pl = Player_by_id(owner_id);
-			Handle_Scoring(SCORE_ASTEROID_KILL,pl,NULL,ast,NULL);
+			Handle_Scoring(SCORE_ASTEROID_KILL,pl,null,ast,null);
 		    }
 
 		    /* break; */
@@ -1346,7 +1346,7 @@ static void AsteroidCollision(void)
 
 
 /* do ball - object and ball - checkpoint collisions */
-static void BallCollision(void)
+static void BallCollision()
 {
     int i, j, obj_count;
     int	ignored_object_types;
@@ -1469,7 +1469,7 @@ static void BallCollision(void)
 
 
 /* do mine - object collisions */
-static void MineCollision(void)
+static void MineCollision()
 {
     int i, j, obj_count;
     object_t **obj_list;

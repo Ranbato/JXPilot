@@ -25,7 +25,7 @@
 
 #include "xpserver.h"
 
-String showtime(void)
+String showtime()
 {
     time_t		now;
     static time_t	past;

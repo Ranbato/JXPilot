@@ -21,11 +21,11 @@
 #ifndef	TEAMCUP_H
 #define	TEAMCUP_H
 
-void teamcup_init(void);
+void teamcup_init();
 void teamcup_log(String fmt, ...);
-void teamcup_game_start(void);
-void teamcup_round_start(void);
+void teamcup_game_start();
+void teamcup_round_start();
 void teamcup_round_end(int winning_team);
-void teamcup_game_over(void);
+void teamcup_game_over();
 
 #endif

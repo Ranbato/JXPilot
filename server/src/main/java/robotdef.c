@@ -59,7 +59,7 @@ static bool Empty_space_for_ball(int bx, int by)
     pos.cx = BLOCK_CENTER(bx);
     pos.cy = BLOCK_CENTER(by);
     group = shape_is_inside(pos.cx, pos.cy,
-			    hitmask, NULL, &filled_wire, 0);
+			    hitmask, null, &filled_wire, 0);
     if (group == NO_GROUP)
 	return true;
     return false;
@@ -81,7 +81,7 @@ static bool Really_empty_space(player_t *pl, int bx, int by)
     pos.cx = BLOCK_CENTER(bx);
     pos.cy = BLOCK_CENTER(by);
     group = shape_is_inside(pos.cx, pos.cy,
-			    hitmask, NULL, &filled_wire, 0);
+			    hitmask, null, &filled_wire, 0);
     if (group == NO_GROUP)
 	return true;
     return false;
@@ -109,16 +109,16 @@ static bool Really_empty_space(player_t *pl, int bx, int by)
 	    pos.cy = cy + j * delta;
 	    pos = World_wrap_clpos(pos);
 
-	    group = is_inside(pos.cx, pos.cy, hitmask, NULL);
+	    group = is_inside(pos.cx, pos.cy, hitmask, null);
 
 	    /* hack so that robots won't rotate in destination wormholes */
 	    if (group != NO_GROUP) {
 		group_t *gp = groupptr_by_id(group);
-		if (gp != NULL
+		if (gp != null
 		    && gp.type == WORMHOLE
 		    && gp.mapobj_ind == pl.wormHoleDest)
 		    group = NO_GROUP;
-	        else if (gp!=NULL
+	        else if (gp!=null
 		         && !options.targetTeamCollision
 		         && gp.type == TARGET
 		         && gp.team == pl.team)
@@ -160,7 +160,7 @@ static inline bool Gravity_is_strong(player_t *pl, Click  pos, int travel_dir)
 /*
  * Prototypes for methods of the default robot type.
  */
-static void Robot_default_round_tick(void);
+static void Robot_default_round_tick();
 static void Robot_default_create(player_t *pl, String str);
 static void Robot_default_go_home(player_t *pl);
 static void Robot_default_play(player_t *pl);
@@ -249,7 +249,7 @@ static void Robot_default_create(player_t *pl, String str)
     my_data.robot_lock      = LOCK_NONE;
     my_data.robot_lock_id   = 0;
 
-    if (str != NULL
+    if (str != null
 	&& *str != '\0'
 	&& sscanf(str, " %d %d", &my_data.attack, &my_data.defense) != 2) {
 	if (str && *str) {
@@ -1356,7 +1356,7 @@ static bool Ball_handler(player_t *pl)
 	}
     }
     if (pl.have.get( HAS_BALL) || pl.ball) {
-	ballobject_t *ball = NULL;
+	ballobject_t *ball = null;
 	Dimension bbpos;
 	double dist_np = 1e19;
 	int xdist, ydist, dx, dy;
@@ -1416,7 +1416,7 @@ static bool Ball_handler(player_t *pl)
 	    && dist_np > closest_tr_dist
 	    && clear_path
 	    && Math.pow(ball.vel.x) + sqr(ball.vel.y) > 60,2.0) {
-	    Detach_ball(pl, NULL);
+	    Detach_ball(pl, null);
 	    pl.used.clear( USES_CONNECTOR);
 	    my_data.last_thrown_ball = my_data.robot_count;
 	    my_data.longterm_mode.clear( FETCH_TREASURE);
@@ -1825,7 +1825,7 @@ static void Robot_default_play(player_t *pl)
     int j, ship_i, item_imp, enemy_i, item_i, mine_i;
     bool harvest_checked, evade_checked, navigate_checked;
     robot_default_data_t *my_data = Robot_default_get_data(pl);
-    itemobject_t *item = NULL;
+    itemobject_t *item = null;
 
     if (my_data.robot_count <= 0)
 	my_data.robot_count = 1000 + (int)(Math.random() * 32);
@@ -2064,7 +2064,7 @@ static void Robot_default_play(player_t *pl)
     if (world.rules.mode.get( TIMING) && !navigate_checked) {
 	int delta_dir;
 
-	if (item != NULL) {
+	if (item != null) {
 	    delta_dir =
 		(int)(pl.dir
 		      - Wrap_cfindDir(item.pos.cx - pl.pos.cx,
@@ -2084,7 +2084,7 @@ static void Robot_default_play(player_t *pl)
 		return;
 	}
     }
-    if (item != NULL
+    if (item != null
 	&& 3*enemy_dist > 2*item_dist
 	&& item_dist < 12*BLOCK_SZ
 	&& !my_data.longterm_mode.get( FETCH_TREASURE)
@@ -2208,7 +2208,7 @@ static void Robot_default_play(player_t *pl)
  * This is called each round.
  * It allows us to adjust our file local parameters.
  */
-static void Robot_default_round_tick(void)
+static void Robot_default_round_tick()
 {
     double min_visibility = 256.0;
     double min_enemy_distance = 512.0;

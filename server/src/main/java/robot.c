@@ -406,7 +406,7 @@ static struct robot_setup {
 static int num_robot_types = NELEM(robot_type_setups);
 static robot_type_t robot_types[NELEM(robot_type_setups)];
 
-void Parse_robot_file(void)
+void Parse_robot_file()
 {
     if (options.robotFile && *options.robotFile) {
 	FILE *fp = fopen(options.robotFile, "r");
@@ -435,7 +435,7 @@ void Parse_robot_file(void)
 		if (!fgets(buf, sizeof buf, fp)) {
 		    end_of_record = 1;
 		    fclose(fp);
-		    fp = NULL;
+		    fp = null;
 		}
 		else if (*buf == '\n')
 		    end_of_record = 1;
@@ -516,7 +516,7 @@ void Parse_robot_file(void)
     }
 
 #ifdef DEVELOPMENT
-    if (getenv("XPILOTS_DUMP_ROBOTS_TO_ROBOT_FILE") != NULL) {
+    if (getenv("XPILOTS_DUMP_ROBOTS_TO_ROBOT_FILE") != null) {
 	if (options.robotFile && *options.robotFile) {
 	    FILE *fp = fopen(options.robotFile, "w");
 	    if (fp) {
@@ -543,7 +543,7 @@ void Parse_robot_file(void)
 /*
  * First time initialization of all the robot stuff.
  */
-void Robot_init(void)
+void Robot_init()
 {
     int i, result, n;
 
@@ -675,11 +675,11 @@ static void Robot_talks(enum robot_talk_t says_what,
 }
 
 
-static void Robot_create(void)
+static void Robot_create()
 {
     player_t *robot;
     robot_t *rob;
-    team_t *teamp = NULL;
+    team_t *teamp = null;
     int i, num, most_used, least_used;
     robot_data_t *data, *new_data;
     robot_type_t *rob_type;
@@ -687,11 +687,11 @@ static void Robot_create(void)
     if (peek_ID() == 0)
 	return;
 
-    if ((new_data = XMALLOC(robot_data_t, 1)) == NULL) {
+    if ((new_data = XMALLOC(robot_data_t, 1)) == null) {
 	error("malloc robot_data");
 	return;
     }
-    new_data.private_data = NULL;
+    new_data.private_data = null;
 
     most_used = 0;
     for (i = 0; i < MAX_ROBOTS; i++) {
@@ -728,7 +728,7 @@ static void Robot_create(void)
     rob_type = &robot_types[new_data.robot_types_ind];
 
     Init_player(NumPlayers,
-		options.allowShipShapes ? Parse_shape_str(rob.shape) : NULL,
+		options.allowShipShapes ? Parse_shape_str(rob.shape) : null,
 		PL_TYPE_ROBOT);
 
     robot = Player_by_index(NumPlayers);
@@ -768,7 +768,7 @@ static void Robot_create(void)
     for (i = 0; i < NumPlayers - 1; i++) {
 	player_t *pl_i = Player_by_index(i);
 
-	if (pl_i.conn != NULL) {
+	if (pl_i.conn != null) {
 	    Send_player(pl_i.conn, robot.id);
 	    Send_base(pl_i.conn, robot.id, robot.home_base.ind);
 	}
@@ -806,8 +806,8 @@ void Robot_delete(player_t *pl, bool kicked)
 {
     int i;
 
-    if (pl == NULL) {
-	player_t *low_pl = NULL;
+    if (pl == null) {
+	player_t *low_pl = null;
 	double low_score = (double)LONG_MAX;
 
 	/*
@@ -984,7 +984,7 @@ static bool Robot_check_leave(player_t *pl)
 /*
  * On each round we call the robot type round ticker.
  */
-static void Robot_round_tick(void)
+static void Robot_round_tick()
 {
     int i;
 
@@ -1045,7 +1045,7 @@ void Robot_update(bool tick)
 		|| (num_any_ships > NUM_IDS)
 		|| (num_playing_ships > options.maxRobots
 		    && NumRobots > options.minRobots))
-		Robot_delete(NULL, false);
+		Robot_delete(null, false);
 	}
     }
 

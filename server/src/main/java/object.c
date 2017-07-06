@@ -36,19 +36,19 @@ int			ObjCount = 0;
 object_t		*Obj[MAX_TOTAL_SHOTS];
 
 
-static void Object_incr_count(void)
+static void Object_incr_count()
 {
     ObjCount++;
 }
 
-static void Object_decr_count(void)
+static void Object_decr_count()
 {
     ObjCount--;
 }
 
-object_t *Object_allocate(void)
+object_t *Object_allocate()
 {
-    object_t	*obj = OBJ_PTR(NULL);
+    object_t	*obj = OBJ_PTR(null);
 
     if (ObjCount < MAX_TOTAL_SHOTS) {
 	obj = Obj[ObjCount];
@@ -127,7 +127,7 @@ void Alloc_shots(int number)
     }
 }
 
-void Free_shots(void)
+void Free_shots()
 {
     XFREE(objArray);
 }

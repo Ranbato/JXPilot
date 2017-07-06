@@ -33,7 +33,7 @@
 void Score(player_t * pl, double points, Click  pos, String msg)
 {
     Rank_add_score(pl, points);
-    if (pl.conn != NULL)
+    if (pl.conn != null)
 	Send_score_object(pl.conn, points, pos, msg);
     updateScores = true;
 }
@@ -224,7 +224,7 @@ void Handle_Scoring(scoretype_t st, player_t * killer, player_t * victim,
 		options.selfKillScoreMult;
 	    if (!options.zeroSumScoring)
 		Score(victim, -sc, victim.pos,
-		      (killer == NULL) ? "[Explosion]" : victim.name);
+		      (killer == null) ? "[Explosion]" : victim.name);
 	} else {
 	    Rank_add_explosion_kill(killer);
 	    sc = Rate(Get_Score(killer), Get_Score(victim))
@@ -253,7 +253,7 @@ void Handle_Scoring(scoretype_t st, player_t * killer, player_t * victim,
 
 	    if (options.survivalScore != 0.0)
 		sc = Get_Score(victim) * 0.02;
-	    else if (cannon != NULL)
+	    else if (cannon != null)
 		sc = Rate(cannon.score, Get_Score(victim))
 		    * options.cannonKillScoreMult;
 	    else {
@@ -326,7 +326,7 @@ void Handle_Scoring(scoretype_t st, player_t * killer, player_t * victim,
 			      killer.name, true);
 		Rank_add_laser_kill(killer);
 	    }
-	} else if (((cannon_t *) extra) != NULL) {
+	} else if (((cannon_t *) extra) != null) {
 	    sc = Rate(((cannon_t *) extra).score, Get_Score(victim))
 		* options.cannonKillScoreMult;
 	    if (!options.zeroSumScoring)

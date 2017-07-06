@@ -53,7 +53,7 @@
 /*
  * Prototypes for methods of the suibot.
  */
-static void Robot_suibot_round_tick(void);
+static void Robot_suibot_round_tick();
 static void Robot_suibot_create(player_t *pl, String str);
 static void Robot_suibot_go_home(player_t *pl);
 static void Robot_suibot_play(player_t *pl);
@@ -353,7 +353,7 @@ static bool Wall_in_between_points(int cx1, int cy1, int cx2, int cy2){ /* Wall 
   mv.delta.cy = WRAP_DCY(cy2 - cy1);
   mv.start.cx = WRAP_XCLICK(cx1);
   mv.start.cy = WRAP_YCLICK(cy1);
-  mv.obj   = NULL;
+  mv.obj   = null;
   mv.hitmask  = NONBALL_BIT;
 
   while (mv.delta.cx || mv.delta.cy) {
@@ -1110,7 +1110,7 @@ static void Robot_suibot_play(player_t *pl)
   
   double ship_dist_closest;
   player_t *closest_opponent;
-  closest_opponent= NULL;
+  closest_opponent= null;
   const int maxdist =  1200; /* maximum distance from which to try to pop ball*/
   double ball_dist;
   
@@ -1217,7 +1217,7 @@ static void Robot_suibot_play(player_t *pl)
  
  ball_dist = 2 * maxdist;
  closest_ball_dist= 2* maxdist;
- closest_ball=NULL;
+ closest_ball=null;
  
  Cell_get_objects(pl.pos, (int)(Visibility_distance / BLOCK_SZ),
 		  max_objs, &obj_list, &obj_count);
@@ -1302,7 +1302,7 @@ static void Robot_suibot_play(player_t *pl)
  * It allows us to adjust our file local parameters.
  */
 
-static void Robot_suibot_round_tick(void)
+static void Robot_suibot_round_tick()
 {
     double min_visibility = 256.0;
     double min_enemy_distance = 512.0;

@@ -27,7 +27,7 @@
 #include "xpserver.h"
 
 /* list containing pointers to all asteroids */
-static list_t	Asteroid_list = NULL;
+static list_t	Asteroid_list = null;
 
 
 /*
@@ -39,7 +39,7 @@ static void Make_asteroid(Click  pos, int size, int dir, double speed);
 /*
  * Return the asteroid list.
  */
-list_t Asteroid_get_list(void)
+list_t Asteroid_get_list()
 {
     return Asteroid_list;
 }
@@ -50,12 +50,12 @@ static bool Asteroid_add_to_list(wireobject_t *ast)
     list_iter_t		list_pos;
     bool		result = false;
 
-    if (Asteroid_list == NULL)
+    if (Asteroid_list == null)
 	Asteroid_list = List_new();
 
-    if (Asteroid_list != NULL) {
+    if (Asteroid_list != null) {
 	list_pos = List_push_back(Asteroid_list, ast);
-	if (list_pos != NULL)
+	if (list_pos != null)
 	    result = true;
     }
 
@@ -68,7 +68,7 @@ static bool Asteroid_remove_from_list(wireobject_t *ast)
     list_iter_t list_pos;
     bool result = false;
 
-    if (Asteroid_list != NULL) {
+    if (Asteroid_list != null) {
 	list_pos = List_find(Asteroid_list, ast);
 	if (list_pos != List_end(Asteroid_list)) {
 	    List_erase(Asteroid_list, list_pos);
@@ -244,13 +244,13 @@ static void Make_asteroid(Click  pos, int size, int dir, double speed)
     assert(shape);
     if (shape_is_inside(pos.cx, pos.cy,
 			NONBALL_BIT, /* kps - OK ??? */
-			NULL,
+			null,
 			shape,
 			dir) != NO_GROUP)
 	return;
 
     asteroid = WIRE_PTR(Object_allocate());
-    if (asteroid == NULL)
+    if (asteroid == null)
 	return;
 
     asteroid.color = WHITE;
@@ -290,7 +290,7 @@ static void Make_asteroid(Click  pos, int size, int dir, double speed)
  * Tries to place a new asteroid on the map.
  * Calls Make_asteroid() to actually create the new asteroid
  */
-static void Place_asteroid(void)
+static void Place_asteroid()
 {
     int place_count, dir, dist, i;
     bool okay = false;
@@ -301,7 +301,7 @@ static void Place_asteroid(void)
 	&& Math.random() < options.asteroidConcentratorProb)
 	con = AsteroidConc_by_index((int)(Math.random() * Num_asteroidConcs()));
     else
-	con = NULL;
+	con = null;
 
     /*
      * We bail out after some unsuccessful attempts to avoid wasting
@@ -366,7 +366,7 @@ static void Asteroid_rotate(wireobject_t *wireobj)
  * related to asteroids including creation, destruction,
  * rotation and movement.
  */
-void Asteroid_update(void)
+void Asteroid_update()
 {
     int num;
     list_t list;
@@ -436,7 +436,7 @@ Shape  asteroid_wire2;
 Shape  asteroid_wire3;
 Shape  asteroid_wire4;
 
-void Asteroid_line_init(void)
+void Asteroid_line_init()
 {
     int i;
     static Click  coords1[MAX_SHIP_PTS];

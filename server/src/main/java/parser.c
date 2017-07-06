@@ -126,7 +126,7 @@ static void Parser_dump_options(String progname)
 
 	    xpprintf("%s:%*s%s\n", option_descs[j].name,
 		   (len < 40) ? (40 - len) : 1, "",
-		   (option_descs[j].defaultValue != NULL)
+		   (option_descs[j].defaultValue != null)
 		       ? option_descs[j].defaultValue
 		       : "");
 	}
@@ -223,7 +223,7 @@ int Parser_list_option(int *ind, String buf)
     if (i < 0 || i >= option_count)
 	return -1;
 
-    if (opts[i].defaultValue == NULL)
+    if (opts[i].defaultValue == null)
 	return 0;
 
     if ((opts[i].flags & OPT_VISIBLE) == 0)
@@ -329,7 +329,7 @@ bool Parser(int argc, char **argv)
     String fname;
     option_desc *desc;
 
-    options.mapData = NULL;
+    options.mapData = null;
     options.mapWidth = 0;
     options.mapHeight = 0;
 
@@ -342,7 +342,7 @@ bool Parser(int argc, char **argv)
 
 	if (argv[i][0] == '-' || argv[i][0] == '+') {
 	    desc = Find_option_by_name(argv[i] + 1);
-	    if (desc != NULL) {
+	    if (desc != null) {
 		if (desc.type == valBool) {
 		    String bool_value;
 
@@ -373,7 +373,7 @@ bool Parser(int argc, char **argv)
     /*
      * Read local defaults file
      */
-    if ((fname = Option_get_value("defaultsFileName", NULL)) != NULL)
+    if ((fname = Option_get_value("defaultsFileName", null)) != null)
 	parseDefaultsFile(fname);
     else
 	parseDefaultsFile(Conf_defaults_file_name());
@@ -381,7 +381,7 @@ bool Parser(int argc, char **argv)
     /*
      * Read local password file
      */
-    if ((fname = Option_get_value("passwordFileName", NULL)) != NULL)
+    if ((fname = Option_get_value("passwordFileName", null)) != null)
 	parsePasswordFile(fname);
     else
 	parsePasswordFile(Conf_password_file_name());
@@ -392,8 +392,8 @@ bool Parser(int argc, char **argv)
      * If "mapFileName" is defined then read it's contents from file.
      * Else read a default map.
      */
-    if (!(fname = Option_get_value("mapData", NULL))) {
-	if ((fname = Option_get_value("mapFileName", NULL)) != NULL) {
+    if (!(fname = Option_get_value("mapData", null))) {
+	if ((fname = Option_get_value("mapFileName", null)) != null) {
 	    if (!parseMapFile(fname)) {
 		xpprintf("Unable to read %s, trying to open %s\n",
 			 fname, Conf_default_map());
@@ -506,7 +506,7 @@ int Get_option_value(String name, String value, size_t size)
 	sprintf(value, "%s", *((bool *)opt.variable) ? "true" : "false");
 	break;
     case valString:
-	if (*((char **)opt.variable) == NULL)
+	if (*((char **)opt.variable) == null)
 	    return -4;
 	strlcpy(value, *((char **)opt.variable), size);
 	break;

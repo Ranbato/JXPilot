@@ -422,7 +422,7 @@ static FILE *fileOpen(String file)
     if (fp) {
 	if (!copyFilename(file)) {
 	    fclose(fp);
-	    fp = NULL;
+	    fp = null;
 	}
     }
     return fp;
@@ -459,7 +459,7 @@ static bool hasDirectoryPrefix(String filename)
 {
     static const char sep = '/';
 
-    return (strchr(filename, sep) != NULL ? true : false);
+    return (strchr(filename, sep) != null ? true : false);
 }
 
 
@@ -522,9 +522,9 @@ static void closeCompressedFile(FILE * fp)
 
 static FILE *openCompressedFile(String filename)
 {
-    FILE *fp = NULL;
-    String cmdline = NULL;
-    String newname = NULL;
+    FILE *fp = null;
+    String cmdline = null;
+    String newname = null;
 
     usePclose = false;
     if (!isCompressed(filename)) {
@@ -532,7 +532,7 @@ static FILE *openCompressedFile(String filename)
 	    return fileOpen(filename);
 	newname = fileAddExtension(filename, Conf_zcat_ext());
 	if (!newname)
-	    return NULL;
+	    return null;
 	filename = newname;
     }
     if (access(filename, 4) == 0) {
@@ -545,7 +545,7 @@ static FILE *openCompressedFile(String filename)
 		usePclose = true;
 		if (!copyFilename(filename)) {
 		    closeCompressedFile(fp);
-		    fp = NULL;
+		    fp = null;
 		}
 	    }
 	}
@@ -597,7 +597,7 @@ static FILE *openCompressedFile(String filename)
  */
 static FILE *openMapFile(String filename)
 {
-    FILE *fp = NULL;
+    FILE *fp = null;
     String newname, *newpath;
 
     fp = openCompressedFile(filename);
@@ -625,7 +625,7 @@ static FILE *openMapFile(String filename)
     if (!hasDirectoryPrefix(filename)) {
 	newpath = fileJoin(Conf_mapdir(), filename);
 	if (!newpath)
-	    return NULL;
+	    return null;
 	if (hasDirectoryPrefix(newpath))
 	    /*
 	     * call recursively. 
@@ -635,7 +635,7 @@ static FILE *openMapFile(String filename)
 	if (fp)
 	    return fp;
     }
-    return NULL;
+    return null;
 }
 
 
@@ -665,7 +665,7 @@ bool parseDefaultsFile(String filename)
     FILE *ifile;
     bool result;
 
-    if ((ifile = openDefaultsFile(filename)) == NULL)
+    if ((ifile = openDefaultsFile(filename)) == null)
 	return false;
 
     result = parseOpenFile(ifile, OPT_DEFAULTS);
@@ -683,7 +683,7 @@ bool parsePasswordFile(String filename)
     FILE *ifile;
     bool result;
 
-    if ((ifile = openDefaultsFile(filename)) == NULL)
+    if ((ifile = openDefaultsFile(filename)) == null)
 	return false;
 
     result = parseOpenFile(ifile, OPT_PASSWORD);
@@ -701,7 +701,7 @@ bool parseMapFile(String filename)
     FILE *ifile;
     bool result;
 
-    if ((ifile = openMapFile(filename)) == NULL)
+    if ((ifile = openMapFile(filename)) == null)
 	return false;
 
     result = parseOpenFile(ifile, OPT_MAP);
@@ -717,7 +717,7 @@ void expandKeyword(String keyword)
     String p;
 
     p = Option_get_value(keyword, &expand_origin);
-    if (p == NULL)
+    if (p == null)
 	warn("Can't expand '%s' because it has not been defined.\n",
 	     keyword);
     else {

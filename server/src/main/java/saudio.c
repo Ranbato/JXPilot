@@ -67,7 +67,7 @@ static void queue_audio(player_t * pl, int sound_ind, int volume)
 
     a.index = sound_ind;
     a.volume = volume;
-    a.next = NULL;
+    a.next = null;
 
     if (prev)
 	prev.next = a;
@@ -79,7 +79,7 @@ int sound_player_init(player_t * pl)
 {
     SDBG(printf("sound_player_init %p\n", pl));
 
-    pl.audio = NULL;
+    pl.audio = null;
 
     return 0;
 }
@@ -185,7 +185,7 @@ void sound_play_queued(player_t * pl)
     SDBG(printf("sound_play_sensors %p\n", pl));
 
     p = (AudioQPtr) pl.audio;
-    pl.audio = NULL;
+    pl.audio = null;
 
     while (p) {
 	n = p.next;
@@ -202,7 +202,7 @@ void sound_close(player_t * pl)
     SDBG(printf("sound_close %p\n", pl));
 
     p = (AudioQPtr) pl.audio;
-    pl.audio = NULL;
+    pl.audio = null;
 
     while (p) {
 	n = p.next;

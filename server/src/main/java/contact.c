@@ -43,12 +43,12 @@ static int Queue_player(String real, String nick, String disp, int team,
 			int *qpos);
 static int Check_address(String addr);
 
-void Contact_cleanup(void)
+void Contact_cleanup()
 {
     sock_close(&contactSocket);
 }
 
-int Contact_init(void)
+int Contact_init()
 {
     int status;
 
@@ -92,7 +92,7 @@ static int Kick_robot_players(int team)
 	if (world.rules.mode.get( TEAM_PLAY) && options.reserveRobotTeam) {
 	    /* kick robot with lowest score from any team but robot team */
 	    double low_score = Float.MAX_VALUE;
-	    player_t *low_pl = NULL;
+	    player_t *low_pl = null;
 
 	    for (i = 0; i < NumPlayers; i++) {
 		player_t *pl_i = Player_by_index(i);
@@ -111,14 +111,14 @@ static int Kick_robot_players(int team)
 	    return 0;
 	} else {
 	    /* kick random robot */
-	    Robot_delete(NULL, true);
+	    Robot_delete(null, true);
 	    return 1;
 	}
     } else {
 	if (world.teams[team].NumRobots > 0) {
 	    /* kick robot with lowest score from this team */
 	    double low_score = Float.MAX_VALUE;
-	    player_t *low_pl = NULL;
+	    player_t *low_pl = null;
 
 	    for (i = 0; i < NumPlayers; i++) {
 		player_t *pl_i = Player_by_index(i);
@@ -151,10 +151,10 @@ static int do_kick(int team, int nonlast)
     for (i = NumPlayers - 1; i >= 0; i--) {
 	player_t *pl_i = Player_by_index(i);
 
-	if (pl_i.conn != NULL
+	if (pl_i.conn != null
 	    && Player_is_paused(pl_i)
 	    && (team == TEAM_NOT_SET || (pl_i.team == team &&
-					 pl_i.home_base != NULL))
+					 pl_i.home_base != null))
 	    && !(pl_i.privs & PRIV_NOAUTOKICK)
 	    && (!nonlast || !(pl_i.privs & PRIV_AUTOKICKLAST))) {
 
@@ -338,7 +338,7 @@ void Contact(int fd, void *arg)
 	static long credentials;
 
 	if (!credentials) {
-	    credentials = (time(NULL) * (time_t)Get_process_id());
+	    credentials = (time(null) * (time_t)Get_process_id());
 	    credentials ^= (long)Contact;
 	    credentials	+= (long)key + (long)&key;
 	    credentials ^= (long)randomMT() << 1;
@@ -486,14 +486,14 @@ void Contact(int fd, void *arg)
 	if (Packet_scanf(&ibuf, "%s", str) <= 0)
 	    status = E_INVAL;
 	else {
-	    player_t *pl_found = Get_player_by_name(str, NULL, NULL);
+	    player_t *pl_found = Get_player_by_name(str, null, null);
 
 	    if (!pl_found)
 		status = E_NOT_FOUND;
 	    else {
 		Set_message_f("\"%s\" upset the gods and was kicked out "
 			      "of the game.", pl_found.name);
-		if (pl_found.conn == NULL)
+		if (pl_found.conn == null)
 		    Delete_player(pl_found);
 		else
 		    Destroy_connection(pl_found.conn, "kicked out");
@@ -519,8 +519,8 @@ void Contact(int fd, void *arg)
 	String opt, *val;
 
 	if (Packet_scanf(&ibuf, "%S", str) <= 0
-		 || (opt = strtok(str, ":")) == NULL
-		 || (val = strtok(NULL, "")) == NULL)
+		 || (opt = strtok(str, ":")) == null
+		 || (val = strtok(null, "")) == null)
 	    status = E_INVAL;
 	else {
 	    i = Tune_option(opt, val);
@@ -639,7 +639,7 @@ static void Queue_remove(struct queued_player *qp, struct queued_player *prev)
 void Queue_kick(String nick)
 {
     unsigned int magic;
-    struct queued_player *qp = qp_list, *prev = NULL;
+    struct queued_player *qp = qp_list, *prev = null;
 
     while (qp) {
 	if (!strcasecmp(qp.nick_name, nick))
@@ -675,7 +675,7 @@ static void Queue_ack(struct queued_player *qp, int qpos)
     qp.last_ack_sent = main_loops;
 }
 
-void Queue_loop(void)
+void Queue_loop()
 {
     struct queued_player *qp, *prev = 0, *next = 0;
     int qpos = 0, login_port;
@@ -878,14 +878,14 @@ static int Queue_player(String user, String nick, String disp, int team,
  */
 int Queue_advance_player(String name, String qmsg, size_t size)
 {
-    struct queued_player *qp, *prev, *first = NULL;
+    struct queued_player *qp, *prev, *first = null;
 
     if (strlen(name) >= MAX_NAME_LEN) {
 	strlcpy(qmsg, "Name too long.", size);
 	return -1;
     }
 
-    for (prev = NULL, qp = qp_list; qp != NULL; prev = qp, qp = qp.next) {
+    for (prev = null, qp = qp_list; qp != null; prev = qp, qp = qp.next) {
 
 	if (!strcasecmp(qp.nick_name, name)) {
 	    if (!prev)
@@ -938,7 +938,7 @@ int Queue_show_list(String qmsg, size_t size)
 	snprintf(qmsg + len, size - len, "%d. %s  ", count++, qp.nick_name);
 	len = strlen(qmsg);
 	qp = qp.next;
-    } while (qp != NULL && len + 32 < size);
+    } while (qp != null && len + 32 < size);
 
     /* strip last 2 spaces. */
     qmsg[len - 2] = '\0';
@@ -992,7 +992,7 @@ static int Check_address(String str)
     return 0;
 }
 
-void Set_deny_hosts(void)
+void Set_deny_hosts()
 {
     String list, *tok, *slash;
     int n = 0;
@@ -1004,14 +1004,14 @@ void Set_deny_hosts(void)
     if (!(list = xp_strdup(options.denyHosts)))
 	return;
 
-    for (tok = strtok(list, list_sep); tok; tok = strtok(NULL, list_sep))
+    for (tok = strtok(list, list_sep); tok; tok = strtok(null, list_sep))
 	n++;
 
     addr_mask_list = (struct addr_plus_mask *)
 	malloc(n * sizeof(*addr_mask_list));
     num_addr_mask = n;
     strcpy(list, options.denyHosts);
-    for (tok = strtok(list, list_sep); tok; tok = strtok(NULL, list_sep)) {
+    for (tok = strtok(list, list_sep); tok; tok = strtok(null, list_sep)) {
 	slash = strchr(tok, '/');
 	if (slash) {
 	    *slash = '\0';

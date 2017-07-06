@@ -131,7 +131,7 @@ char iconmenu[36] = { ' ',
 /* Arguments :                                                             */
 /* Purpose :                                                               */
 /***************************************************************************/
-void DrawTools(void)
+void DrawTools()
 {
     int i, j, w, sel;
 
@@ -422,7 +422,7 @@ void DrawMapPic(Window win, int x, int y, int picnum, int zoom)
 /* Arguments :                                                             */
 /* Purpose :                                                               */
 /***************************************************************************/
-void DrawSmallMap(void)
+void DrawSmallMap()
 {
     int i, j;
 
@@ -720,7 +720,7 @@ void UpdateSmallMap(int x, int y)
 /* Arguments :                                                             */
 /* Purpose :                                                               */
 /***************************************************************************/
-void DrawViewBox(void)
+void DrawViewBox()
 {
     int x1, y_1, x2, y2;
 

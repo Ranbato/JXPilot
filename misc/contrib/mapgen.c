@@ -146,7 +146,7 @@ char       *argv[];
 	printf("6\n");		/* world rule 6 = torus world */
     else
 	printf("0\n");		/* world rule 0 = normal map */
-    if (namep != NULL)		/* print user supplied name or */
+    if (namep != null)		/* print user supplied name or */
 	printf("%s\n", namep);	/* random name */
     else
 	printf("randworld%d\n", timestamp);
@@ -273,7 +273,7 @@ void        clean_map()
     list.x = x;			/* set list head to this spot */
     list.y = y;
 
-    while (cursor.next != NULL) {
+    while (cursor.next != null) {
 	x = cursor.x;
 	y = cursor.y;
 	for (h = x - 1; h <= x + 1; h++)	/* enqueue the '.' spaces
@@ -288,7 +288,7 @@ void        clean_map()
 		    end = end.next;	/* move to the new node */
 		    end.x = h;		/* fill in its values */
 		    end.y = v;
-		    end.next = (struct spot *)NULL;
+		    end.next = (struct spot *)null;
 		}
 	cursor = cursor.next;	/* advance to next thing in the list */
     }
