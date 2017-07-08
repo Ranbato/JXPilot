@@ -1,0 +1,6 @@
+General information about JXPilot
+
+-found source of some bugs: the reliable data packets are followed by reliable data,
+	which may not constitute complete packets
+	currently these packets are just eaten up within the input loop, which causes errors
+	what xpilot does is copy the data into a seperate buffer (cbuf) and then treats that seperately

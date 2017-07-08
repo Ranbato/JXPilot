@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
+
+<properties version="1.0">
+    <entry key="mainWindow.menu.file">Datei<!--File--></entry>
+    <entry key="mainWindow.menu.connect">Verbinden<!--Connect--></entry>
+    <entry key="mainWindow.menu.about">Über<!--About--></entry>
+    <entry key="mainWindow.menu.exit">Beenden<!--Exit--></entry>
+    <entry key="mainWindow.menu.preferences">Einstellungen<!--Preferences--></entry>
+    <entry key="mainWindow.buttons.connect">Verbinden<!--Connect--></entry>
+    <entry key="mainWindow.buttons.more">Mehr<!--More--></entry>
+    <entry key="mainWindow.textArea.update_in_progress">Aktualisierung läuft.<!--Update in progress.--></entry>
+    <entry key="mainWindow.textArea.pl/sr/mp">Spieler/Server/Spielfeld<!--Players/Server/Map--></entry>
+    <entry key="mainWindow.textArea.temporaryNote.part1">Es ist immer noch nicht möglich den<!--It is still not availible to--></entry>
+    <entry key="mainWindow.textArea.temporaryNote.part2">XPilot Client von hier aus zu starten.<!--start XPilot client from here.--></entry>
+    <entry key="mainWindow.textArea.temporaryNote.part3">Benutze stattdessen den "Mehr" Schalter!!!<!--Use "More" button instead!!!--></entry>
+
+    <entry key="connectWindow.title">Verbinden<!--Connect--></entry>
+    <entry key="connectWindow.internetServers.collumnNames.1">Rechnername:Port<!--Hostname:port--></entry>
+    <entry key="connectWindow.internetServers.collumnNames.2">Spielfeldname/Version<!--Map name/version--></entry>
+    <entry key="connectWindow.internetServers.collumnNames.3">Anzahl Spieler/Stützpunkte/freie Stützpunkte<!--Number of players/bases/free bases--></entry>
+    <entry key="connectWindow.internetServers.tabName">Internet Server<!--Internet servers--></entry>
+    <entry key="connectWindow.localServers.tabName">Lokale Server<!--Local servers--></entry>
+    <entry key="connectWindow.label.server/port">Server/Port<!--Server/port--></entry>
+    <entry key="connectWindow.button.connect">Verbinden<!--Connect--></entry>
+    <entry key="connectWindow.button.refresh">Aktualisieren<!--Refresh--></entry>
+
+    <entry key="preference.language">Sprache<!--Language--></entry>
+    <entry key="preference.pathToXPilotExecutable">Pfad zum XPilot Client Programm<!--Path to XPilot client executable--></entry>
+    <entry key="preference.otherOptionsForXPilot">Weitere XPilot Client Einstellungen<!--Options for XPilot client--></entry>
+    <entry key="preference.useAnotherLanguage"><!--Eine andere Sprache benutzen-->Use another language</entry>
+    <entry key="preference.XPilotName">Spitzname<!--Name(nick)--></entry>
+    <entry key="preference.XPilotUser">Spielername<!--User--></entry>
+    <entry key="preference.XPilotHost">Rechnername<!--Host--></entry>
+    <entry key="preference.tab.general">Allgemein<!--Genereal--></entry>
+    <entry key="preference.tab.i18n">Internationalisierung<!--I18N--></entry>
+    <entry key="preference.tab.XPilotOptions">XPilot Client Einstellungen<!--XPilot client options--></entry>
+	
+	<!-- Remarks: "(to) connect" == "verbinden"; "connection" == "Verbindung" -->
+</properties>

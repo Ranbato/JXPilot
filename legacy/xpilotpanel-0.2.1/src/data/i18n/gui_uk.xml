@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
+
+<properties version="1.0">
+    <entry key="mainWindow.menu.file">Файл</entry>
+    <entry key="mainWindow.menu.connect">З'єднатись</entry>
+    <entry key="mainWindow.menu.about">Про</entry>
+    <entry key="mainWindow.menu.exit">Вихід</entry>
+    <entry key="mainWindow.menu.preferences">Настройки</entry>
+    <entry key="mainWindow.buttons.connect">З'єднатись</entry>
+    <entry key="mainWindow.buttons.more">Більше</entry>
+    <entry key="mainWindow.textArea.update_in_progress">Відбуваєтся оновлення.</entry>
+    <entry key="mainWindow.textArea.pl/sr/mp">Гравці/Сервер/Мапа</entry>
+    <entry key="mainWindow.textArea.temporaryNote.part1">Поки що, ще не можна</entry>
+    <entry key="mainWindow.textArea.temporaryNote.part2">запусти клієнта XPilot звідси.</entry>
+    <entry key="mainWindow.textArea.temporaryNote.part3">Клікни на кнопку "Більше"!!!</entry>
+
+    <entry key="connectWindow.title">З'єднатися</entry>
+    <entry key="connectWindow.internetServers.collumnNames.1">Сервер:порт</entry>
+    <entry key="connectWindow.internetServers.collumnNames.2">Назва мапи/версія</entry>
+    <entry key="connectWindow.internetServers.collumnNames.3">К-сть гравців/баз/вільних баз</entry>
+    <entry key="connectWindow.internetServers.tabName">Інтернет сервери</entry>
+    <entry key="connectWindow.localServers.tabName">Локальні сервери</entry>
+    <entry key="connectWindow.label.server/port">Сервер/порт</entry>
+    <entry key="connectWindow.button.connect">З'єднатися</entry>
+    <entry key="connectWindow.button.refresh">Оновити</entry>
+    <entry key="connectWindow.button.serverInfo">Інформація про сервер</entry>
+    <entry key="connectWindow.button.close">Закрити</entry>
+
+    <entry key="preference.language">Мова</entry>
+    <entry key="preference.pathToXPilotExecutable">Шлях до XPilot клієнта</entry>
+    <entry key="preference.otherOptionsForXPilot">Опції XPilot клієнта</entry>
+    <entry key="preference.useAnotherLanguage">Використовувати іншу мову(вимагає перезапуску)</entry>
+    <entry key="preference.XPilotName">Ім'я(нік)</entry>
+    <entry key="preference.XPilotUser">Ім'я користувача(user)</entry>
+    <entry key="preference.XPilotHost">Вузол(host)</entry>
+    <entry key="preference.tab.general">Загальне</entry>
+    <entry key="preference.tab.i18n">Інтернаціоналізація</entry>
+    <entry key="preference.tab.XPilotOptions">Опції XPilot клієнта</entry>
+
+    <entry key="preferencesEditor.saveButton">Зберегти</entry>
+    <entry key="preferencesEditor.cancelButton">Скасувати</entry>
+
+    <entry key="metaInfoElementWindow.title">Інформація про сервер:</entry>
+    <entry key="metaInfoElementWindow.button.close">Закрити</entry>
+    <entry key="metaInfoElementWindow.info.hostname">Назва вузла</entry>
+    <entry key="metaInfoElementWindow.info.ipPort">IP адреса:порт</entry>
+    <entry key="metaInfoElementWindow.info.version">Версія</entry>
+    <entry key="metaInfoElementWindow.info.numberOfUsers">Кількість гравців</entry>
+    <entry key="metaInfoElementWindow.info.mapName">Назва мапи</entry>
+    <entry key="metaInfoElementWindow.info.mapSize">Розмір мапи</entry>
+    <entry key="metaInfoElementWindow.info.mapAuthor">Автор мапи</entry>
+    <entry key="metaInfoElementWindow.info.serverStatus">Статус</entry>
+    <entry key="metaInfoElementWindow.info.numberOfHomeBases">Кількість баз</entry>
+    <entry key="metaInfoElementWindow.info.numberOfTeamBases">Кількість команд(Team bases)</entry>
+    <entry key="metaInfoElementWindow.info.numberOfFreeHomeBases">Вільних баз</entry>
+    <entry key="metaInfoElementWindow.info.numberOfQueuedPlayers">Гравців в черзі</entry>
+    <entry key="metaInfoElementWindow.info.framesPerSecond">Кількість кадрів за секунду</entry>
+    <entry key="metaInfoElementWindow.info.sound">Звук</entry>
+    <entry key="metaInfoElementWindow.info.timing">Чи мапа є гонкою</entry>
+    <entry key="metaInfoElementWindow.info.serverUptime">Час від запуску сервера</entry>
+    <entry key="metaInfoElementWindow.playerList">Список гравців</entry>
+    <entry key="metaInfoElementWindow.playerName">Ім'я гравця</entry>
+    <entry key="metaInfoElementWindow.playerHost">Вузол гравця</entry>
+    <entry key="metaInfoElementWindow.noPlayers.part1">Нема</entry>
+    <entry key="metaInfoElementWindow.noPlayers.part2">гравців</entry>
+
+    <entry key="preferencesEditor.pathChooseButton">Вибрати</entry>
+    <entry key="preferencesEditor.pathChooserTitle">Виберіть шлях до XPilot клієнта</entry>
+
+    <entry key="connectWindow.warning.pathToExecutableNotSpecified">Шлях до XPilot клієнта не вказаний. Вкажіть шлях до нього в настройках!</entry>
+    <entry key="connectWindow.warning.noFile">Вказаний XPilot клієнт не знайдений або це директорія. Вкажіть правильний шлях до клієнта в настройках!</entry>
+    <entry key="connectWindow.warning.failedToStart">Клієнт XPilot не зміг запуститися</entry>
+    <entry key="connectWindow.warning.otherError">Сталася невідома помилка під час запуску XPilot клієнта!</entry>
+    <entry key="connectWindow.warning.serverNotSelected">Сервер не вибрано чи не введено!</entry>
+
+    <entry key="warningDialog.title">Попередження!</entry>
+
+    <entry key="preference.XPilotUseFullScreen">Режим екрану для клієнта(тільки для JXPilot)</entry>
+</properties>

@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
+
+<properties version="1.0">
+    <entry key="mainWindow.menu.file">File</entry>
+    <entry key="mainWindow.menu.connect">Connect</entry>
+    <entry key="mainWindow.menu.about">About</entry>
+    <entry key="mainWindow.menu.exit">Exit</entry>
+    <entry key="mainWindow.menu.preferences">Preferences</entry>
+    <entry key="mainWindow.buttons.connect">Connect</entry>
+    <entry key="mainWindow.buttons.more">More</entry>
+    <entry key="mainWindow.textArea.update_in_progress">Update in progress.</entry>
+    <entry key="mainWindow.textArea.pl/sr/mp">Players/Server/Map</entry>
+    <entry key="mainWindow.textArea.temporaryNote.part1">It is still not availible to</entry>
+    <entry key="mainWindow.textArea.temporaryNote.part2">start XPilot client from here.</entry>
+    <entry key="mainWindow.textArea.temporaryNote.part3">Use "More" button instead!!!</entry>
+
+    <entry key="connectWindow.title">Connect</entry>
+    <entry key="connectWindow.internetServers.collumnNames.1">Hostname:port</entry>
+    <entry key="connectWindow.internetServers.collumnNames.2">Map name/version</entry>
+    <entry key="connectWindow.internetServers.collumnNames.3">Number of players/bases/free bases</entry>
+    <entry key="connectWindow.internetServers.tabName">Internet servers</entry>
+    <entry key="connectWindow.localServers.tabName">Local servers</entry>
+    <entry key="connectWindow.label.server/port">Server/port</entry>
+    <entry key="connectWindow.button.connect">Connect</entry>
+    <entry key="connectWindow.button.refresh">Refresh</entry>
+    <entry key="connectWindow.button.serverInfo">Server info</entry>
+    <entry key="connectWindow.button.close">Close</entry>
+
+    <entry key="preference.language">Language</entry>
+    <entry key="preference.pathToXPilotExecutable">Path to XPilot client executable</entry>
+    <entry key="preference.otherOptionsForXPilot">Options for XPilot client</entry>
+    <entry key="preference.useAnotherLanguage">Use another language(requires restart)</entry>
+    <entry key="preference.XPilotName">Name(nick)</entry>
+    <entry key="preference.XPilotUser">User</entry>
+    <entry key="preference.XPilotHost">Host</entry>
+    <entry key="preference.tab.general">General</entry>
+    <entry key="preference.tab.i18n">I18N</entry>
+    <entry key="preference.tab.XPilotOptions">XPilot client options</entry>
+
+    <entry key="preferencesEditor.saveButton">Save</entry>
+    <entry key="preferencesEditor.cancelButton">Cancel</entry>
+
+    <entry key="metaInfoElementWindow.title">Server information:</entry>
+    <entry key="metaInfoElementWindow.button.close">Close</entry>
+    <entry key="metaInfoElementWindow.info.hostname">Server</entry>
+    <entry key="metaInfoElementWindow.info.ipPort">IP:port</entry>
+    <entry key="metaInfoElementWindow.info.version">Version</entry>
+    <entry key="metaInfoElementWindow.info.numberOfUsers">Players</entry>
+    <entry key="metaInfoElementWindow.info.mapName">Map name</entry>
+    <entry key="metaInfoElementWindow.info.mapSize">Map size</entry>
+    <entry key="metaInfoElementWindow.info.mapAuthor">Map author</entry>
+    <entry key="metaInfoElementWindow.info.serverStatus">Status</entry>
+    <entry key="metaInfoElementWindow.info.numberOfHomeBases">Bases</entry>
+    <entry key="metaInfoElementWindow.info.numberOfTeamBases">Team bases</entry>
+    <entry key="metaInfoElementWindow.info.numberOfFreeHomeBases">Free bases</entry>
+    <entry key="metaInfoElementWindow.info.numberOfQueuedPlayers">Queued players</entry>
+    <entry key="metaInfoElementWindow.info.framesPerSecond">FPS</entry>
+    <entry key="metaInfoElementWindow.info.sound">Sound</entry>
+    <entry key="metaInfoElementWindow.info.timing">Timing</entry>
+    <entry key="metaInfoElementWindow.info.serverUptime">Server uptime</entry>
+    <entry key="metaInfoElementWindow.playerList">Player list</entry>
+    <entry key="metaInfoElementWindow.playerName">Player name</entry>
+    <entry key="metaInfoElementWindow.playerHost">Player host</entry>
+    <entry key="metaInfoElementWindow.noPlayers.part1">No</entry>
+    <entry key="metaInfoElementWindow.noPlayers.part2">players</entry>
+
+    <entry key="preferencesEditor.pathChooseButton">Choose</entry>
+    <entry key="preferencesEditor.pathChooserTitle">Choose path to XPilot client executable</entry>
+
+    <entry key="connectWindow.warning.pathToExecutableNotSpecified">Path to XPilot client executable not specified. Go Preferences and select it!</entry>
+    <entry key="connectWindow.warning.noFile">Specified XPilot client executable not found or is a directory. Go Preferences and select correct one!</entry>
+    <entry key="connectWindow.warning.failedToStart">XPilot client failed to start</entry>
+    <entry key="connectWindow.warning.otherError">Unknown error occurred while starting XPilot client!</entry>
+    <entry key="connectWindow.warning.serverNotSelected">Server not selected or not inputed!</entry>
+
+    <entry key="warningDialog.title">Warning!</entry>
+
+    <entry key="preference.displayMode">Display mode(JXPilot only)</entry>
+
+    <!-- Not translated (common names, etc.) -->
+    <entry key="mainWindow.title">XPilotPanel</entry>
+</properties>

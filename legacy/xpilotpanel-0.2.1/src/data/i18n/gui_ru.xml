@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
+
+<properties version="1.0">
+    <entry key="mainWindow.menu.file">Файл</entry>
+    <entry key="mainWindow.menu.connect">Соеденится</entry>
+    <entry key="mainWindow.menu.about">Про</entry>
+    <entry key="mainWindow.menu.exit">Выход</entry>
+    <entry key="mainWindow.menu.preferences">Опции</entry>
+    <entry key="mainWindow.buttons.connect">Соеденится</entry>
+    <entry key="mainWindow.buttons.more">Больше</entry>
+    <entry key="mainWindow.textArea.update_in_progress">Обновление в процессе.</entry>
+    <entry key="mainWindow.textArea.pl/sr/mp">Игрок/Сервер/Мапа</entry>
+    <entry key="mainWindow.textArea.temporaryNote.part1">Пока нельзя</entry>
+    <entry key="mainWindow.textArea.temporaryNote.part2">запустить клиент XPilot отсюда.</entry>
+    <entry key="mainWindow.textArea.temporaryNote.part3">Кликни на кнопку "Больше"</entry>
+
+    <entry key="connectWindow.title">Соединится</entry>
+    <entry key="connectWindow.internetServers.collumnNames.1">Сервер:порт</entry>
+    <entry key="connectWindow.internetServers.collumnNames.2">Имя мапы/версия</entry>
+    <entry key="connectWindow.internetServers.collumnNames.3">Число игроков/баз/свободных баз</entry>
+    <entry key="connectWindow.internetServers.tabName">Интернет серверы</entry>
+    <entry key="connectWindow.localServers.tabName">Локальные серверы</entry>
+    <entry key="connectWindow.label.server/port">Сервер/порт</entry>
+    <entry key="connectWindow.button.connect">Соединится</entry>
+    <entry key="connectWindow.button.refresh">Оновить</entry>
+    <entry key="connectWindow.button.serverInfo">Информация о сервере</entry>
+    <entry key="connectWindow.button.close">Закрыть</entry>
+
+    <entry key="preference.language">Язык</entry>
+    <entry key="preference.pathToXPilotExecutable">Путь к клиенту XPilot</entry>
+    <entry key="preference.otherOptionsForXPilot">Опции XPilot клиента</entry>
+    <entry key="preference.useAnotherLanguage">Использовать другой язык(нужен перезапуск)</entry>
+    <entry key="preference.XPilotName">Имя(nick)</entry>
+    <entry key="preference.XPilotUser">Пользователь(user)</entry>
+    <entry key="preference.XPilotHost">Узел(host)</entry>
+    <entry key="preference.tab.general">Общее</entry>
+    <entry key="preference.tab.i18n">Интернационализация</entry>
+    <entry key="preference.tab.XPilotOptions">Опции XPilot клтента</entry>
+
+    <entry key="preferencesEditor.saveButton">Сохранить</entry>
+    <entry key="preferencesEditor.cancelButton">Отмена</entry>
+
+    <entry key="metaInfoElementWindow.title">Информация о сервере:</entry>
+    <entry key="metaInfoElementWindow.button.close">Закрыть</entry>
+    <entry key="metaInfoElementWindow.info.hostname">Узел</entry>
+    <entry key="metaInfoElementWindow.info.ipPort">IP:порт</entry>
+    <entry key="metaInfoElementWindow.info.version">Версия</entry>
+    <entry key="metaInfoElementWindow.info.numberOfUsers">Количество игроков</entry>
+    <entry key="metaInfoElementWindow.info.mapName">Имя мапы</entry>
+    <entry key="metaInfoElementWindow.info.mapSize">Размер мапы</entry>
+    <entry key="metaInfoElementWindow.info.mapAuthor">Автор мапы</entry>
+    <entry key="metaInfoElementWindow.info.serverStatus">Статус</entry>
+    <entry key="metaInfoElementWindow.info.numberOfHomeBases">Количество баз</entry>
+    <entry key="metaInfoElementWindow.info.numberOfTeamBases">Количество команд(Team bases)</entry>
+    <entry key="metaInfoElementWindow.info.numberOfFreeHomeBases">Свободных баз</entry>
+    <entry key="metaInfoElementWindow.info.numberOfQueuedPlayers">Игроков в очереди</entry>
+    <entry key="metaInfoElementWindow.info.framesPerSecond">Число кадров за секунду</entry>
+    <entry key="metaInfoElementWindow.info.sound">Звук</entry>
+    <entry key="metaInfoElementWindow.info.timing">Timing</entry>
+    <entry key="metaInfoElementWindow.info.serverUptime">Server uptime</entry>
+    <entry key="metaInfoElementWindow.playerList">Список игроков</entry>
+    <entry key="metaInfoElementWindow.playerName">Имя игрока</entry>
+    <entry key="metaInfoElementWindow.playerHost">Узел игрока</entry>
+    <entry key="metaInfoElementWindow.noPlayers.part1">Нет</entry>
+    <entry key="metaInfoElementWindow.noPlayers.part2">игроков</entry>
+
+    <entry key="preferencesEditor.pathChooseButton">Выбрать</entry>
+    <entry key="preferencesEditor.pathChooserTitle">Выберите путь к клиенту XPilot</entry>
+
+    <entry key="connectWindow.warning.pathToExecutableNotSpecified">Путь к клиенту XPilot не указан. Укажите в настройках!</entry>
+    <entry key="connectWindow.warning.noFile">Указаний XPilot клиен не найден. Укажите верный путь к клиенту в настройках!</entry>
+    <entry key="connectWindow.warning.failedToStart">XPilot клиент не смог запустится</entry>
+    <entry key="connectWindow.warning.otherError">Неизвестная ошибка при запуске XPilot клиента!</entry>
+    <entry key="connectWindow.warning.serverNotSelected">Сервер не выбран или не введен!</entry>
+
+    <entry key="warningDialog.title">Предупреждение!</entry>
+
+    <entry key="preference.XPilotUseFullScreen">Режым екрана для клиента(только для JXPilot)</entry>
+</properties>

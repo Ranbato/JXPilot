@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+
+<XPilotPanelPreferencesModel>
+    <preferences>
+        <preference name="pathToXPilotExecutable" type="filePath"></preference>
+        <preference name="language" type="comboBox" defaultValue="english">English,Ukrainian(uk),Russian(ru),Swedish(sv),German(de),Portuguese(pt),Dutch(nl),French(fr),Polish(pl)</preference>
+        <preference name="otherOptionsForXPilot">15,25</preference>
+        <preference name="useAnotherLanguage" type="boolean" defaultValue="false"></preference>
+
+        <!-- Temporary preferences -->
+        <preference name="XPilotName">15,25</preference>
+        <preference name="XPilotUser">15,25</preference>
+        <preference name="XPilotHost">15,25</preference>
+        <preference name="displayMode" type="comboBox" defaultValue="AFS">FSEM,UFS,AFS</preference>
+    </preferences>
+    <tabs>
+        <tab name="general">
+            <preference name="pathToXPilotExecutable"/>
+        </tab>
+        <tab name="XPilotOptions">
+            <preference name="XPilotName"/>
+            <preference name="XPilotUser"/>
+            <preference name="XPilotHost"/>
+            <preference name="displayMode"/>
+            <preference name="otherOptionsForXPilot"/>
+        </tab>
+        <tab name="i18n">
+            <preference name="useAnotherLanguage"/>
+            <preference name="language"/>
+        </tab>
+    </tabs>
+</XPilotPanelPreferencesModel>

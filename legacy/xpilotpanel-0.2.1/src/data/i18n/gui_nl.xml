@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
+
+<properties version="1.0">
+    <entry key="mainWindow.menu.file">Bestand</entry>
+    <entry key="mainWindow.menu.connect">Verbinding maken</entry>
+    <entry key="mainWindow.menu.about">Over dit programma</entry>
+    <entry key="mainWindow.menu.exit">Aflsuiten</entry>
+    <entry key="mainWindow.menu.preferences">Voorkeuren</entry>
+    <entry key="mainWindow.buttons.connect">Verbinding maken</entry>
+    <entry key="mainWindow.buttons.more">Meer</entry>
+    <entry key="mainWindow.textArea.update_in_progress">Update bezig.</entry>
+    <entry key="mainWindow.textArea.pl/sr/mp">Spelers/Server/Kaart</entry>
+    <entry key="mainWindow.textArea.temporaryNote.part1">Het is nog niet mogelijk om</entry>
+    <entry key="mainWindow.textArea.temporaryNote.part2">van hieruit xpilot te starten.</entry>
+    <entry key="mainWindow.textArea.temporaryNote.part3">Gebruik de "Meer" knop.!!!</entry>
+
+    <entry key="connectWindow.title">Connect</entry>
+    <entry key="connectWindow.internetServers.collumnNames.1">Naam van de server:poort</entry>
+    <entry key="connectWindow.internetServers.collumnNames.2">Naam van de kaart/versie</entry>
+    <entry key="connectWindow.internetServers.collumnNames.3">Aantal spelers/basissen/vrije basissen</entry>
+    <entry key="connectWindow.internetServers.tabName">Internet Servers</entry>
+    <entry key="connectWindow.localServers.tabName">Locale Servers</entry>
+    <entry key="connectWindow.label.server/port">Server/poort</entry>
+    <entry key="connectWindow.button.connect">Verbinding maken</entry>
+    <entry key="connectWindow.button.refresh">Update</entry>
+    <entry key="connectWindow.button.serverInfo">Informatie over de Server</entry>
+    <entry key="connectWindow.button.close">Afsluiten</entry>
+
+    <entry key="preference.language">Taal</entry>
+    <entry key="preference.pathToXPilotExecutable">Pad naar de XPilot client</entry>
+    <entry key="preference.otherOptionsForXPilot">Opties voor de XPilot client</entry>
+    <entry key="preference.useAnotherLanguage">Andere taal (vereist herstart)</entry> 
+    <entry key="preference.XPilotName">Naam(nick)</entry>
+    <entry key="preference.XPilotUser">Gebruiker</entry>
+    <entry key="preference.XPilotHost">Naam van de computer</entry>
+    <entry key="preference.tab.general">Algemeen</entry>
+    <entry key="preference.tab.i18n">I18N</entry>
+    <entry key="preference.tab.XPilotOptions">Opties voor de XPilot client</entry>
+
+    <entry key="preferencesEditor.saveButton">Bewaren</entry>
+    <entry key="preferencesEditor.cancelButton">Annuleren</entry>
+
+    <entry key="metaInfoElementWindow.title">Informatie over de Server</entry>
+    <entry key="metaInfoElementWindow.button.close">Afsluiten</entry>
+    <entry key="metaInfoElementWindow.info.hostname">Server</entry>
+    <entry key="metaInfoElementWindow.info.ipPort">IP:poort</entry>
+    <entry key="metaInfoElementWindow.info.version">Versie</entry>
+    <entry key="metaInfoElementWindow.info.numberOfUsers">Spelers</entry>
+    <entry key="metaInfoElementWindow.info.mapName">Naam van de kaart</entry>
+    <entry key="metaInfoElementWindow.info.mapSize">Grootte van de kaart</entry>
+    <entry key="metaInfoElementWindow.info.mapAuthor">Auteur van de kaart</entry>
+    <entry key="metaInfoElementWindow.info.serverStatus">Toestand</entry>
+    <entry key="metaInfoElementWindow.info.numberOfHomeBases">Basissen</entry>
+    <entry key="metaInfoElementWindow.info.numberOfTeamBases">Basissen per team</entry>
+    <entry key="metaInfoElementWindow.info.numberOfFreeHomeBases">Vrije basissen</entry>
+    <entry key="metaInfoElementWindow.info.numberOfQueuedPlayers">Wachtende spelers</entry>
+    <entry key="metaInfoElementWindow.info.framesPerSecond">FPS</entry>
+    <entry key="metaInfoElementWindow.info.sound">Geluid</entry>
+    <entry key="metaInfoElementWindow.info.timing">Timing</entry>
+    <entry key="metaInfoElementWindow.info.serverUptime">Uptime Server</entry>
+    <entry key="metaInfoElementWindow.playerList">Lijst van de spelers</entry>
+    <entry key="metaInfoElementWindow.playerName">Naam van de speler</entry>
+    <entry key="metaInfoElementWindow.playerHost">Computer van de speler</entry>
+    <entry key="metaInfoElementWindow.noPlayers.part1">Aantal</entry>
+    <entry key="metaInfoElementWindow.noPlayers.part2">spelers</entry>
+</properties>

@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
+
+<properties version="1.0">
+    <entry key="mainWindow.menu.file">Plik</entry>
+    <entry key="mainWindow.menu.connect">Połącz</entry>
+    <entry key="mainWindow.menu.about">O Programie</entry>
+    <entry key="mainWindow.menu.exit">Zakończ</entry>
+    <entry key="mainWindow.menu.preferences">Ustawienia</entry>
+    <entry key="mainWindow.buttons.connect">Połącz</entry>
+    <entry key="mainWindow.buttons.more">Więcej</entry>
+    <entry key="mainWindow.textArea.update_in_progress">Aktualizacja w toku.</entry>
+    <entry key="mainWindow.textArea.pl/sr/mp">Gracz/Serwer/Mapa</entry>
+    <entry key="mainWindow.textArea.temporaryNote.part1">Nadal nie jest możliwe</entry>
+    <entry key="mainWindow.textArea.temporaryNote.part2">bezpośrednie uruchomienie programu klienckiego.</entry>
+    <entry key="mainWindow.textArea.temporaryNote.part3">Proszę użyć przycisku "Więcej"!!!</entry>
+
+    <entry key="connectWindow.title">Połącz</entry>
+    <entry key="connectWindow.internetServers.collumnNames.1">Nazwa serwera:Port</entry>
+    <entry key="connectWindow.internetServers.collumnNames.2">Nazwa mapy/Wersja</entry>
+    <entry key="connectWindow.internetServers.collumnNames.3">Liczba graczy/baz/wolnych baz</entry>
+    <entry key="connectWindow.internetServers.tabName">Serwery publiczne</entry>
+    <entry key="connectWindow.localServers.tabName">Serwery lokalne</entry>
+    <entry key="connectWindow.label.server/port">Serwer/Port</entry>
+    <entry key="connectWindow.button.connect">Połącz</entry>
+    <entry key="connectWindow.button.refresh">Odśwież</entry>
+    <entry key="connectWindow.button.serverInfo">Informacje o serwerze</entry>
+    <entry key="connectWindow.button.close">Zamknij</entry>
+
+    <entry key="preference.language">Język</entry>
+    <entry key="preference.pathToXPilotExecutable">Ścieżka do pliku wykonywalnego programu klienckiego</entry>
+    <entry key="preference.otherOptionsForXPilot">Opcje wywołania programu klienckiego</entry>
+    <entry key="preference.useAnotherLanguage">Zmień język (wymaga ponownego uruchomienia)</entry>
+    <entry key="preference.XPilotName">Nazwa (nick)</entry>
+    <entry key="preference.XPilotUser">Pole "User"</entry>
+    <entry key="preference.XPilotHost">Pole "Host"</entry>
+    <entry key="preference.tab.general">Ogólne</entry>
+    <entry key="preference.tab.i18n">Lokalizacja</entry>
+    <entry key="preference.tab.XPilotOptions">Opcje programu klienckiego</entry>
+
+    <entry key="preferencesEditor.saveButton">Zapisz</entry>
+    <entry key="preferencesEditor.cancelButton">Anuluj</entry>
+
+    <entry key="metaInfoElementWindow.title">Informacje o serwerze:</entry>
+    <entry key="metaInfoElementWindow.button.close">Zamknij</entry>
+    <entry key="metaInfoElementWindow.info.hostname">Serwer</entry>
+    <entry key="metaInfoElementWindow.info.ipPort">IP:Port</entry>
+    <entry key="metaInfoElementWindow.info.version">Wersja</entry>
+    <entry key="metaInfoElementWindow.info.numberOfUsers">Gracze</entry>
+    <entry key="metaInfoElementWindow.info.mapName">Nazwa mapy</entry>
+    <entry key="metaInfoElementWindow.info.mapSize">Rozmiar mapy</entry>
+    <entry key="metaInfoElementWindow.info.mapAuthor">Autor mapy</entry>
+    <entry key="metaInfoElementWindow.info.serverStatus">Status serwera</entry>
+    <entry key="metaInfoElementWindow.info.numberOfHomeBases">Liczba baz</entry>
+    <entry key="metaInfoElementWindow.info.numberOfTeamBases">Liczba baz/drużynę</entry>
+    <entry key="metaInfoElementWindow.info.numberOfFreeHomeBases">Liczba wolnych baz</entry>
+    <entry key="metaInfoElementWindow.info.numberOfQueuedPlayers">Liczba oczekujących</entry>
+    <entry key="metaInfoElementWindow.info.framesPerSecond">FPS</entry>
+    <entry key="metaInfoElementWindow.info.sound">Dźwięk</entry>
+    <entry key="metaInfoElementWindow.info.timing">Opóźnienie</entry>
+    <entry key="metaInfoElementWindow.info.serverUptime">Czas pracy serwera</entry>
+    <entry key="metaInfoElementWindow.playerList">Lista graczy</entry>
+    <entry key="metaInfoElementWindow.playerName">Nazwa gracza</entry>
+    <entry key="metaInfoElementWindow.playerHost">Pole "Host"</entry>
+    <entry key="metaInfoElementWindow.noPlayers.part1">Brak</entry>
+    <entry key="metaInfoElementWindow.noPlayers.part2">graczy</entry>
+
+</properties>

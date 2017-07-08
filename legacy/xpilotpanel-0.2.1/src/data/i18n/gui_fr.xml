@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
+
+<properties version="1.0">
+    <entry key="mainWindow.menu.file">Fichier</entry>
+    <entry key="mainWindow.menu.connect">Connecter</entry>
+    <entry key="mainWindow.menu.about">A propos de</entry>
+    <entry key="mainWindow.menu.exit">Quitter</entry>
+    <entry key="mainWindow.menu.preferences">Preferences</entry>
+    <entry key="mainWindow.buttons.connect">Connecter</entry>
+    <entry key="mainWindow.buttons.more">Plus</entry>
+    <entry key="mainWindow.textArea.update_in_progress">Mise a jour cours.</entry>
+    <entry key="mainWindow.textArea.pl/sr/mp">Joueurs/Serveur/Carte</entry>
+    <entry key="mainWindow.textArea.temporaryNote.part1">Il n'est pas encore possible</entry>
+    <entry key="mainWindow.textArea.temporaryNote.part2">de demarrer xpilot depuis ici.</entry>
+    <entry key="mainWindow.textArea.temporaryNote.part3">Utilisez le boutton "Plus".!!!</entry>
+
+    <entry key="connectWindow.title">Connect</entry>
+    <entry key="connectWindow.internetServers.collumnNames.1">Nom du serveur:porte</entry>
+    <entry key="connectWindow.internetServers.collumnNames.2">Nom de la carte/version</entry>
+    <entry key="connectWindow.internetServers.collumnNames.3">Nombre de joueurs/bases/bases libres</entry>
+    <entry key="connectWindow.internetServers.tabName">Serveurs Internet</entry>
+    <entry key="connectWindow.localServers.tabName">Serveurs Locaux</entry>
+    <entry key="connectWindow.label.server/port">Serveur/porte</entry>
+    <entry key="connectWindow.button.connect">Connecter</entry>
+    <entry key="connectWindow.button.refresh">Mise a jour</entry>
+    <entry key="connectWindow.button.serverInfo">Infos Serveur</entry>
+    <entry key="connectWindow.button.close">Fermer</entry>
+
+    <entry key="preference.language">Language</entry>
+    <entry key="preference.pathToXPilotExecutable">Chemin vers l'exécutable client XPilot</entry>
+    <entry key="preference.otherOptionsForXPilot">Options pour le client XPilot</entry>
+    <entry key="preference.useAnotherLanguage">Autre langue (il faudra redemarrer)</entry> 
+    <entry key="preference.XPilotName">Nom(nick)</entry>
+    <entry key="preference.XPilotUser">Utilisateur</entry>
+    <entry key="preference.XPilotHost">Nom de la machine</entry>
+    <entry key="preference.tab.general">Géneral</entry>
+    <entry key="preference.tab.i18n">I18N</entry>
+    <entry key="preference.tab.XPilotOptions">Options pour le client XPilot</entry>
+
+    <entry key="preferencesEditor.saveButton">Sauvegarde</entry>
+    <entry key="preferencesEditor.cancelButton">Annuler</entry>
+
+    <entry key="metaInfoElementWindow.title">Information Serveur</entry>
+    <entry key="metaInfoElementWindow.button.close">Fermer</entry>
+    <entry key="metaInfoElementWindow.info.hostname">Serveur</entry>
+    <entry key="metaInfoElementWindow.info.ipPort">IP:porte</entry>
+    <entry key="metaInfoElementWindow.info.version">Version</entry>
+    <entry key="metaInfoElementWindow.info.numberOfUsers">Joueurs</entry>
+    <entry key="metaInfoElementWindow.info.mapName">Nom de la carte</entry>
+    <entry key="metaInfoElementWindow.info.mapSize">Taille de la carte</entry>
+    <entry key="metaInfoElementWindow.info.mapAuthor">Auteur de la carte</entry>
+    <entry key="metaInfoElementWindow.info.serverStatus">Etat</entry>
+    <entry key="metaInfoElementWindow.info.numberOfHomeBases">Bases</entry>
+    <entry key="metaInfoElementWindow.info.numberOfTeamBases">Bases par equipe</entry>
+    <entry key="metaInfoElementWindow.info.numberOfFreeHomeBases">Bases libres</entry>
+    <entry key="metaInfoElementWindow.info.numberOfQueuedPlayers">Joueurs en attente</entry>
+    <entry key="metaInfoElementWindow.info.framesPerSecond">FPS</entry>
+    <entry key="metaInfoElementWindow.info.sound">Son</entry>
+    <entry key="metaInfoElementWindow.info.timing">Timing</entry>
+    <entry key="metaInfoElementWindow.info.serverUptime">Uptime Serveur</entry>
+    <entry key="metaInfoElementWindow.playerList">Liste des joueurs</entry>
+    <entry key="metaInfoElementWindow.playerName">Nom du joueur</entry>
+    <entry key="metaInfoElementWindow.playerHost">Machine du joueur</entry>
+    <entry key="metaInfoElementWindow.noPlayers.part1">No</entry>
+    <entry key="metaInfoElementWindow.noPlayers.part2">joueurs</entry>
+</properties>

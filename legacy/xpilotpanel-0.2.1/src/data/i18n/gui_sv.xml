@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
+
+<properties version="1.0">
+    <entry key="mainWindow.menu.file">Arkiv</entry>
+    <entry key="mainWindow.menu.connect">Anslut</entry>
+    <entry key="mainWindow.menu.about">Om</entry>
+    <entry key="mainWindow.menu.exit">Avsluta</entry>
+    <entry key="mainWindow.menu.preferences">Inställningar</entry>
+    <entry key="mainWindow.buttons.connect">Anslut</entry>
+    <entry key="mainWindow.buttons.more">Mer</entry>
+    <entry key="mainWindow.textArea.update_in_progress">Updatering pågår.</entry>
+    <entry key="mainWindow.textArea.pl/sr/mp">Players/Server/Map</entry>
+    <entry key="mainWindow.textArea.temporaryNote.part1">Det är fortfarande inte möjligt</entry>
+    <entry key="mainWindow.textArea.temporaryNote.part2">att starta en Xpilot klient härifrån</entry>
+    <entry key="mainWindow.textArea.temporaryNote.part3">Använd "Mer" knappen istället!!!</entry>
+
+    <entry key="connectWindow.title">Anslut</entry>
+    <entry key="connectWindow.internetServers.collumnNames.1">Värdnamn:port</entry>
+    <entry key="connectWindow.internetServers.collumnNames.2">Map namn/version</entry>
+    <entry key="connectWindow.internetServers.collumnNames.3">Antal spelare/baser/fria baser</entry>
+    <entry key="connectWindow.internetServers.tabName">Internet servrar</entry>
+    <entry key="connectWindow.localServers.tabName">Lokala servrar</entry>
+    <entry key="connectWindow.label.server/port">Server/port</entry>
+    <entry key="connectWindow.button.connect">Anslut</entry>
+    <entry key="connectWindow.button.refresh">Uppdatera</entry>
+
+    <entry key="preference.language">Språk</entry>
+    <entry key="preference.pathToXPilotExecutable">Sökväg till XPilot-klientprogrammet</entry>
+    <entry key="preference.otherOptionsForXPilot">Inställningar för XPilotklienten</entry>
+    <entry key="preference.useAnotherLanguage">Använd annat språk (kräver omstart)</entry>
+    <entry key="preference.XPilotName">Namn(smeknamn)</entry>
+    <entry key="preference.XPilotUser">Användare</entry>
+    <entry key="preference.XPilotHost">Värd</entry>
+    <entry key="preference.tab.general">Allmänt</entry>
+    <entry key="preference.tab.i18n">I18N</entry>
+    <entry key="preference.tab.XPilotOptions">XPilotklient inställningar</entry>
+</properties>

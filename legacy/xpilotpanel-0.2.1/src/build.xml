@@ -1,0 +1,78 @@
+<?xml version="1.0"?>
+
+<!-- $Id: build.xml,v 1.7 2008/08/14 16:05:22 taraskostiak Exp $ -->
+
+<project name="XPilotPanel" default="jar">
+
+	<property name="basedir" value="." />
+	<property name="src.dir" value="${basedir}/src" />
+
+	<property name="distr.dir" value="${basedir}/distr" />
+	<property name="data.dir" value="${basedir}/data" />
+	<property name="release.dir" value="${basedir}/release" />
+
+	<property name="jar.file" value="${basedir}/xpilotpanel.jar" />
+	<property name="jar-lib.file" value="${basedir}/xpilotpanel-lib.jar" />
+
+	<target name="init">
+		<tstamp />
+		<mkdir dir="${distr.dir}" />
+	</target>
+
+	<target name="compile" depends="init">
+		<javac srcdir="${src.dir}" destdir="${distr.dir}" debug="on" optimize="on" />
+	</target>
+
+	<target name="copy-data" depends="init">
+		<copy todir="${distr.dir}/data">
+			<fileset dir="${data.dir}">
+			</fileset>
+		</copy>
+	</target>
+
+	<target name="jar" depends="compile, copy-data">
+		<jar destfile="${jar.file}">
+			<fileset dir="${distr.dir}">
+			</fileset>
+			<manifest>
+				<attribute name="Main-Class" value="net.sf.xpilotpanel.XPilotPanel" />
+			</manifest>
+		</jar>
+	</target>
+
+	<target name="jar-lib" depends="compile, copy-data">
+		<jar destfile="${jar-lib.file}">
+			<fileset dir="${distr.dir}">
+			</fileset>
+		</jar>
+	</target>
+
+	<target name="clean">
+		<delete quiet="true" dir="${distr.dir}" />
+		<delete quiet="true" file="${jar.file}" />
+		<delete quiet="true" file="${jar-lib.file}" />
+		<delete quiet="true" dir="${release.dir}" />
+	</target>
+
+	<target name="release" depends="jar">
+		<mkdir dir="${release.dir}" />
+
+		<copy todir="${release.dir}" file="${jar.file}" />
+		<copy todir="${release.dir}" file="COPYING" />
+		<copy todir="${release.dir}" file="PEOPLE" />
+		<copy todir="${release.dir}" file="README" />
+		<copy todir="${release.dir}" file="xpilotpanel.sh" />
+		<copy todir="${release.dir}" file="xpilotpanel.bat" />
+
+		<copy todir="${release.dir}/src/src">
+			<fileset dir="${src.dir}">
+			</fileset>
+		</copy>
+		<copy todir="${release.dir}/src/data">
+			<fileset dir="${data.dir}">
+			</fileset>
+		</copy>
+		<copy todir="${release.dir}/src" file="build.xml" />
+	</target>
+
+</project>
