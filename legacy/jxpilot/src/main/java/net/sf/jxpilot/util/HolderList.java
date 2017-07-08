@@ -96,11 +96,11 @@ public class HolderList<E extends Holder<? super E>> extends AbstractList<E> imp
 		return temp;
 	}
 	
-	@Override
-	public boolean add(E element) {
-		this.add((Holder<? super E>)element);
-		return true;
-	}
+//	@Override
+//	public boolean add(E element) {
+//		this.add((Holder<? super E>)element);
+//		return true;
+//	}
 
 	/**
 	 * Efficient bulk add operation for random access lists.

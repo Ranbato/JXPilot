@@ -4,4 +4,5 @@ include 'client'
 include 'server'
 include 'mapedit'
 include 'replay'
+include 'legacy/jxpilot'
 
