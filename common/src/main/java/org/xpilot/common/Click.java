@@ -32,7 +32,7 @@ import java.awt.*;
 
 import static org.xpilot.common.Const.BLOCK_SZ;
 
-public class Click{
+public class Click/* extends Point*/{
 
 /*
  * The wall collision detection routines depend on repeatability
@@ -52,7 +52,16 @@ static final int CLICK_SHIFT	=	6;
 static final int CLICK		=	(1 << CLICK_SHIFT);
     static final int PIXEL_CLICKS	=	CLICK;
     static final int BLOCK_CLICKS	=	(BLOCK_SZ << CLICK_SHIFT);
-public int CLICK_TO_PIXEL(int C)	{return (int)((C) >> CLICK_SHIFT);}
+
+    public Click(Point pos) {
+        this.cx = pos.x;
+        this.cy = pos.y;
+    }
+
+    public Click() {
+    }
+
+    public int CLICK_TO_PIXEL(int C)	{return (int)((C) >> CLICK_SHIFT);}
 static int CLICK_TO_BLOCK(int C)	{return (int)((C) / (BLOCK_SZ << CLICK_SHIFT));}
     public float CLICK_TO_FLOAT(int C)	{return (float)(C) * (1.0f / CLICK);}
     public int PIXEL_TO_CLICK(int I)	{return (I) << CLICK_SHIFT;}

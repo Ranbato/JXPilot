@@ -5,8 +5,11 @@ import org.slf4j.LoggerFactory;
 
 import java.awt.*;
 import java.awt.geom.Point2D;
+import java.util.*;
 
+import static org.xpilot.common.Const.MSG_LEN;
 import static org.xpilot.common.Const.RES;
+import static org.xpilot.common.Shape.*;
 import static org.xpilot.common.XPMath.tcos;
 import static org.xpilot.common.XPMath.tsin;
 
@@ -34,33 +37,36 @@ import static org.xpilot.common.XPMath.tsin;
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-public class ShipShape extends Shape{
+public class ShipShape {
 
 
  static final Logger logger = LoggerFactory.getLogger(ShipShape.class);
 
-    Click 	engine[] = new Click[RES];		/* Engine position */
-    Click 	m_gun[] = new Click[RES];		/* Main gun position */
-    int		num_l_gun,
-		num_r_gun,
-		num_l_rgun,
-		num_r_rgun;		/* number of additional cannons */
-    Click 	l_gun[][] = new Click[MAX_GUN_PTS][RES],	/* Additional cannon positions, left*/
-		r_gun[][] = new Click[MAX_GUN_PTS][RES],	/* Additional cannon positions, right*/
-		l_rgun[][] = new Click[MAX_GUN_PTS][RES],	/* Additional rear cannon positions, left*/
-		r_rgun[][] = new Click[MAX_GUN_PTS][RES];	/* Additional rear cannon positions, right*/
-    int		num_l_light,		/* Number of lights */
-		num_r_light;
-    Click 	l_light[][] = new Click[MAX_LIGHT_PTS][RES], /* Left and right light positions */
-		r_light[][] = new Click[MAX_LIGHT_PTS][RES];
-    int		num_m_rack;		/* Number of missile racks */
-    Click 	m_rack[][] = new Click[MAX_RACK_PTS][RES];
-    int		shield_radius;		/* Radius of shield used by client. */
+ private SShape[] shipShapes = new SShape[RES];
 
-    String 	name;
-    String 	author;
+    ArrayList <Click> cashed_pts = new ArrayList(MAX_SHIP_PTS2);
+    int		cashed_dir;
+    String name;
+    String author;
+
+ static class SShape extends Shape {
+
+	 Click engine = new Click();		/* Engine position */
+	 Click m_gun = new Click();		/* Main gun position */
+
+	 ArrayList<Click> l_gun = new ArrayList<>(),	/* Additional cannon positions, left*/
+			 r_gun = new ArrayList<>(),	/* Additional cannon positions, right*/
+			 l_rgun = new ArrayList<>(),	/* Additional rear cannon positions, left*/
+			 r_rgun = new ArrayList<>();	/* Additional rear cannon positions, right*/
+
+	 ArrayList<Click> l_light = new ArrayList<>(), /* Left and right light positions */
+			 r_light = new ArrayList<>();
+	 ArrayList<Click> m_rack = new ArrayList<>();
+	 int shield_radius;		/* Radius of shield used by client. */
 
 
+
+ }
 
 
 static  Click  ipos2clpos(Point pos)
@@ -82,107 +88,107 @@ static Point2D clpos2position(Click  pt)
 
 
 
-static  Click
-Ship_get_point_clpos(ShipShape ship, int i, int dir)
+public   Click
+Ship_get_point_clpos(int i, int dir)
 {
-    return ship.pts[i][dir];
+    return shipShapes[dir].pts.get(i);
 }
-static  Click
-Ship_get_engine_clpos(ShipShape ship, int dir)
+  Click
+Ship_get_engine_clpos(int dir)
 {
-    return ship.engine[dir];
+    return shipShapes[dir].engine;
 }
-static  Click
-Ship_get_m_gun_clpos(ShipShape ship, int dir)
+  Click
+Ship_get_m_gun_clpos(int dir)
 {
-    return ship.m_gun[dir];
+    return shipShapes[dir].m_gun;
 }
-static  Click
-Ship_get_l_gun_clpos(ShipShape ship, int gun, int dir)
+  Click
+Ship_get_l_gun_clpos(int gun, int dir)
 {
-    return ship.l_gun[gun][dir];
+    return shipShapes[dir].l_gun.get(gun);
 }
-static  Click
-Ship_get_r_gun_clpos(ShipShape ship, int gun, int dir)
+  Click
+Ship_get_r_gun_clpos(int gun, int dir)
 {
-    return ship.r_gun[gun][dir];
+    return shipShapes[dir].r_gun.get(gun);
 }
-static  Click
-Ship_get_l_rgun_clpos(ShipShape ship, int gun, int dir)
+  Click
+Ship_get_l_rgun_clpos( int gun, int dir)
 {
-    return ship.l_rgun[gun][dir];
+    return shipShapes[dir].r_rgun.get(gun);
 }
-static  Click
-Ship_get_r_rgun_clpos(ShipShape ship, int gun, int dir)
+  Click
+Ship_get_r_rgun_clpos( int gun, int dir)
 {
-    return ship.r_rgun[gun][dir];
+    return shipShapes[dir].r_rgun.get(gun);
 }
-static  Click
-Ship_get_l_light_clpos(ShipShape ship, int l, int dir)
+  Click
+Ship_get_l_light_clpos( int l, int dir)
 {
-    return ship.l_light[l][dir];
+    return shipShapes[dir].l_light.get(l);
 }
-static  Click
-Ship_get_r_light_clpos(ShipShape ship, int l, int dir)
+  Click
+Ship_get_r_light_clpos( int l, int dir)
 {
-    return ship.r_light[l][dir];
+    return shipShapes[dir].r_light.get(l);
 }
-static  Click
-Ship_get_m_rack_clpos(ShipShape ship, int rack, int dir)
+  Click
+Ship_get_m_rack_clpos( int rack, int dir)
 {
-    return ship.m_rack[rack][dir];
+    return shipShapes[dir].m_rack.get(rack);
 }
 
 
-static  Point2D
-Ship_get_point_position(ShipShape ship, int i, int dir)
+  Point2D
+Ship_get_point_position( int i, int dir)
 {
-    return clpos2position(Ship_get_point_clpos(ship, i, dir));
+    return clpos2position(Ship_get_point_clpos( i, dir));
 }
-static  Point2D
-Ship_get_engine_position(ShipShape ship, int dir)
+  Point2D
+Ship_get_engine_position(  int dir)
 {
-    return clpos2position(Ship_get_engine_clpos(ship, dir));
+    return clpos2position(Ship_get_engine_clpos( dir));
 }
-static  Point2D
-Ship_get_m_gun_position(ShipShape ship, int dir)
+  Point2D
+Ship_get_m_gun_position(int dir)
 {
-    return clpos2position(Ship_get_m_gun_clpos(ship, dir));
+    return clpos2position(Ship_get_m_gun_clpos(dir));
 }
-static  Point2D
-Ship_get_l_gun_position(ShipShape ship, int gun, int dir)
+  Point2D
+Ship_get_l_gun_position( int gun, int dir)
 {
-    return clpos2position(Ship_get_l_gun_clpos(ship, gun, dir));
+    return clpos2position(Ship_get_l_gun_clpos( gun, dir));
 }
-static  Point2D
-Ship_get_r_gun_position(ShipShape ship, int gun, int dir)
+  Point2D
+Ship_get_r_gun_position( int gun, int dir)
 {
-    return clpos2position(Ship_get_r_gun_clpos(ship, gun, dir));
+    return clpos2position(Ship_get_r_gun_clpos( gun, dir));
 }
-static  Point2D
-Ship_get_l_rgun_position(ShipShape ship, int gun, int dir)
+  Point2D
+Ship_get_l_rgun_position( int gun, int dir)
 {
-    return clpos2position(Ship_get_l_rgun_clpos(ship, gun, dir));
+    return clpos2position(Ship_get_l_rgun_clpos( gun, dir));
 }
-static  Point2D
-Ship_get_r_rgun_position(ShipShape ship, int gun, int dir)
+  Point2D
+Ship_get_r_rgun_position( int gun, int dir)
 {
-    return clpos2position(Ship_get_r_rgun_clpos(ship, gun, dir));
+    return clpos2position(Ship_get_r_rgun_clpos( gun, dir));
 }
-static  Point2D
-Ship_get_l_light_position(ShipShape ship, int l, int dir)
+  Point2D
+Ship_get_l_light_position(  int l, int dir)
 {
-    return clpos2position(Ship_get_l_light_clpos(ship, l, dir));
+    return clpos2position(Ship_get_l_light_clpos( l, dir));
 }
-static  Point2D
-Ship_get_r_light_position(ShipShape ship, int l, int dir)
+  Point2D
+Ship_get_r_light_position(int l, int dir)
 {
-    return clpos2position(Ship_get_r_light_clpos(ship, l, dir));
+    return clpos2position(Ship_get_r_light_clpos(l, dir));
 }
-static  Point2D
-Ship_get_m_rack_position(ShipShape ship, int rack, int dir)
+  Point2D
+Ship_get_m_rack_position( int rack, int dir)
 {
-    return clpos2position(Ship_get_m_rack_clpos(ship, rack, dir));
+    return clpos2position(Ship_get_m_rack_clpos( rack, dir));
 }
 
 boolean 	debugShapeParsing = false;
@@ -190,80 +196,80 @@ boolean 	verboseShapeParsing = false;
 boolean 	shapeLimits = true;
 //extern boolean is_server;
 
-static void Ship_set_point_ipos(ShipShape ship, int i, Point  pos)
+ void Ship_set_point_ipos( int i, Point  pos)
 {
-    ship.pts[i][0] = ipos2clpos(pos);
+    shipShapes[0].pts.set(i,ipos2clpos(pos));
 }
 
-static void Ship_set_engine_ipos(ShipShape ship, Point  pos)
+ void Ship_set_engine_ipos( Point  pos)
 {
-    ship.engine[0] = ipos2clpos(pos);
+    shipShapes[0].engine = ipos2clpos(pos);
 }
 
-static void Ship_set_m_gun_ipos(ShipShape ship, Point  pos)
+ void Ship_set_m_gun_ipos( Point  pos)
 {
-    ship.m_gun[0] = ipos2clpos(pos);
+    shipShapes[0].m_gun = ipos2clpos(pos);
 }
 
-static void Ship_set_l_gun_ipos(ShipShape ship, int i, Point  pos)
+ void Ship_set_l_gun_ipos( int i, Point  pos)
 {
-    ship.l_gun[i][0] = ipos2clpos(pos);
+    shipShapes[0].l_gun.set(i, ipos2clpos(pos));
 }
 
-static void Ship_set_r_gun_ipos(ShipShape ship, int i, Point  pos)
+ void Ship_set_r_gun_ipos( int i, Point  pos)
 {
-    ship.r_gun[i][0] = ipos2clpos(pos);
+    shipShapes[0].r_gun.set(i,ipos2clpos(pos));
 }
 
-static void Ship_set_l_rgun_ipos(ShipShape ship, int i, Point  pos)
+ void Ship_set_l_rgun_ipos( int i, Point  pos)
 {
-    ship.l_rgun[i][0] = ipos2clpos(pos);
+    shipShapes[0].l_rgun.set(i,ipos2clpos(pos));
 }
 
-static void Ship_set_r_rgun_ipos(ShipShape ship, int i, Point  pos)
+ void Ship_set_r_rgun_ipos( int i, Point  pos)
 {
-    ship.r_rgun[i][0] = ipos2clpos(pos);
+    shipShapes[0].r_rgun.set(i, ipos2clpos(pos));
 }
 
-static void Ship_set_l_light_ipos(ShipShape ship, int i, Point  pos)
+ void Ship_set_l_light_ipos( int i, Point  pos)
 {
-    ship.l_light[i][0] = ipos2clpos(pos);
+    shipShapes[0].l_light.set(i, ipos2clpos(pos));
 }
 
-static void Ship_set_r_light_ipos(ShipShape ship, int i, Point  pos)
+ void Ship_set_r_light_ipos( int i, Point  pos)
 {
-    ship.r_light[i][0] = ipos2clpos(pos);
+    shipShapes[0].r_light.set(i,ipos2clpos(pos));
 }
 
-static void Ship_set_m_rack_ipos(ShipShape ship, int i, Point  pos)
+ void Ship_set_m_rack_ipos( int i, Point  pos)
 {
-    ship.m_rack[i][0] = ipos2clpos(pos);
+    shipShapes[0].m_rack.set(i, ipos2clpos(pos));
 }
 
 
 /* kps - tmp hack */
-Click[]  Shape_get_points(Shape  s, int dir)
+ArrayList<Click>  Shape_get_points( int dir)
 {
-    int i;
+ 
 
-    /* kps - optimize if cashed_dir == dir */
-    for (i = 0; i < s.num_points; i++)
-	s.cashed_pts[i] = s.pts[i][dir];
+    /* todo kps - optimize if cashed_dir == dir */
+    cashed_pts = (ArrayList<Click>) shipShapes[dir].pts.clone();
 
-    return s.cashed_pts;
+    return cashed_pts;
 }
 
-void Rotate_point(Click  pt[])
+Click Rotate_point(Click  pt,int  dir)
 {
-    int i;
     double cx, cy;
+    Click ret = new Click();
 
-    for (i = 1; i < RES; i++) {
-	cx = tcos(i) * pt[0].cx - tsin(i) * pt[0].cy;
-	cy = tsin(i) * pt[0].cx + tcos(i) * pt[0].cy;
-	pt[i].cx = (int) (cx >= 0.0 ? cx + 0.5 : cx - 0.5);
-	pt[i].cy = (int) (cy >= 0.0 ? cy + 0.5 : cy - 0.5);
-    }
+	cx = tcos(dir) * pt.cx - tsin(dir) * pt.cy;
+	cy = tsin(dir) * pt.cx + tcos(dir) * pt.cy;
+	ret.cx = (int) (cx >= 0.0 ? cx + 0.5 : cx - 0.5);
+	ret.cy = (int) (cy >= 0.0 ? cy + 0.5 : cy - 0.5);
+	
+	return ret;
+
 }
 
 void Rotate_position(Point2D pt[])
@@ -276,275 +282,263 @@ void Rotate_position(Point2D pt[])
     }
 }
 
-void Rotate_ship(ShipShape ship)
+void Rotate_ship()
 {
     int i;
 
-    for (i = 0; i < ship.num_points; i++)
-	Rotate_point(ship.pts[i]);
-    
-    Rotate_point(ship.engine);
-    Rotate_point(ship.m_gun);
-    for (i = 0; i < ship.num_l_gun; i++)
-	Rotate_point(ship.l_gun[i]);
-    for (i = 0; i < ship.num_r_gun; i++)
-	Rotate_point(ship.r_gun[i]);
-    for (i = 0; i < ship.num_l_rgun; i++)
-	Rotate_point(ship.l_rgun[i]);
-    for (i = 0; i < ship.num_r_rgun; i++)
-	Rotate_point(ship.r_rgun[i]);
-    for (i = 0; i < ship.num_l_light; i++)
-	Rotate_point(ship.l_light[i]);
-    for (i = 0; i < ship.num_r_light; i++)
-	Rotate_point(ship.r_light[i]);
-    for (i = 0; i < ship.num_m_rack; i++)
-	Rotate_point(ship.m_rack[i]);
+    SShape original = shipShapes[0];
+    for(int dir = 1;dir < RES;dir++) {
+        for (i = 0; i < original.num_points; i++)
+            shipShapes[dir].pts.set(i, Rotate_point(original.pts.get(i),dir));
+
+        shipShapes[dir].engine = Rotate_point(original.engine,dir);
+        shipShapes[dir].m_gun = Rotate_point(original.m_gun,dir);
+        for (i = 0; i < original.l_gun.size(); i++)
+            shipShapes[dir].l_gun.set(i,Rotate_point(original.l_gun.get(i),dir));
+        for (i = 0; i < original.r_gun.size(); i++)
+            shipShapes[dir].r_gun.set(i,Rotate_point(original.r_gun.get(i),dir));
+        for (i = 0; i < original.l_rgun.size(); i++)
+            shipShapes[dir].l_rgun.set(i,Rotate_point(original.l_rgun.get(i),dir));
+        for (i = 0; i < original.r_rgun.size(); i++)
+            shipShapes[dir].r_rgun.set(i,Rotate_point(original.r_rgun.get(i),dir));
+        for (i = 0; i < original.l_light.size(); i++)
+            shipShapes[dir].l_light.set(i,Rotate_point(original.l_light.get(i),dir));
+        for (i = 0; i < original.r_light.size(); i++)
+            shipShapes[dir].r_light.set(i,Rotate_point(original.r_light.get(i),dir));
+        for (i = 0; i < original.m_rack.size(); i++)
+            shipShapes[dir].m_rack.set(i,Rotate_point(original.m_rack.get(i),dir));
+    }
 }
 
 
 /*
- * Return a pointer to a default ship.
- * This function should always succeed,
- * therefore no malloc()ed memory is used.
+ * Default this ship
  */
-ShipShape Default_ship()
+void Default_ship()
 {
-     ShipShape 	sh;
-    static Click 	pts = new Click[6][RES];
+    SShape sh = shipShapes[0];
+     Click 	pt;
 
     if (sh.num_points == 0) {
-	Point  pos;
+	Point  pos = new Point();
 
 	sh.num_points = 3;
-
-	sh.pts[0] = &pts[0][0];
+    
 	pos.x = 14;
 	pos.y = 0;
-	Ship_set_point_ipos(&sh, 0, pos);
+	Ship_set_point_ipos( 0, pos);
 
-	sh.pts[1] = &pts[1][0];
 	pos.x = -8;
 	pos.y = 8;
-	Ship_set_point_ipos(&sh, 1, pos);
+	Ship_set_point_ipos( 1, pos);
 
-	sh.pts[2] = &pts[2][0];
 	pos.x = -8;
 	pos.y = -8;
-	Ship_set_point_ipos(&sh, 2, pos);
+	Ship_set_point_ipos( 2, pos);
 
 	pos.x = -8;
 	pos.y = 0;
-	Ship_set_engine_ipos(&sh, pos);
+	Ship_set_engine_ipos( pos);
 
 	pos.x = 14;
 	pos.y = 0;
-	Ship_set_m_gun_ipos(&sh, pos);
+	Ship_set_m_gun_ipos( pos);
 
-	sh.num_l_light = 1;
-	sh.l_light[0] = &pts[3][0];
 	pos.x = -8;
 	pos.y = 8;
-	Ship_set_l_light_ipos(&sh, 0, pos);
+	Ship_set_l_light_ipos( 0, pos);
 
-	sh.num_r_light = 1;
-	sh.r_light[0] = &pts[4][0];
 	pos.x = -8;
 	pos.y = -8;
-	Ship_set_r_light_ipos(&sh, 0, pos);
+	Ship_set_r_light_ipos( 0, pos);
 
-	sh.num_m_rack = 1;
-	sh.m_rack[0] = &pts[5][0];
 	pos.x = 14;
 	pos.y = 0;
-	Ship_set_m_rack_ipos(&sh, 0, pos);
+	Ship_set_m_rack_ipos( 0, pos);
 
-	sh.num_l_gun = sh.num_r_gun = sh.num_l_rgun = sh.num_r_rgun = 0;
+	sh.l_gun.clear();
+	sh.r_gun.clear();
+	sh.l_rgun.clear();
+	sh.r_rgun.clear();
 
-//	Make_table(); static init
-
-	Rotate_ship(&sh);
+	Rotate_ship();
     }
 
-    return &sh;
 }
 
-typedef struct {
+static class Grid {
     int todo, done;
-    unsigned char pt[32][32];
-    Point  chk[32*32];
-} grid_t;
-
-/*
- * Functions to simplify limit-checking for ship points.
- */
-static void Grid_reset(grid_t *grid_p)
-{
-    memset(grid_p, 0, sizeof(grid_t));
-}
-
-static void Grid_set_value(grid_t *grid_p, int x, int y, int value)
-{
-    assert(! (x < -15 || x > 15 || y < -15 || y > 15));
-    grid_p.pt[x + 15][y + 15] = value;
-}
-
-static int Grid_get_value(grid_t *grid_p, int x, int y)
-{
-    if (x < -15 || x > 15 || y < -15 || y > 15)
-	return 2;
-    return grid_p.pt[x + 15][y + 15];
-}
-
-static void Grid_add(grid_t *grid_p, int x, int y)
-{
-    Grid_set_value(grid_p, x, y, 2);
-    grid_p.chk[grid_p.todo].x = x + 15;
-    grid_p.chk[grid_p.todo].y = y + 15;
-    grid_p.todo++;
-}
-
-static Point  Grid_get(grid_t *grid_p)
-{
-    Point  pos;
-
-    pos.x = (int)grid_p.chk[grid_p.done].x - 15;
-    pos.y = (int)grid_p.chk[grid_p.done].y - 15;
-    grid_p.done++;
-
-    return pos;
-}
-
-static boolean Grid_is_ready(grid_t *grid_p)
-{
-    return (grid_p.done >= grid_p.todo) ? true : false;
-}
-
-static boolean Grid_point_is_outside_ship(grid_t *grid_p, Point  pt)
-{
-    int value = Grid_get_value(grid_p, pt.x, pt.y);
-
-    if (value == 2)
-	return true;
-    return false;
-}
+    byte pt[][] = new byte[32][32];
+    Point chk[][] = new Point[32][32];
 
 
-/*#define GRID_PRINT 1*/
-
-#ifdef GRID_PRINT
-static void Grid_print(grid_t *grid_p)
-{
-    int x, y;
-
-    printf("============================================================\n");
-
-    for (y = 0; y < 32; y++) {
-	for (x = 0; x < 32; x++)
-	    printf("%d", grid_p.pt[x][y]);
-	printf("\n");
+    /*
+     * Functions to simplify limit-checking for ship points.
+     */
+    void Grid_reset() {
+        todo = 0;
+        done = 0;
+        pt = new byte[32][32];
+        chk = new Point[32][32];
     }
 
-    printf("------------------------------------------------------------\n");
+    void Grid_set_value(int x, int y, byte value) {
+        assert (!(x < -15 || x > 15 || y < -15 || y > 15));
+        pt[x + 15][y + 15] = value;
+    }
 
-    {
-	Point  pt;
+    byte Grid_get_value(int x, int y) {
+        if (x < -15 || x > 15 || y < -15 || y > 15)
+            return 2;
+        return pt[x + 15][y + 15];
+    }
 
-	for (pt.y = -15; pt.y <= 15; pt.y++) {
-	    for (pt.x = -15; pt.x <= 15; pt.x++)
-		printf("%c",
-		       Grid_point_is_outside_ship(grid_p, pt) ? '.' : '*');
-	    printf("\n");
-	}
+    void Grid_add(int x, int y) {
+        Grid_set_value(x, y, (byte) 2);
+        chk[todo].x = x + 15;
+        chk[todo].y = y + 15;
+        todo++;
+    }
+
+    Point Grid_get() {
+        Point pos = new Point();
+
+        pos.x = (int) chk[done].x - 15;
+        pos.y = (int) chk[done].y - 15;
+        done++;
+
+        return pos;
+    }
+
+    boolean Grid_is_ready() {
+        return (done >= todo) ? true : false;
+    }
+
+    boolean Grid_point_is_outside_ship(Point pt) {
+        byte value = Grid_get_value(pt.x, pt.y);
+
+        if (value == 2)
+            return true;
+        return false;
     }
 
 
-    printf("\n");
-}
-#endif
+    void Grid_print() {
+        int x, y;
 
-static int shape2wire(String ship_shape_str, ShipShape ship)
+        logger.debug("============================================================");
+
+        for (y = 0; y < 32; y++) {
+            StringBuilder line = new StringBuilder(32);
+
+            for (x = 0; x < 32; x++)
+                line.append(pt[x][y]);
+            logger.debug(line.toString());
+        }
+
+        logger.debug("------------------------------------------------------------");
+
+        {
+            Point pt = new Point();
+
+            for (pt.y = -15; pt.y <= 15; pt.y++) {
+                StringBuilder line = new StringBuilder(32);
+
+                for (pt.x = -15; pt.x <= 15; pt.x++)
+                    line.append(Grid_point_is_outside_ship(pt) ? '.' : '*');
+                logger.debug(line.toString());
+            }
+        }
+
+
+        logger.debug("\n");
+    }
+}
+
+ int shape2wire(String ship_shape_str, ShipShape ship)
 {
-    grid_t grid;
+    Grid grid;
     int i, j, x, y, dx, dy, max, shape_version = 0;
-    Point  pt[MAX_SHIP_PTS2], in, old_in, engine, m_gun;
-    Point  l_light[MAX_LIGHT_PTS], r_light[MAX_LIGHT_PTS];
-    Point  l_gun[MAX_GUN_PTS], r_gun[MAX_GUN_PTS];
-    Point  l_rgun[MAX_GUN_PTS], r_rgun[MAX_GUN_PTS], m_rack[MAX_RACK_PTS];
+    ArrayList<Point> pt = new ArrayList<>();
+    Point in, old_in, engine, m_gun;
+    ArrayList<Point>  l_light= new ArrayList<>();
+    ArrayList<Point> r_light= new ArrayList<>();
+    ArrayList<Point>  l_gun= new ArrayList<>();
+    ArrayList<Point> r_gun= new ArrayList<>();
+    ArrayList<Point>  l_rgun= new ArrayList<>();
+    ArrayList<Point> r_rgun= new ArrayList<>();
+    ArrayList<Point> m_rack= new ArrayList<>();
     boolean mainGunSet = false, engineSet = false;
-    String str, *teststr;
-    char keyw[20], buf[MSG_LEN];
+     String teststr;
+    String keyw;
+    String buf;
     boolean remove_edge = false;
 
-    memset(ship, 0, sizeof(ShipShape ));
+
 
     if (debugShapeParsing)
-	warn("parsing shape: %s", ship_shape_str);
+	logger.warn("parsing shape: {}", ship_shape_str);
 
-    for (str = ship_shape_str; (str = strchr(str, '(' )) != null; ) {
+    String [] sections = ship_shape_str.split("[()]");
+    for (String section:sections) {
 
-	str++;
+
+        section = section.trim();
 
 	if (shape_version == 0) {
-	    if (isdigit(*str)) {
+	    if (Character.isDigit(section.charAt(0))) {
 		if (verboseShapeParsing)
 		   logger.warn("Ship shape is in obsolete 3.1 format.");
 		return -1;
 	    } else
 		shape_version = 0x3200;
 	}
+    String [] types = section.split(":");
 
-	for (i = 0; (keyw[i] = str[i]) != '\0'; i++) {
-	    if (i == sizeof(keyw) - 1) {
-		keyw[i] = '\0';
-		break;
-	    }
-	    if (keyw[i] == ':') {
-		keyw[i + 1] = '\0';
-		break;
-	    }
-	}
-	if (str[i] != ':') {
-	    if (verboseShapeParsing)
-		warn("Missing colon in ship shape: %s", keyw);
-	    continue;
-	}
-	for (teststr = &buf[++i]; (buf[i] = str[i]) != '\0'; i++) {
-	    if (buf[i] == ')' ) {
-		buf[i++] = '\0';
-		break;
-	    }
-	}
-	str += i;
+        keyw = types[0].trim();
 
-	switch (Get_shape_keyword(keyw)) {
+        if(types.length != 2){
+        if (verboseShapeParsing)
+            logger.warn("Missing colon in ship shape: {}", keyw);
+        continue;
+    }
 
-	case 0:		/* Keyword is 'shape' */
-	    while (teststr) {
-		while (*teststr == ' ')
-		    teststr++;
-		if (sscanf(teststr, "%d,%d", &in.x, &in.y) != 2) {
+        String points[] = types[1].split("\\w+");
+
+        switch (SSKeys.lookup(keyw)) {
+
+        case SHAPE:
+            for (String point:points ) {
+
+
+            int [] coords = Arrays.stream(point.split(",")).map(String::trim).mapToInt(Integer::parseInt).toArray();
+            if(coords.length != 2)
+             {
 		    if (verboseShapeParsing)
-			warn("Missing ship shape coordinate in: \"%s\"",
-			     teststr);
+			logger.warn("Missing ship shape coordinate in: \"{}\"",
+			     point);
 		    break;
 		}
-		if (ship.num_points >= MAX_SHIP_PTS) {
+		else{
+                in = new Point(coords[0],coords[1]);
+            }
+		if (pt.size() >= MAX_SHIP_PTS) {
 		    if (verboseShapeParsing)
-			warn("Too many ship shape coordinates");
+			logger.warn("Too many ship shape coordinates");
 		} else {
-		    if (ship.num_points > 0
+		    if (pt.size() > 0
 			&& old_in.x == in.x
 			&& old_in.y == in.y) {
 			remove_edge = true;
 			if (verboseShapeParsing)
-			   logger.warn("Duplicate ship point at %d,%d, ignoring it.",
+			   logger.warn("Duplicate ship point at {},{}, ignoring it.",
 				 in.x, in.y);
 		    }
 		    else {
-			pt[ship.num_points++] = in;
+			pt.add(in);
 			old_in = in;
 			if (debugShapeParsing)
-			   logger.warn("ship point at %d,%d", in.x, in.y);
+			   logger.warn("ship point at {},{}", in.x, in.y);
 		    }
 		}
 		teststr = strchr(teststr, ' ');
@@ -560,7 +554,7 @@ static int shape2wire(String ship_shape_str, ShipShape ship)
 	    }
 
 	    if (remove_edge && verboseShapeParsing)
-		warn("Removing ship edges with length 0.");
+		logger.warn("Removing ship edges with length 0.");
 	    
 	    break;
 
@@ -587,17 +581,17 @@ static int shape2wire(String ship_shape_str, ShipShape ship)
 		while (*teststr == ' ') teststr++;
 		if (sscanf(teststr, "%d,%d", &in.x, &in.y) != 2) {
 		    if (verboseShapeParsing)
-			warn("Missing left gun coordinate in: \"%s\"",
+			logger.warn("Missing left gun coordinate in: \"%s\"",
 			     teststr);
 		    break;
 		}
 		if (ship.num_l_gun >= MAX_GUN_PTS) {
 		    if (verboseShapeParsing)
-			warn("Too many left gun coordinates");
+			logger.warn("Too many left gun coordinates");
 		} else {
 		    l_gun[ship.num_l_gun++] = in;
 		    if (debugShapeParsing)
-			warn("left gun at %d,%d", in.x, in.y);
+			logger.warn("left gun at %d,%d", in.x, in.y);
 		}
 		teststr = strchr(teststr, ' ');
 	    }
@@ -608,17 +602,17 @@ static int shape2wire(String ship_shape_str, ShipShape ship)
 		while (*teststr == ' ') teststr++;
 		if (sscanf(teststr, "%d,%d", &in.x, &in.y) != 2) {
 		    if (verboseShapeParsing)
-			warn("Missing right gun coordinate in: \"%s\"",
+			logger.warn("Missing right gun coordinate in: \"%s\"",
 			     teststr);
 		    break;
 		}
 		if (ship.num_r_gun >= MAX_GUN_PTS) {
 		    if (verboseShapeParsing)
-			warn("Too many right gun coordinates");
+			logger.warn("Too many right gun coordinates");
 		} else {
 		    r_gun[ship.num_r_gun++] = in;
 		    if (debugShapeParsing)
-			warn("right gun at %d,%d", in.x, in.y);
+			logger.warn("right gun at %d,%d", in.x, in.y);
 		}
 		teststr = strchr(teststr, ' ');
 	    }
@@ -629,17 +623,17 @@ static int shape2wire(String ship_shape_str, ShipShape ship)
 		while (*teststr == ' ') teststr++;
 		if (sscanf(teststr, "%d,%d", &in.x, &in.y) != 2) {
 		    if (verboseShapeParsing)
-			warn("Missing left light coordinate in: \"%s\"",
+			logger.warn("Missing left light coordinate in: \"%s\"",
 			     teststr);
 		    break;
 		}
 		if (ship.num_l_light >= MAX_LIGHT_PTS) {
 		    if (verboseShapeParsing)
-			warn("Too many left light coordinates");
+			logger.warn("Too many left light coordinates");
 		} else {
 		    l_light[ship.num_l_light++] = in;
 		    if (debugShapeParsing)
-			warn("left light at %d,%d", in.x, in.y);
+			logger.warn("left light at %d,%d", in.x, in.y);
 		}
 		teststr = strchr(teststr, ' ');
 	    }
@@ -650,17 +644,17 @@ static int shape2wire(String ship_shape_str, ShipShape ship)
 		while (*teststr == ' ') teststr++;
 		if (sscanf(teststr, "%d,%d", &in.x, &in.y) != 2) {
 		    if (verboseShapeParsing)
-			warn("Missing right light coordinate in: \"%s\"",
+			logger.warn("Missing right light coordinate in: \"%s\"",
 			       teststr);
 		    break;
 		}
 		if (ship.num_r_light >= MAX_LIGHT_PTS) {
 		    if (verboseShapeParsing)
-			warn("Too many right light coordinates");
+			logger.warn("Too many right light coordinates");
 		} else {
 		    r_light[ship.num_r_light++] = in;
 		    if (debugShapeParsing)
-			warn("right light at %d,%d", in.x, in.y);
+			logger.warn("right light at %d,%d", in.x, in.y);
 		}
 		teststr = strchr(teststr, ' ');
 	    }
@@ -689,35 +683,31 @@ static int shape2wire(String ship_shape_str, ShipShape ship)
 		while (*teststr == ' ') teststr++;
 		if (sscanf(teststr, "%d,%d", &in.x, &in.y) != 2) {
 		    if (verboseShapeParsing) {
-			warn("Missing missile rack coordinate in: \"%s\"",
+			logger.warn("Missing missile rack coordinate in: \"%s\"",
 			     teststr);
 		    }
 		    break;
 		}
 		if (ship.num_m_rack >= MAX_RACK_PTS) {
 		    if (verboseShapeParsing)
-			warn("Too many missile rack coordinates");
+			logger.warn("Too many missile rack coordinates");
 		} else {
 		    m_rack[ship.num_m_rack++] = in;
 		    if (debugShapeParsing)
-			warn("missile rack at %d,%d", in.x, in.y);
+			logger.warn("missile rack at %d,%d", in.x, in.y);
 		}
 		teststr = strchr(teststr, ' ');
 	    }
 	    break;
 
 	case 8:		/* Keyword is 'name' */
-#ifdef	_NAMEDSHIPS
 	    ship.name = xp_strdup(teststr);
 	    /* ship.name[strlen(ship.name)-1] = '\0'; */
-#endif
 	    break;
 
 	case 9:		/* Keyword is 'author' */
-#ifdef	_NAMEDSHIPS
 	    ship.author = xp_strdup(teststr);
 	    /* ship.author[strlen(ship.author)-1] = '\0'; */
-#endif
 	    break;
 
 	case 10:		/* Keyword is 'leftRearGun' */
@@ -725,17 +715,17 @@ static int shape2wire(String ship_shape_str, ShipShape ship)
 		while (*teststr == ' ') teststr++;
 		if (sscanf(teststr, "%d,%d", &in.x, &in.y) != 2) {
 		    if (verboseShapeParsing)
-			warn("Missing left rear gun coordinate in: \"%s\"",
+			logger.warn("Missing left rear gun coordinate in: \"%s\"",
 			     teststr);
 		    break;
 		}
 		if (ship.num_l_rgun >= MAX_GUN_PTS) {
 		    if (verboseShapeParsing)
-			warn("Too many left rear gun coordinates");
+			logger.warn("Too many left rear gun coordinates");
 		} else {
 		    l_rgun[ship.num_l_rgun++] = in;
 		    if (debugShapeParsing)
-			warn("left rear gun at %d,%d", in.x, in.y);
+			logger.warn("left rear gun at %d,%d", in.x, in.y);
 		}
 		teststr = strchr(teststr, ' ');
 	    }
@@ -746,17 +736,17 @@ static int shape2wire(String ship_shape_str, ShipShape ship)
 		while (*teststr == ' ') teststr++;
 		if (sscanf(teststr, "%d,%d", &in.x, &in.y) != 2) {
 		    if (verboseShapeParsing)
-			warn("Missing right rear gun coordinate in: \"%s\"",
+			logger.warn("Missing right rear gun coordinate in: \"%s\"",
 			     teststr);
 		    break;
 		}
 		if (ship.num_r_rgun >= MAX_GUN_PTS) {
 		    if (verboseShapeParsing)
-			warn("Too many right rear gun coordinates");
+			logger.warn("Too many right rear gun coordinates");
 		} else {
 		    r_rgun[ship.num_r_rgun++] = in;
 		    if (debugShapeParsing)
-			warn("right rear gun at %d,%d", in.x, in.y);
+			logger.warn("right rear gun at %d,%d", in.x, in.y);
 		}
 		teststr = strchr(teststr, ' ');
 	    }
@@ -764,7 +754,7 @@ static int shape2wire(String ship_shape_str, ShipShape ship)
 
 	default:
 	    if (verboseShapeParsing)
-		warn("Invalid ship shape keyword: \"%s\"", keyw);
+		logger.warn("Invalid ship shape keyword: \"%s\"", keyw);
 	    /* the good thing about this format is that we can just ignore
 	     * this.  it is likely to be a new extension we don't know
 	     * about yet. */
@@ -887,18 +877,18 @@ static int shape2wire(String ship_shape_str, ShipShape ship)
 	    || right < minRight
 	    || count < minCount) {
 	    if (verboseShapeParsing)
-		warn("Ship shape does not meet size requirements "
+		logger.warn("Ship shape does not meet size requirements "
 		     "(%d,%d,%d,%d,%d)", low, hi, left, right, count);
 	    return -1;
 	}
 	if (max) {
 	    if (verboseShapeParsing)
-		warn("Ship shape exceeds size maxima.");
+		logger.warn("Ship shape exceeds size maxima.");
 	    return -1;
 	}
 	if (leftmost - rightmost + highest - lowest < minSize) {
 	    if (verboseShapeParsing)
-		warn("Ship shape is not big enough.\n"
+		logger.warn("Ship shape is not big enough.\n"
 		     "The ship's width and height added together should\n"
 		     "be at least %d.", minSize);
 	    return -1;
@@ -1058,7 +1048,7 @@ static int shape2wire(String ship_shape_str, ShipShape ship)
 
 	if (Grid_point_is_outside_ship(&grid, m_gun)) {
 	    if (verboseShapeParsing)
-		warn("Main gun (at (%d,%d)) is outside ship.",
+		logger.warn("Main gun (at (%d,%d)) is outside ship.",
 		     m_gun.x, m_gun.y);
 	    invalid++;
 	}
@@ -1120,7 +1110,7 @@ static int shape2wire(String ship_shape_str, ShipShape ship)
 	}
 	if (Grid_point_is_outside_ship(&grid, engine)) {
 	    if (verboseShapeParsing)
-		warn("Engine (at (%d,%d)) is outside ship.",
+		logger.warn("Engine (at (%d,%d)) is outside ship.",
 		     engine.x, engine.y);
 	    invalid++;
 	}
@@ -1270,7 +1260,7 @@ static ShipShape do_parse_shape(String str)
 	return Default_ship();
     }
     if (debugShapeParsing)
-	warn("shape2wire succeeded");
+	logger.warn("shape2wire succeeded");
 
     return(ship);
 }
@@ -1505,66 +1495,63 @@ void Convert_ship_2_string(ShipShape ship, String buf, String ext,
 	buf[0] = '\0';
 
     if (buflen >= MSG_LEN || extlen >= MSG_LEN)
-	warn("BUG: convert ship: buffer overflow (%d,%d)", buflen, extlen);
+	logger.warn("BUG: convert ship: buffer overflow (%d,%d)", buflen, extlen);
 
     if (debugShapeParsing)
-	warn("ship 2 str: %s %s", buf, ext);
+	logger.warn("ship 2 str: %s %s", buf, ext);
 }
+    public enum SSKeys{
+           SHAPE("SH","shape"),
+           MAINGUN("MG","mainGun"),
+           LEFTGUN("LG","leftGun"),
+           RIGHTGUN("RG","rightGun"),
+           LEFTLIGHT("LL","leftLight"),
+           RIGHTLIGHT("RL","rightLight"),
+           ENGINE("EN","engine"),
+           MISSILERACK("MR","missileRack"),
+           NAME("NM","name"),
+           AUTHOR("AU","author"),
+           LEFTREARGUN("LR","leftRearGun"),
+           RIGHTREARGUN("RR","rightRearGun");
+        String longName;
 
-static int Get_shape_keyword(String keyw)
-{
-#define NUM_SHAPE_KEYS	12
+        public String getLongName() {
+            return longName;
+        }
 
-    static char		shape_keys[NUM_SHAPE_KEYS][16] = {
-			    "shape:",
-			    "mainGun:",
-			    "leftGun:",
-			    "rightGun:",
-			    "leftLight:",
-			    "rightLight:",
-			    "engine:",
-			    "missileRack:",
-			    "name:",
-			    "author:",
-			    "leftRearGun:",
-			    "rightRearGun:",
-			};
-    static char		abbrev_keys[NUM_SHAPE_KEYS][4] = {
-			    "SH:",
-			    "MG:",
-			    "LG:",
-			    "RG:",
-			    "LL:",
-			    "RL:",
-			    "EN:",
-			    "MR:",
-			    "NM:",
-			    "AU:",
-			    "LR:",
-			    "RR:",
-			};
-    int			i;
+        public String getShortName() {
+            return shortName;
+        }
 
-    /* non-abbreviated keywords start with a lower case letter. */
-    if (islower(*keyw)) {
-	for (i = 0; i < NUM_SHAPE_KEYS; i++) {
-	    if (!strcmp(keyw, shape_keys[i]))
-		break;
-	}
+        String shortName;
+
+        SSKeys(String shortName, String longName) {
+            this.longName = longName;
+            this.shortName = shortName;
+        }
+
+        private static final Map<String,SSKeys> lookup
+                = new HashMap<>();
+
+        static {
+            for(SSKeys s : EnumSet.allOf(SSKeys.class)) {
+                // Assert for duplicates.  Should never happen.
+                assert (lookup.put(s.getShortName().toUpperCase(), s) != null);
+                assert (lookup.put(s.getLongName().toUpperCase(),s) != null);
+            }
+        }
+
+
+        /**
+         * Case insensitive lookup by shortname or longname
+         * @param name
+         * @return
+         */
+        public static SSKeys lookup(String name) {
+            return lookup.get(name.toUpperCase());
+        }
     }
-    /* abbreviated keywords start with an upper case letter. */
-    else if (isupper(*keyw)) {
-	for (i = 0; i < NUM_SHAPE_KEYS; i++) {
-	    if (!strcmp(keyw, abbrev_keys[i]))
-		break;
-	}
-    }
-    /* dunno what this is. */
-    else
-	i = -1;
 
-    return(i);
-}
 
 void Calculate_shield_radius(ShipShape ship)
 {

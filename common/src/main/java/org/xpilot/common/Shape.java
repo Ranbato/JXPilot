@@ -1,5 +1,9 @@
 package org.xpilot.common;
 
+import java.awt.*;
+import java.awt.geom.Area;
+import java.util.ArrayList;
+
 import static org.xpilot.common.Const.RES;
 
 /**
@@ -19,9 +23,8 @@ public class Shape {
     static final public int MAX_RACK_PTS = 4;
 
     /* Defines wire-obj, i.e. ship */
-    Click 	pts[][] = new Click[MAX_SHIP_PTS2][RES];	/* the shape rotated many ways */
+    ArrayList<Click> pts = new ArrayList<>(MAX_SHIP_PTS);	/* the shape rotated many ways is now stored in shipshape*/
     int		num_points;		/* total points in object */
     int		num_orig_points;	/* points before SSHACK */
-    Click 	cashed_pts[] = new Click[MAX_SHIP_PTS2];
-    int		cashed_dir;
+
     }
