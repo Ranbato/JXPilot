@@ -9,6 +9,7 @@ import java.util.*;
 
 import static org.xpilot.common.Const.MSG_LEN;
 import static org.xpilot.common.Const.RES;
+import static org.xpilot.common.SSKeys.RIGHTGUN;
 import static org.xpilot.common.Shape.*;
 import static org.xpilot.common.XPMath.tcos;
 import static org.xpilot.common.XPMath.tsin;
@@ -455,10 +456,10 @@ static class Grid {
     }
 }
 
- int shape2wire(String ship_shape_str, ShipShape ship)
+ int shape2wire(String ship_shape_str)
 {
     Grid grid;
-    int i, j, x, y, dx, dy, max, shape_version = 0;
+    int i, j, x, y, dx, dy,  shape_version = 0;
     ArrayList<Point> pt = new ArrayList<>();
     Point in, old_in, engine, m_gun;
     ArrayList<Point>  l_light= new ArrayList<>();
@@ -469,10 +470,12 @@ static class Grid {
     ArrayList<Point> r_rgun= new ArrayList<>();
     ArrayList<Point> m_rack= new ArrayList<>();
     boolean mainGunSet = false, engineSet = false;
-     String teststr;
     String keyw;
     String buf;
     boolean remove_edge = false;
+    int [] coords;
+    Point max;
+    Point temp;
 
 
 
@@ -507,11 +510,11 @@ static class Grid {
 
         switch (SSKeys.lookup(keyw)) {
 
-        case SHAPE:
+        case SHAPE: /* Keyword is 'shape' */
             for (String point:points ) {
 
 
-            int [] coords = Arrays.stream(point.split(",")).map(String::trim).mapToInt(Integer::parseInt).toArray();
+            coords = Arrays.stream(point.split(",")).map(String::trim).mapToInt(Integer::parseInt).toArray();
             if(coords.length != 2)
              {
 		    if (verboseShapeParsing)
@@ -541,220 +544,242 @@ static class Grid {
 			   logger.warn("ship point at {},{}", in.x, in.y);
 		    }
 		}
-		teststr = strchr(teststr, ' ');
+
 	    }
-	    if (ship.num_points > 0
-		&& pt[ship.num_points - 1].x == pt[0].x
-		&& pt[ship.num_points - 1].y == pt[0].y) {
-		if (verboseShapeParsing)
-		   logger.warn("Ship last point equals first point at %d,%d, "
-			 "ignoring it.", pt[0].x, pt[0].y);
-		remove_edge = true;
-		ship.num_points--;
-	    }
+	    if (pt.size() > 0)
+        {
+            Point first = pt.get(0);
+            Point latest = pt.get(pt.size() - 1);
+            if (first.x == latest.x
+                    && first.y == latest.y)
+            {
+                if (verboseShapeParsing)
+                    logger.warn("Ship last point equals first point at {},{}, ignoring it.", first.x, first.y);
+                remove_edge = true;
+                pt.remove(latest);
+            }
+        }
 
 	    if (remove_edge && verboseShapeParsing)
 		logger.warn("Removing ship edges with length 0.");
 	    
 	    break;
 
-	case 1:		/* Keyword is 'mainGun' */
+            case MAINGUN:		/* Keyword is 'mainGun' */
 	    if (mainGunSet) {
 		if (verboseShapeParsing)
-		   logger.warn("Ship shape keyword \"%s\" multiple defined", keyw);
+		   logger.warn("Ship shape keyword \"{}\" multiple defined", keyw);
 		break;
 	    }
-	    while (*teststr == ' ') teststr++;
-	    if (sscanf(teststr, "%d,%d", &in.x, &in.y) != 2) {
+	    
+	    coords = Arrays.stream(points[1].split(",")).map(String::trim).mapToInt(Integer::parseInt).toArray();
+	    if (coords.length != 2) {
 		if (verboseShapeParsing)
-		   logger.warn("Missing main gun coordinate in: \"%s\"", teststr);
+		   logger.warn("Missing main gun coordinate in: \"{}\"", coords);
 	    } else {
-		m_gun = in;
+		m_gun = new Point(coords[0],coords[1]);
 		mainGunSet = true;
 		if (debugShapeParsing)
-		   logger.warn("main gun at %d,%d", in.x, in.y);
+		   logger.warn("main gun at {},{}", in.x, in.y);
 	    }
 	    break;
 
-	case 2:		/* Keyword is 'leftGun' */
-	    while (teststr) {
-		while (*teststr == ' ') teststr++;
-		if (sscanf(teststr, "%d,%d", &in.x, &in.y) != 2) {
-		    if (verboseShapeParsing)
-			logger.warn("Missing left gun coordinate in: \"%s\"",
-			     teststr);
-		    break;
-		}
-		if (ship.num_l_gun >= MAX_GUN_PTS) {
-		    if (verboseShapeParsing)
-			logger.warn("Too many left gun coordinates");
-		} else {
-		    l_gun[ship.num_l_gun++] = in;
-		    if (debugShapeParsing)
-			logger.warn("left gun at %d,%d", in.x, in.y);
-		}
-		teststr = strchr(teststr, ' ');
-	    }
+            case LEFTGUN:		/* Keyword is 'leftGun' */
+                for (String point:points )
+                {
+
+                    coords = Arrays.stream(point.split(",")).map(String::trim).mapToInt(Integer::parseInt).toArray();
+                    if (coords.length != 2)
+                    {
+                        if (verboseShapeParsing)
+                            logger.warn("Missing left gun coordinate in: \"{}\"",
+                                    point);
+                        break;
+                    }
+
+                    in = new Point(coords[0], coords[1]);
+                    if (l_gun.size() >= MAX_GUN_PTS)
+                    {
+                        if (verboseShapeParsing)
+                            logger.warn("Too many left gun coordinates");
+                    }
+                    else
+                    {
+                        l_gun.add(in);
+                        if (debugShapeParsing)
+                            logger.warn("left gun at {},{}", in.x, in.y);
+                    }
+                }
+	    
 	    break;
 
-	case 3:		/* Keyword is 'rightGun' */
-	    while (teststr) {
-		while (*teststr == ' ') teststr++;
-		if (sscanf(teststr, "%d,%d", &in.x, &in.y) != 2) {
-		    if (verboseShapeParsing)
-			logger.warn("Missing right gun coordinate in: \"%s\"",
-			     teststr);
-		    break;
-		}
-		if (ship.num_r_gun >= MAX_GUN_PTS) {
+	case RIGHTGUN:		/* Keyword is 'rightGun' */
+        for (String point:points ) {
+
+            coords = Arrays.stream(point.split(",")).map(String::trim).mapToInt(Integer::parseInt).toArray();
+            if(coords.length != 2)
+            {
+                if (verboseShapeParsing)
+                    logger.warn("Missing right gun coordinate in: \"{}\"",
+                            point);
+                break;
+            }
+		in = new Point(coords[0],coords[1]);
+		if (r_gun.size() >= MAX_GUN_PTS) {
 		    if (verboseShapeParsing)
 			logger.warn("Too many right gun coordinates");
 		} else {
-		    r_gun[ship.num_r_gun++] = in;
+		    r_gun.add(in);
 		    if (debugShapeParsing)
-			logger.warn("right gun at %d,%d", in.x, in.y);
+			logger.warn("right gun at {},{}", in.x, in.y);
 		}
-		teststr = strchr(teststr, ' ');
 	    }
 	    break;
 
-	case 4:		/* Keyword is 'leftLight' */
-	    while (teststr) {
-		while (*teststr == ' ') teststr++;
-		if (sscanf(teststr, "%d,%d", &in.x, &in.y) != 2) {
-		    if (verboseShapeParsing)
-			logger.warn("Missing left light coordinate in: \"%s\"",
-			     teststr);
+            case LEFTLIGHT:		/* Keyword is 'leftLight' */
+                for (String point:points ) {
+
+                    coords = Arrays.stream(point.split(",")).map(String::trim).mapToInt(Integer::parseInt).toArray();
+                    if(coords.length != 2)
+                    {		    if (verboseShapeParsing)
+			logger.warn("Missing left light coordinate in: \"{}\"",
+			     point);
 		    break;
 		}
-		if (ship.num_l_light >= MAX_LIGHT_PTS) {
+		in = new Point(coords[0],coords[1]);
+		if (l_light.size() >= MAX_LIGHT_PTS) {
 		    if (verboseShapeParsing)
 			logger.warn("Too many left light coordinates");
 		} else {
-		    l_light[ship.num_l_light++] = in;
+		    l_light.add(in);
 		    if (debugShapeParsing)
-			logger.warn("left light at %d,%d", in.x, in.y);
+			logger.warn("left light at {},{}", in.x, in.y);
 		}
-		teststr = strchr(teststr, ' ');
 	    }
 	    break;
 
-	case 5:		/* Keyword is 'rightLight' */
-	    while (teststr) {
-		while (*teststr == ' ') teststr++;
-		if (sscanf(teststr, "%d,%d", &in.x, &in.y) != 2) {
-		    if (verboseShapeParsing)
-			logger.warn("Missing right light coordinate in: \"%s\"",
-			       teststr);
-		    break;
-		}
-		if (ship.num_r_light >= MAX_LIGHT_PTS) {
+            case RIGHTLIGHT:		/* Keyword is 'rightLight' */
+                for (String point:points ) {
+
+                    coords = Arrays.stream(point.split(",")).map(String::trim).mapToInt(Integer::parseInt).toArray();
+                    if(coords.length != 2)
+                    {		    if (verboseShapeParsing)
+                        logger.warn("Missing left light coordinate in: \"{}\"",
+                                point);
+                        break;
+                    }
+                    in = new Point(coords[0],coords[1]);
+		if (r_light.size() >= MAX_LIGHT_PTS) {
 		    if (verboseShapeParsing)
 			logger.warn("Too many right light coordinates");
 		} else {
-		    r_light[ship.num_r_light++] = in;
+		    r_light.add(in);
 		    if (debugShapeParsing)
-			logger.warn("right light at %d,%d", in.x, in.y);
+			logger.warn("right light at {},{}", in.x, in.y);
 		}
-		teststr = strchr(teststr, ' ');
 	    }
 	    break;
 
-	case 6:		/* Keyword is 'engine' */
+            case ENGINE:		/* Keyword is 'engine' */
 	    if (engineSet) {
 		if (verboseShapeParsing)
 		   logger.warn("Ship shape keyword \"%s\" multiple defined", keyw);
 		break;
 	    }
-	    while (*teststr == ' ') teststr++;
-	    if (sscanf(teststr, "%d,%d", &in.x, &in.y) != 2) {
+                coords = Arrays.stream(points[1].split(",")).map(String::trim).mapToInt(Integer::parseInt).toArray();
+                if (coords.length != 2) {
 		if (verboseShapeParsing)
-		   logger.warn("Missing engine coordinate in: \"%s\"", teststr);
+		   logger.warn("Missing engine coordinate in: \"{}\"", coords);
 	    } else {
-		engine = in;
-		engineSet = true;
+		engine = new Point(coords[0],coords[1]);
+
+                    engineSet = true;
 		if (debugShapeParsing)
-		   logger.warn("engine at %d,%d", in.x, in.y);
+		   logger.warn("engine at {},{}", in.x, in.y);
 	    }
 	    break;
 
-	case 7:		/* Keyword is 'missileRack' */
-	    while (teststr) {
-		while (*teststr == ' ') teststr++;
-		if (sscanf(teststr, "%d,%d", &in.x, &in.y) != 2) {
+            case MISSILERACK:		/* Keyword is 'missileRack' */
+                for (String point:points ) {
+
+                    coords = Arrays.stream(point.split(",")).map(String::trim).mapToInt(Integer::parseInt).toArray();
+                    if(coords.length != 2){
 		    if (verboseShapeParsing) {
-			logger.warn("Missing missile rack coordinate in: \"%s\"",
-			     teststr);
+			logger.warn("Missing missile rack coordinate in: \"{}\"",
+			     coords);
 		    }
 		    break;
 		}
-		if (ship.num_m_rack >= MAX_RACK_PTS) {
+                    in = new Point(coords[0],coords[1]);
+
+                    if (m_rack.size() >= MAX_RACK_PTS) {
 		    if (verboseShapeParsing)
 			logger.warn("Too many missile rack coordinates");
 		} else {
-		    m_rack[ship.num_m_rack++] = in;
+		    m_rack.add(in);
 		    if (debugShapeParsing)
-			logger.warn("missile rack at %d,%d", in.x, in.y);
+			logger.warn("missile rack at {},{}", in.x, in.y);
 		}
-		teststr = strchr(teststr, ' ');
 	    }
 	    break;
 
-	case 8:		/* Keyword is 'name' */
-	    ship.name = xp_strdup(teststr);
+            case NAME:		/* Keyword is 'name' */
+	    name = types[1];
 	    /* ship.name[strlen(ship.name)-1] = '\0'; */
 	    break;
 
-	case 9:		/* Keyword is 'author' */
-	    ship.author = xp_strdup(teststr);
+            case AUTHOR:		/* Keyword is 'author' */
+	    author = types[1];
 	    /* ship.author[strlen(ship.author)-1] = '\0'; */
 	    break;
 
-	case 10:		/* Keyword is 'leftRearGun' */
-	    while (teststr) {
-		while (*teststr == ' ') teststr++;
-		if (sscanf(teststr, "%d,%d", &in.x, &in.y) != 2) {
+            case LEFTREARGUN:		/* Keyword is 'leftRearGun' */
+                for (String point:points ) {
+
+                    coords = Arrays.stream(point.split(",")).map(String::trim).mapToInt(Integer::parseInt).toArray();
+                    if(coords.length != 2){
 		    if (verboseShapeParsing)
-			logger.warn("Missing left rear gun coordinate in: \"%s\"",
-			     teststr);
+			logger.warn("Missing left rear gun coordinate in: \"{}\"",
+			     point);
 		    break;
 		}
-		if (ship.num_l_rgun >= MAX_GUN_PTS) {
+                    in = new Point(coords[0],coords[1]);
+		if (l_rgun.size() >= MAX_GUN_PTS) {
 		    if (verboseShapeParsing)
 			logger.warn("Too many left rear gun coordinates");
 		} else {
-		    l_rgun[ship.num_l_rgun++] = in;
+		    l_rgun.add(in);
 		    if (debugShapeParsing)
-			logger.warn("left rear gun at %d,%d", in.x, in.y);
+			logger.warn("left rear gun at {},{}", in.x, in.y);
 		}
-		teststr = strchr(teststr, ' ');
 	    }
 	    break;
 
-	case 11:		/* Keyword is 'rightRearGun' */
-	    while (teststr) {
-		while (*teststr == ' ') teststr++;
-		if (sscanf(teststr, "%d,%d", &in.x, &in.y) != 2) {
+            case RIGHTREARGUN:		/* Keyword is 'rightRearGun' */
+                for (String point:points ) {
+
+                    coords = Arrays.stream(point.split(",")).map(String::trim).mapToInt(Integer::parseInt).toArray();
+                    if(coords.length != 2){
 		    if (verboseShapeParsing)
-			logger.warn("Missing right rear gun coordinate in: \"%s\"",
-			     teststr);
+			logger.warn("Missing right rear gun coordinate in: \"{}\"",
+			     point);
 		    break;
 		}
-		if (ship.num_r_rgun >= MAX_GUN_PTS) {
+                    in = new Point(coords[0],coords[1]);
+		if (r_rgun.size() >= MAX_GUN_PTS) {
 		    if (verboseShapeParsing)
 			logger.warn("Too many right rear gun coordinates");
 		} else {
-		    r_rgun[ship.num_r_rgun++] = in;
+		    r_rgun.add(in);
 		    if (debugShapeParsing)
-			logger.warn("right rear gun at %d,%d", in.x, in.y);
+			logger.warn("right rear gun at {},{}", in.x, in.y);
 		}
-		teststr = strchr(teststr, ' ');
 	    }
 	    break;
 
 	default:
 	    if (verboseShapeParsing)
-		logger.warn("Invalid ship shape keyword: \"%s\"", keyw);
+		logger.warn("Invalid ship shape keyword: \"{}\"", keyw);
 	    /* the good thing about this format is that we can just ignore
 	     * this.  it is likely to be a new extension we don't know
 	     * about yet. */
@@ -763,7 +788,7 @@ static class Grid {
     }
 
     /* Check for some things being set, and give them defaults if not */
-    if (ship.num_points < 3) {
+    if (pt.size() < 3) {
 	if (verboseShapeParsing)
 	   logger.warn("A shipshape must have at least 3 valid points.");
 	return -1;
@@ -771,105 +796,113 @@ static class Grid {
 
     /* If no main gun set, put at foremost point */
     if (!mainGunSet) {
-	max = 0;
-	for (i = 1; i < ship.num_points; i++) {
-	    if (pt[i].x > pt[max].x
-		|| (pt[i].x == pt[max].x
-		    && Math.abs(pt[i].y) < ABS(pt[max].y)))
-		max = i;
+	max = new Point();
+	temp= new Point();
+	for (i = 1; i < pt.size(); i++) {
+	    temp = pt.get(i);
+	    if (temp.x > max.x
+		|| (temp.x == max.x
+		    && Math.abs(temp.y) < Math.abs(max.y)))
+		max = temp;
 	}
-	m_gun = pt[max];
+	m_gun = temp;
 	mainGunSet = true;
     }
 
     /* If no left light set, put at leftmost point */
-    if (!ship.num_l_light) {
-	max = 0;
-	for (i = 1; i < ship.num_points; i++) {
-	    if (pt[i].y > pt[max].y
-		|| (pt[i].y == pt[max].y
-		    && pt[i].x <= pt[max].x))
-		max = i;
+    if (l_light.isEmpty()) {
+        max = new Point();
+        temp= new Point();
+	for (i = 1; i < pt.size(); i++) {
+	    temp = pt.get(i);
+	    if (temp.y > max.y
+		|| (temp.y == max.y
+		    && temp.x <= max.x))
+		max = temp;
 	}
-	l_light[0] = pt[max];
-	ship.num_l_light = 1;
+	l_light.add(max);
     }
 
     /* If no right light set, put at rightmost point */
-    if (!ship.num_r_light) {
-	max = 0;
-	for (i = 1; i < ship.num_points; i++) {
-	    if (pt[i].y < pt[max].y
-		|| (pt[i].y == pt[max].y
-		    && pt[i].x <= pt[max].x))
-		max = i;
-	}
-	r_light[0] = pt[max];
-	ship.num_r_light = 1;
+    if (r_light.isEmpty()) {
+        max = new Point();
+        temp= new Point();
+        for (i = 1; i < pt.size(); i++) {
+            temp = pt.get(i);
+            if (temp.y < max.y
+                    || (temp.y == max.y
+                    && temp.x <= max.x))
+                max = temp;
+        }
+        r_light.add(max);
+
     }
 
     /* If no engine position, put at rear of ship */
     if (!engineSet) {
-	max = 0;
-	for (i = 1; i < ship.num_points; i++) {
-	    if (pt[i].x < pt[max].x)
-		max = i;
+        max = new Point();
+        temp= new Point();
+	for (i = 1; i < pt.size(); i++) {
+        temp = pt.get(i);
+	    if (temp.x < max.x)
+		max = temp;
 	}
 	/* this may lay outside of ship. */
-	engine.x = pt[max].x;
+	engine.x = max.x;
 	engine.y = 0;
 	engineSet = true;
     }
 
     /* If no missile racks, put at main gun position*/
-    if (!ship.num_m_rack) {
-	m_rack[0] = m_gun;
-	ship.num_m_rack = 1;
+    if (m_rack.isEmpty()) {
+	m_rack.add(m_gun);
     }
 
     if (shapeLimits) {
-	const int	isLow = -8, isHi = 8, isLeft = 8, isRight = -8,
+	final int	isLow = -8, isHi = 8, isLeft = 8, isRight = -8,
 			minLow = 1, minHi = 1, minLeft = 1, minRight = 1,
 			horMax = 15, verMax = 15, horMin = -15, verMin = -15,
 			minCount = 3, minSize = 22 + 16;
 	int		low = 0, hi = 0, left = 0, right = 0,
-			count = 0, change,
+			count = 0,
 			lowest = 0, highest = 0,
 			leftmost = 0, rightmost = 0;
 	int		invalid = 0;
-	const int	checkWidthAgainstLongestAxis = 1;
+	boolean	checkWidthAgainstLongestAxis = true;
+	boolean change = false;
 
-	max = 0;
-	for (i = 0; i < ship.num_points; i++) {
-	    x = pt[i].x;
-	    y = pt[i].y;
-	    change = 0;
+	boolean maximum = false;
+	for (i = 0; i < pt.size(); i++) {
+	    temp = pt.get(i);
+	    x = temp.x;
+	    y = temp.y;
+	    change = false;
 	    if (y >= isLeft) {
-		change++, left++;
+		change = true; left++;
 		if (y > leftmost)
 		    leftmost = y;
 	    }
 	    if (y <= isRight) {
-		change++, right++;
+		change = true; right++;
 		if (y < rightmost)
 		    rightmost = y;
 	    }
 	    if (x <= isLow) {
-		change++, low++;
+		change = true; low++;
 		if (x < lowest)
 		    lowest = x;
 	    }
 	    if (x >= isHi) {
-		change++, hi++;
+		change = true; hi++;
 		if (x > highest)
 		    highest = x;
 	    }
 	    if (change)
 		count++;
 	    if (y > horMax || y < horMin)
-		max++;
+		maximum = true;
 	    if (x > verMax || x < verMin)
-		max++;
+            maximum = true;
 	}
 	if (low < minLow
 	    || hi < minHi
@@ -877,20 +910,19 @@ static class Grid {
 	    || right < minRight
 	    || count < minCount) {
 	    if (verboseShapeParsing)
-		logger.warn("Ship shape does not meet size requirements "
-		     "(%d,%d,%d,%d,%d)", low, hi, left, right, count);
+		logger.warn("Ship shape does not meet size requirements ({},{},{},{},{})", low, hi, left, right, count);
 	    return -1;
 	}
-	if (max) {
+	if (maximum) {
 	    if (verboseShapeParsing)
 		logger.warn("Ship shape exceeds size maxima.");
 	    return -1;
 	}
 	if (leftmost - rightmost + highest - lowest < minSize) {
 	    if (verboseShapeParsing)
-		logger.warn("Ship shape is not big enough.\n"
-		     "The ship's width and height added together should\n"
-		     "be at least %d.", minSize);
+		logger.warn("Ship shape is not big enough.\n"+
+		     "The ship's width and height added together should\n"+
+		     "be at least {}.", minSize);
 	    return -1;
 	}
 
@@ -906,8 +938,8 @@ static class Grid {
 	    /*
 	     * Loop over all the points and find the two furthest apart
 	     */
-	    for (i = 0; i < ship.num_points; i++) {
-		for (j = i + 1; j < ship.num_points; j++) {
+	    for (i = 0; i < pt.size(); i++) {
+		for (j = i + 1; j < pt.size(); j++) {
 		    /*
 		     * Compare the points if they are not the same ones.
 		     * Get this distance -- doesn't matter about sqrting
@@ -1048,14 +1080,14 @@ static class Grid {
 
 	if (Grid_point_is_outside_ship(&grid, m_gun)) {
 	    if (verboseShapeParsing)
-		logger.warn("Main gun (at (%d,%d)) is outside ship.",
+		logger.warn("Main gun (at ({},{})) is outside ship.",
 		     m_gun.x, m_gun.y);
 	    invalid++;
 	}
 	for (i = 0; i < ship.num_l_gun; i++) {
 	    if (Grid_point_is_outside_ship(&grid, l_gun[i])) {
 		if (verboseShapeParsing)
-		   logger.warn("Left gun at (%d,%d) is outside ship.",
+		   logger.warn("Left gun at ({},{}) is outside ship.",
 			 l_gun[i].x, l_gun[i].y);
 		invalid++;
 	    }
@@ -1063,7 +1095,7 @@ static class Grid {
 	for (i = 0; i < ship.num_r_gun; i++) {
 	    if (Grid_point_is_outside_ship(&grid, r_gun[i])) {
 		if (verboseShapeParsing)
-		   logger.warn("Right gun at (%d,%d) is outside ship.",
+		   logger.warn("Right gun at ({},{}) is outside ship.",
 			 r_gun[i].x, r_gun[i].y);
 		invalid++;
 	    }
@@ -1071,7 +1103,7 @@ static class Grid {
 	for (i = 0; i < ship.num_l_rgun; i++) {
 	    if (Grid_point_is_outside_ship(&grid, l_rgun[i])) {
 		if (verboseShapeParsing)
-		   logger.warn("Left rear gun at (%d,%d) is outside ship.",
+		   logger.warn("Left rear gun at ({},{}) is outside ship.",
 			 l_rgun[i].x, l_rgun[i].y);
 		invalid++;
 	    }
@@ -1079,7 +1111,7 @@ static class Grid {
 	for (i = 0; i < ship.num_r_rgun; i++) {
 	    if (Grid_point_is_outside_ship(&grid, r_rgun[i])) {
 		if (verboseShapeParsing)
-		   logger.warn("Right rear gun at (%d,%d) is outside ship.",
+		   logger.warn("Right rear gun at ({},{}) is outside ship.",
 			 r_rgun[i].x, r_rgun[i].y);
 		invalid++;
 	    }
@@ -1087,7 +1119,7 @@ static class Grid {
 	for (i = 0; i < ship.num_m_rack; i++) {
 	    if (Grid_point_is_outside_ship(&grid, m_rack[i])) {
 		if (verboseShapeParsing)
-		   logger.warn("Missile rack at (%d,%d) is outside ship.",
+		   logger.warn("Missile rack at ({},{}) is outside ship.",
 			 m_rack[i].x, m_rack[i].y);
 		invalid++;
 	    }
@@ -1095,7 +1127,7 @@ static class Grid {
 	for (i = 0; i < ship.num_l_light; i++) {
 	    if (Grid_point_is_outside_ship(&grid, l_light[i])) {
 		if (verboseShapeParsing)
-		   logger.warn("Left light at (%d,%d) is outside ship.",
+		   logger.warn("Left light at ({},{}) is outside ship.",
 			 l_light[i].x, l_light[i].y);
 		invalid++;
 	    }
@@ -1103,14 +1135,14 @@ static class Grid {
 	for (i = 0; i < ship.num_r_light; i++) {
 	    if (Grid_point_is_outside_ship(&grid, r_light[i])) {
 		if (verboseShapeParsing)
-		   logger.warn("Right light at (%d,%d) is outside ship.",
+		   logger.warn("Right light at ({},{}) is outside ship.",
 			 r_light[i].x, r_light[i].y);
 		invalid++;
 	    }
 	}
 	if (Grid_point_is_outside_ship(&grid, engine)) {
 	    if (verboseShapeParsing)
-		logger.warn("Engine (at (%d,%d)) is outside ship.",
+		logger.warn("Engine (at ({},{})) is outside ship.",
 		     engine.x, engine.y);
 	    invalid++;
 	}
@@ -1330,12 +1362,12 @@ void Convert_ship_2_string(ShipShape ship, String buf, String ext,
 	for (i = 0; i < ship.num_orig_points && i < MAX_SHIP_PTS; i++) {
 	    Point2D pt = Ship_get_point_position(ship, i, 0);
 
-	    sprintf(&buf[buflen], " %d,%d", (int)pt.x, (int)pt.y);
+	    sprintf(&buf[buflen], " {},{}", (int)pt.x, (int)pt.y);
 	    buflen += strlen(&buf[buflen]);
 	}
 	engine = Ship_get_engine_position(ship, 0);
 	m_gun = Ship_get_m_gun_position(ship, 0);
-	sprintf(&buf[buflen], ")(EN: %d,%d)(MG: %d,%d)",
+	sprintf(&buf[buflen], ")(EN: {},{})(MG: {},{})",
 		(int)engine.x, (int)engine.y,
 		(int)m_gun.x, (int)m_gun.y);
 	buflen += strlen(&buf[buflen]);
@@ -1357,7 +1389,7 @@ void Convert_ship_2_string(ShipShape ship, String buf, String ext,
 	    for (i = 0; i < ship.num_l_gun && i < MAX_GUN_PTS; i++) {
 		Point2D l_gun = Ship_get_l_gun_position(ship, i, 0);
 
-		sprintf(&tmp[tmplen], " %d,%d",
+		sprintf(&tmp[tmplen], " {},{}",
 			(int)l_gun.x, (int)l_gun.y);
 		tmplen += strlen(&tmp[tmplen]);
 	    }
@@ -1377,7 +1409,7 @@ void Convert_ship_2_string(ShipShape ship, String buf, String ext,
 	    for (i = 0; i < ship.num_r_gun && i < MAX_GUN_PTS; i++) {
 		Point2D r_gun = Ship_get_r_gun_position(ship, i, 0);
 
-		sprintf(&tmp[tmplen], " %d,%d",
+		sprintf(&tmp[tmplen], " {},{}",
 			(int)r_gun.x, (int)r_gun.y);
 		tmplen += strlen(&tmp[tmplen]);
 	    }
@@ -1397,7 +1429,7 @@ void Convert_ship_2_string(ShipShape ship, String buf, String ext,
 	    for (i = 0; i < ship.num_l_rgun && i < MAX_GUN_PTS; i++) {
 		Point2D l_rgun = Ship_get_l_rgun_position(ship, i, 0);
 
-		sprintf(&tmp[tmplen], " %d,%d",
+		sprintf(&tmp[tmplen], " {},{}",
 			(int)l_rgun.x, (int)l_rgun.y);
 		tmplen += strlen(&tmp[tmplen]);
 	    }
@@ -1417,7 +1449,7 @@ void Convert_ship_2_string(ShipShape ship, String buf, String ext,
 	    for (i = 0; i < ship.num_r_rgun && i < MAX_GUN_PTS; i++) {
 		Point2D r_rgun = Ship_get_r_rgun_position(ship, i, 0);
 
-		sprintf(&tmp[tmplen], " %d,%d",
+		sprintf(&tmp[tmplen], " {},{}",
 			(int)r_rgun.x, (int)r_rgun.y);
 		tmplen += strlen(&tmp[tmplen]);
 	    }
@@ -1437,7 +1469,7 @@ void Convert_ship_2_string(ShipShape ship, String buf, String ext,
 	    for (i = 0; i < ship.num_l_light && i < MAX_LIGHT_PTS; i++) {
 		Point2D l_light = Ship_get_l_light_position(ship, i, 0);
 
-		sprintf(&tmp[tmplen], " %d,%d",
+		sprintf(&tmp[tmplen], " {},{}",
 			(int)l_light.x, (int)l_light.y);
 		tmplen += strlen(&tmp[tmplen]);
 	    }
@@ -1457,7 +1489,7 @@ void Convert_ship_2_string(ShipShape ship, String buf, String ext,
 	    for (i = 0; i < ship.num_r_light && i < MAX_LIGHT_PTS; i++) {
 		Point2D r_light = Ship_get_r_light_position(ship, i, 0);
 
-		sprintf(&tmp[tmplen], " %d,%d",
+		sprintf(&tmp[tmplen], " {},{}",
 			(int)r_light.x, (int)r_light.y);
 		tmplen += strlen(&tmp[tmplen]);
 	    }
@@ -1477,7 +1509,7 @@ void Convert_ship_2_string(ShipShape ship, String buf, String ext,
 	    for (i = 0; i < ship.num_m_rack && i < MAX_RACK_PTS; i++) {
 		Point2D m_rack = Ship_get_m_rack_position(ship, i, 0);
 
-		sprintf(&tmp[tmplen], " %d,%d",
+		sprintf(&tmp[tmplen], " {},{}",
 			(int)m_rack.x, (int)m_rack.y);
 		tmplen += strlen(&tmp[tmplen]);
 	    }
@@ -1495,7 +1527,7 @@ void Convert_ship_2_string(ShipShape ship, String buf, String ext,
 	buf[0] = '\0';
 
     if (buflen >= MSG_LEN || extlen >= MSG_LEN)
-	logger.warn("BUG: convert ship: buffer overflow (%d,%d)", buflen, extlen);
+	logger.warn("BUG: convert ship: buffer overflow ({},{})", buflen, extlen);
 
     if (debugShapeParsing)
 	logger.warn("ship 2 str: %s %s", buf, ext);
