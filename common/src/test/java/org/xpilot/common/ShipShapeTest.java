@@ -73,12 +73,16 @@ public class ShipShapeTest
         ShipShape ship = new ShipShape();
         ship.debugShapeParsing = true;
         ship.verboseShapeParsing = true;
-        ship.do_parse_shape(shapeList.get(0));
-        String []ss = ship.Convert_ship_2_string(0x3200);
+        for (int i = 0;i<shapeList.size();i++)
+        {
+            String shape = shapeList.get(i);
+            ship.do_parse_shape(shape);
+            String[] ss = ship.Convert_ship_2_string(0x3200);
 
-        int pos = shapeList.get(0).indexOf("(SH");
-        assertEquals(shapeList.get(0).substring(pos),ss[0]);
-
+            int pos = shape.indexOf("(SH");
+            assertEquals("Shipshape " + i + " did not survive round-trip", shape.substring(pos), ss[0]);
+            assertEquals("Ext " + i + " was created", "", ss[1]);
+        }
     }
 
     @Test

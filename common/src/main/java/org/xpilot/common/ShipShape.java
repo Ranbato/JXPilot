@@ -46,10 +46,8 @@ public class ShipShape {
 
     private SShape[] shipShapes = new SShape[RES];
 
-    ArrayList<Click> cashed_pts = new ArrayList<>(MAX_SHIP_PTS2);
+    ArrayList<Click> cashed_pts = new ArrayList<>(MAX_SHIP_PTS);
     int cashed_dir;
-    String name;
-    String author;
 
     static class SShape extends Shape {
 
@@ -65,6 +63,8 @@ public class ShipShape {
                 r_light = new ArrayList<>();
         ArrayList<Click> m_rack = new ArrayList<>();
         int shield_radius;		/* Radius of shield used by client. */
+        String name;
+        String author;
 
 
     }
@@ -271,7 +271,7 @@ public class ShipShape {
         SShape original = shipShapes[0];
         for (int dir = 1; dir < RES; dir++) {
             shipShapes[dir]= new SShape();
-            for (i = 0; i < original.num_points; i++) {
+            for (i = 0; i < original.pts.size(); i++) {
                 shipShapes[dir].pts.add(i, Rotate_point(original.pts.get(i), dir));
             }
 
@@ -301,18 +301,14 @@ public class ShipShape {
         }
     }
 
-
     /*
      * Default this ship
      */
     void Default_ship() {
-        SShape sh = shipShapes[0];
-        Click pt;
+        SShape sh = new SShape();
+        shipShapes[0] = sh;
 
-        if (sh.num_points == 0) {
             Point pos = new Point();
-
-            sh.num_points = 3;
 
             pos.x = 14;
             pos.y = 0;
@@ -351,11 +347,10 @@ public class ShipShape {
             sh.l_rgun.clear();
             sh.r_rgun.clear();
 
-            name = "Default";
-            author = "XPilot";
+            sh.name = "Default";
+            sh.author = "XPilot";
 
             Rotate_ship();
-        }
 
     }
 
@@ -481,6 +476,7 @@ public class ShipShape {
         int[] coords;
         Point max;
         Point temp;
+        String name = "", author = "";
 
 
         if (debugShapeParsing) {
@@ -1270,10 +1266,8 @@ public class ShipShape {
             }
         }
 
-        if(shipShapes[0] == null){
-            shipShapes[0] = new SShape();
-        }
-        shipShapes[0].num_orig_points = pt.size();
+
+        //        shipShapes[0].num_orig_points = pt.size();
 
         // todo evaluate this hack
 //    /*MARA evil hack*/
@@ -1310,6 +1304,9 @@ public class ShipShape {
 //
 //    for (i = 1; i < m_rack.size(); i++)
 //	ship.m_rack[i] = ship.m_rack[i - 1][RES];
+
+        // Clear existing data
+        shipShapes[0] = new SShape();
 
 
         for (i = 0; i < pt.size(); i++) {
@@ -1352,13 +1349,14 @@ public class ShipShape {
             Ship_set_m_rack_ipos(i, m_rack.get(i));
         }
 
+        shipShapes[0].name = name;
+        shipShapes[0].author = author;
         Rotate_ship();
 
         return 0;
     }
 
     boolean do_parse_shape(String str) {
-        ShipShape ship;
 
         if (str == null || str.isEmpty()) {
             if (debugShapeParsing) {
@@ -1434,7 +1432,7 @@ public class ShipShape {
             Point2D engine, m_gun;
 
             buf.append("(SH:");
-            for (i = 0; i < shipShapes[0].num_orig_points && i < MAX_SHIP_PTS; i++) {
+            for (i = 0; i < shipShapes[0].pts.size() && i < MAX_SHIP_PTS; i++) {
                 Point2D pt = Ship_get_point_position(i, 0);
 
                 buf.append(String.format(" %d,%d",Math.round(pt.getX()), Math.round(pt.getY())));
@@ -1635,7 +1633,7 @@ public class ShipShape {
         int i;
         int radius2, max_radius = 0;
 
-        for (i = 0; i < shipShapes[0].num_points; i++) {
+        for (i = 0; i < shipShapes[0].pts.size(); i++) {
             Point2D pti = Ship_get_point_position(i, 0);
             radius2 = (int) (Math.pow(pti.getX() + (pti.getY() * pti.getY()), 2.0));
             if (radius2 > max_radius) {
