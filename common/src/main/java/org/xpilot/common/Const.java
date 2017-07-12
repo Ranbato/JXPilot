@@ -106,7 +106,7 @@ public static final int MIN_SPARK_RAND = 0		/* Not display spark */;
 public static final int MAX_SPARK_RAND = 0x80	/* Always display spark */;
 public static final int DEF_SPARK_RAND = 0x55	/* 66% */;
 
-public static final int	UPDATE_SCORE_DELAY = 	(FPS);
+public static final int	UPDATE_SCORE_DELAY = 	(Setup.frames_per_second);
 
 /*
  * Polygon style flags

@@ -23,8 +23,8 @@ public class Shape {
     static final public int MAX_RACK_PTS = 4;
 
     /* Defines wire-obj, i.e. ship */
-    ArrayList<Click> pts = new ArrayList<>(MAX_SHIP_PTS);	/* the shape rotated many ways is now stored in shipshape*/
-    int		num_points;		/* total points in object */
-    int		num_orig_points;	/* points before SSHACK */
+    protected ArrayList<Click> pts = new ArrayList<>(MAX_SHIP_PTS);	/* the shape rotated many ways is now stored in shipshape*/
+    protected int		num_points;		/* total points in object */
+    protected int		num_orig_points;	/* points before SSHACK */
 
     }

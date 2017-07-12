@@ -89,7 +89,7 @@ public static final int PKT_TRANS = 45;
 public static final int PKT_ACK_CANNON = 46;
 public static final int PKT_ACK_FUEL = 47;
 public static final int PKT_ACK_TARGET = 48;
-public static final int PKT_SCORE_OBJECT = 49
+public static final int PKT_SCORE_OBJECT = 49;
 
 /* packet types: 50 - 59 */
 public static final int PKT_AUDIO = 50;

@@ -7,10 +7,11 @@ import java.awt.*;
 import java.awt.geom.Point2D;
 import java.util.*;
 
+import static java.lang.Math.sqrt;
 import static org.xpilot.common.Const.MSG_LEN;
 import static org.xpilot.common.Const.RES;
-import static org.xpilot.common.SSKeys.RIGHTGUN;
 import static org.xpilot.common.Shape.*;
+import static org.xpilot.common.XPMath.LENGTH;
 import static org.xpilot.common.XPMath.tcos;
 import static org.xpilot.common.XPMath.tsin;
 
@@ -45,7 +46,7 @@ public class ShipShape {
 
  private SShape[] shipShapes = new SShape[RES];
 
-    ArrayList <Click> cashed_pts = new ArrayList(MAX_SHIP_PTS2);
+    ArrayList <Click> cashed_pts = new ArrayList<>(MAX_SHIP_PTS2);
     int		cashed_dir;
     String name;
     String author;
@@ -362,6 +363,9 @@ void Default_ship()
 	sh.l_rgun.clear();
 	sh.r_rgun.clear();
 
+	name = "Default";
+	author = "XPilot";
+
 	Rotate_ship();
     }
 
@@ -370,7 +374,7 @@ void Default_ship()
 static class Grid {
     int todo, done;
     byte pt[][] = new byte[32][32];
-    Point chk[][] = new Point[32][32];
+    Point chk[] = new Point[32*32];
 
 
     /*
@@ -380,12 +384,12 @@ static class Grid {
         todo = 0;
         done = 0;
         pt = new byte[32][32];
-        chk = new Point[32][32];
+        chk = new Point[32*32];
     }
 
-    void Grid_set_value(int x, int y, byte value) {
+    void Grid_set_value(int x, int y, int value) {
         assert (!(x < -15 || x > 15 || y < -15 || y > 15));
-        pt[x + 15][y + 15] = value;
+        pt[x + 15][y + 15] = (byte)value;
     }
 
     byte Grid_get_value(int x, int y) {
@@ -395,7 +399,7 @@ static class Grid {
     }
 
     void Grid_add(int x, int y) {
-        Grid_set_value(x, y, (byte) 2);
+        Grid_set_value(x, y,  2);
         chk[todo].x = x + 15;
         chk[todo].y = y + 15;
         todo++;
@@ -404,8 +408,8 @@ static class Grid {
     Point Grid_get() {
         Point pos = new Point();
 
-        pos.x = (int) chk[done].x - 15;
-        pos.y = (int) chk[done].y - 15;
+        pos.x =  chk[done].x - 15;
+        pos.y =  chk[done].y - 15;
         done++;
 
         return pos;
@@ -458,10 +462,13 @@ static class Grid {
 
  int shape2wire(String ship_shape_str)
 {
-    Grid grid;
+    Grid grid = new Grid();
     int i, j, x, y, dx, dy,  shape_version = 0;
     ArrayList<Point> pt = new ArrayList<>();
-    Point in, old_in, engine, m_gun;
+    Point in = new Point();
+    Point old_in = new Point();
+            Point engine = new Point();
+            Point m_gun = new Point();
     ArrayList<Point>  l_light= new ArrayList<>();
     ArrayList<Point> r_light= new ArrayList<>();
     ArrayList<Point>  l_gun= new ArrayList<>();
@@ -471,7 +478,6 @@ static class Grid {
     ArrayList<Point> m_rack= new ArrayList<>();
     boolean mainGunSet = false, engineSet = false;
     String keyw;
-    String buf;
     boolean remove_edge = false;
     int [] coords;
     Point max;
@@ -812,7 +818,6 @@ static class Grid {
     /* If no left light set, put at leftmost point */
     if (l_light.isEmpty()) {
         max = new Point();
-        temp= new Point();
 	for (i = 1; i < pt.size(); i++) {
 	    temp = pt.get(i);
 	    if (temp.y > max.y
@@ -826,7 +831,6 @@ static class Grid {
     /* If no right light set, put at rightmost point */
     if (r_light.isEmpty()) {
         max = new Point();
-        temp= new Point();
         for (i = 1; i < pt.size(); i++) {
             temp = pt.get(i);
             if (temp.y < max.y
@@ -867,7 +871,7 @@ static class Grid {
 			count = 0,
 			lowest = 0, highest = 0,
 			leftmost = 0, rightmost = 0;
-	int		invalid = 0;
+	boolean		invalid = false;
 	boolean	checkWidthAgainstLongestAxis = true;
 	boolean change = false;
 
@@ -930,10 +934,11 @@ static class Grid {
 	    /*
 	     * For making sure the ship is the right width!
 	     */
-	    int pair[2];
+	    int pair[] = new int[2];
 	    int dist = 0, tmpDist = 0;
-	    double vec[2], width, dTmp;
-	    const int minWidth = 12;
+	    double vec[] = new double[2];
+        double width, dTmp;
+	    final int minWidth = 12;
 
 	    /*
 	     * Loop over all the points and find the two furthest apart
@@ -945,9 +950,9 @@ static class Grid {
 		     * Get this distance -- doesn't matter about sqrting
 		     * it since only size is important.
 		     */
-		    if ((tmpDist = ((pt[i].x - pt[j].x) * (pt[i].x - pt[j].x) +
-				    (pt[i].y - pt[j].y) * (pt[i].y - pt[j].y)))
-			> dist) {
+		    tmpDist = ((pt.get(i).x - pt.get(j).x) * (pt.get(i).x - pt.get(j).x) +
+				    (pt.get(i).y - pt.get(j).y) * (pt.get(i).y - pt.get(j).y));
+            if (tmpDist > dist) {
 			/*
 			 * Set new separation thingy.
 			 */
@@ -962,8 +967,8 @@ static class Grid {
 	     * Now we know the vector that is _|_ to the one above
 	     * is simply found by (x,y) . (y,-x) => dot-prod = 0
 	     */
-	    vec[0] = (double)(pt[pair[1]].y - pt[pair[0]].y);
-	    vec[1] = (double)(pt[pair[0]].x - pt[pair[1]].x);
+	    vec[0] = (double)(pt.get(pair[1]).y - pt.get(pair[0]).y);
+	    vec[1] = (double)(pt.get(pair[0]).x - pt.get(pair[1]).x);
 
 	    /*
 	     * Normalise
@@ -975,13 +980,13 @@ static class Grid {
 	    /*
 	     * Now check the width _|_ to the ship main line.
 	     */
-	    for (i = 0, width = dTmp = 0.0; i < ship.num_points; i++) {
-		for (j = i + 1; j < ship.num_points; j++) {
+	    for (i = 0, width = dTmp = 0.0; i < pt.size(); i++) {
+		for (j = i + 1; j < pt.size(); j++) {
 		    /*
 		     * Check the line if the points are not the same ones
 		     */
-		    width = fabs(vec[0] * (double)(pt[i].x - pt[j].x) +
-				 vec[1] * (double)(pt[i].y - pt[j].y));
+		    width = Math.abs(vec[0] * (double)(pt.get(i).x - pt.get(j).x) +
+				 vec[1] * (double)(pt.get(i).y - pt.get(j).y));
 		    if (width > dTmp)
 			dTmp = width;
 		}
@@ -992,9 +997,9 @@ static class Grid {
 	     */
 	    if (((int)dTmp) < minWidth) {
 		if (verboseShapeParsing)
-		   logger.warn("Ship shape is not big enough.\n"
-			 "The ship's width should be at least %d.\n"
-			 "Player's is %d", minWidth, (int)dTmp);
+		   logger.warn("Ship shape is not big enough.\n"+
+			 "The ship's width should be at least {}.\n"+
+			 "Player's is {}", minWidth, (int)dTmp);
 		return -1;
 	    }
 	}
@@ -1006,40 +1011,40 @@ static class Grid {
 	 * on the outside of the shape are marked.  Thusly for each
 	 * special point can be determined if it is outside the shape.
 	 */
-	Grid_reset(&grid);
+	grid.Grid_reset();
 
 	/* Draw the ship outline first. */
-	for (i = 0; i < ship.num_points; i++) {
+	for (i = 0; i < pt.size(); i++) {
 	    j = i + 1;
-	    if (j == ship.num_points)
+	    if (j == pt.size())
 		j = 0;
 
-	    Grid_set_value(&grid, pt[i].x, pt[i].y, 1);
+	    grid.Grid_set_value(pt.get(i).x, pt.get(i).y, 1);
 
-	    dx = pt[j].x - pt[i].x;
-	    dy = pt[j].y - pt[i].y;
-	    if (Math.abs(dx) >= ABS(dy)) {
+	    dx = pt.get(j).x - pt.get(i).x;
+	    dy = pt.get(j).y - pt.get(i).y;
+	    if (Math.abs(dx) >= Math.abs(dy)) {
 		if (dx > 0) {
-		    for (x = pt[i].x + 1; x < pt[j].x; x++) {
-			y = pt[i].y + (dy * (x - pt[i].x)) / dx;
-			Grid_set_value(&grid, x, y, 1);
+		    for (x = pt.get(i).x + 1; x < pt.get(j).x; x++) {
+			y = pt.get(i).y + (dy * (x - pt.get(i).x)) / dx;
+                grid.Grid_set_value( x, y, 1);
 		    }
 		} else {
-		    for (x = pt[j].x + 1; x < pt[i].x; x++) {
-			y = pt[j].y + (dy * (x - pt[j].x)) / dx;
-			Grid_set_value(&grid, x, y, 1);
+		    for (x = pt.get(j).x + 1; x < pt.get(i).x; x++) {
+			y = pt.get(j).y + (dy * (x - pt.get(j).x)) / dx;
+                grid.Grid_set_value( x, y, 1);
 		    }
 		}
 	    } else {
 		if (dy > 0) {
-		    for (y = pt[i].y + 1; y < pt[j].y; y++) {
-			x = pt[i].x + (dx * (y - pt[i].y)) / dy;
-			Grid_set_value(&grid, x, y, 1);
+		    for (y = pt.get(i).y + 1; y < pt.get(j).y; y++) {
+			x = pt.get(i).x + (dx * (y - pt.get(i).y)) / dy;
+                grid.Grid_set_value( x, y, 1);
 		    }
 		} else {
-		    for (y = pt[j].y + 1; y < pt[i].y; y++) {
-			x = pt[j].x + (dx * (y - pt[j].y)) / dy;
-			Grid_set_value(&grid, x, y, 1);
+		    for (y = pt.get(j).y + 1; y < pt.get(i).y; y++) {
+			x = pt.get(j).x + (dx * (y - pt.get(j).y)) / dy;
+                grid.Grid_set_value( x, y, 1);
 		    }
 		}
 	    }
@@ -1048,329 +1053,282 @@ static class Grid {
 	/* Check the borders of the grid for blank points. */
 	for (y = -15; y <= 15; y++) {
 	    for (x = -15; x <= 15; x += (y == -15 || y == 15) ? 1 : 2*15) {
-		if (Grid_get_value(&grid, x, y) == 0)
-		    Grid_add(&grid, x, y);
+		if (grid.Grid_get_value( x, y) == 0)
+            grid.Grid_add( x, y);
 	    }
 	}
 
 	/* Check from the borders of the grid to the centre. */
-	while (!Grid_is_ready(&grid)) {
-	    Point  pos = Grid_get(&grid);
+	while (!grid.Grid_is_ready()) {
+	    Point  pos = grid.Grid_get();
 
 	    x = pos.x;
 	    y = pos.y;
-	    if (x <  15 && Grid_get_value(&grid, x + 1, y) == 0)
-		Grid_add(&grid, x + 1, y);
-	    if (x > -15 && Grid_get_value(&grid, x - 1, y) == 0)
-		Grid_add(&grid, x - 1, y);
-	    if (y <  15 && Grid_get_value(&grid, x, y + 1) == 0)
-		Grid_add(&grid, x, y + 1);
-	    if (y > -15 && Grid_get_value(&grid, x, y - 1) == 0)
-		Grid_add(&grid, x, y - 1);
+	    if (x <  15 && grid.Grid_get_value( x + 1, y) == 0)
+        grid.Grid_add( x + 1, y);
+	    if (x > -15 && grid.Grid_get_value( x - 1, y) == 0)
+        grid.Grid_add( x - 1, y);
+	    if (y <  15 && grid.Grid_get_value( x, y + 1) == 0)
+        grid.Grid_add( x, y + 1);
+	    if (y > -15 && grid.Grid_get_value( x, y - 1) == 0)
+        grid.Grid_add( x, y - 1);
 	}
 
-#ifdef GRID_PRINT
-	Grid_print(&grid);
-#endif
+	grid.Grid_print();
 
 	/*
 	 * Note that for the engine, old format shapes may well have the
 	 * engine position outside the ship, so this check not used for those.
 	 */
 
-	if (Grid_point_is_outside_ship(&grid, m_gun)) {
+	if (grid.Grid_point_is_outside_ship( m_gun)) {
 	    if (verboseShapeParsing)
 		logger.warn("Main gun (at ({},{})) is outside ship.",
 		     m_gun.x, m_gun.y);
-	    invalid++;
+	    invalid = true;
 	}
-	for (i = 0; i < ship.num_l_gun; i++) {
-	    if (Grid_point_is_outside_ship(&grid, l_gun[i])) {
+	for (i = 0; i < l_gun.size(); i++) {
+	    if (grid.Grid_point_is_outside_ship( l_gun.get(i))) {
 		if (verboseShapeParsing)
 		   logger.warn("Left gun at ({},{}) is outside ship.",
-			 l_gun[i].x, l_gun[i].y);
-		invalid++;
+			 l_gun.get(i).x, l_gun.get(i).y);
+		invalid = true;
 	    }
 	}
-	for (i = 0; i < ship.num_r_gun; i++) {
-	    if (Grid_point_is_outside_ship(&grid, r_gun[i])) {
+	for (i = 0; i < r_gun.size(); i++) {
+	    if (grid.Grid_point_is_outside_ship( r_gun.get(i))) {
 		if (verboseShapeParsing)
 		   logger.warn("Right gun at ({},{}) is outside ship.",
-			 r_gun[i].x, r_gun[i].y);
-		invalid++;
+                   r_gun.get(i).x, r_gun.get(i).y);
+		invalid = true;
 	    }
 	}
-	for (i = 0; i < ship.num_l_rgun; i++) {
-	    if (Grid_point_is_outside_ship(&grid, l_rgun[i])) {
+	for (i = 0; i < l_rgun.size(); i++) {
+	    if (grid.Grid_point_is_outside_ship( l_rgun.get(i))) {
 		if (verboseShapeParsing)
 		   logger.warn("Left rear gun at ({},{}) is outside ship.",
-			 l_rgun[i].x, l_rgun[i].y);
-		invalid++;
+			 l_rgun.get(i).x, l_rgun.get(i).y);
+		invalid = true;
 	    }
 	}
-	for (i = 0; i < ship.num_r_rgun; i++) {
-	    if (Grid_point_is_outside_ship(&grid, r_rgun[i])) {
+	for (i = 0; i < r_rgun.size(); i++) {
+	    if (grid.Grid_point_is_outside_ship(r_rgun.get(i))) {
 		if (verboseShapeParsing)
 		   logger.warn("Right rear gun at ({},{}) is outside ship.",
-			 r_rgun[i].x, r_rgun[i].y);
-		invalid++;
+			 r_rgun.get(i).x, r_rgun.get(i).y);
+		invalid = true;
 	    }
 	}
-	for (i = 0; i < ship.num_m_rack; i++) {
-	    if (Grid_point_is_outside_ship(&grid, m_rack[i])) {
+	for (i = 0; i < m_rack.size(); i++) {
+	    if (grid.Grid_point_is_outside_ship( m_rack.get(i))) {
 		if (verboseShapeParsing)
 		   logger.warn("Missile rack at ({},{}) is outside ship.",
-			 m_rack[i].x, m_rack[i].y);
-		invalid++;
+			 m_rack.get(i).x, m_rack.get(i).y);
+		invalid = true;
 	    }
 	}
-	for (i = 0; i < ship.num_l_light; i++) {
-	    if (Grid_point_is_outside_ship(&grid, l_light[i])) {
+	for (i = 0; i < l_light.size(); i++) {
+	    if (grid.Grid_point_is_outside_ship( l_light.get(i))) {
 		if (verboseShapeParsing)
 		   logger.warn("Left light at ({},{}) is outside ship.",
-			 l_light[i].x, l_light[i].y);
-		invalid++;
+			 l_light.get(i).x, l_light.get(i).y);
+		invalid = true;
 	    }
 	}
-	for (i = 0; i < ship.num_r_light; i++) {
-	    if (Grid_point_is_outside_ship(&grid, r_light[i])) {
+	for (i = 0; i < r_light.size(); i++) {
+	    if (grid.Grid_point_is_outside_ship(r_light.get(i))) {
 		if (verboseShapeParsing)
 		   logger.warn("Right light at ({},{}) is outside ship.",
-			 r_light[i].x, r_light[i].y);
-		invalid++;
+			 r_light.get(i).x, r_light.get(i).y);
+		invalid = true;
 	    }
 	}
-	if (Grid_point_is_outside_ship(&grid, engine)) {
+	if (grid.Grid_point_is_outside_ship( engine)) {
 	    if (verboseShapeParsing)
 		logger.warn("Engine (at ({},{})) is outside ship.",
 		     engine.x, engine.y);
-	    invalid++;
+	    invalid = true;
 	}
 
 	if (debugShapeParsing) {
+	    StringBuilder logTemp = new StringBuilder(32*33);
 	    for (i = -15; i <= 15; i++) {
 		for (j = -15; j <= 15; j++) {
-		    switch (Grid_get_value(&grid, j, i)) {
-		    case 0: putchar(' '); break;
-		    case 1: putchar('*'); break;
-		    case 2: putchar('.'); break;
-		    default: putchar('?'); break;
+		    switch (grid.Grid_get_value( j, i)) {
+		    case 0: logTemp.append(' '); break;
+		    case 1: logTemp.append('*'); break;
+		    case 2: logTemp.append('.'); break;
+		    default: logTemp.append('?'); break;
 		    }
 		}
-		putchar('\n');
+            logTemp.append('\n');
 	    }
+	    logger.warn(logTemp.toString());
 	}
 
 	if (invalid)
 	    return -1;
     }
 
-    ship.num_orig_points = ship.num_points;
+    shipShapes[0].num_orig_points = pt.size();
 
-    /*MARA evil hack*/
-    /* always do SSHACK on server, it seems to work */
-    if (is_server) {
-	pt[ship.num_points] = pt[0];
-	for (i = 1; i < ship.num_points; i++)
-	    pt[i + ship.num_points] = pt[ship.num_points - i];
-	ship.num_points = ship.num_points * 2;
-    }
-    /*MARA evil hack*/
+    // todo evaluate this hack
+//    /*MARA evil hack*/
+//    /* always do SSHACK on server, it seems to work */
+//    if (is_server) {
+//	pt[ship.num_points] = pt[0];
+//	for (i = 1; i < ship.num_points; i++)
+//	    pt[i + ship.num_points] = pt[ship.num_points - i];
+//	ship.num_points = ship.num_points * 2;
+//    }
+//    /*MARA evil hack*/
 
-    i = RES;
-    if (!(ship.pts[0] = XMALLOC(Click , (size_t)ship.num_points * i))
-	|| (ship.num_l_gun
-	    && !(ship.l_gun[0]
-		 = XMALLOC(Click , (size_t)ship.num_l_gun * i)))
-	|| (ship.num_r_gun
-	    && !(ship.r_gun[0]
-		 = XMALLOC(Click , (size_t)ship.num_r_gun * i)))
-	|| (ship.num_l_rgun
-	    && !(ship.l_rgun[0]
-		 = XMALLOC(Click , (size_t)ship.num_l_rgun * i)))
-	|| (ship.num_r_rgun
-	    && !(ship.r_rgun[0]
-		 = XMALLOC(Click , (size_t)ship.num_r_rgun * i)))
-	|| (ship.num_l_light
-	    && !(ship.l_light[0]
-		 = XMALLOC(Click , (size_t)ship.num_l_light * i)))
-	|| (ship.num_r_light
-	    && !(ship.r_light[0]
-		 = XMALLOC(Click , (size_t)ship.num_r_light * i)))
-	|| (ship.num_m_rack
-	    && !(ship.m_rack[0]
-		 = XMALLOC(Click , (size_t)ship.num_m_rack * i)))) {
-	error("Not enough memory for ship shape");
-	XFREE(ship.pts[0]);
-	XFREE(ship.l_gun[0]);
-	XFREE(ship.r_gun[0]);
-	XFREE(ship.l_rgun[0]);
-	XFREE(ship.r_rgun[0]);
-	XFREE(ship.l_light[0]);
-	XFREE(ship.r_light[0]);
-	XFREE(ship.m_rack[0]);
-	return -1;
-    }
-
-    for (i = 1; i < ship.num_points; i++)
-	ship.pts[i] = ship.pts[i - 1][RES];
-
-    for (i = 1; i < ship.num_l_gun; i++)
-	ship.l_gun[i] = ship.l_gun[i - 1][RES];
-
-    for (i = 1; i < ship.num_r_gun; i++)
-	ship.r_gun[i] = ship.r_gun[i - 1][RES];
-
-    for (i = 1; i < ship.num_l_rgun; i++)
-	ship.l_rgun[i] = ship.l_rgun[i - 1][RES];
-
-    for (i = 1; i < ship.num_r_rgun; i++)
-	ship.r_rgun[i] = ship.r_rgun[i - 1][RES];
-
-    for (i = 1; i < ship.num_l_light; i++)
-	ship.l_light[i] = ship.l_light[i - 1][RES];
-
-    for (i = 1; i < ship.num_r_light; i++)
-	ship.r_light[i] = ship.r_light[i - 1][RES];
-
-    for (i = 1; i < ship.num_m_rack; i++)
-	ship.m_rack[i] = ship.m_rack[i - 1][RES];
+//
+//    for (i = 1; i < ship.num_points; i++)
+//	ship.pts[i] = ship.pts[i - 1][RES];
+//
+//    for (i = 1; i < l_gun.size(); i++)
+//	ship.l_gun[i] = ship.l_gun[i - 1][RES];
+//
+//    for (i = 1; i < r_gun.size(); i++)
+//	ship.r_gun[i] = ship.r_gun[i - 1][RES];
+//
+//    for (i = 1; i < l_rgun.size(); i++)
+//	ship.l_rgun[i] = ship.l_rgun[i - 1][RES];
+//
+//    for (i = 1; i < r_rgun.size(); i++)
+//	ship.r_rgun[i] = ship.r_rgun[i - 1][RES];
+//
+//    for (i = 1; i < l_light.size(); i++)
+//	ship.l_light[i] = ship.l_light[i - 1][RES];
+//
+//    for (i = 1; i < r_light.size(); i++)
+//	ship.r_light[i] = ship.r_light[i - 1][RES];
+//
+//    for (i = 1; i < m_rack.size(); i++)
+//	ship.m_rack[i] = ship.m_rack[i - 1][RES];
 
 
-    for (i = 0; i < ship.num_points; i++)
-	Ship_set_point_ipos(ship, i, pt[i]);
+    for (i = 0; i < pt.size(); i++)
+	Ship_set_point_ipos(i, pt.get(i));
 
     if (engineSet)
-	Ship_set_engine_ipos(ship, engine);
+	Ship_set_engine_ipos( engine);
 
     if (mainGunSet)
-	Ship_set_m_gun_ipos(ship, m_gun);
+	Ship_set_m_gun_ipos( m_gun);
 
-    for (i = 0; i < ship.num_l_gun; i++)
-	Ship_set_l_gun_ipos(ship, i, l_gun[i]);
+    for (i = 0; i < l_gun.size(); i++)
+	Ship_set_l_gun_ipos( i, l_gun.get(i));
 
-    for (i = 0; i < ship.num_r_gun; i++)
-	Ship_set_r_gun_ipos(ship, i, r_gun[i]);
+    for (i = 0; i < r_gun.size(); i++)
+	Ship_set_r_gun_ipos(i, r_gun.get(i));
 
-    for (i = 0; i < ship.num_l_rgun; i++)
-	Ship_set_l_rgun_ipos(ship, i, l_rgun[i]);
+    for (i = 0; i < l_rgun.size(); i++)
+	Ship_set_l_rgun_ipos( i, l_rgun.get(i));
 
-    for (i = 0; i < ship.num_r_rgun; i++)
-	Ship_set_r_rgun_ipos(ship, i, r_rgun[i]);
+    for (i = 0; i < r_rgun.size(); i++)
+	Ship_set_r_rgun_ipos( i, r_rgun.get(i));
 
-    for (i = 0; i < ship.num_l_light; i++)
-	Ship_set_l_light_ipos(ship, i, l_light[i]);
+    for (i = 0; i < l_light.size(); i++)
+	Ship_set_l_light_ipos( i, l_light.get(i));
 
-    for (i = 0; i < ship.num_r_light; i++)
-	Ship_set_r_light_ipos(ship, i, r_light[i]);
+    for (i = 0; i < r_light.size(); i++)
+	Ship_set_r_light_ipos( i, r_light.get(i));
 
-    for (i = 0; i < ship.num_m_rack; i++)
-	Ship_set_m_rack_ipos(ship, i, m_rack[i]);
+    for (i = 0; i < m_rack.size(); i++)
+	Ship_set_m_rack_ipos( i, m_rack.get(i));
 
-    Rotate_ship(ship);
+    Rotate_ship();
 
     return 0;
 }
 
-static ShipShape do_parse_shape(String str)
+ boolean do_parse_shape(String str)
 {
     ShipShape ship;
 
-    if (!str || !*str) {
+    if (str == null || str.isEmpty()) {
 	if (debugShapeParsing)
 	   logger.warn("shape str not set");
-	return Default_ship();
+	Default_ship();
+	return false;
     }
-    if (!(ship = XMALLOC(ShipShape , 1))) {
-	error("No mem for ship shape");
-	return Default_ship();
-    }
-    if (shape2wire(str, ship) != 0) {
-	free(ship);
+
+    if (shape2wire(str) != 0) {
 	if (debugShapeParsing)
 	   logger.warn("shape2wire failed");
-	return Default_ship();
+	 Default_ship();
+	 return false;
     }
     if (debugShapeParsing)
 	logger.warn("shape2wire succeeded");
 
-    return(ship);
+ return true;
 }
 
-void Free_ship_shape(ShipShape ship)
+void Free_ship_shape( )
 {
-    if (ship != null && ship != Default_ship()) {
-	if (ship.num_points > 0)  XFREE(ship.pts[0]);
-	if (ship.num_l_gun > 0)   XFREE(ship.l_gun[0]);
-	if (ship.num_r_gun > 0)   XFREE(ship.r_gun[0]);
-	if (ship.num_l_rgun > 0)  XFREE(ship.l_rgun[0]);
-	if (ship.num_r_rgun > 0)  XFREE(ship.r_rgun[0]);
-	if (ship.num_l_light > 0) XFREE(ship.l_light[0]);
-	if (ship.num_r_light > 0) XFREE(ship.r_light[0]);
-	if (ship.num_m_rack > 0)  XFREE(ship.m_rack[0]);
+    Default_ship();
 
-	if (ship.name) free(ship.name);
-	if (ship.author) free(ship.author);
-	free(ship);
-    }
 }
 
-ShipShape Parse_shape_str(String str)
+void Parse_shape_str(String str)
 {
-    if (is_server)
-	verboseShapeParsing = debugShapeParsing;
-    else
-	verboseShapeParsing = true;
+    // todo is_server
+//    if (is_server)
+//    {
+//        verboseShapeParsing = debugShapeParsing;
+//    }
+//    else
+//    {
+//        verboseShapeParsing = true;
+//    }
+    verboseShapeParsing = true;
     shapeLimits = true;
-    return do_parse_shape(str);
+    do_parse_shape(str);
 }
 
-ShipShape Convert_shape_str(String str)
+void Convert_shape_str(String str)
 {
     verboseShapeParsing = debugShapeParsing;
     shapeLimits = debugShapeParsing;
-    return do_parse_shape(str);
+     do_parse_shape(str);
 }
 
 /*
  * Returns 0 if ships is not valid, 1 if valid.
  */
-int Validate_shape_str(String str)
+boolean Validate_shape_str(String str)
 {
-    ShipShape ship;
+    ShipShape ship = new ShipShape();
 
     verboseShapeParsing = true;
     shapeLimits = true;
-    ship = do_parse_shape(str);
-    Free_ship_shape(ship);
-    return (ship && ship != Default_ship());
+    return ship.do_parse_shape(str);
 }
 
-void Convert_ship_2_string(ShipShape ship, String buf, String ext,
-			   unsigned shape_version)
+String Convert_ship_2_string(StringBuilder ext,
+			   int shape_version)
 {
-    char tmp[MSG_LEN];
-    int i, buflen = 0, extlen, tmplen;
+    StringBuilder tmp;
+    StringBuilder buf = new StringBuilder(300);
+    int i;
 
-    ext[extlen = 0] = '\0';
 
     if (shape_version >= 0x3200) {
 	Point2D engine, m_gun;
 
-	strcpy(buf, "(SH:");
-	buflen = strlen(&buf[0]);
-	for (i = 0; i < ship.num_orig_points && i < MAX_SHIP_PTS; i++) {
-	    Point2D pt = Ship_get_point_position(ship, i, 0);
+	buf.append("(SH:");
+	for (i = 0; i < shipShapes[0].num_orig_points && i < MAX_SHIP_PTS; i++) {
+	    Point2D pt = Ship_get_point_position(i, 0);
 
-	    sprintf(&buf[buflen], " {},{}", (int)pt.x, (int)pt.y);
-	    buflen += strlen(&buf[buflen]);
+	    buf.append(String.format(" %f.0,%f.0", pt.getX(),pt.getY()));
 	}
-	engine = Ship_get_engine_position(ship, 0);
-	m_gun = Ship_get_m_gun_position(ship, 0);
-	sprintf(&buf[buflen], ")(EN: {},{})(MG: {},{})",
-		(int)engine.x, (int)engine.y,
-		(int)m_gun.x, (int)m_gun.y);
-	buflen += strlen(&buf[buflen]);
+	engine = Ship_get_engine_position( 0);
+	m_gun = Ship_get_m_gun_position( 0);
+        buf.append(String.format(")(EN: %f.0,%f.0)(MG: %f.0,%f.0)",engine.getX(), engine.getY(),
+		m_gun.getX(), m_gun.getY()));
 
 	/*
 	 * If the calculations are correct then only from here on
@@ -1383,154 +1341,125 @@ void Convert_ship_2_string(ShipShape ship, String buf, String ext,
 	 * didn't had the extended buffer yet for which the extended
 	 * buffer will simply be discarded.
 	 */
-	if (ship.num_l_gun > 0) {
-	    strcpy(&tmp[0], "(LG:");
-	    tmplen = strlen(&tmp[0]);
-	    for (i = 0; i < ship.num_l_gun && i < MAX_GUN_PTS; i++) {
-		Point2D l_gun = Ship_get_l_gun_position(ship, i, 0);
+	if (shipShapes[0].l_gun.size() > 0) {
+	    tmp = new StringBuilder("(LG:");
+	    for (i = 0; i < shipShapes[0].l_gun.size() && i < MAX_GUN_PTS; i++) {
+		Point2D l_gun = Ship_get_l_gun_position( i, 0);
 
-		sprintf(&tmp[tmplen], " {},{}",
-			(int)l_gun.x, (int)l_gun.y);
-		tmplen += strlen(&tmp[tmplen]);
+		tmp.append(String.format(" %f.0,%f.0", l_gun.getX(),l_gun.getY()));
 	    }
-	    strcpy(&tmp[tmplen], ")");
-	    tmplen++;
-	    if (buflen + tmplen < MSG_LEN) {
-		strcpy(&buf[buflen], tmp);
-		buflen += tmplen;
-	    } else if (extlen + tmplen < MSG_LEN) {
-		strcpy(&ext[extlen], tmp);
-		extlen += tmplen;
+	    tmp.append(')');
+	    if (buf.length() + tmp.length() < MSG_LEN) {
+	        buf.append(tmp);
+		} else if (ext.length() + tmp.length() < MSG_LEN) {
+		ext.append(tmp);
 	    }
 	}
-	if (ship.num_r_gun > 0) {
-	    strcpy(&tmp[0], "(RG:");
-	    tmplen = strlen(&tmp[0]);
-	    for (i = 0; i < ship.num_r_gun && i < MAX_GUN_PTS; i++) {
-		Point2D r_gun = Ship_get_r_gun_position(ship, i, 0);
+	if (shipShapes[0].r_gun.size() > 0) {
+        tmp = new StringBuilder("(RG:");
+	    for (i = 0; i < shipShapes[0].r_gun.size() && i < MAX_GUN_PTS; i++) {
+		Point2D r_gun = Ship_get_r_gun_position( i, 0);
 
-		sprintf(&tmp[tmplen], " {},{}",
-			(int)r_gun.x, (int)r_gun.y);
-		tmplen += strlen(&tmp[tmplen]);
+            tmp.append(String.format(" %f.0,%f.0", r_gun.getX(),r_gun.getY()));
 	    }
-	    strcpy(&tmp[tmplen], ")");
-	    tmplen++;
-	    if (buflen + tmplen < MSG_LEN) {
-		strcpy(&buf[buflen], tmp);
-		buflen += tmplen;
-	    } else if (extlen + tmplen < MSG_LEN) {
-		strcpy(&ext[extlen], tmp);
-		extlen += tmplen;
+        tmp.append(')');
+        if (buf.length() + tmp.length() < MSG_LEN) {
+            buf.append(tmp);
+        } else if (ext.length() + tmp.length() < MSG_LEN) {
+            ext.append(tmp);
 	    }
 	}
-	if (ship.num_l_rgun > 0) {
-	    strcpy(&tmp[0], "(LR:");
-	    tmplen = strlen(&tmp[0]);
-	    for (i = 0; i < ship.num_l_rgun && i < MAX_GUN_PTS; i++) {
-		Point2D l_rgun = Ship_get_l_rgun_position(ship, i, 0);
+	if (shipShapes[0].l_rgun.size() > 0) {
+        tmp = new StringBuilder("(LR:");
+	    for (i = 0; i < shipShapes[0].l_rgun.size() && i < MAX_GUN_PTS; i++) {
+		Point2D l_rgun = Ship_get_l_rgun_position( i, 0);
 
-		sprintf(&tmp[tmplen], " {},{}",
-			(int)l_rgun.x, (int)l_rgun.y);
-		tmplen += strlen(&tmp[tmplen]);
+            tmp.append(String.format(" %f.0,%f.0", l_rgun.getX(),l_rgun.getY()));
 	    }
-	    strcpy(&tmp[tmplen], ")");
-	    tmplen++;
-	    if (buflen + tmplen < MSG_LEN) {
-		strcpy(&buf[buflen], tmp);
-		buflen += tmplen;
-	    } else if (extlen + tmplen < MSG_LEN) {
-		strcpy(&ext[extlen], tmp);
-		extlen += tmplen;
+        tmp.append(')');
+        if (buf.length() + tmp.length() < MSG_LEN) {
+            buf.append(tmp);
+        } else if (ext.length() + tmp.length() < MSG_LEN)
+        {
+            ext.append(tmp);
+        }
+	}
+	if (shipShapes[0].r_rgun.size() > 0) {
+        tmp = new StringBuilder("(RR:");
+	    for (i = 0; i < shipShapes[0].r_rgun.size() && i < MAX_GUN_PTS; i++) {
+		Point2D r_rgun = Ship_get_r_rgun_position( i, 0);
+
+            tmp.append(String.format(" %f.0,%f.0", r_rgun.getX(),r_rgun.getY()));
+	    }
+        tmp.append(')');
+        if (buf.length() + tmp.length() < MSG_LEN) {
+            buf.append(tmp);
+        } else if (ext.length() + tmp.length() < MSG_LEN)
+        {
+            ext.append(tmp);
+        }
+	}
+	if (shipShapes[0].l_light.size() > 0) {
+        tmp = new StringBuilder("(LL:");
+	    for (i = 0; i < shipShapes[0].l_light.size() && i < MAX_LIGHT_PTS; i++) {
+		Point2D l_light = Ship_get_l_light_position( i, 0);
+
+            tmp.append(String.format(" %f.0,%f.0", l_light.getX(),l_light.getY()));
+
+	    }
+        tmp.append(')');
+        if (buf.length() + tmp.length() < MSG_LEN) {
+            buf.append(tmp);
+        } else if (ext.length() + tmp.length() < MSG_LEN)
+        {
+            ext.append(tmp);
+        }
 	    }
 	}
-	if (ship.num_r_rgun > 0) {
-	    strcpy(&tmp[0], "(RR:");
-	    tmplen = strlen(&tmp[0]);
-	    for (i = 0; i < ship.num_r_rgun && i < MAX_GUN_PTS; i++) {
-		Point2D r_rgun = Ship_get_r_rgun_position(ship, i, 0);
+	if (shipShapes[0].r_light.size() > 0) {
+        tmp = new StringBuilder("(RL:");
+	    for (i = 0; i < shipShapes[0].r_light.size() && i < MAX_LIGHT_PTS; i++) {
+		Point2D r_light = Ship_get_r_light_position( i, 0);
 
-		sprintf(&tmp[tmplen], " {},{}",
-			(int)r_rgun.x, (int)r_rgun.y);
-		tmplen += strlen(&tmp[tmplen]);
-	    }
-	    strcpy(&tmp[tmplen], ")");
-	    tmplen++;
-	    if (buflen + tmplen < MSG_LEN) {
-		strcpy(&buf[buflen], tmp);
-		buflen += tmplen;
-	    } else if (extlen + tmplen < MSG_LEN) {
-		strcpy(&ext[extlen], tmp);
-		extlen += tmplen;
-	    }
-	}
-	if (ship.num_l_light > 0) {
-	    strcpy(&tmp[0], "(LL:");
-	    tmplen = strlen(&tmp[0]);
-	    for (i = 0; i < ship.num_l_light && i < MAX_LIGHT_PTS; i++) {
-		Point2D l_light = Ship_get_l_light_position(ship, i, 0);
+            tmp.append(String.format(" %f.0,%f.0", r_light.getX(),r_light.getY()));
 
-		sprintf(&tmp[tmplen], " {},{}",
-			(int)l_light.x, (int)l_light.y);
-		tmplen += strlen(&tmp[tmplen]);
-	    }
-	    strcpy(&tmp[tmplen], ")");
-	    tmplen++;
-	    if (buflen + tmplen < MSG_LEN) {
-		strcpy(&buf[buflen], tmp);
-		buflen += tmplen;
-	    } else if (extlen + tmplen < MSG_LEN) {
-		strcpy(&ext[extlen], tmp);
-		extlen += tmplen;
-	    }
-	}
-	if (ship.num_r_light > 0) {
-	    strcpy(&tmp[0], "(RL:");
-	    tmplen = strlen(&tmp[0]);
-	    for (i = 0; i < ship.num_r_light && i < MAX_LIGHT_PTS; i++) {
-		Point2D r_light = Ship_get_r_light_position(ship, i, 0);
+        }
+        tmp.append(')');
+        if (buf.length() + tmp.length() < MSG_LEN) {
+            buf.append(tmp);
+        } else if (ext.length() + tmp.length() < MSG_LEN)
+        {
+            ext.append(tmp);
+        }
+    }
 
-		sprintf(&tmp[tmplen], " {},{}",
-			(int)r_light.x, (int)r_light.y);
-		tmplen += strlen(&tmp[tmplen]);
-	    }
-	    strcpy(&tmp[tmplen], ")");
-	    tmplen++;
-	    if (buflen + tmplen < MSG_LEN) {
-		strcpy(&buf[buflen], tmp);
-		buflen += tmplen;
-	    } else if (extlen + tmplen < MSG_LEN) {
-		strcpy(&ext[extlen], tmp);
-		extlen += tmplen;
-	    }
-	}
-	if (ship.num_m_rack > 0) {
-	    strcpy(&tmp[0], "(MR:");
-	    tmplen = strlen(&tmp[0]);
-	    for (i = 0; i < ship.num_m_rack && i < MAX_RACK_PTS; i++) {
-		Point2D m_rack = Ship_get_m_rack_position(ship, i, 0);
+	if (shipShapes[0].m_rack.size() > 0) {
+        tmp = new StringBuilder("(MR:");
+	    for (i = 0; i < shipShapes[0].m_rack.size() && i < MAX_RACK_PTS; i++) {
+		Point2D m_rack = Ship_get_m_rack_position( i, 0);
 
-		sprintf(&tmp[tmplen], " {},{}",
-			(int)m_rack.x, (int)m_rack.y);
-		tmplen += strlen(&tmp[tmplen]);
+            tmp.append(String.format(" %f.0,%f.0", m_rack.getX(),m_rack.getY()));
 	    }
-	    strcpy(&tmp[tmplen], ")");
-	    tmplen++;
-	    if (buflen + tmplen < MSG_LEN) {
-		strcpy(&buf[buflen], tmp);
-		buflen += tmplen;
-	    } else if (extlen + tmplen < MSG_LEN) {
-		strcpy(&ext[extlen], tmp);
-		extlen += tmplen;
-	    }
-	}
+        tmp.append(')');
+        if (buf.length() + tmp.length() < MSG_LEN) {
+            buf.append(tmp);
+        } else if (ext.length() + tmp.length() < MSG_LEN)
+        {
+            ext.append(tmp);
+        }
+
+
     } else
-	buf[0] = '\0';
+	buf = new StringBuilder();
 
-    if (buflen >= MSG_LEN || extlen >= MSG_LEN)
-	logger.warn("BUG: convert ship: buffer overflow ({},{})", buflen, extlen);
+    if (buf.length() >= MSG_LEN || ext.length() >= MSG_LEN)
+	logger.warn("BUG: convert ship: buffer overflow ({},{})", buf.length(), ext.length());
 
     if (debugShapeParsing)
-	logger.warn("ship 2 str: %s %s", buf, ext);
+	logger.warn("ship 2 str: {} {}", buf, ext);
+
+    //todo what do we do with ext?
+    return buf.toString();
 }
     public enum SSKeys{
            SHAPE("SH","shape"),
@@ -1590,14 +1519,14 @@ void Calculate_shield_radius(ShipShape ship)
     int			i;
     int			radius2, max_radius = 0;
 
-    for (i = 0; i < ship.num_points; i++) {
-	Point2D pti = Ship_get_point_position(ship, i, 0);
-	radius2 = (int)(Math.pow(pti.x) + sqr(pti.y),2.0);
+    for (i = 0; i < shipShapes[0].num_points; i++) {
+	Point2D pti = Ship_get_point_position( i, 0);
+	radius2 = (int)(Math.pow(pti.getX() + (pti.getY()*pti.getY()),2.0));
 	if (radius2 > max_radius)
 	    max_radius = radius2;
     }
     max_radius = (int)(2.0 * sqrt((double)max_radius));
-    ship.shield_radius = (max_radius + 2 <= 34)
+    shipShapes[0].shield_radius = (max_radius + 2 <= 34)
 			? 34
 			: (max_radius + 2 - (max_radius & 1));
 }

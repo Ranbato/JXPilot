@@ -52,9 +52,9 @@ public static final int CLIENT_RULES_MASK = (WRAP_PLAY|TEAM_PLAY|TIMING|LIMITED_
  * The bits that the client needs must fit into a byte,
  * so the first 8 bitvalues are reserved for that purpose.
  */
-public static final int OLD_PLAYING = (1L<<0)	;	/* alive or killed */
-public static final int OLD_PAUSE = (1L<<1); 	/* paused */
-public static final int OLD_GAME_OVER = (1L<<2);		/* waiting or dead */
+public static final int OLD_PLAYING = (1<<0)	;	/* alive or killed */
+public static final int OLD_PAUSE = (1<<1); 	/* paused */
+public static final int OLD_GAME_OVER = (1<<2);		/* waiting or dead */
 
     int		lives;
     long	mode;

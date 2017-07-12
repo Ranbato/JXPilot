@@ -130,7 +130,7 @@ public static final int DECOR_BELOW = 0x40;
     short		y;			/* OLD height in blocks */
     short		width;			/* width in pixels */
     short		height;			/* height in pixels */
-    short		frames_per_second;	/* FPS */
+    public static short		frames_per_second;	/* FPS */
     short		map_order;		/* OLD row or col major */
     short		unused1;		/* padding */
     String		name;//[MAX_CHARS];	/* name of map */

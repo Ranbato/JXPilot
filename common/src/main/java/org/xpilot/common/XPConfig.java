@@ -28,7 +28,7 @@ public class XPConfig{
     public static final String CONF_DATADIR = "lib/";
 
 
-public static final String CONF_LOCALGURU = PACKAGE_BUGREPORT;
+public static final String CONF_LOCALGURU = "ranbato@gmail.com";
 
 
 public static final String CONF_DEFAULT_MAP = "ndh.xp2";
