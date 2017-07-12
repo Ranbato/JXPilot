@@ -57,6 +57,8 @@ public class ShipShapeTest
     public void convert_shape_str() throws Exception
     {
         ShipShape ship = new ShipShape();
+        ship.debugShapeParsing = true;
+        ship.verboseShapeParsing = true;
         ship.do_parse_shape(shapeList.get(0));
     }
 

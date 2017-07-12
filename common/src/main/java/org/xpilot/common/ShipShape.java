@@ -193,7 +193,7 @@ public class ShipShape {
 //extern boolean is_server;
 
     void Ship_set_point_ipos(int i, Point pos) {
-        shipShapes[0].pts.set(i, ipos2clpos(pos));
+        shipShapes[0].pts.add(i, ipos2clpos(pos));
     }
 
     void Ship_set_engine_ipos(Point pos) {
@@ -205,31 +205,31 @@ public class ShipShape {
     }
 
     void Ship_set_l_gun_ipos(int i, Point pos) {
-        shipShapes[0].l_gun.set(i, ipos2clpos(pos));
+        shipShapes[0].l_gun.add(i, ipos2clpos(pos));
     }
 
     void Ship_set_r_gun_ipos(int i, Point pos) {
-        shipShapes[0].r_gun.set(i, ipos2clpos(pos));
+        shipShapes[0].r_gun.add(i, ipos2clpos(pos));
     }
 
     void Ship_set_l_rgun_ipos(int i, Point pos) {
-        shipShapes[0].l_rgun.set(i, ipos2clpos(pos));
+        shipShapes[0].l_rgun.add(i, ipos2clpos(pos));
     }
 
     void Ship_set_r_rgun_ipos(int i, Point pos) {
-        shipShapes[0].r_rgun.set(i, ipos2clpos(pos));
+        shipShapes[0].r_rgun.add(i, ipos2clpos(pos));
     }
 
     void Ship_set_l_light_ipos(int i, Point pos) {
-        shipShapes[0].l_light.set(i, ipos2clpos(pos));
+        shipShapes[0].l_light.add(i, ipos2clpos(pos));
     }
 
     void Ship_set_r_light_ipos(int i, Point pos) {
-        shipShapes[0].r_light.set(i, ipos2clpos(pos));
+        shipShapes[0].r_light.add(i, ipos2clpos(pos));
     }
 
     void Ship_set_m_rack_ipos(int i, Point pos) {
-        shipShapes[0].m_rack.set(i, ipos2clpos(pos));
+        shipShapes[0].m_rack.add(i, ipos2clpos(pos));
     }
 
 
@@ -270,32 +270,33 @@ public class ShipShape {
 
         SShape original = shipShapes[0];
         for (int dir = 1; dir < RES; dir++) {
+            shipShapes[dir]= new SShape();
             for (i = 0; i < original.num_points; i++) {
-                shipShapes[dir].pts.set(i, Rotate_point(original.pts.get(i), dir));
+                shipShapes[dir].pts.add(i, Rotate_point(original.pts.get(i), dir));
             }
 
             shipShapes[dir].engine = Rotate_point(original.engine, dir);
             shipShapes[dir].m_gun = Rotate_point(original.m_gun, dir);
             for (i = 0; i < original.l_gun.size(); i++) {
-                shipShapes[dir].l_gun.set(i, Rotate_point(original.l_gun.get(i), dir));
+                shipShapes[dir].l_gun.add(i, Rotate_point(original.l_gun.get(i), dir));
             }
             for (i = 0; i < original.r_gun.size(); i++) {
-                shipShapes[dir].r_gun.set(i, Rotate_point(original.r_gun.get(i), dir));
+                shipShapes[dir].r_gun.add(i, Rotate_point(original.r_gun.get(i), dir));
             }
             for (i = 0; i < original.l_rgun.size(); i++) {
-                shipShapes[dir].l_rgun.set(i, Rotate_point(original.l_rgun.get(i), dir));
+                shipShapes[dir].l_rgun.add(i, Rotate_point(original.l_rgun.get(i), dir));
             }
             for (i = 0; i < original.r_rgun.size(); i++) {
-                shipShapes[dir].r_rgun.set(i, Rotate_point(original.r_rgun.get(i), dir));
+                shipShapes[dir].r_rgun.add(i, Rotate_point(original.r_rgun.get(i), dir));
             }
             for (i = 0; i < original.l_light.size(); i++) {
-                shipShapes[dir].l_light.set(i, Rotate_point(original.l_light.get(i), dir));
+                shipShapes[dir].l_light.add(i, Rotate_point(original.l_light.get(i), dir));
             }
             for (i = 0; i < original.r_light.size(); i++) {
-                shipShapes[dir].r_light.set(i, Rotate_point(original.r_light.get(i), dir));
+                shipShapes[dir].r_light.add(i, Rotate_point(original.r_light.get(i), dir));
             }
             for (i = 0; i < original.m_rack.size(); i++) {
-                shipShapes[dir].m_rack.set(i, Rotate_point(original.m_rack.get(i), dir));
+                shipShapes[dir].m_rack.add(i, Rotate_point(original.m_rack.get(i), dir));
             }
         }
     }
@@ -372,6 +373,11 @@ public class ShipShape {
             done = 0;
             pt = new byte[32][32];
             chk = new Point[32 * 32];
+            for (int i = 0;i<chk.length;i++
+                 )
+            {
+                chk[i] = new Point();
+            }
         }
 
         void Grid_set_value(int x, int y, int value) {
@@ -388,6 +394,9 @@ public class ShipShape {
 
         void Grid_add(int x, int y) {
             Grid_set_value(x, y, 2);
+            if(chk[todo] == null){
+                chk[todo] = new Point();
+            }
             chk[todo].x = x + 15;
             chk[todo].y = y + 15;
             todo++;
@@ -1261,6 +1270,9 @@ public class ShipShape {
             }
         }
 
+        if(shipShapes[0] == null){
+            shipShapes[0] = new SShape();
+        }
         shipShapes[0].num_orig_points = pt.size();
 
         // todo evaluate this hack
