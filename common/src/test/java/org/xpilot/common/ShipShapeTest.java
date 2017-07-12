@@ -70,6 +70,15 @@ public class ShipShapeTest
     @Test
     public void convert_ship_2_string() throws Exception
     {
+        ShipShape ship = new ShipShape();
+        ship.debugShapeParsing = true;
+        ship.verboseShapeParsing = true;
+        ship.do_parse_shape(shapeList.get(0));
+        String []ss = ship.Convert_ship_2_string(0x3200);
+
+        int pos = shapeList.get(0).indexOf("(SH");
+        assertEquals(shapeList.get(0).substring(pos),ss[0]);
+
     }
 
     @Test

@@ -570,7 +570,7 @@ public class ShipShape {
                                 logger.warn("Ship last point equals first point at {},{}, ignoring it.", first.x, first.y);
                             }
                             remove_edge = true;
-                            pt.remove(latest);
+                            pt.remove(pt.size() - 1);
                         }
                     }
 
@@ -1419,10 +1419,14 @@ public class ShipShape {
         return ship.do_parse_shape(str);
     }
 
-    String Convert_ship_2_string(StringBuilder ext,
-                                 int shape_version) {
+    /**
+     * Return critical ship data as a string
+     * todo what about author & name?
+     */
+    public String[] Convert_ship_2_string(int shape_version) {
         StringBuilder tmp;
         StringBuilder buf = new StringBuilder(300);
+        StringBuilder ext= new StringBuilder();
         int i;
 
 
@@ -1433,12 +1437,12 @@ public class ShipShape {
             for (i = 0; i < shipShapes[0].num_orig_points && i < MAX_SHIP_PTS; i++) {
                 Point2D pt = Ship_get_point_position(i, 0);
 
-                buf.append(String.format(" %f.0,%f.0", pt.getX(), pt.getY()));
+                buf.append(String.format(" %d,%d",Math.round(pt.getX()), Math.round(pt.getY())));
             }
             engine = Ship_get_engine_position(0);
             m_gun = Ship_get_m_gun_position(0);
-            buf.append(String.format(")(EN: %f.0,%f.0)(MG: %f.0,%f.0)", engine.getX(), engine.getY(),
-                    m_gun.getX(), m_gun.getY()));
+            buf.append(String.format(")(EN: %d,%d)(MG: %d,%d)", Math.round(engine.getX()), Math.round(engine.getY()),
+                    Math.round(m_gun.getX()), Math.round(m_gun.getY())));
 
 	/*
 	 * If the calculations are correct then only from here on
@@ -1456,7 +1460,7 @@ public class ShipShape {
                 for (i = 0; i < shipShapes[0].l_gun.size() && i < MAX_GUN_PTS; i++) {
                     Point2D l_gun = Ship_get_l_gun_position(i, 0);
 
-                    tmp.append(String.format(" %f.0,%f.0", l_gun.getX(), l_gun.getY()));
+                    tmp.append(String.format(" %d,%d",Math.round(l_gun.getX()), Math.round(l_gun.getY())));
                 }
                 tmp.append(')');
                 if (buf.length() + tmp.length() < MSG_LEN) {
@@ -1470,7 +1474,7 @@ public class ShipShape {
                 for (i = 0; i < shipShapes[0].r_gun.size() && i < MAX_GUN_PTS; i++) {
                     Point2D r_gun = Ship_get_r_gun_position(i, 0);
 
-                    tmp.append(String.format(" %f.0,%f.0", r_gun.getX(), r_gun.getY()));
+                    tmp.append(String.format(" %d,%d",Math.round(r_gun.getX()), Math.round(r_gun.getY())));
                 }
                 tmp.append(')');
                 if (buf.length() + tmp.length() < MSG_LEN) {
@@ -1484,7 +1488,7 @@ public class ShipShape {
                 for (i = 0; i < shipShapes[0].l_rgun.size() && i < MAX_GUN_PTS; i++) {
                     Point2D l_rgun = Ship_get_l_rgun_position(i, 0);
 
-                    tmp.append(String.format(" %f.0,%f.0", l_rgun.getX(), l_rgun.getY()));
+                    tmp.append(String.format(" %d,%d",Math.round(l_rgun.getX()), Math.round(l_rgun.getY())));
                 }
                 tmp.append(')');
                 if (buf.length() + tmp.length() < MSG_LEN) {
@@ -1498,7 +1502,7 @@ public class ShipShape {
                 for (i = 0; i < shipShapes[0].r_rgun.size() && i < MAX_GUN_PTS; i++) {
                     Point2D r_rgun = Ship_get_r_rgun_position(i, 0);
 
-                    tmp.append(String.format(" %f.0,%f.0", r_rgun.getX(), r_rgun.getY()));
+                    tmp.append(String.format(" %d,%d",Math.round(r_rgun.getX()), Math.round(r_rgun.getY())));
                 }
                 tmp.append(')');
                 if (buf.length() + tmp.length() < MSG_LEN) {
@@ -1512,7 +1516,7 @@ public class ShipShape {
                 for (i = 0; i < shipShapes[0].l_light.size() && i < MAX_LIGHT_PTS; i++) {
                     Point2D l_light = Ship_get_l_light_position(i, 0);
 
-                    tmp.append(String.format(" %f.0,%f.0", l_light.getX(), l_light.getY()));
+                    tmp.append(String.format(" %d,%d",Math.round(l_light.getX()), Math.round(l_light.getY())));
 
                 }
                 tmp.append(')');
@@ -1528,7 +1532,7 @@ public class ShipShape {
             for (i = 0; i < shipShapes[0].r_light.size() && i < MAX_LIGHT_PTS; i++) {
                 Point2D r_light = Ship_get_r_light_position(i, 0);
 
-                tmp.append(String.format(" %f.0,%f.0", r_light.getX(), r_light.getY()));
+                tmp.append(String.format(" %d,%d",Math.round(r_light.getX()), Math.round(r_light.getY())));
 
             }
             tmp.append(')');
@@ -1544,7 +1548,7 @@ public class ShipShape {
             for (i = 0; i < shipShapes[0].m_rack.size() && i < MAX_RACK_PTS; i++) {
                 Point2D m_rack = Ship_get_m_rack_position(i, 0);
 
-                tmp.append(String.format(" %f.0,%f.0", m_rack.getX(), m_rack.getY()));
+                tmp.append(String.format(" %d,%d",Math.round(m_rack.getX()), Math.round(m_rack.getY())));
             }
             tmp.append(')');
             if (buf.length() + tmp.length() < MSG_LEN) {
@@ -1566,8 +1570,7 @@ public class ShipShape {
             logger.warn("ship 2 str: {} {}", buf, ext);
         }
 
-        //todo what do we do with ext?
-        return buf.toString();
+        return new String [] {buf.toString(),ext.toString()};
     }
 
     public enum SSKeys {
