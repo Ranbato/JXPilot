@@ -4,6 +4,8 @@ import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -18,6 +20,7 @@ import static org.junit.Assert.*;
  */
 public class ShipShapeTest
 {
+    static Logger logger = LoggerFactory.getLogger(ShipShapeTest.class);
     @Rule
     public ExpectedException expectedException = ExpectedException.none();
 
@@ -80,8 +83,10 @@ public class ShipShapeTest
             String[] ss = ship.Convert_ship_2_string(0x3200);
 
             int pos = shape.indexOf("(SH");
-            assertEquals("Shipshape " + i + " did not survive round-trip", shape.substring(pos), ss[0]);
-            assertEquals("Ext " + i + " was created", "", ss[1]);
+            if(!shape.substring(pos).equals(ss[0])) {
+              logger.info("Shipshape " + i + " did not survive round-trip \n Expected :'{}'\n Actual   :'{}'",shape.substring(pos), ss[0]);
+            }
+           assertEquals("Ext " + i + " was created", "", ss[1]);
         }
     }
 
