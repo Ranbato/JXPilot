@@ -1,3 +1,4 @@
+
 /*
  * XPilot NG, a multiplayer space war game.
  *
@@ -25,21 +26,21 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#include "xpclient.h"
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+public class TextInterface{
 
-#define MAX_LINE	MSG_LEN	/* should not be smaller than MSG_LEN */
+static final String MAX_LINE=	MSG_LEN;	/* should not be smaller than MSG_LEN */
 
-
-extern int		dgram_one_socket;	/* from datagram.c */
-
+private static Logger logger = LoggerFactory.getLogger(TextInterface.class);
 
 /*
  * just like fgets() but strips newlines like gets().
  */
 static String  get_line(String  buf, int len, FILE* stream)
 {
-    char		*nl;
+    String nl;
 
     if (fgets(buf, len, stream)) {
 	nl = strchr(buf, '\n');
@@ -56,18 +57,9 @@ static String  get_line(String  buf, int len, FILE* stream)
 /*
  * Replace control characters with a space.
  */
-static void Clean_string(String buf)
+static String Clean_string(String buf)
 {
-    char		*str;
-    int			c;
-
-    for (str = buf; *str; str++) {
-	c = (*str & 0xFF);
-	if (!isascii(c) || iscntrl(c)) {
-	    if (!strchr("\r\n", c))
-		*str = ' ';
-	}
-    }
+    return buf.replaceAll("\\p{Cntrl}+"," ");
 }
 
 
@@ -726,11 +718,11 @@ int Connect_to_server(int auto_connect, int list_servers,
 }
 
 
-int Contact_servers(int count, char **servers,
+int Contact_servers(int count, String *servers,
 		    int auto_connect, int list_servers,
 		    int auto_shutdown, String shutdown_reason,
 		    int find_max, int *num_found,
-		    char **server_addresses, char **server_names,
+		    String *server_addresses, String *server_names,
 		    unsigned *server_versions,
 		    Connect_param_t *conpar)
 {
@@ -862,4 +854,5 @@ int Contact_servers(int count, char **servers,
     close_dgram_socket(&sock);
 
     return connected ? true : false;
+}
 }

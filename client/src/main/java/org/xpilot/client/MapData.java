@@ -1,3 +1,5 @@
+package org.xpilot.client;
+
 /*
  * XPilot NG, a multiplayer space war game.
  *
@@ -18,182 +20,171 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#include "xpclient.h"
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.xpilot.common.ShipShape;
 
-/* kps - you should be able to change this without a recompile */
-#define DATADIR ".xpilot_data"
-#define COPY_BUF_SIZE 8192
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.nio.charset.Charset;
+import java.util.zip.GZIPInputStream;
+import java.util.zip.ZipInputStream;
 
-typedef struct {
-    String protocol;
-    String host;
-    int   port;
-    String path;
-    String query;
-} URL;
+public class MapData{
 
-static int Mapdata_extract(String name);
-static int Mapdata_download(const URL *url, String filePath);
-static int Url_parse(String urlstr, URL *url);
-static void Url_free_parsed(URL *url);
+    static final Logger logger = LoggerFactory.getLogger(MapData.class);
 
-static bool setup_done = false;
 
-int Mapdata_setup(String urlstr)
+    /* kps - you should be able to change this without a recompile */
+static final String DATADIR =".xpilot_data";
+static final int COPY_BUF_SIZE =8192;
+
+
+static boolean setup_done = false;
+
+boolean Mapdata_setup(String urlstr)
 {
     URL url;
-    String name, *dir = null;
-    char path[1024], buf[1024], *ptr;
-    int rv = false;
+    String name;
+            File dir;
+    File path;
+    boolean rv = false;
 
     if (setup_done)
 	return true;
 
-    memset(path, 0, sizeof(path));
-    memset(buf, 0, sizeof(buf));
-
-    if (!Url_parse(urlstr, &url)) {
-	warn("malformed URL: %s", urlstr);
-	return false;
+    try
+    {
+        url = new URL(urlstr);
+    } catch (MalformedURLException e)
+    {
+        logger.warn("malformed URL: {}", urlstr,e);
+        return false;
     }
 
-    for (name = url.path + strlen(url.path) - 1; name > url.path; name--) {
-	if (*(name - 1) == '/')
-	    break;
+
+    String urlPath = url.getPath();
+    if (urlPath.isEmpty()) {
+	logger.warn("no file name in URL: {}", urlstr);
+	return rv;
     }
 
-    if (*name == '\0') {
-	warn("no file name in URL: %s", urlstr);
-	goto end;
-    }
-
-    if (realTexturePath != null) {
-	for (dir = strtok(realTexturePath, ":"); dir; dir = strtok(null, ":"))
-	    if (access(dir, R_OK | W_OK | X_OK) == 0)
-		break;
-    }
-	
+    int idx = urlPath.lastIndexOf('/');
+    name = urlPath.substring(idx);
+    // todo from gfx2d
+//    if (realTexturePath != null) {
+//	for (dir = strtok(realTexturePath, ":"); dir; dir = strtok(null, ":"))
+//	    if (access(dir, R_OK | W_OK | X_OK) == 0)
+//		break;
+//    }
+//
     if (dir == null) {
 
 	/* realTexturePath hasn't got a directory with proper access rights */
 	/* so lets create one into users home dir */
 
-	String home = getenv("HOME");
+	String home = System.getenv("user.home");
 	if (home == null) {
-	    error("couldn't access any dir in %s and HOME is unset", path);
-	    goto end;
+	    logger.error("couldn't access any dir in {} and HOME is unset", path);
+        return rv;
 	}
 
-	if (strlen(home) == 0)
-	    sprintf(buf, "%s", DATADIR);
-	else if (home[strlen(home) - 1] == PATHNAME_SEP)
-	    sprintf(buf, "%s%s", home, DATADIR);
-	else
-	    sprintf(buf, "%s%c%s", home, PATHNAME_SEP, DATADIR);
+	    dir = new File(home,DATADIR);
 
-	if (access(buf, F_OK) != 0) {
-	    if (mkdir(buf, S_IRWXU | S_IRWXG | S_IRWXO) == -1) {
-		error("failed to create directory %s", dir);
-		goto end;
+	// todo add Permissions?
+	if(!dir.mkdir())  {
+		logger.error("failed to create directory {}", dir);
+        return rv;
 	    }
 	}
 
-	dir = buf;
-    }
 
-    if (strlen(dir) == 0)
-	sprintf(path, "%s", name);
-    else if (dir[strlen(dir) - 1] == PATHNAME_SEP)
-	sprintf(path, "%s%s", dir, name);
-    else
-	sprintf(path, "%s%c%s", dir, PATHNAME_SEP, name);
+    path = new File(dir,name);
 
-    if (strrchr(path, '.') == null) {
-	error("no extension in file name %s.", name);
-	goto end;
+    if (!name.contains(".")) {
+	logger.error("no extension in file name {}.", name);
+        return rv;
     }
 
     /* temporarily make path point to the directory name */
-    ptr = strrchr(path, '.');
-    *ptr = '\0';
+//    ptr = strrchr(path, '.');
+//    *ptr = '\0';
 
     /* add this new texture directory to texturePath */
     if (realTexturePath == null) {
-	realTexturePath = strdup(path);
+	realTexturePath = path.getPath();
     } else {
-	String temp = XMALLOC(char, strlen(realTexturePath) + strlen(path) + 2);
-	if (temp == null) {
-	    error("not enough memory to new realTexturePath");
-	    goto end;
-	}
-	sprintf(temp, "%s:%s", realTexturePath, path);
-	free(realTexturePath);
-	realTexturePath = temp;
+	realTexturePath = realTexturePath + ":"+path.getPath();
     }
 
-    if (access(path, F_OK) == 0) {
-	warn("Required bitmaps have already been downloaded.");
+    if (path.exists()) {
+	logger.warn("Required bitmaps have already been downloaded.");
 	rv = true;
-	goto end;
+        return rv;
     }
     /* reset path so that it points to the package file name */
-    *ptr = '.';
+//    *ptr = '.';
 
-    warn("Downloading map data from %s to %s.", urlstr, path);
+    logger.warn("Downloading map data from {} to {}.", urlstr, path);
 
-    if (!Mapdata_download(&url, path)) {
-	warn("downloading map data failed");
-	goto end;
+    if (!Mapdata_download(url, path)) {
+	logger.warn("downloading map data failed");
+        return rv;
     }
 
     if (!Mapdata_extract(path)) {
-	warn("extracting map data failed");
-	goto end;
+	logger.warn("extracting map data failed");
+        return rv;
     }
 
     rv = true;
     setup_done = true;
 
- end:
-    Url_free_parsed(&url);
     return rv;
 }
 
 
-static int Mapdata_extract(String name)
+static boolean Mapdata_extract(File name)
 {
-    gzFile in;
-    FILE *out;
+
+    File out;
     int retval;
     size_t rlen, wlen;
-    char dir[256], buf[COPY_BUF_SIZE], fname[256], *ptr;
-    long int size;
+    File dir;
+    byte buf[] = new byte[COPY_BUF_SIZE];
+    String fname[256];
+    int size;
     int count, i;
 
-    strlcpy(dir, name, sizeof dir);
-    ptr = strrchr(dir, '.');
-    if (ptr == null) {
-	error("file name has no extension %s", dir);
-	return 0;
-    }
-    *ptr = '\0';
 
-    if (mkdir(dir, S_IRWXU | S_IRWXG | S_IRWXO) == -1) {
-	error("failed to create directory %s", dir);
-	return 0;
+    String fileOnly = name.getName();
+    if (!fileOnly.contains(".")) {
+        logger.error("no extension in file name {}.", name);
+        return false;
     }
 
-    if ((in = gzopen(name, "rb")) == null) {
-	error("failed to open %s for reading", name);
-	return 0;
+    // todo add Permissions?
+    if(!dir.mkdir())  {
+        logger.error("failed to create directory {}", dir);
+        return false;
     }
 
-    if (gzgets(in, buf, COPY_BUF_SIZE) == Z_NULL) {
-	error("failed to read header from %s", name);
-	gzclose(in);
-	return 0;
+    try (GZIPInputStream in = new GZIPInputStream(new FileInputStream(name)))
+    {
+
+    int offset = 0;
+
+    if (in.read(buf, 0,COPY_BUF_SIZE) == -1) {
+	logger.error("failed to read header from {}", name);
+	in.close();
+	return false;
     }
 
+    String data = new String(buf, Charset.defaultCharset());
     if (sscanf(buf, "XPD %d\n", &count) != 1) {
 	error("invalid header in %s", name);
 	gzclose(in);
@@ -223,7 +214,7 @@ static int Mapdata_extract(String name)
 	    return 0;
 	}
 
-	warn("Extracting %s (%ld)", fname, size);
+	logger.warn("Extracting %s (%ld)", fname, size);
 
 	if ((out = fopen(fname, "wb")) == null) {
 	    error("failed to open %s for writing", buf);
@@ -262,7 +253,13 @@ static int Mapdata_extract(String name)
     }
 
     gzclose(in);
-    return 1;
+    } catch (IOException e)
+    {
+        logger.error("failed to open {} for reading", name.toString());
+        return false;
+    }
+
+    return true;
 }
 
 
@@ -405,87 +402,3 @@ static int Mapdata_download(const URL *url, String filePath)
     return rv;
 }
 
-
-static int Url_parse(String urlstr, URL *url)
-{
-    int len, i, beg, doPort;
-    String buf;
-
-    memset(url, 0, sizeof(URL));
-    url.port = 80;
-    url.path = "/";
-
-    len = strlen(urlstr);
-    buf = strdup(urlstr);
-    if (buf == null) {
-	error("no memory for URL");
-	return false;
-    }
-
-    for (i = 0; i < len; i++) {
-	if (buf[i] == ':') {
-	    buf[i] = '\0';
-	    url.protocol = buf;
-	    break;
-	}
-    }
-
-    beg = i + 3;
-    if (beg >= len || buf[i + 1] != '/' || buf[i + 2] != '/') {
-	free(buf);
-	return false;
-    }
-
-    doPort = 0;
-    for (i = beg; i < len; i++) {
-	if (buf[i] == ':' || buf[i] == '/') {
-	    if (buf[i] == ':') doPort = 1;
-	    buf[i] = '\0';
-	    break;
-	}
-    }
-
-    url.host = buf + beg;
-    beg = i + 1;
-    if (beg >= len) return true;
-
-    if (doPort) {
-	for (i = beg; i < len; i++) {
-	    if (buf[i] == '/') {
-		buf[i] = '\0';
-		break;
-	    }
-	}
-	url.port = atoi(buf + beg);
-	/* error detection should be added */
-
-	beg = i + 1;
-	if (beg >= len)
-	    return true;
-    }
-
-    /* make space for / in the beginning of path */
-    memmove(url.host - 1, url.host, strlen(url.host) + 1);
-    url.host--;
-    buf[beg - 1] = '/';
-
-    for (i = beg; i < len; i++) {
-	if (buf[i] == '?') {
-	    buf[i] = '\0';
-	    break;
-	}
-    }
-    url.path = buf + beg - 1;
-
-    beg = i + 1;
-    if (beg >= len) return true;
-
-    url.query = buf + beg;
-    return true;
-}
-
-
-static void Url_free_parsed(URL *url)
-{
-    free(url.protocol);
-}
