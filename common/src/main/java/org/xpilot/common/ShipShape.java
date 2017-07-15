@@ -3,7 +3,10 @@ package org.xpilot.common;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.swing.*;
 import java.awt.*;
+import java.awt.geom.AffineTransform;
+import java.awt.geom.Path2D;
 import java.awt.geom.Point2D;
 import java.util.*;
 
@@ -48,6 +51,29 @@ public class ShipShape {
 
     ArrayList<Click> cashed_pts = new ArrayList<>(MAX_SHIP_PTS);
     int cashed_dir;
+
+    public void drawShip(JPanel panel, int dir) {
+
+        Path2D shape = new Path2D.Float();
+
+        for (int idx = 0;idx < shipShapes[dir].pts.size();idx++
+             ) {
+            Click p = shipShapes[dir].pts.get(idx);
+            if(idx == 0){
+                shape.moveTo(p.cx,p.cy);
+            } else {
+                shape.lineTo(p.cx,p.cy);
+            }
+
+        }
+        Graphics2D graphics2D = (Graphics2D)panel.getGraphics();
+        graphics2D.translate(500,500);
+        AffineTransform at = new AffineTransform();
+        at.scale(0.25,0.25);
+        shape.transform(at);
+        graphics2D.setColor(Color.BLACK);
+        graphics2D.draw(shape);
+    }
 
     static class SShape extends Shape {
 
@@ -1356,7 +1382,7 @@ public class ShipShape {
         return 0;
     }
 
-    boolean do_parse_shape(String str) {
+ public    boolean do_parse_shape(String str) {
 
         if (str == null || str.isEmpty()) {
             if (debugShapeParsing) {

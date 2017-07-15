@@ -5,4 +5,5 @@ include 'server'
 include 'mapedit'
 include 'replay'
 include 'legacy/jxpilot'
+include 'legacy/jxpmap'
 

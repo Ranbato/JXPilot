@@ -24,13 +24,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xpilot.common.ShipShape;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
+import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+import java.util.Scanner;
+import java.util.regex.MatchResult;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.ZipInputStream;
 
@@ -151,21 +151,23 @@ boolean Mapdata_setup(String urlstr)
 static boolean Mapdata_extract(File name)
 {
 
-    File out;
-    int retval;
-    size_t rlen, wlen;
+   int retval;
+    int rlen, wlen;
     File dir;
     byte buf[] = new byte[COPY_BUF_SIZE];
-    String fname[256];
+    String data;
+    File fname;
     int size;
     int count, i;
 
 
-    String fileOnly = name.getName();
-    if (!fileOnly.contains(".")) {
+    int ext = name.getPath().lastIndexOf('.');
+    if (ext == -1) {
         logger.error("no extension in file name {}.", name);
         return false;
     }
+    // create directory to hold file contents
+    dir = new File(name.getPath().substring(0,ext-1));
 
     // todo add Permissions?
     if(!dir.mkdir())  {
@@ -176,83 +178,52 @@ static boolean Mapdata_extract(File name)
     try (GZIPInputStream in = new GZIPInputStream(new FileInputStream(name)))
     {
 
-    int offset = 0;
+    Scanner input = new Scanner(in);
+    input.useDelimiter("[\\r\\n]");
+    String header = input.next();
+        if(header.matches("XPD \\d+")) {
+            count = Integer.parseInt(header.substring(4));
+        }else {
+            logger.error("invalid header in {}", name);
 
-    if (in.read(buf, 0,COPY_BUF_SIZE) == -1) {
-	logger.error("failed to read header from {}", name);
-	in.close();
-	return false;
-    }
-
-    String data = new String(buf, Charset.defaultCharset());
-    if (sscanf(buf, "XPD %d\n", &count) != 1) {
-	error("invalid header in %s", name);
-	gzclose(in);
-	return 0;
-    }
+            return false;
+        }
+  
 
     for (i = 0; i < count; i++) {
 
-	if (gzgets(in, buf, COPY_BUF_SIZE) == Z_NULL) {
-	    error("failed to read file info from %s", name);
-	    gzclose(in);
-	    return 0;
-	}
+        data = input.next();
 
-	sprintf(fname, "%s%c", dir, PATHNAME_SEP);
+        fname = new File(dir, data);
+        size = input.nextInt();
 
-	if (sscanf(buf, "%s\n%ld\n", fname + strlen(dir) + 1, &size) != 2) {
-	    error("failed to parse file info %s", buf);
-	    gzclose(in);
-	    return 0;
-	}
+        logger.warn("Extracting {} ({})", fname.getPath(), size);
 
-	/* security check */
-	if (strchr(fname + strlen(dir) + 1, PATHNAME_SEP) != null) {
-	    error("file name %s is illegal", fname);
-	    gzclose(in);
-	    return 0;
-	}
+        try (BufferedOutputStream out = new BufferedOutputStream(new FileOutputStream(fname))) {
+            while (size > 0) {
+                retval = in.read(buf, 0, Math.min(COPY_BUF_SIZE, size));
+                if (retval == -1) {
+                    logger.error("error when reading {}", name);
+                    return false;
+                }
+                rlen = retval;
+                try {
+                    out.write(buf, 0, rlen);
+                } catch (IOException e) {
 
-	logger.warn("Extracting %s (%ld)", fname, size);
+                    logger.error("failed to write to {}", fname);
+                    return false;
+                }
 
-	if ((out = fopen(fname, "wb")) == null) {
-	    error("failed to open %s for writing", buf);
-	    gzclose(in);
-	    return 0;
-	}
+                size -= rlen;
+            }
+        } catch (IOException e) {
+            logger.error("failed to open {} for writing", fname.getPath(), e);
+            return false;
+        }
 
-	while (size > 0) {
-	    retval = gzread(in, buf, Math.min(COPY_BUF_SIZE, (unsigned)size));
-	    if (retval == -1) {
-		error("error when reading %s", name);
-		gzclose(in);
-		fclose(out);
-		return 0;
-	    }
-	    if (retval == 0) {
-		error("unexpected end of file %s", name);
-		gzclose(in);
-		fclose(out);
-		return 0;
-	    }
-
-	    rlen = retval;
-	    wlen = fwrite(buf, 1, rlen, out);
-	    if (wlen != rlen) {
-		error("failed to write to %s", fname);
-		gzclose(in);
-		fclose(out);
-		return 0;
-	    }
-
-	    size -= rlen;
-	}
-
-	fclose(out);
     }
 
-    gzclose(in);
     } catch (IOException e)
     {
         logger.error("failed to open {} for reading", name.toString());
@@ -263,12 +234,12 @@ static boolean Mapdata_extract(File name)
 }
 
 
-static int Mapdata_download(const URL *url, String filePath)
+static int Mapdata_download(URL url, String filePath)
 {
     char buf[1024];
     int rv, header, c, len, i;
     sock_t s;
-    FILE *f = null;
+    FILE f = null;
     size_t n;
 
     if (strncmp("http", url.protocol, 4) != 0) {
@@ -290,7 +261,7 @@ static int Mapdata_download(const URL *url, String filePath)
 	if (snprintf(buf, sizeof buf,
 	     "GET %s?%s HTTP/1.1\r\nHost: %s:%d\r\nConnection: close\r\n\r\n",
 	     url.path, url.query, url.host, url.port) == -1) {
-	    error("too long URL");
+	    logger.error("too long URL");
 	    sock_close(&s);
 	    return false;
 	}
@@ -300,7 +271,7 @@ static int Mapdata_download(const URL *url, String filePath)
 	     "GET %s HTTP/1.1\r\nHost: %s:%d\r\nConnection: close\r\n\r\n",
 	     url.path, url.host, url.port) == -1) {
 
-	    error("too long URL");
+	    logger.error("too long URL");
 	    sock_close(&s);
 	    return false;
 	}
@@ -397,7 +368,7 @@ static int Mapdata_download(const URL *url, String filePath)
     printf("\n");
     if (f)
 	if (fclose(f) != 0)
-	    error("Error closing texture file %s", filePath);
+	    logger.error("Error closing texture file %s", filePath);
     sock_close(&s);
     return rv;
 }
