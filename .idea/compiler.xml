@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="CompilerConfiguration">
+    <bytecodeTargetLevel>
+      <module name="client_main" target="1.8" />
+      <module name="client_test" target="1.8" />
+      <module name="common_main" target="1.8" />
+      <module name="common_test" target="1.8" />
+      <module name="JXPilot_main" target="1.8" />
+      <module name="JXPilot_test" target="1.8" />
+      <module name="legacy_jxpilot_main" target="1.8" />
+      <module name="legacy_jxpilot_test" target="1.8" />
+      <module name="legacy_jxpmap_main" target="1.8" />
+      <module name="legacy_jxpmap_test" target="1.8" />
+      <module name="mapedit_main" target="1.8" />
+      <module name="mapedit_test" target="1.8" />
+      <module name="replay_main" target="1.8" />
+      <module name="replay_test" target="1.8" />
+      <module name="server_main" target="1.8" />
+      <module name="server_test" target="1.8" />
+    </bytecodeTargetLevel>
+  </component>
+</project>

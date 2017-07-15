@@ -27,6 +27,7 @@ import org.xpilot.common.ShipShape;
 import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.URLConnection;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.Scanner;
@@ -43,109 +44,112 @@ public class MapData{
 static final String DATADIR =".xpilot_data";
 static final int COPY_BUF_SIZE =8192;
 
+// todo This needs to come from gfx2d
+String realTexturePath;
+
 
 static boolean setup_done = false;
 
-boolean Mapdata_setup(String urlstr)
-{
+boolean Mapdata_setup(String urlstr) {
     URL url;
     String name;
-            File dir;
-    File path;
+    File dir=null;
+    File path = null;
     boolean rv = false;
 
     if (setup_done)
-	return true;
+        return true;
 
-    try
-    {
+    try {
         url = new URL(urlstr);
-    } catch (MalformedURLException e)
-    {
-        logger.warn("malformed URL: {}", urlstr,e);
+    } catch (MalformedURLException e) {
+        logger.warn("malformed URL: {}", urlstr, e);
         return false;
     }
 
 
     String urlPath = url.getPath();
     if (urlPath.isEmpty()) {
-	logger.warn("no file name in URL: {}", urlstr);
-	return rv;
+        logger.warn("no file name in URL: {}", urlstr);
+        return rv;
     }
 
     int idx = urlPath.lastIndexOf('/');
     name = urlPath.substring(idx);
-    // todo from gfx2d
-//    if (realTexturePath != null) {
-//	for (dir = strtok(realTexturePath, ":"); dir; dir = strtok(null, ":"))
-//	    if (access(dir, R_OK | W_OK | X_OK) == 0)
-//		break;
-//    }
-//
-    if (dir == null) {
+
+    if (realTexturePath != null) {
+        String[] paths = realTexturePath.split(":");
+
+        for (int i = 0; i < paths.length; i++) {
+            dir = new File(paths[i]);
+            if (dir.canRead() && dir.canWrite() && dir.canExecute()) {
+                break;
+            }
+            dir = null;
+        }
+
+        if (dir == null) {
 
 	/* realTexturePath hasn't got a directory with proper access rights */
 	/* so lets create one into users home dir */
 
-	String home = System.getenv("user.home");
-	if (home == null) {
-	    logger.error("couldn't access any dir in {} and HOME is unset", path);
-        return rv;
-	}
+            String home = System.getenv("user.home");
+            if (home == null) {
+                logger.error("couldn't access any dir in {} and HOME is unset", path);
+                return rv;
+            }
 
-	    dir = new File(home,DATADIR);
+            dir = new File(home, DATADIR);
 
-	// todo add Permissions?
-	if(!dir.mkdir())  {
-		logger.error("failed to create directory {}", dir);
-        return rv;
-	    }
-	}
+            // todo add Permissions?
+            if (!dir.mkdir()) {
+                logger.error("failed to create directory {}", dir);
+                return rv;
+            }
+        }
 
 
-    path = new File(dir,name);
+        path = new File(dir, name);
 
-    if (!name.contains(".")) {
-	logger.error("no extension in file name {}.", name);
-        return rv;
-    }
+        if (!name.contains(".")) {
+            logger.error("no extension in file name {}.", name);
+            return rv;
+        }
 
-    /* temporarily make path point to the directory name */
-//    ptr = strrchr(path, '.');
-//    *ptr = '\0';
 
     /* add this new texture directory to texturePath */
-    if (realTexturePath == null) {
-	realTexturePath = path.getPath();
-    } else {
-	realTexturePath = realTexturePath + ":"+path.getPath();
+        if (realTexturePath == null) {
+            realTexturePath = path.getPath();
+        } else {
+            realTexturePath = realTexturePath + ":" + path.getPath();
+        }
+
+        if (path.exists()) {
+            logger.warn("Required bitmaps have already been downloaded.");
+            rv = true;
+            return rv;
+        }
+
+
+        logger.warn("Downloading map data from {} to {}.", urlstr, path);
+
+        if (!Mapdata_download(url, path)) {
+            logger.warn("downloading map data failed");
+            return rv;
+        }
+
+        if (!Mapdata_extract(path)) {
+            logger.warn("extracting map data failed");
+            return rv;
+        }
     }
 
-    if (path.exists()) {
-	logger.warn("Required bitmaps have already been downloaded.");
-	rv = true;
+        rv = true;
+        setup_done = true;
+
         return rv;
     }
-    /* reset path so that it points to the package file name */
-//    *ptr = '.';
 
-    logger.warn("Downloading map data from {} to {}.", urlstr, path);
-
-    if (!Mapdata_download(url, path)) {
-	logger.warn("downloading map data failed");
-        return rv;
-    }
-
-    if (!Mapdata_extract(path)) {
-	logger.warn("extracting map data failed");
-        return rv;
-    }
-
-    rv = true;
-    setup_done = true;
-
-    return rv;
-}
 
 
 static boolean Mapdata_extract(File name)
@@ -234,142 +238,36 @@ static boolean Mapdata_extract(File name)
 }
 
 
-static int Mapdata_download(URL url, String filePath)
-{
-    char buf[1024];
-    int rv, header, c, len, i;
-    sock_t s;
-    FILE f = null;
-    size_t n;
+static boolean Mapdata_download(URL url, File filePath) {
+    byte[] buf = new byte[1024];
+    int header, c, len, i;
+    int read;
+    int write;
+    File f = null;
+    int n;
+    boolean rv = true;
 
-    if (strncmp("http", url.protocol, 4) != 0) {
-	error("unsupported protocol %s", url.protocol);
-	return false;
+    if (!url.getProtocol().equalsIgnoreCase("http")) {
+        logger.warn("unsupported protocol {}, trying anyway", url.getProtocol());
+    }
+    try {
+        URLConnection conn = url.openConnection();
+        BufferedInputStream inputStream = new BufferedInputStream(conn.getInputStream());
+        BufferedOutputStream outputStream = new BufferedOutputStream(new FileOutputStream(filePath));
+
+        while((read = inputStream.read(buf,0,buf.length)) != -1){
+            outputStream.write(buf,0,read);
+        }
+        outputStream.close();
+        inputStream.close();
+
+
+    } catch (IOException ex) {
+        logger.error("failed to get map textures data", ex);
+        return false;
     }
 
-    if (sock_open_tcp(&s) == SOCK_IS_ERROR) {
-	error("failed to create a socket");
-	return false;
-    }
-    if (sock_connect(&s, url.host, url.port) == SOCK_IS_ERROR) {
-	error("couldn't connect to download address");
-	sock_close(&s);
-	return false;
-    }
-
-    if (url.query) {
-	if (snprintf(buf, sizeof buf,
-	     "GET %s?%s HTTP/1.1\r\nHost: %s:%d\r\nConnection: close\r\n\r\n",
-	     url.path, url.query, url.host, url.port) == -1) {
-	    logger.error("too long URL");
-	    sock_close(&s);
-	    return false;
-	}
-
-    } else {
-	if (snprintf(buf, sizeof buf,
-	     "GET %s HTTP/1.1\r\nHost: %s:%d\r\nConnection: close\r\n\r\n",
-	     url.path, url.host, url.port) == -1) {
-
-	    logger.error("too long URL");
-	    sock_close(&s);
-	    return false;
-	}
-    }
-
-    if (sock_write(&s, buf, (int)strlen(buf)) == -1) {
-	error("socket write failed");
-	sock_close(&s);
-	return false;
-    }
-
-    header = 2;
-    c = 0;
-
-    for(;;) {
-	len = 0;
-	while (len < 100) {
-	    if ((i = sock_read(&s, buf + len, sizeof(buf) - len)) == -1) {
-		error("socket read failed");
-		rv = false;
-		goto done;
-	    }
-	    if (i == 0)
-		break;
-	    len += i;
-	}
-
-	if (len == 0) {
-	    rv = !header;
-	    break;
-	}
-
-	if (header == 2) {
-	    if (strncmp(buf, "HTTP", 4)) {
-		rv = false;
-		break;
-	    }
-	    i = 0;
-	    while (buf[i] != ' ') {
-		i++;
-		if (i >= len - 1) {
-		    rv = false;
-		    goto done;
-		}
-	    }
-	    i++;
-	    if (buf[i] != '2') {   /* HTTP status code starts with 2 */
-		rv = false;
-		break;
-	    }
-	    header = 1;
-	}
-
-	printf("#");
-	fflush(stdout);
-
-	if (header) {
-	    for (i = 0; i < len; i++) {
-		if (c % 2 == 0 && buf[i] == '\r')
-		    c++;
-		else if (c % 2 == 1 && buf[i] == '\n')
-		    c++;
-		else
-		    c = 0;
-
-		if (c == 4) {
-		    header = 0;
-		    if ((f = fopen(filePath, "wb")) == null) {
-			error("failed to open %s", filePath);
-			rv = false;
-			goto done;
-		    }
-		    if (i < len - 1) {
-			n = len - i - 1;
-			memmove(buf, buf + i + 1, n);
-			len = len - i - 1;
-		    } else if (i == len - 1) {
-			len = 0;
-		    }
-		}
-	    }
-	}
-
-	if (!header && len) {
-	    n = len;
-	    if (fwrite(buf, 1, n, f) < n) {
-		error("file write failed");
-		rv =  false;
-		break;
-	    }
-	}
-    }
- done:
-    printf("\n");
-    if (f)
-	if (fclose(f) != 0)
-	    logger.error("Error closing texture file %s", filePath);
-    sock_close(&s);
     return rv;
+}
 }
 

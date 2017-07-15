@@ -1,0 +1,224 @@
+
+[SHIPSHAPER (http://www.student.nada.kth.se/~d93-jsv/xpilot/sshaper)]
+
+
+            © Jonny Svärling a.k.a. HeadAce/Gnilravs
+
+            ShipShaper is a freeware shipshape editor for the game XPilot.
+
+               * NEWS
+               * FEATURES
+               * PLATFORMS
+               * DOWNLOAD
+               * INSTALL
+               * NOTES
+               * CHANGES
+               * KNOWN BUGS & PROBLEMS
+               * SEE ALSO
+               * CONTACT ME
+               * STANDARD DISCLAIMER
+               * A SHORT STORY
+
+
+              NEWS
+
+
+               * ShipShaper 1.0 released!
+
+
+
+
+              FEATURES
+
+
+               * Written in Java. This means it should run on all platforms with a
+                 Java virtual machine (at least in theory).
+               * Nice, easy to use graphical interface (I hope).
+  [Image]      * You can draw ship edges one by one. When saving a ship the program
+ Click here      calculated the minimum number of "real" edges needed to create a
+to see a big     ship made up of a single polyline.
+ screenshoot   * Cut, copy, and paste.
+     of        * Operations like moving, splitting, and joining on vertices (ship
+ ShipShaper      nodes) and ship edges.
+ running in    * Operations like scrolling, rotating and flipping on ships.
+    Unix       * Possible to edit ships in two directions. With the nose facing up,
+                 and with the nose facing right.
+
+
+
+              PLATFORMS
+
+            Since ShipShaper is a 100% pure Java application it should run on every
+            platform with a Java virtual machine installed.
+
+            I have not even tried it on the Machintosh (I am too lazy :-) or other
+            systems. But it should work in Windows with JDK 1.1.5 or higher.
+            This is some kind of a beta version so do not be too surprised if you
+            find some bugs. Actually, I have not tested it very much so it is more
+            like a alpha version...:-)
+
+
+              DOWNLOAD
+
+            Download the latest version, v1.0.
+
+            Please read the installation instructions in the next section!
+
+
+              INSTALL
+
+            I assume you have a working JDK or JRE installation... The JDK (Java
+            Developer Kit) is the developer version of Java and the JRE (Java
+            Runtime Environment) is a minimal Java installation for running Java
+            applications. So if you do not already have the JDK, I recommend that
+            you install the JRE. Version 1.1.5 or higher is required.
+
+           * To install, unzip the zip-file with a unzipp:er that can handle long
+            file-names. A directory called "ShipShaper" will automatically be
+            created so you don't have to create one before unzipping the file.
+
+           * After unzipping the files it can be convinient to create
+            script/batch files to run ShipShaper.
+
+            In Windows 95, you can create a batch file similar to this one:
+
+              set CLASSPATH=C:\Apps\ShipShaper\ss.jar
+              C:\
+              cd \Apps\ShipShaper
+              javaw shipshaper.ShipShaper
+
+
+            The "cd" is needed to make sure that ShipShaper can find its files
+            (graphics + config). Does anybody know a better way to do this? There
+            must be one...hmm...maybe it is possible to use the new resource stuff
+            in JDK1.1+...
+
+            In Unix, you can make a script that looks something like this:
+
+              cd /foo/ShipShaper
+              java -classpath /foo/ShipShaper/ss.jar:$CLASSPATH shipshaper.ShipShaper
+
+
+            Note: You can use javaw (or jrew) if you do not want to see a console
+            window...
+
+
+              NOTES
+
+
+               * Click on the right mouse button to end drawing operations.
+               * The numbers displayed in the Tool panel when the Edge tool is used
+                 are the number of "visible" edges, and the number of "true" edges
+                 respectively. For example, "13 (15)" means you have used 13 edges,
+                 but 15 is required to make a "draw the whole figure without lifting
+                 the pen" ship.
+               * To be able to load the ship in XPilot it must be fully connected (no
+                 "islands"). The number of "true" edges will be displayed as "(-)" if
+                 it is not connected. It is possible to save the ship in that
+                 situation, but only ShipShaper will be able to load it.
+               * You can use your XPilot configuration file (xpilotrc) for
+   [Image]       loading/saving ships in addition to "stand-alone" shipshape files.
+                 But take backup copies of your xpilotrc before trying to use it with
+                 ShipShaper beacause this function has not been tested very much...
+                 :-)
+               * The preferences are saved in a file called ss.cfg in the directory
+                 you started ShipShaper from. So make sure you start ShipShaper from
+                 the ShipShaper directory (for example by using scripts like the ones
+                 in the INSTALL section).
+               * If you hold the mouse pointer over a miniature ship view the ship
+                 starts to rotate!
+
+
+
+              CHANGES
+
+
+            Version 1.0 (1998-06-01)
+
+               * Made a workaround for the Unix dialog bug. I found out that
+                 non-resizable dialogs doesn't work on Unix system. So if you are
+                 running ShipShaper on a Unix system the dialogs will be resizable.
+
+            Version 0.91 (1998-02-01)
+
+               * Fixed some ship definition string parsing errors (not real errors
+                 actually, now the parser is more forgiving to errors in the
+                 definition string). Also improved the parsing error messages.
+               * Fixed a bug which caused the ship to appear mirrored. Stupid me.
+               * Added a "mirror marker".
+               * Some minor improvements.
+
+            Version 0.9 (1998-01-26)
+
+               * The first released version. Full with bugs! :-)
+
+
+
+              KNOWN BUGS & PROBLEMS
+
+
+               * Only works properly in Windows (due to AWT errors) [Fixed in 1.0].
+               * When loading big (huge) shipshape files it is easy to run out of
+                 memory.
+               * Get parsing errors when parsing ships which are not following the
+   [Image]       "specification" exactly. [Fixed in v0.91]
+               * The ship equipment (guns, lights, etc.) appears to be "mirrored"
+                 [Fixed in v0.91]
+
+
+
+              SEE ALSO
+
+            Here are some links related to ShipShaper:
+
+               * HeadAce Homebase - My XPilot homepage
+               * The XPilot official homepage
+               * Javasoft Homepage
+
+
+
+              CONTACT THE AUTHOR
+
+            If you have any comments, suggestions, bug reports, send an email to my
+            address at school:
+
+               d93-jsv@nada.kth.se
+
+            Then of course, you can always look at this page to get the latest
+            information:
+
+               http://www.student.nada.kth.se/~d93-jsv/xpilot/sshaper
+
+
+              A SHORT STORY
+
+            I started working on ShipShaper in 1996 because I wanted to learn some
+            Java. I also wanted to do something "real", and I decided to do this
+            editor for my favourite game XPilot!
+
+            In a few weeks I had something that looked like an editor but had a lot
+            of problems to get rid of all bugs (actually, later on I found out that
+            many of them was in Java itself). So I got tired of it and did not touch
+            it for two years... :-)
+
+            Ok, two years later with more Java skills, I rewrote the whole program.
+            Now it was almost, almost finished. Actually, it worked almost perfectly
+            (for beeing a beta) on Windows 95, but not on Unix. "Write once, run
+            everywhere" Hmm... :-) I even a description plus snapshots on my XPilot
+            homepage. I could have released it but did not because I wanted to fix
+            the Unix bugs first. And the Winddows 95 version had a nasty AWT bug to.
+            But I had my hands full with other things and forgot about it....:-)
+
+            Later (in 1998), when developing another Java application, I found that
+            the (mostly AWT related) problems I had with ShipShaper was gone in newer
+            versions of the Java JDK. So, I recompiled ShipShaper with the new JDK
+            and it worked! At least on Windows 95....
+
+            Now you know what happened to the "almost" finished ShipShaper I talked
+            with some people about earlier... Hehe... :-)
+
+            I am not sure if I want to spend any more time on developing this program
+            any more, but I can at least fix any major bugs that turns up (and
+            hopefully get the Unix version working).
+
+

@@ -1,0 +1,367 @@
+Manifest-Version: 1.0
+
+Name: shipshaper/AboutWindow.class
+Digest-Algorithms: SHA MD5 
+SHA-Digest: h+1Ryrjf0ED2keDYV6sTVioJ1qU=
+MD5-Digest: 444U6/M2SQS2EWF/06KNbA==
+
+Name: shipshaper/graph/Edge.class
+Digest-Algorithms: SHA MD5 
+SHA-Digest: 7QefLBAvey/8QKKOaJ74I1q8Nis=
+MD5-Digest: dJ4BNl0LSVFVw6omTrGkDQ==
+
+Name: shipshaper/graph/Graph.class
+Digest-Algorithms: SHA MD5 
+SHA-Digest: 0PMzGcA1O58MD/xlHnoiR40WKpY=
+MD5-Digest: hJJSV49qlPKmRfVCtT84KA==
+
+Name: shipshaper/graph/Vertex.class
+Digest-Algorithms: SHA MD5 
+SHA-Digest: ZDuLwHoKYdVqNTs2AXeqU9E3uq4=
+MD5-Digest: 9SE8yh+5Y9aPUhhxblL0hQ==
+
+Name: shipshaper/AboutWindow$AboutCanvas.class
+Digest-Algorithms: SHA MD5 
+SHA-Digest: m7e0F0ad+YsWTkG1ftfdu1tDypw=
+MD5-Digest: 8GbcIMPEgpmvHeMNo3jhCg==
+
+Name: shipshaper/BorderedPane.class
+Digest-Algorithms: SHA MD5 
+SHA-Digest: yT3Nlex5W7hBvK528stgT8S/Eao=
+MD5-Digest: ZfTGp2iCGxixyZOW0sn6uA==
+
+Name: shipshaper/Colors.class
+Digest-Algorithms: SHA MD5 
+SHA-Digest: 4/a/UiQpKvrfyIPcuQDc5rG7HUY=
+MD5-Digest: 8+xOv3gMmZ4q+zxs0reRjw==
+
+Name: shipshaper/Equipment.class
+Digest-Algorithms: SHA MD5 
+SHA-Digest: xIkp06c+tBYLJuSFAEX/nsizjC8=
+MD5-Digest: YXAr+I2uJJRxLOQxU61gUA==
+
+Name: shipshaper/ImageHolder.class
+Digest-Algorithms: SHA MD5 
+SHA-Digest: MLbxpE3c/IH2UcPyqiRpM8Pqees=
+MD5-Digest: /8Sanx78aQaQKtHNONDeYg==
+
+Name: shipshaper/Images$TheObserver.class
+Digest-Algorithms: SHA MD5 
+SHA-Digest: +EsRqw0u/li3sI6B8+sZKBaP3r8=
+MD5-Digest: NlfYvEjN5CVW8VVL/1UdBw==
+
+Name: shipshaper/Item.class
+Digest-Algorithms: SHA MD5 
+SHA-Digest: j1PLn9Uq/98kBMeS+1EdIRIMviY=
+MD5-Digest: 7ZUnevC4T0Ew5BHzIs0+Ow==
+
+Name: shipshaper/Item$ItemType.class
+Digest-Algorithms: SHA MD5 
+SHA-Digest: Hzbg5xn1u6/HMkmoFA7QVduxrFQ=
+MD5-Digest: xxwuGg6xP8U99Sg3112keA==
+
+Name: shipshaper/NameAndAuthorPanel.class
+Digest-Algorithms: SHA MD5 
+SHA-Digest: FXbpQo/jKOiZB1AZGxAS1HX9y5I=
+MD5-Digest: uDXkjXkPpVX189nzCVMS+Q==
+
+Name: shipshaper/PositionView.class
+Digest-Algorithms: SHA MD5 
+SHA-Digest: pvmkUjH6+yDSOBPzx/Ejyvypk9s=
+MD5-Digest: a7GoG1jab4lHgA9xwnxbFg==
+
+Name: shipshaper/PreferencesWindow.class
+Digest-Algorithms: SHA MD5 
+SHA-Digest: evghjWUqp+kpqlAsDynaNnW5mEI=
+MD5-Digest: 12TEbZNjviO3mMaLbrvdBg==
+
+Name: shipshaper/Ship.class
+Digest-Algorithms: SHA MD5 
+SHA-Digest: U6DKjuxKkM6RiXI7ZDqBGkiKyTI=
+MD5-Digest: tR0+D4nxZUxzw8IoR7npwQ==
+
+Name: shipshaper/ShipBrowser.class
+Digest-Algorithms: SHA MD5 
+SHA-Digest: fCezkafe408bOHbUwfopHdAdjgw=
+MD5-Digest: 9UGfLEz9NXgRPCMB3rIPAQ==
+
+Name: shipshaper/ShipEvent.class
+Digest-Algorithms: SHA MD5 
+SHA-Digest: Et1p7Z6OIa6P6/AJWJTVhXBTdRU=
+MD5-Digest: XYHcfiNfQxYHJxMNBDWWcw==
+
+Name: shipshaper/ShipHolder.class
+Digest-Algorithms: SHA MD5 
+SHA-Digest: F1r7S0w0vaAEtNb0OHG6/NqeMCs=
+MD5-Digest: UkkY40Zp86C5VakKBPMp/g==
+
+Name: shipshaper/ShipView.class
+Digest-Algorithms: SHA MD5 
+SHA-Digest: BTeYLDB3/gMp8IXkXwFE4REPgRg=
+MD5-Digest: PUYW51udhT+DBlcl3q4KeQ==
+
+Name: shipshaper/Images.class
+Digest-Algorithms: SHA MD5 
+SHA-Digest: PU3ZgphhUhqxu+TlMEuVyYjFR4k=
+MD5-Digest: eoR/M3s7cuHQOQDo87mbag==
+
+Name: shipshaper/Preferences.class
+Digest-Algorithms: SHA MD5 
+SHA-Digest: F/Tf8J+Fk7Ad7+ydRVM75pjXAu0=
+MD5-Digest: grNpivpDQXPO8Dn97TNfBQ==
+
+Name: shipshaper/ShipListener.class
+Digest-Algorithms: SHA MD5 
+SHA-Digest: fpy4b3iRYPJgbA1xvN1ojBM6aOI=
+MD5-Digest: 98V/sOF1Y2ZfPM8R8J/7oA==
+
+Name: shipshaper/tools/DeleteTool.class
+Digest-Algorithms: SHA MD5 
+SHA-Digest: D+zKvJbQpNMg5ZBLsdeUbzDkOtQ=
+MD5-Digest: EdeayRWSMxvlekTtawf7dw==
+
+Name: shipshaper/tools/ItemTool.class
+Digest-Algorithms: SHA MD5 
+SHA-Digest: UqWKrqj3NKmKqRC1BHXEhev391I=
+MD5-Digest: 0J4YUix29ty+1EaRNoCWLw==
+
+Name: shipshaper/tools/JoinTool.class
+Digest-Algorithms: SHA MD5 
+SHA-Digest: 0OgPQdEPXO2MmeXLId+f3SxxsFg=
+MD5-Digest: jzjQnXXH75QAVOtEACH0Ug==
+
+Name: shipshaper/tools/LineTool.class
+Digest-Algorithms: SHA MD5 
+SHA-Digest: +ehF7DHakK0yDffK/usPR9CB/l4=
+MD5-Digest: vNTsn2KYTj8seq3KosE0Fw==
+
+Name: shipshaper/tools/MoveTool.class
+Digest-Algorithms: SHA MD5 
+SHA-Digest: FHi9oypNd/ONE+j6KbtuexKMVQs=
+MD5-Digest: 7UaCqA3fKDrc3YL0c1UWAg==
+
+Name: shipshaper/tools/PolyLineTool.class
+Digest-Algorithms: SHA MD5 
+SHA-Digest: g6vLWNSOm6ZU428jB/o1y7ISqd0=
+MD5-Digest: 1ca9MFQB4EbGji+tBd6Bbg==
+
+Name: shipshaper/tools/SplitTool.class
+Digest-Algorithms: SHA MD5 
+SHA-Digest: qSgwtqlLxpuBFp4y8D6qU66bbjc=
+MD5-Digest: P3QWFN/U1SfVFw5BmMmDGQ==
+
+Name: shipshaper/tools/Tool.class
+Digest-Algorithms: SHA MD5 
+SHA-Digest: WZ79N5pncxsB/8uCREapreAwbIo=
+MD5-Digest: WCMMASaldRPtNIQjkQZ6YQ==
+
+Name: shipshaper/imagebuttons/ClickImageButton.class
+Digest-Algorithms: SHA MD5 
+SHA-Digest: ptLZfynUMtf1ns6UAIKTXrgXPF0=
+MD5-Digest: yD/9W9/rLgMmJCxFjW2Sng==
+
+Name: shipshaper/imagebuttons/ImageButton.class
+Digest-Algorithms: SHA MD5 
+SHA-Digest: 1j2ZOsxmgbXwFtoTvPQw4SKrPc0=
+MD5-Digest: 06pm0AIi9TywJSq6ZimyZw==
+
+Name: shipshaper/imagebuttons/RadioImageButton.class
+Digest-Algorithms: SHA MD5 
+SHA-Digest: T2dwI4oo0C7qGlfML4YF7eu9+T0=
+MD5-Digest: yLTn57h7JstdkwJFCC4Y8w==
+
+Name: shipshaper/imagebuttons/RadioImageButtonGroup.class
+Digest-Algorithms: SHA MD5 
+SHA-Digest: /QpOS8Myk04gT41QcUrSITR5Jwg=
+MD5-Digest: C4Cxwi51rq2iz2bcGgkbVw==
+
+Name: shipshaper/imagebuttons/ToggleImageButton.class
+Digest-Algorithms: SHA MD5 
+SHA-Digest: RV0TwylsGt81YdK7ThXZB92x8HY=
+MD5-Digest: Otgay2c0aYyoGbabeOF+iQ==
+
+Name: shipshaper/dialogs/MessageDialog.class
+Digest-Algorithms: SHA MD5 
+SHA-Digest: cHTMtiyarp51yrDMYa44JVWmXw8=
+MD5-Digest: jSmBQF8j9H2w7DZXewOPTg==
+
+Name: shipshaper/dialogs/OkCancelDialog.class
+Digest-Algorithms: SHA MD5 
+SHA-Digest: 4gtLZIoRnfagWez3H6Tg0zX+F2o=
+MD5-Digest: ZJMBKxbuW0KXEQG5aoN/Uw==
+
+Name: shipshaper/dialogs/OkDialog.class
+Digest-Algorithms: SHA MD5 
+SHA-Digest: Ucx6iL5Tqqkhzuze22dHvhqWxMs=
+MD5-Digest: IwfNUa/F3TuotcERbyN0Hg==
+
+Name: shipshaper/dialogs/ThreeButtonDialog.class
+Digest-Algorithms: SHA MD5 
+SHA-Digest: I5zzhSXwMhkjt1jVgXVPsTGYPRU=
+MD5-Digest: Q+1Qn9Mq7dhowP99nfbdFg==
+
+Name: shipshaper/dialogs/YesNoDialog.class
+Digest-Algorithms: SHA MD5 
+SHA-Digest: aT4z+mlwC/nj/ycD+E3RAG6HrdE=
+MD5-Digest: 4IXn86tFxRGjBgfmajXh0g==
+
+Name: shipshaper/DrawArea.class
+Digest-Algorithms: SHA MD5 
+SHA-Digest: KVqteBKMjfbXTSnUC908C3D20KM=
+MD5-Digest: wQHHZQuJtjxPfxowQD7CAQ==
+
+Name: shipshaper/OperationsPanel.class
+Digest-Algorithms: SHA MD5 
+SHA-Digest: BHCj7lodUOuqSEpBaKOwJR5WS60=
+MD5-Digest: wZfioGrULsOqrgz1OT7rxQ==
+
+Name: shipshaper/ShipEditor.class
+Digest-Algorithms: SHA MD5 
+SHA-Digest: tBoUGw4bCuIc72iSYEwCqYzAVJM=
+MD5-Digest: 8fPIgQOCG4IBu6MudRwxyw==
+
+Name: shipshaper/ShipShaper.class
+Digest-Algorithms: SHA MD5 
+SHA-Digest: G7zMWyxDHeKJS24V/wYtD2tRBe0=
+MD5-Digest: SrgwdqLrD0rbGYGdJDf/qg==
+
+Name: shipshaper/ToolPanel.class
+Digest-Algorithms: SHA MD5 
+SHA-Digest: 25E1oIDjo6mlLQ5HJOQWCGdlbDQ=
+MD5-Digest: GvodynzJuEu6en1U3/a2zQ==
+
+Name: shipshaper/graphics/i_delete.gif
+Digest-Algorithms: SHA MD5 
+SHA-Digest: rpnmjxwuIomQYQ6VKItrDrHFJ4Y=
+MD5-Digest: U42SXFznp71ftHsw1U8Odw==
+
+Name: shipshaper/graphics/i_singleline.gif
+Digest-Algorithms: SHA MD5 
+SHA-Digest: aDl04ci+SSUuXVe4H7oI0YrzzpQ=
+MD5-Digest: ucNK8n39MAN9/+TUUCQL8w==
+
+Name: shipshaper/graphics/i_split.gif
+Digest-Algorithms: SHA MD5 
+SHA-Digest: 08mNgvmesX+2vnql4t6MBgfvmeM=
+MD5-Digest: svyHVDdmKbC1/Ahde8vfhA==
+
+Name: shipshaper/graphics/i_line.gif
+Digest-Algorithms: SHA MD5 
+SHA-Digest: aDl04ci+SSUuXVe4H7oI0YrzzpQ=
+MD5-Digest: ucNK8n39MAN9/+TUUCQL8w==
+
+Name: shipshaper/graphics/logo.gif
+Digest-Algorithms: SHA MD5 
+SHA-Digest: +UAOwNYSRA+06r4PMZZHbvWZ8GM=
+MD5-Digest: Af5iLixEAZLqQQQtmA6OGQ==
+
+Name: shipshaper/graphics/i_move.gif
+Digest-Algorithms: SHA MD5 
+SHA-Digest: dYCjVPIZUo75f2yc3p1m4NjEK4Q=
+MD5-Digest: Tj1SXZPKc9hjRpCkqvYQ6g==
+
+Name: shipshaper/graphics/i_engine.gif
+Digest-Algorithms: SHA MD5 
+SHA-Digest: lsv4QsoDkjI6449hTcMgRVloda8=
+MD5-Digest: QQY5n/JAaLjoLs+XQiwhQw==
+
+Name: shipshaper/graphics/i_missile_rack.gif
+Digest-Algorithms: SHA MD5 
+SHA-Digest: sbZ/kzFiESsR/ZkXxvLmlUJpGSc=
+MD5-Digest: 87NMk5wMbzkP0AaxAw2BAA==
+
+Name: shipshaper/graphics/i_left_light.gif
+Digest-Algorithms: SHA MD5 
+SHA-Digest: HexCegxI0o2dcbMkQ3NBQK0nfEs=
+MD5-Digest: DEQR1NEbqOYmcDN99QJz7Q==
+
+Name: shipshaper/graphics/i_main_gun.gif
+Digest-Algorithms: SHA MD5 
+SHA-Digest: +DMbgMzEVRR7hpXI6wT0yApLZhk=
+MD5-Digest: 2XSh0sf53GifUfyVmY/xfA==
+
+Name: shipshaper/graphics/i_left_gun.gif
+Digest-Algorithms: SHA MD5 
+SHA-Digest: HOxN2UNCnUB9msEd2mnVHS5IsfM=
+MD5-Digest: inWD0wkPASFDspI2qFM/ow==
+
+Name: shipshaper/graphics/i_right_gun.gif
+Digest-Algorithms: SHA MD5 
+SHA-Digest: 1fO7B2oIzajG/IihdtvRnrllRPA=
+MD5-Digest: rfS+RwzD6uA6+gQRCzjugQ==
+
+Name: shipshaper/graphics/i_right_rgun.gif
+Digest-Algorithms: SHA MD5 
+SHA-Digest: WrlIayrOs0vtbzOPwIVP2UuG508=
+MD5-Digest: aHenZY/6xBG+qqEaLZDkiw==
+
+Name: shipshaper/graphics/i_left_rgun.gif
+Digest-Algorithms: SHA MD5 
+SHA-Digest: O7EZ9bsJtYVKr1A2IzqXZmgrU90=
+MD5-Digest: sivVUDKrs3XiG5X6i6Wutw==
+
+Name: shipshaper/graphics/i_right_light.gif
+Digest-Algorithms: SHA MD5 
+SHA-Digest: AlY1SlmVFjE+9QCMwiDIW13h+Xg=
+MD5-Digest: Zhb/Ow05TKwW1xbNo9R07A==
+
+Name: shipshaper/graphics/small_logo.gif
+Digest-Algorithms: SHA MD5 
+SHA-Digest: ltlSvHxO8NySzian198a5DPP0Y8=
+MD5-Digest: njU2RMoPqV5jUlxdUyeKXg==
+
+Name: shipshaper/graphics/o_rotate1.gif
+Digest-Algorithms: SHA MD5 
+SHA-Digest: 9auP3LtEcmjDHajUw5OsRpXtBe0=
+MD5-Digest: g72jy1jYjS5FEOnNrh17hA==
+
+Name: shipshaper/graphics/o_rotate2.gif
+Digest-Algorithms: SHA MD5 
+SHA-Digest: rnfv+2gDlyWorJEJ/hIvCxQyUwM=
+MD5-Digest: VAdzd+/iNjp/0g1VILRq1g==
+
+Name: shipshaper/graphics/o_flip_horiz.gif
+Digest-Algorithms: SHA MD5 
+SHA-Digest: FyrbII6k8N2Z3cv8ocT5w/LUlIk=
+MD5-Digest: lnv86Ha5U5/2+DbgWnpfZw==
+
+Name: shipshaper/graphics/o_flip_vert.gif
+Digest-Algorithms: SHA MD5 
+SHA-Digest: Tw4WyfSV2JHHoKdxkx9ZeI37uBY=
+MD5-Digest: g7KK3LT88gC563bomwm11w==
+
+Name: shipshaper/graphics/o_clear.gif
+Digest-Algorithms: SHA MD5 
+SHA-Digest: arZadHBuulnqtWYMpCHSEbuashY=
+MD5-Digest: xpfyTDMmep0V/AujpwzMGg==
+
+Name: shipshaper/graphics/i_join.gif
+Digest-Algorithms: SHA MD5 
+SHA-Digest: vZ1Mgh6VMy07CWvfG2AoHuB1f5M=
+MD5-Digest: 0FP9aRz/S45KD03TYrs/Nw==
+
+Name: shipshaper/graphics/o_scroll_up.gif
+Digest-Algorithms: SHA MD5 
+SHA-Digest: 4Zw21/RH+m8L3XfR2+k68WLByWw=
+MD5-Digest: lJXlo3YY2KJbp+/C/vlhqw==
+
+Name: shipshaper/graphics/o_scroll_right.gif
+Digest-Algorithms: SHA MD5 
+SHA-Digest: E3aNvpUvqeglnFKLi/Wfmldmp6A=
+MD5-Digest: 8FgrQZb+XzMbnVOMEwt7bA==
+
+Name: shipshaper/graphics/o_scroll_down.gif
+Digest-Algorithms: SHA MD5 
+SHA-Digest: 8vBN1mV4CX3gLUPxeS4S1Mv2HlQ=
+MD5-Digest: 4c4Z4nf0zreeyh5vi+2rog==
+
+Name: shipshaper/graphics/o_scroll_left.gif
+Digest-Algorithms: SHA MD5 
+SHA-Digest: fDkC2ouBguAQtmsMLwK8eskhj7c=
+MD5-Digest: qu8WgUb7mGpVQu3OvKzHrQ==
+
+Name: shipshaper/graphics/icon.gif
+Digest-Algorithms: SHA MD5 
+SHA-Digest: sP7EbA4eF1N0f6WPOGhVYl6dlW8=
+MD5-Digest: BvyyVzvEvtA2jXFxjj7fLQ==
+
