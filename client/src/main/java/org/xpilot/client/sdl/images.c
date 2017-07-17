@@ -37,7 +37,7 @@ static int pow2_ceil(int t)
 static int Image_init(image_t *img)
 {
     int i, x, y;
-    xp_picture_t pic;
+    XPPicture pic;
     RGB_COLOR c;
     
     if (img.state != IMG_STATE_UNINITIALIZED)

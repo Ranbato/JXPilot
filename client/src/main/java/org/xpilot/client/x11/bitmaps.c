@@ -389,8 +389,8 @@ static void Bitmap_picture_scale(xp_pixmap_t * xp_pixmap, int image)
 
     /* scale bounding box as well. */
     {
-	bbox_t *src = &xp_pixmap.picture.bbox[image];
-	bbox_t *dst = &xp_pixmap.bitmaps[image].bbox;
+	BBox *src = &xp_pixmap.picture.bbox[image];
+	BBox *dst = &xp_pixmap.bitmaps[image].bbox;
 
 	dst.xmin = (int) ((width * src.xmin) / orig_width);
 	dst.ymin = (int) ((height * src.ymin) / orig_height);
@@ -410,7 +410,7 @@ static void Bitmap_picture_scale(xp_pixmap_t * xp_pixmap, int image)
 void Bitmap_paint(Drawable d, int img, int x, int y, int bmp)
 {
     xp_bitmap_t *bit;
-    bbox_t *box;
+    BBox *box;
     Rectangle area;
 
     if ((bit = Bitmap_get(d, img, bmp)) == null)
@@ -432,7 +432,7 @@ void Bitmap_paint(Drawable d, int img, int x, int y, int bmp)
 void Bitmap_paint_blended(Drawable d, int img, int x, int y, int rgb)
 {
     xp_bitmap_t *bit;
-    bbox_t *box;
+    BBox *box;
     Rectangle area;
 
     if ((bit = Bitmap_get_blended(d, img, rgb)) == null)

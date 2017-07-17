@@ -29,7 +29,7 @@ extern HDC itemsDC;
 HDC hDCb;
 HDC hDC;
 
-xp_picture_t radar_colors;
+XPPicture radar_colors;
 
 extern int texturedObjects;
 

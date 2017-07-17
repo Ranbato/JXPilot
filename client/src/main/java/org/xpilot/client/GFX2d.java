@@ -1,3 +1,5 @@
+package org.xpilot.client;
+
 /*
  * XPilot NG, a multiplayer space war game.
  *
@@ -23,10 +25,59 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#include "xpclient.h"
+import org.slf4j.LoggerFactory;
 
-char	*texturePath = null;    /* Configured list of texture directories */
-char    *realTexturePath = null; /* Real texture lookup path */
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.util.ArrayList;
+
+
+public class GFX2d {
+
+	static org.slf4j.Logger logger = LoggerFactory.getLogger(GFX2d.class);
+ int RGB_COLOR;
+
+int RGB24(int r, int g,int b) {
+return ((((b)&255) << 16) | (((g)&255) << 8) | ((r)&255));}
+
+int RED_VALUE(int col){return  ((col) &255);}
+	int GREEN_VALUE(int col) {return(((col) >> 8) &255);}
+	int BLUE_VALUE(int col) {return (((col) >>16) &255);}
+
+/*
+ * Purpose: bounding box for one image or a set of images.
+ * The xmin and ymin elements give the lowest coordinate which
+ * has a non-black color value.  The xmax and ymax elements
+ * give the highest coordinate which has a non-black color.
+ * The number of pixels covered by one box is given by:
+ * (xmax + 1 - xmin, ymax + 1 - ymin).
+ */
+static class BBox{
+    int xmin, ymin;
+    int xmax, ymax;
+}
+
+
+/*
+ * Purpose: A device/os independent structure to do keep 24bit images in.
+ * an instance of XPPicture can contain more than 1 image,
+ * This feature is  useful for structural identical bitmaps (example: items), 
+ * and rotated images. When dealing with rotated images, the first image
+ * in the XPPicture structure is used as texture for the transformation of
+ * the others.
+ */
+
+static class XPPicture {
+    int	width, height;
+    int		count;
+    ArrayList<BufferedImage> data;
+
+    ArrayList<BBox>	bbox;
+}
+
+
+String texturePath = null;    /* Configured list of texture directories */
+String realTexturePath = null; /* Real texture lookup path */
 
 /*
  *   Purpose: initialize xp_picture structure and load it from file.
@@ -36,72 +87,55 @@ char    *realTexturePath = null; /* Real texture lookup path */
  *   return -1 on error.
  */
 
-int Picture_init (xp_picture_t *picture, String filename, int count)
+	XPPicture Picture_init ( String filename, int count)
 {
+
+    XPPicture picture = new XPPicture();
     picture.count = count;
-    picture.data = XMALLOC(RGB_COLOR *, Math.abs(count));
-    if (!picture.data) {
-	error("Not enough memory.");
-	return -1;
-    }
+    picture.data = new ArrayList<>( Math.abs(count));
 
     if (Picture_load(picture, filename) == -1)
-	return -1;
+	return null;
 
     if (count > 1)
         if (Picture_rotate(picture) == -1)
-	    return -1;
+	    return null;
 
-    picture.bbox = XMALLOC(bbox_t, Math.abs(count));
-    if (!picture.bbox) {
-	error("Not enough memory.");
-	return -1;
-    }
+    picture.bbox = new ArrayList<>( Math.abs(count));
+
     Picture_get_bounding_box(picture);
 
-    return 0;
+    return picture;
 }
 
 
 /*
  * Find full path for a picture filename.
  */
-static int Picture_find_path(String filename, String path,
-			     size_t path_size)
+ File Picture_find_path(String filename)
 {
-    char		*dir, *colon;
-    size_t		len;
-
-    if (!filename || !*filename)
-	return false;
+    if (filename == null|| filename.isEmpty())
+	return null;
 
     /*
      * If filename doesn't contain a slash
      * then we also try the realTexturePath, if it exists.
      */
-    if (!strchr(filename, PATHNAME_SEP) && realTexturePath != null) {
-	for (dir = realTexturePath; *dir; dir = colon) {
-	    if (!(colon = strchr(dir, ':'))) {
-		len = strlen(dir);
-		colon = &dir[len];
-	    } else {
-		len = colon - dir;
-		colon++;
-	    }
-	    if (len > 0 && len + strlen(filename) + 1 < path_size) {
-		memcpy(path, dir, len);
-		if (path[len - 1] != PATHNAME_SEP)
-		    path[len++] = PATHNAME_SEP;
-		strlcpy(&path[len], filename, path_size - len);
-		/* kps - #ifndef R_OK #define R_OK 4 #endif */
-		if (access(path, R_OK) == 0)
-		    return true;
-	    }
+    File file = null;
+    if(realTexturePath != null){
+    	String[] dirs = realTexturePath.split(":");
+    	for(String dir:dirs){
+    		file = new File(dir,filename);
+    		if(file.canRead()){
+    			break;
+			}
+		}
 	}
-    }
 
-    /*error("Can't find PPM file \"%s\"", filename);*/
-    return(false);
+
+
+    /*logger.error("Can't find PPM file \"%s\"", filename);*/
+    return(file);
 }
 
 /*
@@ -161,7 +195,7 @@ static int Picture_get_decimal(FILE *f, int c, int *dec)
  * return 0 on success.
  * return -1 on error.
  */
-int Picture_load(xp_picture_t *picture, String filename)
+XPPicture Picture_load(String filename)
 {
     FILE		*f;
     int			c, c1, c2;
@@ -169,23 +203,31 @@ int Picture_load(xp_picture_t *picture, String filename)
     int			r, g, b;
     int			p;
     int			width, height, maxval, count;
-    char		path[PATH_MAX + 1];
+    File path;
+    https://github.com/cbeust/personal/blob/master/src/main/java/com/beust/Ppm.java
+    https://stackoverflow.com/questions/31604545/java-convert-ppm-byte-array-to-jpg-image
+    http://vis.cs.ucdavis.edu/dv/Acme/JPM/Decoders/PpmDecoder.java
 
 
-    if (!Picture_find_path(filename, path, sizeof(path))) {
-	error("Cannot find picture file \"%s\"", filename);
-	return -1;
+    if ((path = Picture_find_path(filename)) == null) {
+	logger.error("Cannot find picture file \"{}\"", filename);
+	return null;
+    }
+
+    // determine type
+    if(filename.endsWith("ppm")){
+
     }
 
     if ((f = fopen(path, "rb")) == null) {
-	error("Cannot open \"%s\"", path);
+	logger.error("Cannot open \"%s\"", path);
 	return -1;
     }
 
     errno = 0;
     if ((c1 = Picture_getc(f)) != 'P' ||
 	(c2 = Picture_getc(f)) != '6') {
-	error("\"%s\" does not contain a valid binary PPM file.\n",
+	logger.error("\"%s\" does not contain a valid binary PPM file.\n",
 	       path);
 	fclose(f);
 	return -1;
@@ -199,7 +241,7 @@ int Picture_load(xp_picture_t *picture, String filename)
     c = Picture_get_decimal(f, c, &maxval);
 
     if (!isspace(c) || maxval != 255) {
-	error("\"%s\" does not contain a valid binary PPM file.\n",
+	logger.error("\"%s\" does not contain a valid binary PPM file.\n",
 	       path);
 	fclose(f);
 	return -1;
@@ -217,7 +259,7 @@ int Picture_load(xp_picture_t *picture, String filename)
     for (p = 0; p < count; p++) {
 	if (!(picture.data[p] =
 	      XMALLOC(RGB_COLOR, picture.width * picture.height))) {
-	    error("Not enough memory.");
+	    logger.error("Not enough memory.");
 	    return -1;
 	}
     }
@@ -250,7 +292,7 @@ int Picture_load(xp_picture_t *picture, String filename)
  * the corresponding source colorvalue, this assures there will be no
  * gaps in the image.
  */
-int Picture_rotate(xp_picture_t *picture)
+int Picture_rotate(XPPicture *picture)
 {
     int size, x, y, image;
     RGB_COLOR color;
@@ -259,7 +301,7 @@ int Picture_rotate(xp_picture_t *picture)
     for (image = 1; image < picture.count; image++) {
         if (!(picture.data[image] =
               XMALLOC(RGB_COLOR, picture.width * picture.height))) {
-            error("Not enough memory.");
+            logger.error("Not enough memory.");
             return -1;
         }
 	for (y = 0; y < size; y++) {
@@ -276,7 +318,7 @@ int Picture_rotate(xp_picture_t *picture)
  * Purpose: set the color value of a 1x1 pixel,
  * This is a convenient wrapper for the data array.
  */
-void Picture_set_pixel(xp_picture_t *picture, int image, int x, int y,
+void Picture_set_pixel(XPPicture *picture, int image, int x, int y,
 		       RGB_COLOR color)
 {
     if (x < 0 || y < 0
@@ -295,7 +337,7 @@ void Picture_set_pixel(xp_picture_t *picture, int image, int x, int y,
  * Purpose: get the color value of a 1x1 pixel,
  * This is a wrapper for looking up in the data array.
  */
-RGB_COLOR Picture_get_pixel(const xp_picture_t *picture, int image,
+RGB_COLOR Picture_get_pixel(const XPPicture *picture, int image,
 			    int x, int y)
 {
     if (x < 0 || y < 0
@@ -315,7 +357,7 @@ RGB_COLOR Picture_get_pixel(const xp_picture_t *picture, int image,
  * Purpose: Find the color value of the 1x1 pixel with upperleft corner x,y.
  * Note that x and y is doubles.
  */
-static RGB_COLOR Picture_get_pixel_avg(const xp_picture_t *picture,
+static RGB_COLOR Picture_get_pixel_avg(const XPPicture *picture,
 				       int image, double x, double y)
 {
     int		r_x, r_y;
@@ -362,7 +404,7 @@ static RGB_COLOR Picture_get_pixel_avg(const xp_picture_t *picture,
  * Note: this function is used by the rotation code,
  * and that is why the it's rotating the "wrong" direction.
  */
-RGB_COLOR Picture_get_rotated_pixel(const xp_picture_t *picture,
+RGB_COLOR Picture_get_rotated_pixel(const XPPicture *picture,
 				    int x, int y, int image)
 {
     int		angle;
@@ -407,7 +449,7 @@ static void color_Add_weight(int *r, int *g, int *b, RGB_COLOR col,
  * This is the most called function in the scaling routine,
  * so i address the picture data directly.
  */
-static void Picture_scale_x_slice(const xp_picture_t * picture, int image,
+static void Picture_scale_x_slice(const XPPicture * picture, int image,
 				  int *r, int *g, int *b, int x, int y,
 				  double xscale, double xfrac, double yfrac)
 
@@ -460,7 +502,7 @@ static void Picture_scale_x_slice(const xp_picture_t * picture, int image,
  * Purpose: Calculate the average color of a rectangle in an image,
  * This is used by the scaling algorithm.
  */
-RGB_COLOR Picture_get_pixel_area(const xp_picture_t *picture, int image,
+RGB_COLOR Picture_get_pixel_area(const XPPicture *picture, int image,
 				 double x_1, double y_1, double dx, double dy)
 {
     int r, g, b;
@@ -505,10 +547,10 @@ RGB_COLOR Picture_get_pixel_area(const xp_picture_t *picture, int image,
  * so that we can reduce the number of operations done on
  * a picture.
  */
-void Picture_get_bounding_box(xp_picture_t *picture)
+void Picture_get_bounding_box(XPPicture *picture)
 {
     int		x, y, i;
-    bbox_t	*box;
+    BBox	*box;
 
     for (i = 0; i < Math.abs(picture.count); i++) {
 	box = &picture.bbox[i];

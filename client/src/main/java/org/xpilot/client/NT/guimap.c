@@ -234,7 +234,7 @@ void Gui_paint_fuel(int x, int y, double fuel)
 	int fuel_images = Math.abs(pixmaps[BM_FUEL].count);
 	int size, image;
 	Rectangle area;
-	bbox_t *box;
+	BBox *box;
 	xp_bitmap_t *bit;
 
 	/* x + x * y will give a pseudo random number,
