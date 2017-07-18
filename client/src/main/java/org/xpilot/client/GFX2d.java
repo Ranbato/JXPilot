@@ -26,6 +26,7 @@ package org.xpilot.client;
  */
 
 import org.slf4j.LoggerFactory;
+import org.xpilot.client.ppm.ByteRGBPixmap;
 
 import java.awt.image.BufferedImage;
 import java.io.*;
@@ -139,54 +140,6 @@ String realTexturePath = null; /* Real texture lookup path */
 }
 
 /*
- * Fetch next ASCII character from PPM file.
- * Strip comments starting with "#" from the input.
- * On error return EOF.
- */
-static int Picture_getc(FILE *f)
-{
-    int			c;
-
-    c = getc(f);
-    if (c == '#') {
-	do {
-	    c = getc(f);
-	} while (c != '\n' && c != EOF);
-    }
-
-    return c;
-}
-
-/*
- * Verify last input character is a whitespace character
- * and skip all following whitespace.
- * On error return EOF.
- */
-static int Picture_skip_whitespace(FILE *f, int c)
-{
-    if (!isspace(c))
-	return EOF;
-    do {
-	c = Picture_getc(f);
-    } while (isspace(c));
-
-    return c;
-}
-
-/*
- * Verify last input character is a digit
- * and extract a decimal value from the input stream.
- * On error return EOF.
- */
-static int Picture_get_decimal(FILE *f, int c, int *dec)
-{
-    *dec = 0;
-    for (; isdigit(c); c = Picture_getc(f))
-	*dec = (10 * *dec) + (c - '0');
-    return c;
-}
-
-/*
  * Purpose: load images in to the xp_picture structure.
  * format is only binary PPM's at the moment.
  * More error handling and a better understanding of the PPM standard
@@ -202,10 +155,11 @@ static int Picture_get_decimal(FILE *f, int c, int *dec)
     int			r, g, b;
     int			p;
     int			width, height, maxval, count;
+    BufferedImage image = null;
     File path;
-    https://github.com/cbeust/personal/blob/master/src/main/java/com/beust/Ppm.java
-    https://stackoverflow.com/questions/31604545/java-convert-ppm-byte-array-to-jpg-image
-    http://vis.cs.ucdavis.edu/dv/Acme/JPM/Decoders/PpmDecoder.java
+//    https://github.com/cbeust/personal/blob/master/src/main/java/com/beust/Ppm.java
+//    https://stackoverflow.com/questions/31604545/java-convert-ppm-byte-array-to-jpg-image
+//    http://vis.cs.ucdavis.edu/dv/Acme/JPM/Decoders/PpmDecoder.java
 
 
     if ((path = Picture_find_path(filename)) == null) {
@@ -215,74 +169,82 @@ static int Picture_get_decimal(FILE *f, int c, int *dec)
 
     // determine type
     if(filename.endsWith("ppm")){
+        try {
+            ByteRGBPixmap pixmap = new ByteRGBPixmap(path.getAbsolutePath());
+
+            pixmap.
+        } catch (IOException e) {
+            logger.error("\"{}\" does not contain a valid binary PPM file.\n",path,e);
+            return false;
+        }
         //BufferedImage image = ppm()
     }
-
-    try(BufferedInputStream inputStream = new BufferedInputStream(new FileInputStream(path))){
-
-    } catch (FileNotFoundException e) {
-        logger.error("Cannot open \"{}\"", path);
-    } catch (IOException e) {
-        e.printStackTrace();
-    }
-
-       errno = 0;
-    if ((c1 = Picture_getc(inputStream)) != 'P' ||
-	(c2 = Picture_getc(inputStream)) != '6') {
-	logger.error("\"%s\" does not contain a valid binary PPM file.\n",
-	       path);
-	fclose(inputStream);
-	return -1;
-    }
-    c = Picture_getc(inputStream);
-    c = Picture_skip_whitespace(inputStream, c);
-    c = Picture_get_decimal(inputStream, c, &width);
-    c = Picture_skip_whitespace(inputStream, c);
-    c = Picture_get_decimal(inputStream, c, &height);
-    c = Picture_skip_whitespace(inputStream, c);
-    c = Picture_get_decimal(inputStream, c, &maxval);
-
-    if (!isspace(c) || maxval != 255) {
-	logger.error("\"%s\" does not contain a valid binary PPM file.\n",
-	       path);
-	fclose(inputStream);
-	return -1;
-    }
-
-    picture.height = height;
-    if (picture.count > 0) {
-	count = 1;
-	picture.width = width;
-    } else  {
-	count = -picture.count;
-	picture.width = width / count;
-    }
-
-    for (p = 0; p < count; p++) {
-	if (!(picture.data[p] =
-	      XMALLOC(RGB_COLOR, picture.width * picture.height))) {
-	    logger.error("Not enough memory.");
-	    return -1;
-	}
-    }
-
-    for (y = 0 ; y < (int)picture.height ; y++) {
-	for (p = 0; p < count ; p++) {
-	    for (x = 0; x < (int)picture.width ; x++) {
-		r = getc(inputStream);
-		g = getc(inputStream);
-		b = getc(inputStream);
-		Picture_set_pixel(picture, p, x, y, RGB24(r, g, b));
-	    }
-	}
-	/* skip the rest */
-	for (p = width % count * 3; p > 0; p--)
-	    getc(inputStream);
-    }
-
-    fclose(inputStream);
-
-    return 0;
+//
+//    try(BufferedInputStream inputStream = new BufferedInputStream(new FileInputStream(path))){
+//
+//    } catch (FileNotFoundException e) {
+//        logger.error("Cannot open \"{}\"", path);
+//    } catch (IOException e) {
+//        e.printStackTrace();
+//    }
+//
+//       errno = 0;
+//    if ((c1 = Picture_getc(inputStream)) != 'P' ||
+//	(c2 = Picture_getc(inputStream)) != '6') {
+//	logger.error("\"%s\" does not contain a valid binary PPM file.\n",
+//	       path);
+//	fclose(inputStream);
+//	return -1;
+//    }
+//    c = Picture_getc(inputStream);
+//    c = Picture_skip_whitespace(inputStream, c);
+//    c = Picture_get_decimal(inputStream, c, &width);
+//    c = Picture_skip_whitespace(inputStream, c);
+//    c = Picture_get_decimal(inputStream, c, &height);
+//    c = Picture_skip_whitespace(inputStream, c);
+//    c = Picture_get_decimal(inputStream, c, &maxcolval);
+//
+//    if (!isspace(c) || maxcolval != 255) {
+//	logger.error("\"%s\" does not contain a valid binary PPM file.\n",
+//	       path);
+//	fclose(inputStream);
+//	return -1;
+//    }
+//
+//    picture.height = height;
+//    if (picture.count > 0) {
+//	count = 1;
+//	picture.width = width;
+//    } else  {
+//	count = -picture.count;
+//	picture.width = width / count;
+//    }
+//
+//    for (p = 0; p < count; p++) {
+//	if (!(picture.data[p] =
+//	      XMALLOC(RGB_COLOR, picture.width * picture.height))) {
+//	    logger.error("Not enough memory.");
+//	    return -1;
+//	}
+//    }
+//
+//    for (y = 0 ; y < (int)picture.height ; y++) {
+//	for (p = 0; p < count ; p++) {
+//	    for (x = 0; x < (int)picture.width ; x++) {
+//		r = getc(inputStream);
+//		g = getc(inputStream);
+//		b = getc(inputStream);
+//		Picture_set_pixel(picture, p, x, y, RGB24(r, g, b));
+//	    }
+//	}
+//	/* skip the rest */
+//	for (p = width % count * 3; p > 0; p--)
+//	    getc(inputStream);
+//    }
+//
+//    fclose(inputStream);
+//
+//    return 0;
 }
 
 /*
@@ -425,27 +387,6 @@ RGB_COLOR Picture_get_rotated_pixel(const XPPicture *picture,
 
 
 
-#if 0
-/*notused*/
-/*
- *    Purpose: A helper function for adding up color values.
- */
-static void color_Add_weight(int *r, int *g, int *b, RGB_COLOR col,
-			     double weight)
-{
-    if (weight == 1) {
-	*r += RED_VALUE(col);
-	*g += GREEN_VALUE(col);
-	*b += BLUE_VALUE(col);
-    } else {
-	*r += (int)(RED_VALUE(col) * weight);
-        *g += (int)(GREEN_VALUE(col) * weight);
-	*b += (int)(BLUE_VALUE(col) * weight);
-    }
-}
-#endif
-
-
 /*
  * Purpose: find color values from x + xfrac to x + xfrac + scale.
  * This is the most called function in the scaling routine,
@@ -577,53 +518,5 @@ void Picture_get_bounding_box(XPPicture *picture) {
         }
     }
 }
-    static public BufferedImage ppm(int width, int height, int maxcolval, byte[] data) {
-        if (maxcolval < 256) {
-            BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
-            int r, g, b, k = 0, pixel;
-            if (maxcolval == 255) {                                      // don't scale
-                for (int y = 0; y < height; y++) {
-                    for (int x = 0; (x < width) && ((k + 3) < data.length); x++) {
-                        r = data[k++] & 0xFF;
-                        g = data[k++] & 0xFF;
-                        b = data[k++] & 0xFF;
-                        pixel = 0xFF000000 + (r << 16) + (g << 8) + b;
-                        image.setRGB(x, y, pixel);
-                    }
-                }
-            } else {
-                for (int y = 0; y < height; y++) {
-                    for (int x = 0; (x < width) && ((k + 3) < data.length); x++) {
-                        r = data[k++] & 0xFF;
-                        r = ((r * 255) + (maxcolval >> 1)) / maxcolval;  // scale to 0..255 range
-                        g = data[k++] & 0xFF;
-                        g = ((g * 255) + (maxcolval >> 1)) / maxcolval;
-                        b = data[k++] & 0xFF;
-                        b = ((b * 255) + (maxcolval >> 1)) / maxcolval;
-                        pixel = 0xFF000000 + (r << 16) + (g << 8) + b;
-                        image.setRGB(x, y, pixel);
-                    }
-                }
-            }
-            return image;
-        } else {
 
-
-            BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
-            int r, g, b, k = 0, pixel;
-            for (int y = 0; y < height; y++) {
-                for (int x = 0; (x < width) && ((k + 6) < data.length); x++) {
-                    r = (data[k++] & 0xFF) | ((data[k++] & 0xFF) << 8);
-                    r = ((r * 255) + (maxcolval >> 1)) / maxcolval;  // scale to 0..255 range
-                    g = (data[k++] & 0xFF) | ((data[k++] & 0xFF) << 8);
-                    g = ((g * 255) + (maxcolval >> 1)) / maxcolval;
-                    b = (data[k++] & 0xFF) | ((data[k++] & 0xFF) << 8);
-                    b = ((b * 255) + (maxcolval >> 1)) / maxcolval;
-                    pixel = 0xFF000000 + (r << 16) + (g << 8) + b;
-                    image.setRGB(x, y, pixel);
-                }
-            }
-            return image;
-        }
-    }
 }
