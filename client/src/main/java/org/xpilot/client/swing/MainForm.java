@@ -1,10 +1,12 @@
 package org.xpilot.client.swing;
 
+import org.xpilot.client.GFX2d;
 import org.xpilot.common.ShipShape;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -18,8 +20,9 @@ public class MainForm
 {
     private JPanel arenaPanel;
     private JPanel statusPanel;
-    private JButton button1;
+    private JButton buttonShip;
     private JPanel mainPanel;
+    private JButton PPMButton;
     static List<String> shapeList = new ArrayList<>(400);
     static  {
         File temp = new File(".");
@@ -36,7 +39,7 @@ public class MainForm
         }
     }
     public MainForm() {
-        button1.addActionListener(new ActionListener() {
+        buttonShip.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 ShipShape ship = new ShipShape();
@@ -49,6 +52,14 @@ public class MainForm
                 }
             }
         });
+        PPMButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                GFX2d gfx2d = new GFX2d();
+                GFX2d.XPPicture pic = gfx2d.Picture_init("common/src/main/resources/textures/asteroid.ppm",1);
+                ArrayList<BufferedImage> data = pic.getData();
+            }
+        });
     }
 
     public static void main(String[] args) {
@@ -59,12 +70,5 @@ public class MainForm
         frame.setVisible(true);
     }
 
-//    static void main(String[] args){
-//        JFrame frame = new JFrame("Test Panel");
-//        frame.setContentPane(new MainForm());
-//        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-//        frame.pack();
-//        frame.setVisible(true);
-//
-//    }
+
 }
