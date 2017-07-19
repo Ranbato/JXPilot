@@ -223,23 +223,30 @@ public	XPPicture Picture_init ( String filename, int count)
     for (p = 0; p < count; p++) {
 	picture.data.add(new BufferedImage(picture.width,picture.height,BufferedImage.TYPE_INT_RGB));
 	}
-    
 
-    for (y = 0 ; y < picture.height ; y++) {
-	for (p = 0; p < count ; p++) {
-	    image = picture.data.get(p);
-	    for (x = 0; x < picture.width ; x++) {
-		r = getChar(inputStream);
-		g = getChar(inputStream);
-		b = getChar(inputStream);
-		image.setRGB(x,y,getScaledPixel(r,g,b,maxcolval));
-	    }
-	}
-	/* skip the rest */
-	for (p = width % count * 3; p > 0; p--)
-	    getChar(inputStream);
-    }
+	// todo temp solution
+        byte [] buf = new byte [width*height];
+    int read = inputStream.read(buf,0,buf.length);
+    BufferedImage i2 = toBufferedImage(width,height,buf);
+    picture.data.set(0,i2);
 
+//
+//    for (y = 0 ; y < picture.height ; y++) {
+//	for (p = 0; p < count ; p++) {
+//	    image = picture.data.get(p);
+//	    for (x = 0; x < picture.width ; x++) {
+//		r = getChar(inputStream);
+//		g = getChar(inputStream);
+//		b = getChar(inputStream);
+//		image.setRGB(x,y,getScaledPixel(r,g,b,maxcolval));
+//	    }
+//	}
+//	/* skip the rest */
+//	for (p = width % count * 3; p > 0; p--) {
+//        getChar(inputStream);
+//    }
+//    }
+//
     } catch (FileNotFoundException e) {
         logger.error("Cannot open \"{}\"", path);
     } catch (IOException e) {
@@ -332,7 +339,7 @@ int Picture_get_pixel( XPPicture picture, int image,
 	 * There is already code that relies on this behavior
 	 */
     } else
-	return picture.data.get(image).getRGB(x, y * picture.width);
+	return picture.data.get(image).getRGB(x, y);
 }
 
 /*
@@ -542,14 +549,11 @@ void Picture_get_bounding_box(XPPicture picture) {
   
     private static String MAGIC_PGM = "P6\n";
 
-    int width;
-    int height;
-    int size;
     int maxcolval;
 
 
 
-    public BufferedImage toBufferedImage( byte[] data) {
+    public BufferedImage toBufferedImage(int width,int height, byte[] data) {
         if (maxcolval < 256) {
             BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
             int r, g, b, k = 0, pixel;

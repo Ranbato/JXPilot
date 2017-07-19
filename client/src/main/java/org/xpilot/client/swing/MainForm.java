@@ -4,6 +4,7 @@ import org.xpilot.client.GFX2d;
 import org.xpilot.common.ShipShape;
 
 import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
@@ -43,21 +44,21 @@ public class MainForm
             @Override
             public void actionPerformed(ActionEvent e) {
                 ShipShape ship = new ShipShape();
-              for (int i = 0;i<shapeList.size();i++) {
-                    String shape = shapeList.get(i);
+                    String shape = shapeList.get(94);
                     ship.do_parse_shape(shape);
 
                     ship.drawShip(arenaPanel,0);
-                       break;
-                }
+
             }
         });
         PPMButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 GFX2d gfx2d = new GFX2d();
-                GFX2d.XPPicture pic = gfx2d.Picture_init("common/src/main/resources/textures/asteroid.ppm",1);
+                GFX2d.XPPicture pic = gfx2d.Picture_init("common/src/main/resources/textures/allitems.ppm",-30);
                 ArrayList<BufferedImage> data = pic.getData();
+                Graphics2D g2d = (Graphics2D)arenaPanel.getGraphics();
+                    g2d.drawImage(data.get(0), null, 200, 500);
             }
         });
     }

@@ -67,6 +67,7 @@ public class ShipShape {
 
         }
         Graphics2D graphics2D = (Graphics2D)panel.getGraphics();
+        // todo Temporary to see on screen
         graphics2D.translate(500,500);
         AffineTransform at = new AffineTransform();
         at.scale(0.25,0.25);
