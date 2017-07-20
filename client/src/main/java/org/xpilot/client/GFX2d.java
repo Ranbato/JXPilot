@@ -28,6 +28,7 @@ package org.xpilot.client;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.*;
 import java.util.ArrayList;
@@ -165,15 +166,8 @@ public	XPPicture Picture_init ( String filename, int count)
  */
  boolean Picture_load(XPPicture picture, String filename)
 {
-    int			x, y;
-    int			r, g, b;
-    int			p;
-    int			width = 0, height = 0, maxval, count;
-    BufferedImage image = null;
+
     File path;
-//    https://github.com/cbeust/personal/blob/master/src/main/java/com/beust/Ppm.java
-//    https://stackoverflow.com/questions/31604545/java-convert-ppm-byte-array-to-jpg-image
-//    http://vis.cs.ucdavis.edu/dv/Acme/JPM/Decoders/PpmDecoder.java
 
 
     if ((path = Picture_find_path(filename)) == null) {
@@ -181,72 +175,30 @@ public	XPPicture Picture_init ( String filename, int count)
 	return false;
     }
 
-    try(BufferedInputStream inputStream = new BufferedInputStream(new FileInputStream(path))){
+    try{
 
-        int c1 = 0;
-        int c2 = 0;
 
-        c1 = getChar(inputStream);
-        c2 = getChar(inputStream);
+	int count = 0;
 
-        if ((c1 != 'P') || (c2  != '6')) {
-            logger.error("\"{}\" does not contain a valid binary PPM file.\n Invalid magic \"{}{}\"",
-                    path,c1,c2);
-            inputStream.close();
-            return false;
-        }
-        getChar(inputStream);
-        skipWhitespace(inputStream);
-        width = getDecimal(inputStream);
-        skipWhitespace(inputStream);
-        height = getDecimal(inputStream);
-        skipWhitespace(inputStream);
-        maxcolval = getDecimal(inputStream);
+        ImageIO.scanForPlugins();
+    BufferedImage mainImage = ImageIO.read(path);
 
-        if (!Character.isWhitespace((char)c) || maxcolval != 255) {
-            logger.error("\"%s\" does not contain a valid binary PPM file.\n",
-                    path);
-            inputStream.close();
-            return false;
+
+        picture.height = mainImage.getHeight();
+        if (picture.count > 0) {
+            count = 1;
+            picture.width = mainImage.getWidth();
+        } else  {
+            count = -picture.count;
+            picture.width = mainImage.getWidth() / count;
         }
 
-    picture.height = height;
-    if (picture.count > 0) {
-	count = 1;
-	picture.width = width;
-    } else  {
-	count = -picture.count;
-	picture.width = width / count;
-    }
+        for(int i = 0; i<count;i++) {
+            logger.debug("Cutting {}:{}-{} of {}",i,picture.width*i,(picture.width*i)+(picture.width-1),mainImage.getWidth());
+            picture.data.add(mainImage.getSubimage(picture.width*i,0,picture.width,picture.height));
+        }
 
-    
-    for (p = 0; p < count; p++) {
-	picture.data.add(new BufferedImage(picture.width,picture.height,BufferedImage.TYPE_INT_RGB));
-	}
 
-	// todo temp solution
-        byte [] buf = new byte [width*height];
-    int read = inputStream.read(buf,0,buf.length);
-    BufferedImage i2 = toBufferedImage(width,height,buf);
-    picture.data.set(0,i2);
-
-//
-//    for (y = 0 ; y < picture.height ; y++) {
-//	for (p = 0; p < count ; p++) {
-//	    image = picture.data.get(p);
-//	    for (x = 0; x < picture.width ; x++) {
-//		r = getChar(inputStream);
-//		g = getChar(inputStream);
-//		b = getChar(inputStream);
-//		image.setRGB(x,y,getScaledPixel(r,g,b,maxcolval));
-//	    }
-//	}
-//	/* skip the rest */
-//	for (p = width % count * 3; p > 0; p--) {
-//        getChar(inputStream);
-//    }
-//    }
-//
     } catch (FileNotFoundException e) {
         logger.error("Cannot open \"{}\"", path);
     } catch (IOException e) {
@@ -256,37 +208,6 @@ public	XPPicture Picture_init ( String filename, int count)
     return true;
 }
 
-    private int getScaledPixel(int r, int g, int b, int maxcolval) {
-
-        if (maxcolval < 256) {
-            if (maxcolval == 255) {                                      // don't scale
-                r = r & 0xFF;
-                g = g & 0xFF;
-                b = b & 0xFF;
-                return (0xFF000000 + (r << 16) + (g << 8) + b);
-            } else {
-                r = r & 0xFF;
-                r = ((r * 255) + (maxcolval >> 1)) / maxcolval;  // scale to 0..255 range
-                g = g & 0xFF;
-                g = ((g * 255) + (maxcolval >> 1)) / maxcolval;
-                b = b & 0xFF;
-                b = ((b * 255) + (maxcolval >> 1)) / maxcolval;
-                return (0xFF000000 + (r << 16) + (g << 8) + b);
-            }
-        } else {
-
-            logger.error("Shouldn't get here for now.");
-//        BufferedImage image=new BufferedImage(width,height,BufferedImage.TYPE_INT_RGB);
-//        int r,g,b,k=0,pixel;
-//        for(int y=0;y<height;y++){
-//            for(int x=0;(x<width)&&((k+6)<data.length);x++){
-//                r=(data[k++] & 0xFF)|((data[k++] & 0xFF)<<8);r=((r*255)+(maxcolval>>1))/maxcolval;  // scale to 0..255 range
-//                g=(data[k++] & 0xFF)|((data[k++] & 0xFF)<<8);g=((g*255)+(maxcolval>>1))/maxcolval;
-//                b=(data[k++] & 0xFF)|((data[k++] & 0xFF)<<8);b=((b*255)+(maxcolval>>1))/maxcolval;
-//                pixel=0xFF000000+(r<<16)+(g<<8)+b;
-            return 0;
-        }
-    }
 
     /*
      * Purpose: We want to provide rotation, a picture which is rotated has

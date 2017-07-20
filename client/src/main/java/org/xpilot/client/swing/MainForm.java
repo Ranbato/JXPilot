@@ -58,7 +58,10 @@ public class MainForm
                 GFX2d.XPPicture pic = gfx2d.Picture_init("common/src/main/resources/textures/allitems.ppm",-30);
                 ArrayList<BufferedImage> data = pic.getData();
                 Graphics2D g2d = (Graphics2D)arenaPanel.getGraphics();
-                    g2d.drawImage(data.get(0), null, 200, 500);
+                g2d.scale(2,2);
+                for(int i =0;i<data.size();i++) {
+                    g2d.drawImage(data.get(i), null, 100, 100+(i*17));
+                }
             }
         });
     }
