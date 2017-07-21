@@ -22,10 +22,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.awt.Image;
+import java.io.File;
+import java.io.IOException;
+import java.nio.Buffer;
+import java.nio.file.Files;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.awt.Toolkit;
 import java.awt.image.*;
+import java.util.List;
 
 // rgb data originally from
 // ! $XConsortium: rgb.txt,v 10.41 94/02/20 18:39:36 rws Exp $
@@ -1636,7 +1641,9 @@ public class Xpm
 	 ************************************************************/
 
 	// we dont care/try to deal with mono conversion
-	public static Image xpmToImage(String xpm) {
+	public static Image xpmToImage(File path) throws IOException {
+
+		String xpm = loadFile(path);
 		logger.debug(xpm);
 		/* general rules I'm going to follow:
 		*
@@ -1835,6 +1842,13 @@ public class Xpm
 		return image;
 		
 		
+	}
+
+	private static String loadFile(File path) throws IOException {
+
+		List<String> lines = Files.readAllLines(path.toPath());
+
+		return String.join("\n",lines);
 	}
 
 	static Image BytesToImage(int bytes[], int width, int height)

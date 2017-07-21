@@ -27,8 +27,10 @@ package org.xpilot.client;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.xpilot.client.xpm.Xpm;
 
 import javax.imageio.ImageIO;
+import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.*;
 import java.util.ArrayList;
@@ -42,7 +44,10 @@ public class GFX2d {
 
     static Logger logger = LoggerFactory.getLogger(GFX2d.class);
 
-int RGB24(int r, int g,int b) {
+    private static final GraphicsConfiguration gc = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice().getDefaultConfiguration();
+
+
+        int RGB24(int r, int g,int b) {
 return ((((b)&255) << 16) | (((g)&255) << 8) | ((r)&255));}
 
 int RED_VALUE(int col){return  ((col) &255);}
@@ -179,9 +184,28 @@ public	XPPicture Picture_init ( String filename, int count)
 
 
 	int count = 0;
+        BufferedImage mainImage = null;
+        Image tempImage = null;
 
+	if(path.getName().endsWith("xpm")){
+	     tempImage = Xpm.xpmToImage(path);
+
+    }else{
         ImageIO.scanForPlugins();
-    BufferedImage mainImage = ImageIO.read(path);
+        tempImage = ImageIO.read(path);
+
+    }
+
+
+        //Images returned from ImageIO are NOT managedImages
+        //Therefore, we copy it into a ManagedImage
+        mainImage = gc.createCompatibleImage(tempImage.getWidth(null),tempImage.getHeight(null));
+        Graphics2D g2d = mainImage.createGraphics();
+        g2d.setComposite(AlphaComposite.Src);
+        g2d.drawImage(tempImage,0,0,null);
+        g2d.dispose();
+
+
 
 
         picture.height = mainImage.getHeight();
@@ -466,110 +490,6 @@ void Picture_get_bounding_box(XPPicture picture) {
         }
     }
 }
-
-  
-    private static String MAGIC_PGM = "P6\n";
-
-    int maxcolval;
-
-
-
-    public BufferedImage toBufferedImage(int width,int height, byte[] data) {
-        if (maxcolval < 256) {
-            BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
-            int r, g, b, k = 0, pixel;
-            if (maxcolval == 255) {                                      // don't scale
-                for (int y = 0; y < height; y++) {
-                    for (int x = 0; (x < width) && ((k + 3) < data.length); x++) {
-                        r = data[k++] & 0xFF;
-                        g = data[k++] & 0xFF;
-                        b = data[k++] & 0xFF;
-                        pixel = 0xFF000000 + (r << 16) + (g << 8) + b;
-                        image.setRGB(x, y, pixel);
-                    }
-                }
-            } else {
-                for (int y = 0; y < height; y++) {
-                    for (int x = 0; (x < width) && ((k + 3) < data.length); x++) {
-                        r = data[k++] & 0xFF;
-                        r = ((r * 255) + (maxcolval >> 1)) / maxcolval;  // scale to 0..255 range
-                        g = data[k++] & 0xFF;
-                        g = ((g * 255) + (maxcolval >> 1)) / maxcolval;
-                        b = data[k++] & 0xFF;
-                        b = ((b * 255) + (maxcolval >> 1)) / maxcolval;
-                        pixel = 0xFF000000 + (r << 16) + (g << 8) + b;
-                        image.setRGB(x, y, pixel);
-                    }
-                }
-            }
-            return image;
-        } else {
-
-
-            BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
-            int r, g, b, k = 0, pixel;
-            for (int y = 0; y < height; y++) {
-                for (int x = 0; (x < width) && ((k + 6) < data.length); x++) {
-                    r = (data[k++] & 0xFF) | ((data[k++] & 0xFF) << 8);
-                    r = ((r * 255) + (maxcolval >> 1)) / maxcolval;  // scale to 0..255 range
-                    g = (data[k++] & 0xFF) | ((data[k++] & 0xFF) << 8);
-                    g = ((g * 255) + (maxcolval >> 1)) / maxcolval;
-                    b = (data[k++] & 0xFF) | ((data[k++] & 0xFF) << 8);
-                    b = ((b * 255) + (maxcolval >> 1)) / maxcolval;
-                    pixel = 0xFF000000 + (r << 16) + (g << 8) + b;
-                    image.setRGB(x, y, pixel);
-                }
-            }
-            return image;
-        }
-    }
-
-    /*
-     * Fetch next ASCII character from PPM file.
-     * Strip comments starting with "#" from the input.
-     * On error return -1.
-     */
-    int getChar(InputStream in) throws IOException {
-
-        c = in.read();
-        if (c == '#') {
-            do {
-                c = in.read();
-            } while (c != '\n' && c != -1);
-        }
-
-        return c;
-
-    }
-
-    /*
-     * Verify last input character is a whitespace character
-     * and skip all following whitespace.
-     * On error return -1.
-     */
-    boolean skipWhitespace(InputStream in) throws IOException {
-        if (!Character.isWhitespace(c))
-            return false;
-        do {
-            getChar(in);
-        } while (Character.isWhitespace(c));
-
-        return c == -1;
-    }
-
-    /*
-     * Verify last input character is a digit
-     * and extract a decimal value from the input stream.
-     * On error return -1.
-     */
-    int getDecimal(InputStream in) throws IOException {
-        StringBuilder sb = new StringBuilder();
-        while(Character.isDigit(c)) {
-            sb.append((char) c);
-            getChar(in);
-        }
-        return Integer.parseInt(sb.toString());
-    }
 
 
 
