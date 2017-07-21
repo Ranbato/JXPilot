@@ -14,6 +14,8 @@ import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
 
+import static org.xpilot.common.Const.RES;
+
 /**
  * Created by z002m6r on 7/7/17.
  */
@@ -48,7 +50,14 @@ public class MainForm
                     String shape = shapeList.get(94);
                     ship.do_parse_shape(shape);
 
-                    ship.drawShip(arenaPanel,0);
+                    for(int i = 0;i<RES*3;i++) {
+                        ship.drawShip(arenaPanel, i%RES);
+                        try {
+                            Thread.sleep(50);
+                        } catch (InterruptedException e1) {
+                            e1.printStackTrace();
+                        }
+                    }
 
             }
         });

@@ -66,12 +66,17 @@ public class ShipShape {
             }
 
         }
+        Click p = shipShapes[dir].pts.get(0);
+        shape.lineTo(p.cx,p.cy);
         Graphics2D graphics2D = (Graphics2D)panel.getGraphics();
         // todo Temporary to see on screen
         graphics2D.translate(500,500);
         AffineTransform at = new AffineTransform();
         at.scale(0.25,0.25);
         shape.transform(at);
+        graphics2D.setColor(Color.LIGHT_GRAY);
+        Rectangle rectangle = shape.getBounds();
+        graphics2D.fill(rectangle);
         graphics2D.setColor(Color.BLACK);
         graphics2D.draw(shape);
     }
