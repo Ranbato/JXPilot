@@ -23,8 +23,7 @@
 
 #include "xpclient_sdl.h"
 
-#define NUM_MOUSE_BUTTONS 5
-
+public static final int NUM_MOUSE_BUTTONS = 5;
 SDLKey Get_key_by_name(const String  name);
 String Get_name_by_key(SDLKey key);
 

@@ -54,45 +54,7 @@ typedef struct {
     unsigned int    *data;        /* the image data */
 } image_t;
 
-#define IMG_HOLDER_FRIEND 0
-#define IMG_HOLDER_ENEMY  1
-#define IMG_BALL          2
-#define IMG_SHIP_SELF     3
-#define IMG_SHIP_FRIEND   4
-#define IMG_SHIP_ENEMY    5
-#define IMG_BULLET        6
-#define IMG_BULLET_OWN    7
-#define IMG_BASE_DOWN     8
-#define IMG_BASE_LEFT     9
-#define IMG_BASE_UP       10
-#define IMG_BASE_RIGHT    11
-#define IMG_FUELCELL      12
-#define IMG_FUEL          13
-#define IMG_ALL_ITEMS     14
-#define IMG_CANNON_DOWN   15
-#define IMG_CANNON_LEFT   16
-#define IMG_CANNON_UP     17
-#define IMG_CANNON_RIGHT  18
-#define IMG_SPARKS        19
-#define IMG_PAUSED        20
-#define IMG_REFUEL        21
-#define IMG_WORMHOLE      22
-#define IMG_MINE_TEAM     23
-#define IMG_MINE_OTHER    24
-#define IMG_CONCENTRATOR  25
-#define IMG_PLUSGRAVITY   26
-#define IMG_MINUSGRAVITY  27
-#define IMG_CHECKPOINT	  28
-#define IMG_METER	  29
-#define IMG_ASTEROIDCONC  30
-#define IMG_SHIELD        31
-#define IMG_ACWISEGRAV    32
-#define IMG_CWISEGRAV     33
-#define IMG_MISSILE       34
-#define IMG_ASTEROID      35
-#define IMG_TARGET        36
-#define IMG_HUD_ITEMS     37
-
+public static final int IMG_HOLDER_FRIEND = 0; public static final int IMG_HOLDER_ENEMY = 1; public static final int IMG_BALL = 2; public static final int IMG_SHIP_SELF = 3; public static final int IMG_SHIP_FRIEND = 4; public static final int IMG_SHIP_ENEMY = 5; public static final int IMG_BULLET = 6; public static final int IMG_BULLET_OWN = 7; public static final int IMG_BASE_DOWN = 8; public static final int IMG_BASE_LEFT = 9; public static final int IMG_BASE_UP = 10; public static final int IMG_BASE_RIGHT = 11; public static final int IMG_FUELCELL = 12; public static final int IMG_FUEL = 13; public static final int IMG_ALL_ITEMS = 14; public static final int IMG_CANNON_DOWN = 15; public static final int IMG_CANNON_LEFT = 16; public static final int IMG_CANNON_UP = 17; public static final int IMG_CANNON_RIGHT = 18; public static final int IMG_SPARKS = 19; public static final int IMG_PAUSED = 20; public static final int IMG_REFUEL = 21; public static final int IMG_WORMHOLE = 22; public static final int IMG_MINE_TEAM = 23; public static final int IMG_MINE_OTHER = 24; public static final int IMG_CONCENTRATOR = 25; public static final int IMG_PLUSGRAVITY = 26; public static final int IMG_MINUSGRAVITY = 27; public static final int IMG_CHECKPOINT = 28; public static final int IMG_METER = 29; public static final int IMG_ASTEROIDCONC = 30; public static final int IMG_SHIELD = 31; public static final int IMG_ACWISEGRAV = 32; public static final int IMG_CWISEGRAV = 33; public static final int IMG_MISSILE = 34; public static final int IMG_ASTEROID = 35; public static final int IMG_TARGET = 36; public static final int IMG_HUD_ITEMS = 37;
 int Images_init();
 void Images_cleanup();
 void Image_paint(int ind, int x, int y, int frame, int c);

@@ -64,7 +64,7 @@ int main(int argc, String argv[])
     Store_sdlgui_options();
     Store_radar_options();
 
-    memset(&xpArgs, 0, sizeof(xp_args_t));
+    memset(&xpArgs, 0, sizeof(XPArgs));
     Parse_options(&argc, argv);
 
     /* CLIENTRANK */

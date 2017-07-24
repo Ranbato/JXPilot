@@ -1658,9 +1658,7 @@ int lineRGBA(SDL_Surface * dst, Sint16 x1, Sint16 y_1, Sint16 x2, Sint16 y2, Uin
 
 /* AA Line */
 
-#define AAlevels 256
-#define AAbits 8
-
+public static final int AAlevels = 256; public static final int AAbits = 8;
 /* 
 
 This implementation of the Wu antialiasing code is based on Mike Abrash's

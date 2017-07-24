@@ -36,16 +36,12 @@
 	than this. Remark that this number does NOT include the '/0' character at the end of a string. So if we create
 	a string we do this String  mystring[CON_CHARS_PER_LINE + 1];
 	*/
-#define CON_CHARS_PER_LINE   127
-/*! Cursor blink frequency in ms */
-#define CON_BLINK_RATE       500
-/*! Border in pixels from the left margin to the first letter */
-#define CON_CHAR_BORDER      4
-/*! Default prompt used at the commandline */
+public static final int CON_CHARS_PER_LINE = 127; /*! Cursor blink frequency in ms */
+public static final int CON_BLINK_RATE = 500; /*! Border in pixels from the left margin to the first letter */
+public static final int CON_CHAR_BORDER = 4; /*! Default prompt used at the commandline */
 #define CON_DEFAULT_PROMPT	"]"
 /*! Scroll this many lines at a time (when pressing PGUP or PGDOWN) */
-#define CON_LINE_SCROLL	2
-/*! Indicator showing that you scrolled up the history */
+public static final int CON_LINE_SCROLL = 2; /*! Indicator showing that you scrolled up the history */
 #define CON_SCROLL_INDICATOR "^"
 /*! Cursor shown if we are in insert mode */
 #define CON_INS_CURSOR "_"
@@ -54,8 +50,7 @@
 /*! Defines the default hide key (that Hide()'s the console if pressed) */
 #define CON_DEFAULT_HIDEKEY	SDLK_ESCAPE
 /*! Defines the opening/closing speed when the console switches from CON_CLOSED to CON_OPEN */
-#define CON_OPENCLOSE_SPEED 100
-
+public static final int CON_OPENCLOSE_SPEED = 100;
 /* Set up for C function definitions, even when using C++ */
 #ifdef __cplusplus
 extern "C" {

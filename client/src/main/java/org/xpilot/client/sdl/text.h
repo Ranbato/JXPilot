@@ -25,14 +25,8 @@
 
 #include "sdlpaint.h"
 
-#define LEFT 0
-#define DOWN 0
-#define CENTER 1
-#define RIGHT 2
-#define UP 2
-
-#define NUMCHARS 256
-
+public static final int LEFT = 0; public static final int DOWN = 0; public static final int CENTER = 1; public static final int RIGHT = 2; public static final int UP = 2;
+public static final int NUMCHARS = 256;
 typedef struct {
     GLfloat MinX;
     GLfloat MinY;
@@ -137,8 +131,7 @@ extern string_tex_t score_object_texs[];
 
 name_tex_t *others_name_texs;*/
 
-#define MAX_METERS 12
-extern string_tex_t meter_texs[];
-#define MAX_HUD_TEXS 10 
+public static final int MAX_METERS = 12; extern string_tex_t meter_texs[];
+public static final int MAX_HUD_TEXS = 10;
 extern string_tex_t HUD_texs[];
 #endif

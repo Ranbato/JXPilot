@@ -26,8 +26,7 @@
 #include "xpclient_sdl.h"
 
 
-#define TRANS_FONT 1
-
+public static final int TRANS_FONT = 1;
 
 #ifdef __cplusplus
 extern "C" {

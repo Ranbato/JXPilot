@@ -57,8 +57,7 @@
 
 #include "text.h"
 
-#define BUFSIZE 1024
-
+public static final int BUFSIZE = 1024;
 float modelview_matrix[16];
 int renderstyle;
 enum rendertype rendertype;

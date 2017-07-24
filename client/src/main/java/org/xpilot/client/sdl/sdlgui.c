@@ -221,8 +221,8 @@ static void CALLBACK vertex_callback(Point  *p, Rectangle *trec)
 static void tessellate_polygon(GLUtriangulatorObj *tess, int ind)
 {
     int i, x, y, minx, miny;
-    xp_polygon_t polygon;
-    polygon_style_t p_style;
+    XPPolygon polygon;
+    PolygonStyle p_style;
     image_t *texture = null;
     Rectangle trec;
     GLdouble v[3] = { 0, 0, 0 };
@@ -395,8 +395,7 @@ void Gui_paint_cannon(int x, int y, int type)
 
 void Gui_paint_fuel(int x, int y, double fuel)
 {
-#define FUEL_BORDER 3
-
+public static final int FUEL_BORDER = 3;
     int size, frame;
     Rectangle area;
     image_t *img;
@@ -434,8 +433,8 @@ void Gui_paint_fuel(int x, int y, double fuel)
 void Gui_paint_base(int x, int y, int id, int team, int type)
 {
     Uint32 color;
-    homebase_t *base = null;
-    other_t *other;
+    Homebase *base = null;
+    Other *other;
     bool do_basewarning = false;
 
     switch (type) {
@@ -819,9 +818,9 @@ void Gui_paint_filled_slice(int bl, int tl, int tr, int br, int y)
 
 void Gui_paint_polygon(int i, int xoff, int yoff)
 {
-    xp_polygon_t polygon;
-    polygon_style_t p_style;
-    edge_style_t e_style;
+    XPPolygon polygon;
+    PolygonStyle p_style;
+    EdgeStyle e_style;
     int width;
     bool did_fill = false;
 
@@ -1126,11 +1125,11 @@ void Gui_paint_appearing(int x, int y, int id, int count)
     const unsigned hsize = 3 * BLOCK_SZ / 7;
     int minx,miny,maxx,maxy;
     Uint32 color;
-    other_t *other = Other_by_id(id);
+    Other *other = Other_by_id(id);
 
     /* Make a note we are doing the base warning */
     if (version >= 0x4F12) {
-	homebase_t *base = Homebase_by_id(id);
+	Homebase *base = Homebase_by_id(id);
 	if (base != null)
 	    base.appeartime = (long)(loops + (count * clientFPS) / 120);
     }
@@ -1244,7 +1243,7 @@ int Life_color_by_life(int life)
     return color;
 }
 
-int Life_color(other_t *other)
+int Life_color(Other *other)
 {
     int color = 0; /* default is 'no special color' */
 
@@ -1255,7 +1254,7 @@ int Life_color(other_t *other)
     return color;
 }
 
-static int Gui_is_my_tank(other_t *other)
+static int Gui_is_my_tank(Other *other)
 {
     char	tank_name[MAX_NAME_LEN];
 
@@ -1276,7 +1275,7 @@ static int Gui_is_my_tank(other_t *other)
     return 1;
 }
 
-static int Gui_calculate_ship_color(int id, other_t *other)
+static int Gui_calculate_ship_color(int id, Other *other)
 {
     Uint32 ship_color = whiteRGBA;
 
@@ -1342,7 +1341,7 @@ static int Gui_calculate_ship_color(int id, other_t *other)
     return ship_color;
 }
 
-static void Gui_paint_ship_name(int x, int y, other_t *other)
+static void Gui_paint_ship_name(int x, int y, Other *other)
 {
     int color = Life_color(other);
 
@@ -1372,7 +1371,7 @@ void Gui_paint_ship(int x, int y, int dir, int id, int cloak, int phased,
     int i, color, img;
     ShipShape  *ship;
     Point2D point;
-    other_t *other;
+    Other *other;
 
     if (!(other = Other_by_id(id))) return;
 
@@ -1440,7 +1439,7 @@ void Paint_score_objects()
 	return;
 
     for (i = 0; i < MAX_SCORE_OBJECTS; i++) {
-	score_object_t*	sobj = &score_objects[i];
+	ScoreObject*	sobj = &score_objects[i];
 	if (sobj.life_time > 0) {
 	    if (loopsSlow % 3) {
 	    	/* approximate font width to h =( */
@@ -1660,7 +1659,7 @@ void Paint_meters()
 
 static void Paint_lock(int hud_pos_x, int hud_pos_y)
 {
-    other_t *target;
+    Other *target;
     const int BORDER = 2;
 
     if ((target = Other_by_id(lock_id)) == null)
@@ -1811,7 +1810,7 @@ static void Paint_HUD_items(int hud_pos_x, int hud_pos_y)
 
     	    Image_paint(IMG_HUD_ITEMS, 
 			horiz_pos - ITEM_SIZE, 
-			vert_pos, (u_byte)i, 
+			vert_pos, (byte)i,
 			hudItemsColorRGBA);
 
 	    if (i == lose_item) {
@@ -2018,7 +2017,7 @@ void Paint_HUD()
     /* Draw last score on hud if it is an message attached to it */
     if (hudColorRGBA) {
 	for (i = 0, j = 0; i < MAX_SCORE_OBJECTS; i++) {
-	    score_object_t*	sobj = &score_objects[(i+score_object)%MAX_SCORE_OBJECTS];
+	    ScoreObject*	sobj = &score_objects[(i+score_object)%MAX_SCORE_OBJECTS];
 	    if (sobj.hud_msg_len > 0) {
 	    	dummy = printsize(&gamefont,"%s",sobj.hud_msg);
 		if (sobj.hud_msg_width == -1)

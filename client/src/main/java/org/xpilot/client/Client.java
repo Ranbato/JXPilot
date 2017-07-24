@@ -1,3 +1,4 @@
+package org.xpilot.client;
 /*
  * XPilot NG, a multiplayer space war game.
  *
@@ -23,15 +24,338 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#include "xpclient.h"
+import org.xpilot.common.ShipShape;
 
-client_data_t	clData = { 0, };
+import java.awt.*;
+
+import static org.xpilot.common.Const.MSG_LEN;
+
+public class Client {
+
+public static class ClientData {
+    boolean	talking;	/* Some talk window is open? */
+    boolean	pointerControl;	/* Pointer (mouse) control is on? */
+    boolean	restorePointerControl;
+				/* Pointer control should be restored later? */
+    boolean	quitMode;	/* Client is in quit mode? */
+    double	clientLag;
+    double	scaleFactor;
+    double	scale;
+    float	fscale;
+    double	altScaleFactor;
+} 
+
+public static class Instruments {
+    boolean clientRanker;
+    boolean clockAMPM;
+    boolean filledDecor;
+    boolean filledWorld;
+    boolean outlineDecor;
+    boolean outlineWorld;
+    boolean showDecor;
+    boolean showItems;
+    boolean showLivesByShip;
+    boolean showMessages;
+    boolean showMyShipShape;
+    boolean showNastyShots;
+    boolean showShipShapes;
+    boolean showShipShapesHack;
+    boolean slidingRadar;
+    boolean texturedDecor;
+    boolean texturedWalls;
+} 
+
+public static class XPArgs {
+    boolean help;
+    boolean version;
+    boolean text;
+    boolean list_servers; /* list */
+    boolean auto_connect; /* join */
+    String shutdown_reason; /* shutdown reason */
+} 
+
+public static final int PACKET_LOSS = 0;
+ public static final int PACKET_DROP = 1;
+  public static final int PACKET_DRAW = 2; 
+public static final int MAX_SCORE_OBJECTS = 10; 
+public static final int MAX_SPARK_SIZE = 8;
+ public static final int MIN_SPARK_SIZE = 1;
+  public static final int MAX_MAP_POINT_SIZE = 8;
+   public static final int MIN_MAP_POINT_SIZE = 0;
+    public static final int MAX_SHOT_SIZE = 20;
+     public static final int MIN_SHOT_SIZE = 1; 
+     public static final int MAX_TEAMSHOT_SIZE = 20;
+      public static final int MIN_TEAMSHOT_SIZE = 1; 
+static public final float MIN_SHOW_ITEMS_TIME= 0.0f;
+static public final float MAX_SHOW_ITEMS_TIME= 300.0f;
+
+static public final float MIN_SCALEFACTOR= 0.1f;
+static public final float MAX_SCALEFACTOR= 20.0f;
+
+static public final float FUEL_NOTIFY_TIME= 3.0f;
+static public final float CONTROL_TIME= 8.0f;
+
+public static final int MAX_MSGS = 15; /* Max. messages displayed ever */
+public static final int MAX_HIST_MSGS = 128; /* Max. messages in history */
+
+static public final float MSG_LIFE_TIME= 120.0f;	/* Seconds */
+static public final float MSG_FLASH_TIME= 105.0f;	/* Old messages have life time less
+					   than this */
+public static final int MAX_POINTER_BUTTONS = 5; 
+
+
+public static final class Other {
+    double	score;
+    short	id;
+    short	team;
+    short	check;
+    short	round;
+    long	timing_loops;
+    short	timing;
+    short	life;
+    short	mychar;
+    short	alliance;
+    short	name_width;	/* In pixels */
+    short	name_len;	/* In bytes */
+    short	max_chars_in_names;	/* name_width was calculated
+					   for this value of maxCharsInNames */
+    short	ignorelevel;
+    ShipShape ship;
+    String	nick_name;
+    String	user_name;
+    String	host_name;
+    String	id_string;
+} 
+
+public static final class Homebase{
+    int		pos;		/* Block index */
+    short	id;		/* Id of owner or -1 */
+    short	team;		/* Team this base belongs to */
+    Rectangle bounds;		/* Location on map */
+    int		type;		/* orientation */
+    long	appeartime;	/* For base warning */
+} 
+
+public static final class CannonTime{
+    int		pos;		/* Block index */
+    short	dead_time;	/* Frames inactive */
+	short	dot;		/* Draw dot if inactive */
+}
+
+public static final class Target{
+    int		pos;		/* Block index */
+    short	dead_time;	/* Frames inactive */
+    double	damage;		/* Damage to target */
+}
+
+public static final class Checkpoint{
+    int		pos;		/* Block index */
+    Rectangle	bounds;		/* Location on map */
+}
+
+public static final class EdgeStyle{
+    int width;			/* Line width, -1 means no line */
+     long color;	/* Line color */
+    int rgb;			/* RGB values corresponding to color */
+    int style;			/* 0=LineSolid, 1=LineOnOffDash, 2=LineDoubleDash */
+}
+
+public static final class PolygonStyle {
+     long color;	/* The color if drawn in filled mode */
+    int rgb;			/* RGB values corresponding to color */
+    int texture;		/* The texture if drawn in texture mode */
+    int flags;			/* Flags about this style (see draw.h) */
+    int def_edge_style;		/* The default style for edges */
+}
+
+public static final class XPPolygon{
+    Point  *points;		/* points[0] is absolute, rest are relative */
+    int num_points;		/* number of points */
+    Rectangle bounds;		/* bounding box for the polygon */
+    int *edge_styles;		/* optional array of indexes to edge_styles */
+    int style;			/* index to polygon_styles array */
+}
+
+
+/*
+ * Types for dynamic game data
+ */
+
+public static final class Refuel{
+    short		x0, y0, x1, y1;
+}
+
+public static final class Connector{
+    short		x0, y0, x1, y1;
+    byte		tractor;
+}
+
+public static final class Laser{
+    byte	color, dir;
+    short		x, y, len;
+}
+
+public static final class Missile {
+    short		x, y, dir;
+    byte	len;
+}
+
+public static final class Ball{
+    short		x, y, id;
+    byte		style;
+}
+
+public static final class Ship{
+    short		x, y, id, dir;
+    byte		shield, cloak, eshield;
+    byte		phased, deflector;
+}
+
+public static final class Mine{
+    short		x, y, teammine, id;
+}
+
+public static final class ItemType{
+    short		x, y, type;
+}
+
+public static final class ECM{
+    short		x, y, size;
+}
+
+public static final class Trans{
+    short		x1, y1, x2, y2;
+}
+
+public static final class Paused{
+    short		x, y, count;
+}
+
+public static final class Appearing{
+    short		x, y, id, count;
+} ;
+
+public enum RadarType{
+    RadarEnemy,
+    RadarFriend
+}
+
+public static final class Radar{
+    short		x, y, size;
+    RadarType        type;
+}
+
+public static final class VCannon{
+    short		x, y, type;
+}
+
+public static final class VFuel{
+    short		x, y;
+    double		fuel;
+}
+
+public static final class VBase{
+    short		x, y, xi, yi, type;
+}
+
+public static final class Debris{
+    byte		x, y;
+}
+
+public static final class VDecor {
+    short		x, y, xi, yi, type;
+}
+
+public static final class Wreckage{
+    short		x, y;
+    byte		wrecktype, size, rotation;
+}
+
+public static final class Asteroid{
+    short		x, y;
+    byte		type, size, rotation;
+}
+
+public static final class {
+    short		x, y;
+} Wormhole;
+
+
+/*static public final float SCORE_OBJECT_COUNT= 100;*/
+public static final class ScoreObject{
+    double	score,
+		life_time;
+    int		x,
+		y,
+		hud_msg_len,
+		hud_msg_width,
+		msg_width,
+		msg_len;
+    String	msg;
+	String	hud_msg;
+} ;
+
+
+/*
+ * is a selection pending (in progress), done, drawn emphasized?
+ */
+public static final int SEL_NONE    =   (1 << 0);
+    public static final int SEL_PENDING  =  (1 << 1);
+    public static final int SEL_SELECTED =  (1 << 2);
+    public static final int SEL_EMPHASIZED= (1 << 3);
+
+/*
+ * a selection (text, string indices, state,...)
+ */
+public static final class {
+    /* a selection in the talk window */
+    struct {
+        boolean    state;	/* current state of the selection */
+        size_t  x1;	/* string indices */
+        size_t  x2;
+        boolean    incl_nl;/* include a '\n'? */
+    } talk ;
+    /* a selection in the draw window */
+    struct {
+        boolean    state;
+        int     x1;	/* string indices (for TalkMsg[].txt) */
+        int     x2;	/* they are modified when the emphasized area */
+        int     y1;	/* is scrolled down by new messages coming in */
+        int     y2;
+    } draw;
+    char	*txt;   /* allocated when needed */
+    size_t	txt_size;	/* size of txt buffer */
+    size_t	len;
+    /* when a message 'jumps' from talk window to the player messages: */
+    boolean	keep_emphasizing;
+} selection_t;
+
+/* typedefs begin */
+ public enum MsgBms{
+    BmsNone ,
+    BmsBall,
+    BmsSafe,
+    BmsCover,
+    BmsPop
+}
+
+public static final class {
+    char		txt[MSG_LEN];
+    size_t		len;
+    /*short		pixelLen;*/
+    double		lifeTime;
+    MsgBms		bmsinfo;
+} message_t;
+/* typedefs end */
+
+
+ClientData	clData = new ClientData();
 
 char	*geometry;
-xp_args_t xpArgs;
+XPArgs xpArgs;
 Connect_param_t connectParam;
 
-bool	newbie;
+boolean	newbie;
 int	baseWarningType;	/* Which type of base warning you prefer */
 int	maxCharsInNames;
 int	hudRadarDotSize;	/* Size for hudradar dot drawing */
@@ -41,12 +365,12 @@ double	hudRadarLimit;		/* Hudradar dots are not drawn if closer to
 				   range */
 int	hudSize;		/* Size for HUD drawing, depends on hudScale */
 
-bool	is_server = false;	/* used in common code */
+boolean	is_server = false;	/* used in common code */
 
-bool	scoresChanged = true;
-unsigned RadarHeight = 0;
-unsigned RadarWidth = 256;	/* radar width at the server */ 
-bool     UpdateRadar = false;   /* radar update because of polystyle changes? */
+boolean	scoresChanged = true;
+int RadarHeight = 0;
+int RadarWidth = 256;	/* radar width at the server */
+boolean     UpdateRadar = false;   /* radar update because of polystyle changes? */
 
 int     oldServer;
 Point 	selfPos;
@@ -54,8 +378,8 @@ Point 	selfVel;
 short	heading;
 short	nextCheckPoint;
 
-u_byte	numItems[NUM_ITEMS];	/* Count of currently owned items */
-u_byte	lastNumItems[NUM_ITEMS];/* Last item count shown */
+byte	numItems[NUM_ITEMS];	/* Count of currently owned items */
+byte	lastNumItems[NUM_ITEMS];/* Last item count shown */
 int	numItemsTime[NUM_ITEMS];/* Number of frames to show this item count */
 double	showItemsTime;		/* How long to show changed item count for */
 double	scoreObjectTime;	/* How long to flash score objects */
@@ -69,11 +393,11 @@ short	lock_dir;		/* Direction of lock */
 short	lock_dist;		/* Distance to player locked onto */
 
 int	eyesId;                 /* Player we get frame updates for */
-other_t	*eyes = null;	        /* Player we get frame updates for */
-bool	snooping;               /* are we snooping on someone else? */
+Other	eyes = null;	        /* Player we get frame updates for */
+boolean	snooping;               /* are we snooping on someone else? */
 int	eyeTeam = TEAM_NOT_SET;
 
-other_t	*self = null;	        /* player info */
+Other	self = null;	        /* player info */
 short	selfVisible;		/* Are we alive and playing? */
 short	damaged;		/* Damaged by ECM */
 short	destruct;		/* If self destructing */
@@ -96,8 +420,8 @@ int	sparkSize;		/* size of debris and spark */
 int	shotSize;		/* size of shot */
 int	teamShotSize;		/* size of team shot */
 double	controlTime;		/* Display control for how long? */
-u_byte	spark_rand;		/* Sparkling effect */
-u_byte	old_spark_rand;		/* previous value of spark_rand */
+byte	spark_rand;		/* Sparkling effect */
+byte	old_spark_rand;		/* previous value of spark_rand */
 
 double	fuelSum;		/* Sum of fuel in all tanks */
 double	fuelMax;		/* How much fuel can you take? */
@@ -108,7 +432,7 @@ double	fuelCritical;		/* Fuel critical level */
 double	fuelWarning;		/* Fuel warning level */
 double	fuelNotify;		/* Fuel notify level */
 
-char	*shipShape = null;	/* Shape of player's ship */
+String	shipShape = null;	/* Shape of player's ship */
 double	power;			/* Force of thrust */
 double	power_s;		/* Saved power fiks */
 double	turnspeed;		/* How fast player acc-turns */
@@ -123,7 +447,7 @@ int     charsPerSecond;         /* Message output speed (configurable) */
 
 double	hud_move_fact;		/* scale the hud-movement (speed) */
 double	ptr_move_fact;		/* scale the speed pointer length */
-instruments_t	instruments;		/* Instruments on screen */
+Instruments	instruments;		/* Instruments on screen */
 char	mods[MAX_CHARS];	/* Current modifiers in effect */
 int	packet_size;		/* Current frame update packet size */
 int	packet_loss;		/* lost packets per second */
@@ -132,12 +456,12 @@ int	packet_lag;		/* approximate lag in frames */
 char	*packet_measure;	/* packet measurement in a second */
 long	packet_loop;		/* start of measurement */
 
-bool	showUserName = false;	/* Show user name instead of nick name */
-char	servername[MAX_CHARS];	/* Name of server connecting to */
-unsigned	version;	/* Version of the server */
-bool	toggle_shield;		/* Are shields toggled by a press? */
-bool	shields = true;		/* When shields are considered up */
-bool	auto_shield = true;	/* shield drops for fire */
+boolean	showUserName = false;	/* Show user name instead of nick name */
+String	servername;	/* Name of server connecting to */
+int	version;	/* Version of the server */
+boolean	toggle_shield;		/* Are shields toggled by a press? */
+boolean	shields = true;		/* When shields are considered up */
+boolean	auto_shield = true;	/* shield drops for fire */
 char	modBankStr[NUM_MODBANKS][MAX_CHARS]; /* modifier banks */
 
 int	maxFPS;			/* Max FPS player wants from server */
@@ -145,7 +469,7 @@ int	oldMaxFPS = 0;
 double	clientFPS = 1.0;	/* FPS client is drawing at */
 int	recordFPS = 0;		/* What FPS to record at */
 time_t	currentTime = 0;	/* Current value of time() */
-bool	newSecond = false;	/* Did time() increment this frame? */
+boolean	newSecond = false;	/* Did time() increment this frame? */
 
 int	maxMouseTurnsPS = 0;
 int	mouseMovementInterval = 0;
@@ -158,80 +482,80 @@ byte	lose_item;		/* index for dropping owned item */
 int	lose_item_active;	/* one of the lose keys is pressed */
 
 static double       teamscores[MAX_TEAMS];
-static cannontime_t *cannons = null;
+static CannonTime *cannons = null;
 static int          num_cannons = 0;
-static target_t     *targets = null;
+static Target     *targets = null;
 static int          num_targets = 0;
 
-fuelstation_t       *fuels = null;
+Fuelstation       *fuels = null;
 int                 num_fuels = 0;
-homebase_t          *bases = null;
+Homebase          *bases = null;
 int                 num_bases = 0;
-checkpoint_t        *checks = null;
+Checkpoint        *checks = null;
 int                 num_checks = 0;
-xp_polygon_t        *polygons = null;
+XPPolygon        *polygons = null;
 int                 num_polygons = 0;
-edge_style_t        *edge_styles = null;
+EdgeStyle        *edge_styles = null;
 int                 num_edge_styles = 0;
-polygon_style_t     *polygon_styles = null;
+PolygonStyle     *polygon_styles = null;
 int                 num_polygon_styles = 0;
 
-score_object_t      score_objects[MAX_SCORE_OBJECTS];
+ScoreObject      score_objects[MAX_SCORE_OBJECTS];
 int                 score_object = 0;
-other_t             *Others = null;
+Other             *Others = null;
 int                 num_others = 0, max_others = 0;
-refuel_t            *refuel_ptr;
+Refuel            *refuel_ptr;
 int                 num_refuel, max_refuel;
-connector_t         *connector_ptr;
+Connector         *connector_ptr;
 int                 num_connector, max_connector;
-laser_t             *laser_ptr;
+Laser             *laser_ptr;
 int                 num_laser, max_laser;
-missile_t           *missile_ptr;
+Missile           *missile_ptr;
 int                 num_missile, max_missile;
-ball_t              *ball_ptr;
+Ball              *ball_ptr;
 int                 num_ball, max_ball;
-ship_t              *ship_ptr;
+Ship              *ship_ptr;
 int                 num_ship, max_ship;
-mine_t              *mine_ptr;
+Mine              *mine_ptr;
 int                 num_mine, max_mine;
-itemtype_t          *itemtype_ptr;
+ItemType          *itemtype_ptr;
 int                 num_itemtype, max_itemtype;
-ecm_t               *ecm_ptr;
+ECM               *ecm_ptr;
 int                 num_ecm, max_ecm;
-trans_t             *trans_ptr;
+Trans             *trans_ptr;
 int                 num_trans, max_trans;
-paused_t            *paused_ptr;
+Paused            *paused_ptr;
 int                 num_paused, max_paused;
-appearing_t         *appearing_ptr;
+Appearing         *appearing_ptr;
 int                 num_appearing, max_appearing;
-radar_t             *radar_ptr;
+Radar             *radar_ptr;
 int                 num_radar, max_radar;
-vcannon_t           *vcannon_ptr;
+VCannon           *vcannon_ptr;
 int                 num_vcannon, max_vcannon;
-vfuel_t             *vfuel_ptr;
+VFuel             *vfuel_ptr;
 int                 num_vfuel, max_vfuel;
-vbase_t             *vbase_ptr;
+VBase             *vbase_ptr;
 int                 num_vbase, max_vbase;
-debris_t            *debris_ptr[DEBRIS_TYPES];
+Debris            *debris_ptr[DEBRIS_TYPES];
 int                 num_debris[DEBRIS_TYPES],
                     max_debris[DEBRIS_TYPES];
-debris_t            *fastshot_ptr[DEBRIS_TYPES * 2];
+Debris            *fastshot_ptr[DEBRIS_TYPES * 2];
 int                 num_fastshot[DEBRIS_TYPES * 2],
                     max_fastshot[DEBRIS_TYPES * 2];
-vdecor_t            *vdecor_ptr;
+VDecor            *vdecor_ptr;
 int                 num_vdecor, max_vdecor;
-wreckage_t          *wreckage_ptr;
+Wreckage          *wreckage_ptr;
 int                 num_wreckage, max_wreckage;
-asteroid_t          *asteroid_ptr;
+Asteroid          *asteroid_ptr;
 int                 num_asteroids, max_asteroids;
-wormhole_t          *wormhole_ptr;
+Wormhole          *wormhole_ptr;
 int                 num_wormholes, max_wormholes;
 
 int                 num_playing_teams = 0;
 long		    time_left = -1;
 long		    start_loops, end_loops;
 
-static fuelstation_t *Fuelstation_by_pos(int x, int y)
+static Fuelstation *Fuelstation_by_pos(int x, int y)
 {
     int			i, lo, hi, pos;
 
@@ -253,7 +577,7 @@ static fuelstation_t *Fuelstation_by_pos(int x, int y)
 
 double Fuel_by_pos(int x, int y)
 {
-    fuelstation_t	*fuelp;
+    Fuelstation	*fuelp;
 
     if ((fuelp = Fuelstation_by_pos(x, y)) == null)
 	return 0;
@@ -303,7 +627,7 @@ int Handle_fuel(int ind, double fuel)
     return 0;
 }
 
-static cannontime_t *Cannon_by_pos(int x, int y)
+static CannonTime *Cannon_by_pos(int x, int y)
 {
     int			i, lo, hi, pos;
 
@@ -325,7 +649,7 @@ static cannontime_t *Cannon_by_pos(int x, int y)
 
 int Cannon_dead_time_by_pos(int x, int y, int *dot)
 {
-    cannontime_t	*cannonp;
+    CannonTime	*cannonp;
 
     if ((cannonp = Cannon_by_pos(x, y)) == null)
 	return -1;
@@ -368,7 +692,7 @@ int Handle_target(int num, int dead_time, double damage)
     return 0;
 }
 
-static homebase_t *Homebase_by_pos(int x, int y)
+static Homebase *Homebase_by_pos(int x, int y)
 {
     int			i, lo, hi, pos;
 
@@ -390,7 +714,7 @@ static homebase_t *Homebase_by_pos(int x, int y)
 
 int Base_info_by_pos(int x, int y, int *idp, int *teamp)
 {
-    homebase_t	*basep;
+    Homebase	*basep;
 
     if ((basep = Homebase_by_pos(x, y)) == null)
 	return -1;
@@ -620,7 +944,7 @@ void Map_blue(int startx, int starty, int width, int height)
 			type,
 			newtype;
     unsigned char	blue[256];
-    bool		outline = false;
+    boolean		outline = false;
 
     if (instruments.outlineWorld ||
 	instruments.filledWorld ||
@@ -841,13 +1165,13 @@ static void parse_styles(char **callptr)
     num_edge_styles = *ptr++ & 0xff;
     num_bmaps = *ptr++ & 0xff;
 
-    polygon_styles = XMALLOC(polygon_style_t, Math.max(1, num_polygon_styles));
+    polygon_styles = XMALLOC(PolygonStyle, Math.max(1, num_polygon_styles));
     if (polygon_styles == null) {
 	error("no memory for polygon styles");
 	exit(1);
     }
 
-    edge_styles = XMALLOC(edge_style_t, Math.max(1, num_edge_styles));
+    edge_styles = XMALLOC(EdgeStyle, Math.max(1, num_edge_styles));
     if (edge_styles == null) {
 	error("no memory for edge styles");
 	exit(1);
@@ -896,7 +1220,7 @@ static int init_polymap()
     int i, j, startx, starty, ecount, edgechange, current_estyle;
     int dx, dy, cx, cy, pc;
     int *styles;
-    xp_polygon_t *poly;
+    XPPolygon *poly;
     Point  *points, min, max;
     String ptr, *edgeptr;
 
@@ -906,7 +1230,7 @@ static int init_polymap()
     parse_styles(&ptr);
 
     num_polygons = get_ushort(&ptr);
-    polygons = XMALLOC(xp_polygon_t, num_polygons);
+    polygons = XMALLOC(XPPolygon, num_polygons);
     if (polygons == null) {
 	error("no memory for polygons");
 	exit(1);
@@ -985,7 +1309,7 @@ static int init_polymap()
 	poly.bounds.h = max.y - min.y;
     }
     num_bases = *ptr++ & 0xff;
-    bases = XMALLOC(homebase_t, num_bases);
+    bases = XMALLOC(Homebase, num_bases);
     if (bases == null) {
 	error("No memory for Map bases (%d)", num_bases);
 	exit(1);
@@ -1015,7 +1339,7 @@ static int init_polymap()
     }
     num_fuels = get_ushort(&ptr);
     if (num_fuels != 0) {
-	fuels = XMALLOC(fuelstation_t, num_fuels);
+	fuels = XMALLOC(Fuelstation, num_fuels);
 	if (fuels == null) {
 	    error("No memory for Map fuels (%d)", num_fuels);
 	    exit(1);
@@ -1033,7 +1357,7 @@ static int init_polymap()
     num_checks = *ptr++ & 0xff;
     if (num_checks != 0) {
 
-	checks = XMALLOC(checkpoint_t, num_checks);
+	checks = XMALLOC(Checkpoint, num_checks);
 	if (checks == null) {
 	    error("No memory for checkpoints (%d)", num_checks);
 	    exit(1);
@@ -1064,7 +1388,7 @@ static int init_blockmap()
     int			i,
 			max,
 			type;
-    u_byte		types[256];
+    byte		types[256];
 
     num_fuels = 0;
     num_bases = 0;
@@ -1100,7 +1424,7 @@ static int init_blockmap()
 	}
     }
     if (num_bases != 0) {
-	bases = XMALLOC(homebase_t, num_bases);
+	bases = XMALLOC(Homebase, num_bases);
 	if (bases == null) {
 	    error("No memory for Map bases (%d)", num_bases);
 	    return -1;
@@ -1108,7 +1432,7 @@ static int init_blockmap()
 	num_bases = 0;
     }
     if (num_fuels != 0) {
-	fuels = XMALLOC(fuelstation_t, num_fuels);
+	fuels = XMALLOC(Fuelstation, num_fuels);
 	if (fuels == null) {
 	    error("No memory for Map fuels (%d)", num_fuels);
 	    return -1;
@@ -1116,7 +1440,7 @@ static int init_blockmap()
 	num_fuels = 0;
     }
     if (num_targets != 0) {
-	targets = XMALLOC(target_t, num_targets);
+	targets = XMALLOC(Target, num_targets);
 	if (targets == null) {
 	    error("No memory for Map targets (%d)", num_targets);
 	    return -1;
@@ -1124,7 +1448,7 @@ static int init_blockmap()
 	num_targets = 0;
     }
     if (num_cannons != 0) {
-	cannons = XMALLOC(cannontime_t, num_cannons);
+	cannons = XMALLOC(CannonTime, num_cannons);
 	if (cannons == null) {
 	    error("No memory for Map cannons (%d)", num_cannons);
 	    return -1;
@@ -1132,7 +1456,7 @@ static int init_blockmap()
 	num_cannons = 0;
     }
     if (num_checks != 0) {
-	checks = XMALLOC(checkpoint_t, num_checks);
+	checks = XMALLOC(Checkpoint, num_checks);
 	if (checks == null) {
 	    error("No memory for Map checks (%d)", num_checks);
 	    return -1;
@@ -1208,7 +1532,7 @@ static int Map_cleanup()
 }
 
 
-homebase_t *Homebase_by_id(int id)
+Homebase *Homebase_by_id(int id)
 {
     int i;
 
@@ -1221,7 +1545,7 @@ homebase_t *Homebase_by_id(int id)
     return null;
 }
 
-other_t *Other_by_id(int id)
+Other *Other_by_id(int id)
 {
     int i;
 
@@ -1234,10 +1558,10 @@ other_t *Other_by_id(int id)
     return null;
 }
 
-other_t *Other_by_name(String name, bool show_error_msg)
+Other *Other_by_name(String name, boolean show_error_msg)
 {
     int i;
-    other_t *found_other = null, *other;
+    Other *found_other = null, *other;
     size_t len;
 
     if (name == null || (len = strlen(name)) == 0)
@@ -1299,7 +1623,7 @@ other_t *Other_by_name(String name, bool show_error_msg)
 
 ShipShape  *Ship_by_id(int id)
 {
-    other_t		*other;
+    Other		*other;
 
     if ((other = Other_by_id(id)) == null)
 	return Parse_shape_str(null);
@@ -1308,7 +1632,7 @@ ShipShape  *Ship_by_id(int id)
 
 int Handle_leave(int id)
 {
-    other_t		*other;
+    Other		*other;
     char		msg[MSG_LEN];
 
     if ((other = Other_by_id(id)) != null) {
@@ -1339,7 +1663,7 @@ int Handle_player(int id, int player_team, int mychar,
 		  String nick_name, String user_name, String host_name,
 		  String shape, int myself)
 {
-    other_t		*other;
+    Other		*other;
 
     if (Setup.mode.get( TEAM_PLAY)
 	&& (player_team < 0 || player_team >= MAX_TEAMS)) {
@@ -1350,9 +1674,9 @@ int Handle_player(int id, int player_team, int mychar,
 	if (num_others >= max_others) {
 	    max_others += 5;
 	    if (num_others == 0)
-		Others = XMALLOC(other_t, max_others);
+		Others = XMALLOC(Other, max_others);
 	    else
-		Others = XREALLOC(other_t, Others, max_others);
+		Others = XREALLOC(Other, Others, max_others);
 	    if (Others == null)
 		fatal("Not enough memory for player info");
 	    if (self != null)
@@ -1372,7 +1696,7 @@ int Handle_player(int id, int player_team, int mychar,
 	}
 	self = other;
     }
-    memset(other, 0, sizeof(other_t));
+    memset(other, 0, sizeof(Other));
     other.id = id;
     other.team = player_team;
     other.mychar = mychar;
@@ -1390,7 +1714,7 @@ int Handle_player(int id, int player_team, int mychar,
 
 int Handle_team(int id, int pl_team)
 {
-    other_t *other;
+    Other *other;
 
     other = Other_by_id(id);
     if (other == null) {
@@ -1409,7 +1733,7 @@ int Handle_team(int id, int pl_team)
 
 int Handle_score(int id, double score, int life, int mychar, int alliance)
 {
-    other_t		*other;
+    Other		*other;
 
     if ((other = Other_by_id(id)) == null) {
 	warn("Can't update score for non-existing player %d,%.2f,%d",
@@ -1442,7 +1766,7 @@ int Handle_team_score(int team, double score)
 
 int Handle_timing(int id, int check, int round, long tloops)
 {
-    other_t		*other;
+    Other		*other;
 
     if ((other = Other_by_id(id)) == null) {
 	warn("Can't update timing for non-existing player %d,%d,%d",
@@ -1463,7 +1787,7 @@ int Handle_timing(int id, int check, int round, long tloops)
 
 int Handle_score_object(double score, int x, int y, String msg)
 {
-    score_object_t*	sobj = &score_objects[score_object];
+    ScoreObject*	sobj = &score_objects[score_object];
 
     sobj.score = score;
     sobj.x = x;
@@ -1569,9 +1893,9 @@ int Handle_end(long server_loops)
     return 0;
 }
 
-int Handle_self_items(u_byte *newNumItems)
+int Handle_self_items(byte *newNumItems)
 {
-    memcpy(numItems, newNumItems, NUM_ITEMS * sizeof(u_byte));
+    memcpy(numItems, newNumItems, NUM_ITEMS * sizeof(byte));
     return 0;
 }
 
@@ -1596,7 +1920,7 @@ int Handle_self(int x, int y, int vx, int vy, int newHeading,
 		double newPower, double newTurnspeed, double newTurnresistance,
 		int newLockId, int newLockDist, int newLockBearing,
 		int newNextCheckPoint, int newAutopilotLight,
-		u_byte *newNumItems, int newCurrentTank,
+		byte *newNumItems, int newCurrentTank,
 		double newFuelSum, double newFuelMax, int newPacketSize,
 		int status)
 {
@@ -1613,7 +1937,7 @@ int Handle_self(int x, int y, int vx, int vy, int newHeading,
     lock_dir = newLockBearing;
     nextCheckPoint = newNextCheckPoint;
     autopilotLight = newAutopilotLight;
-    memcpy(numItems, newNumItems, NUM_ITEMS * sizeof(u_byte));
+    memcpy(numItems, newNumItems, NUM_ITEMS * sizeof(byte));
     fuelCurrent = newCurrentTank;
     if (newFuelSum > fuelSum && selfVisible)
 	fuelTime = FUEL_NOTIFY_TIME;
@@ -1692,63 +2016,63 @@ int Handle_rounddelay(int count, int max)
 
 int Handle_refuel(int x_0, int y_0, int x_1, int y_1)
 {
-    refuel_t	t;
+    Refuel	t;
 
     t.x0 = x_0;
     t.x1 = x_1;
     t.y0 = y_0;
     t.y1 = y_1;
-    STORE(refuel_t, refuel_ptr, num_refuel, max_refuel, t);
+    STORE(Refuel, refuel_ptr, num_refuel, max_refuel, t);
     return 0;
 }
 
 int Handle_connector(int x_0, int y_0, int x_1, int y_1, int tractor)
 {
-    connector_t	t;
+    Connector	t;
 
     t.x0 = x_0;
     t.x1 = x_1;
     t.y0 = y_0;
     t.y1 = y_1;
     t.tractor = tractor;
-    STORE(connector_t, connector_ptr, num_connector, max_connector, t);
+    STORE(Connector, connector_ptr, num_connector, max_connector, t);
     return 0;
 }
 
 int Handle_laser(int color, int x, int y, int len, int dir)
 {
-    laser_t	t;
+    Laser	t;
 
     t.color = color;
     t.x = x;
     t.y = y;
     t.len = len;
     t.dir = dir;
-    STORE(laser_t, laser_ptr, num_laser, max_laser, t);
+    STORE(Laser, laser_ptr, num_laser, max_laser, t);
     return 0;
 }
 
 int Handle_missile(int x, int y, int len, int dir)
 {
-    missile_t	t;
+    Missile	t;
 
     t.x = x;
     t.y = y;
     t.dir = dir;
     t.len = len;
-    STORE(missile_t, missile_ptr, num_missile, max_missile, t);
+    STORE(Missile, missile_ptr, num_missile, max_missile, t);
     return 0;
 }
 
 int Handle_ball(int x, int y, int id, int style)
 {
-    ball_t	t;
+    Ball	t;
 
     t.x = x;
     t.y = y;
     t.id = id;
     t.style = style;
-    STORE(ball_t, ball_ptr, num_ball, max_ball, t);
+    STORE(Ball, ball_ptr, num_ball, max_ball, t);
     return 0;
 }
 
@@ -1787,7 +2111,7 @@ static int predict_self_dir(int received_dir)
 int Handle_ship(int x, int y, int id, int dir, int shield, int cloak,
 		int eshield, int phased, int deflector)
 {
-    ship_t	t;
+    Ship	t;
 
     t.x = x;
     t.y = y;
@@ -1801,7 +2125,7 @@ int Handle_ship(int x, int y, int id, int dir, int shield, int cloak,
     t.eshield = eshield;
     t.phased = phased;
     t.deflector = deflector;
-    STORE(ship_t, ship_ptr, num_ship, max_ship, t);
+    STORE(Ship, ship_ptr, num_ship, max_ship, t);
 
     /* if we see a ship in the center of the display, we may be watching
      * it, especially if it's us!  consider any ship there to be our eyes
@@ -1825,33 +2149,33 @@ int Handle_ship(int x, int y, int id, int dir, int shield, int cloak,
 
 int Handle_mine(int x, int y, int teammine, int id)
 {
-    mine_t	t;
+    Mine	t;
 
     t.x = x;
     t.y = y;
     t.teammine = teammine;
     t.id = id;
-    STORE(mine_t, mine_ptr, num_mine, max_mine, t);
+    STORE(Mine, mine_ptr, num_mine, max_mine, t);
     return 0;
 }
 
 int Handle_item(int x, int y, int type)
 {
-    itemtype_t	t;
+    ItemType	t;
 
     t.x = x;
     t.y = y;
     t.type = type;
-    STORE(itemtype_t, itemtype_ptr, num_itemtype, max_itemtype, t);
+    STORE(ItemType, itemtype_ptr, num_itemtype, max_itemtype, t);
     return 0;
 }
 
 #define STORE_DEBRIS(typ_e, _p, _n) \
     if (_n > max_) {						\
 	if (max_ == 0) {						\
-	    ptr_ = (debris_t *)malloc(n * sizeof(*ptr_));		\
+	    ptr_ = (Debris *)malloc(n * sizeof(*ptr_));		\
 	} else {						\
-	    ptr_ = (debris_t *)realloc(ptr_, _n * sizeof(*ptr_));	\
+	    ptr_ = (Debris *)realloc(ptr_, _n * sizeof(*ptr_));	\
 	}							\
 	if (ptr_ == null) {					\
 	    error("No memory for debris");			\
@@ -1869,7 +2193,7 @@ int Handle_item(int x, int y, int type)
     return 0;
 
 
-int Handle_fastshot(int type, u_byte *p, int n)
+int Handle_fastshot(int type, byte *p, int n)
 {
 #define num_		(num_fastshot[type])
 #define max_		(max_fastshot[type])
@@ -1880,7 +2204,7 @@ int Handle_fastshot(int type, u_byte *p, int n)
 #undef ptr_
 }
 
-int Handle_debris(int type, u_byte *p, int n)
+int Handle_debris(int type, byte *p, int n)
 {
 #define num_		(num_debris[type])
 #define max_		(max_debris[type])
@@ -1893,43 +2217,43 @@ int Handle_debris(int type, u_byte *p, int n)
 
 int Handle_wreckage(int x, int y, int wrecktype, int size, int rotation)
 {
-    wreckage_t	t;
+    Wreckage	t;
 
     t.x = x;
     t.y = y;
     t.wrecktype = wrecktype;
     t.size = size;
     t.rotation = rotation;
-    STORE(wreckage_t, wreckage_ptr, num_wreckage, max_wreckage, t);
+    STORE(Wreckage, wreckage_ptr, num_wreckage, max_wreckage, t);
     return 0;
 }
 
 int Handle_asteroid(int x, int y, int type, int size, int rotation)
 {
-    asteroid_t	t;
+    Asteroid	t;
 
     t.x = x;
     t.y = y;
     t.type = type;
     t.size = size;
     t.rotation = rotation;
-    STORE(asteroid_t, asteroid_ptr, num_asteroids, max_asteroids, t);
+    STORE(Asteroid, asteroid_ptr, num_asteroids, max_asteroids, t);
     return 0;
 }
 
 int Handle_wormhole(int x, int y)
 {
-    wormhole_t	t;
+    Wormhole	t;
 
     t.x = x - BLOCK_SZ / 2;
     t.y = y - BLOCK_SZ / 2;
-    STORE(wormhole_t, wormhole_ptr, num_wormholes, max_wormholes, t);
+    STORE(Wormhole, wormhole_ptr, num_wormholes, max_wormholes, t);
     return 0;
 }
 
 int Handle_polystyle(int polyind, int newstyle)
 {
-    xp_polygon_t *poly;
+    XPPolygon *poly;
 
     poly = &polygons[polyind];
     poly.style = newstyle;
@@ -1940,53 +2264,53 @@ int Handle_polystyle(int polyind, int newstyle)
 
 int Handle_ecm(int x, int y, int size)
 {
-    ecm_t	t;
+    ECM	t;
 
     t.x = x;
     t.y = y;
     t.size = size;
-    STORE(ecm_t, ecm_ptr, num_ecm, max_ecm, t);
+    STORE(ECM, ecm_ptr, num_ecm, max_ecm, t);
     return 0;
 }
 
 int Handle_trans(int x_1, int y_1, int x_2, int y_2)
 {
-    trans_t	t;
+    Trans	t;
 
     t.x1 = x_1;
     t.y1 = y_1;
     t.x2 = x_2;
     t.y2 = y_2;
-    STORE(trans_t, trans_ptr, num_trans, max_trans, t);
+    STORE(Trans, trans_ptr, num_trans, max_trans, t);
     return 0;
 }
 
 int Handle_paused(int x, int y, int count)
 {
-    paused_t	t;
+    Paused	t;
 
     t.x = x;
     t.y = y;
     t.count = count;
-    STORE(paused_t, paused_ptr, num_paused, max_paused, t);
+    STORE(Paused, paused_ptr, num_paused, max_paused, t);
     return 0;
 }
 
 int Handle_appearing(int x, int y, int id, int count)
 {
-    appearing_t	t;
+    Appearing	t;
 
     t.x = x;
     t.y = y;
     t.id = id;
     t.count = count;
-    STORE(appearing_t, appearing_ptr, num_appearing, max_appearing, t);
+    STORE(Appearing, appearing_ptr, num_appearing, max_appearing, t);
     return 0;
 }
 
 int Handle_fastradar(int x, int y, int size)
 {
-    radar_t t;
+    Radar t;
     
     t.x = x;
     t.y = y;
@@ -1998,7 +2322,7 @@ int Handle_fastradar(int x, int y, int size)
     }
     
     t.size = size;
-    STORE(radar_t, radar_ptr, num_radar, max_radar, t);
+    STORE(Radar, radar_ptr, num_radar, max_radar, t);
     return 0;
 }
 
@@ -2015,7 +2339,7 @@ int Handle_message(String msg)
 {
     int i;
     char ignoree[MAX_CHARS];
-    other_t *other;
+    Other *other;
 
     if (msg[strlen(msg) - 1] == ']') {
 	for (i = strlen(msg) - 1; i > 0; i--) {
@@ -2070,53 +2394,53 @@ int Handle_time_left(long sec)
 
 int Handle_vcannon(int x, int y, int type)
 {
-    vcannon_t	t;
+    VCannon	t;
 
     t.x = x;
     t.y = y;
     t.type = type;
-    STORE(vcannon_t, vcannon_ptr, num_vcannon, max_vcannon, t);
+    STORE(VCannon, vcannon_ptr, num_vcannon, max_vcannon, t);
     return 0;
 }
 
 int Handle_vfuel(int x, int y, double fuel)
 {
-    vfuel_t	t;
+    VFuel	t;
 
     t.x = x;
     t.y = y;
     t.fuel = fuel;
-    STORE(vfuel_t, vfuel_ptr, num_vfuel, max_vfuel, t);
+    STORE(VFuel, vfuel_ptr, num_vfuel, max_vfuel, t);
     return 0;
 }
 
 int Handle_vbase(int x, int y, int xi, int yi, int type)
 {
-    vbase_t	t;
+    VBase	t;
 
     t.x = x;
     t.y = y;
     t.xi = xi;
     t.yi = yi;
     t.type = type;
-    STORE(vbase_t, vbase_ptr, num_vbase, max_vbase, t);
+    STORE(VBase, vbase_ptr, num_vbase, max_vbase, t);
     return 0;
 }
 
 int Handle_vdecor(int x, int y, int xi, int yi, int type)
 {
-    vdecor_t	t;
+    VDecor	t;
 
     t.x = x;
     t.y = y;
     t.xi = xi;
     t.yi = yi;
     t.type = type;
-    STORE(vdecor_t, vdecor_ptr, num_vdecor, max_vdecor, t);
+    STORE(VDecor, vdecor_ptr, num_vdecor, max_vdecor, t);
     return 0;
 }
 
-bool Using_score_decimals()
+boolean Using_score_decimals()
 {
     if (showScoreDecimals > 0 && version >= 0x4500
 	&& (version < 0x4F09 || version >= 0x4F11))
@@ -2228,7 +2552,7 @@ void Client_cleanup()
     Free_msgs();
     if (max_others > 0) {
 	for (i = 0; i < num_others; i++) {
-	    other_t* other = &Others[i];
+	    Other* other = &Others[i];
 	    Free_ship_shape(other.ship);
 	}
 	free(Others);
@@ -2376,4 +2700,6 @@ void Client_exit(int status)
     Net_cleanup();
     Client_cleanup();
     exit(status);
+}
+
 }

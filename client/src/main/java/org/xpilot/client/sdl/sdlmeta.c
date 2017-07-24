@@ -28,18 +28,14 @@
 #include "text.h"
 #include "glwidgets.h"
 
-#define EVENT_JOIN 0
-#define EVENT_REFRESH 1
-
+public static final int EVENT_JOIN = 0; public static final int EVENT_REFRESH = 1;
 #define SELECTED_BG 0x009000ff
 #define ROW_FG 0xffff00ff
 #define ROW_BG1 0x0000a0ff
 #define ROW_BG2 0x000070ff
 #define HEADER_FG 0xffff00ff
 #define HEADER_BG 0xff0000ff
-#define STATUS_ROWS 7
-#define STATUS_COLS 4
-#define STATUS_FIELD_FG 0xffff00ff
+public static final int STATUS_ROWS = 7; public static final int STATUS_COLS = 4; #define STATUS_FIELD_FG 0xffff00ff
 #define STATUS_FIELD_BG 0xff0000ff
 #define STATUS_VALUE_FG 0xffff00ff
 #define STATUS_VALUE_BG 0x000070ff
@@ -47,21 +43,10 @@
 #define PLIST_HEADER_BG 0xff0000ff
 #define PLIST_ITEM_FG 0xffff00ff
 #define PLIST_ITEM_BG 0x000070ff
-#define ROW_HEIGHT 19
-#define VERSION_WIDTH 100
-#define COUNT_WIDTH 20
-#define META_WIDTH 837
-#define META_HEIGHT 768
-#define BUTTON_BG 0xff0000ff
+public static final int ROW_HEIGHT = 19; public static final int VERSION_WIDTH = 100; public static final int COUNT_WIDTH = 20; public static final int META_WIDTH = 837; public static final int META_HEIGHT = 768; #define BUTTON_BG 0xff0000ff
 #define BUTTON_FG 0xffff00ff
 
-#define METAWIDGET        100
-#define METATABLEWIDGET   101
-#define METAROWWIDGET     102
-#define METAHEADERWIDGET  103
-#define STATUSWIDGET      104
-#define PLAYERLISTWIDGET  105
-
+public static final int METAWIDGET = 100; public static final int METATABLEWIDGET = 101; public static final int METAROWWIDGET = 102; public static final int METAHEADERWIDGET = 103; public static final int STATUSWIDGET = 104; public static final int PLAYERLISTWIDGET = 105;
 static int status_column_widths[] = { 100, 0, 100, 70 };
 
 typedef struct {

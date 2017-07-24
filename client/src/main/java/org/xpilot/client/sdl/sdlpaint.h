@@ -23,16 +23,12 @@
 
 #include "xpclient_sdl.h"
 
-#define MAX_VERTICES 10000
-
+public static final int MAX_VERTICES = 10000;
 typedef unsigned int color_t;
 
 extern int draw_depth;
 
-#define STATIONARY_MODE 1
-#define MOVING_MODE 	2
-#define HUD_MODE    	4
-
+public static final int STATIONARY_MODE = 1; public static final int MOVING_MODE = 2; public static final int HUD_MODE = 4;
 extern int paintSetupMode;
 
 void setupPaint_stationary();

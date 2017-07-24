@@ -22,9 +22,7 @@ extern "C" {
 
 /* ----- Versioning */
 
-#define SDL_GFXPRIMITIVES_MAJOR	1
-#define SDL_GFXPRIMITIVES_MINOR	5
-
+public static final int SDL_GFXPRIMITIVES_MAJOR = 1; public static final int SDL_GFXPRIMITIVES_MINOR = 5;
 /* ----- W32 DLL interface */
 
 #ifdef WIN32
