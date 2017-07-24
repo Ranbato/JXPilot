@@ -34,19 +34,18 @@
 #endif
 
 /* constants begin */
-#define MAX_COLORS		16	/* Max. switched colors ever */
-#define MAX_COLOR_LEN		32	/* Max. length of a color name */
+public static final int MAX_COLORS = 16; /* Max. switched colors ever */
+public static final int MAX_COLOR_LEN = 32; /* Max. length of a color name */
 
-#define MIN_HUD_SIZE		90	/* Size/2 of HUD lines */
-#define HUD_OFFSET		20	/* Hud line offset */
-#define FUEL_GAUGE_OFFSET	6
-#define HUD_FUEL_GAUGE_SIZE	(2*(MIN_HUD_SIZE-HUD_OFFSET-FUEL_GAUGE_OFFSET))
+public static final int MIN_HUD_SIZE = 90; /* Size/2 of HUD lines */
+public static final int HUD_OFFSET = 20; /* Hud line offset */
+public static final int FUEL_GAUGE_OFFSET = 6; #define HUD_FUEL_GAUGE_SIZE	(2*(MIN_HUD_SIZE-HUD_OFFSET-FUEL_GAUGE_OFFSET))
 
 #define WARNING_DISTANCE	(VISIBILITY_DISTANCE*0.8)
 
-#define TITLE_DELAY		500	/* Should probably change to seconds */
+public static final int TITLE_DELAY = 500; /* Should probably change to seconds */
 
-#define DSIZE			4	/* Size of diamond (on radar) */
+public static final int DSIZE = 4; /* Size of diamond (on radar) */
 /* constants end */
 
 
@@ -144,7 +143,7 @@ void Paint_vdecor();
 void Paint_objects();
 void Paint_world();
 void Paint_score_table();
-void Paint_score_entry(int entry_num, other_t *other, bool is_team);
+void Paint_score_entry(int entry_num, Other *other, bool is_team);
 void Paint_score_start();
 void Paint_score_objects();
 void Paint_meters();
@@ -156,7 +155,7 @@ void Paint_HUD_values();
 void Paint_frame();
 void Paint_frame_start();
 int Team_color(int);
-int Life_color(other_t *other);
+int Life_color(Other *other);
 int Life_color_by_life(int life);
 void Play_beep();
 int Check_view_dimensions();

@@ -36,9 +36,7 @@
 #include <AL/alut.h>
 #endif
 
-#define MAX_SOUNDS 16
-#define VOL_THRESHOLD 10
-
+public static final int MAX_SOUNDS = 16; public static final int VOL_THRESHOLD = 10;
 typedef struct {
     ALuint    buffer;
     ALfloat   gain;

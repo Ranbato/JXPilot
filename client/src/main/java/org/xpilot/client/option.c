@@ -896,8 +896,7 @@ int Xpilotrc_read(String path)
 }
 
 
-#define TABSIZE 8
-static void Xpilotrc_create_line(String buf, size_t size,
+public static final int TABSIZE = 8; static void Xpilotrc_create_line(String buf, size_t size,
 				 xp_option *opt,
 				 String comment,
 				 bool comment_whole_line)

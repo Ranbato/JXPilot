@@ -24,8 +24,7 @@
  */
 
 #ifndef CLIENTCOMMAND_H
-#define CLIENTCOMMAND_H 1
-
+public static final int CLIENTCOMMAND_H = 1;
 void executeCommand(String talk_str);
 void crippleTalk(String msg);
 

@@ -90,8 +90,7 @@ static String teamnames[] = {
 };
 
 /* increase if you want to look for messages with more player names. */
-#define MSG_MAX_NAMES 3
-
+public static final int MSG_MAX_NAMES = 3;
 /* structure to store names found in a message */
 typedef struct {
     int index;
@@ -183,7 +182,7 @@ static bool Msg_match_fmt(String msg, String fmt, msgnames_t *mn)
 static bool Want_scan()
 {
     int i;
-    other_t *other;
+    Other *other;
     int num_playing = 0;
 
     /* if only player on server, let's not bother */
@@ -298,7 +297,7 @@ static bool Msg_scan_for_ball_destruction(String message)
 static void Msg_scan_death(int id)
 {
     int i;
-    other_t *other;
+    Other *other;
 
     if (version >= 0x4F12)
 	return;
@@ -333,7 +332,7 @@ static void Msg_scan_game_msg(String message)
     bool i_am_killer = false;
     bool i_am_victim = false;
     bool i_am_victim2 = false;
-    other_t *other = null;
+    Other *other = null;
 
     DP(printf("MESSAGE: \"%s\"\n", message));
 
@@ -553,7 +552,7 @@ static void Msg_scan_angle_bracketed_msg(String message)
 }
 
 /* Mara's ball message scan */
-static msg_bms_t Msg_do_bms(String message)
+static MsgBms Msg_do_bms(String message)
 {
     static char ball_text1[] = "BALL";
     static char ball_text2[] = "Ball";
@@ -616,7 +615,7 @@ static msg_bms_t Msg_do_bms(String message)
  */
 static bool Msg_is_from_our_team(String message, String *msg2)
 {
-    other_t *other;
+    Other *other;
     static char buf[MAX_CHARS + 8];
     size_t bufstrlen, len;
     int i;
@@ -733,7 +732,7 @@ void Free_selectionAndHistory()
 /*
  * Clear bms info for all messages of the specified type.
  */
-static void Bms_clear(msg_bms_t type)
+static void Bms_clear(MsgBms type)
 {
     int i;
 
@@ -742,7 +741,7 @@ static void Bms_clear(msg_bms_t type)
 	    TalkMsg[i].bmsinfo = BmsNone;
 }
 
-bool Bms_test_state(msg_bms_t bms)
+bool Bms_test_state(MsgBms bms)
 {
     switch (bms) {
     case BmsBall:
@@ -759,7 +758,7 @@ bool Bms_test_state(msg_bms_t bms)
     }
 }
 
-void Bms_set_state(msg_bms_t bms)
+void Bms_set_state(MsgBms bms)
 {
     switch (bms) {
     case BmsBall:
@@ -800,7 +799,7 @@ void Add_message(String message)
 {
     int i, last_msg_index;
     message_t *msg, **msg_set;
-    msg_bms_t bmsinfo = BmsNone;
+    MsgBms bmsinfo = BmsNone;
     String msg2;
     bool is_game_msg = false;
     bool is_drawn_talk_message	= false; /* not pending */
@@ -969,7 +968,7 @@ static void Roundend()
 }
 
 
-void Add_roundend_messages(other_t **order)
+void Add_roundend_messages(Other **order)
 {
     static char hackbuf[MSG_LEN];
     static char hackbuf2[MSG_LEN];
@@ -977,7 +976,7 @@ void Add_roundend_messages(other_t **order)
     static char killsperround[16];
     String s;
     int i;
-    other_t *other;
+    Other *other;
 
     Roundend();
 

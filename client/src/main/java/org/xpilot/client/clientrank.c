@@ -20,8 +20,7 @@
 
 #include "xpclient.h"
 
-#define MAX_SCORES 500
-
+public static final int MAX_SCORES = 500;
 char clientRankFile[PATH_MAX];
 char clientRankHTMLFile[PATH_MAX];
 char clientRankHTMLNOJSFile[PATH_MAX];

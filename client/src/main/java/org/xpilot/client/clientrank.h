@@ -18,8 +18,6 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef CLIENTRANK_H
-#define CLIENTRANK_H 1
 
 extern char clientname[16];	/*assigned in xpilot.c :( */
 extern char clientRankFile[PATH_MAX];

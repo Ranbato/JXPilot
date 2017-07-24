@@ -146,7 +146,7 @@ static void print_help(String arg)
 
 static void ignorePlayer(String name, int level)
 {
-    other_t *other = Other_by_name(name, true);
+    Other *other = Other_by_name(name, true);
     char buf[64 + MAX_NAME_LEN];
 
     if (other != null) {
@@ -167,7 +167,7 @@ static void ignorePlayer(String name, int level)
 
 static void unignorePlayer(String name)
 {
-    other_t *other = Other_by_name(name, true);
+    Other *other = Other_by_name(name, true);
     char buf[64 + MAX_NAME_LEN];
 
     if (other != null) {

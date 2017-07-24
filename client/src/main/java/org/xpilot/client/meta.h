@@ -29,21 +29,16 @@
 /*
  * max number of servers we can find on the local network.
  */
-#define MAX_LOCAL_SERVERS	10
-
+public static final int MAX_LOCAL_SERVERS = 10;
 /*
  * Some constants for describing access to the meta servers.
  * XXX These are also defined in some other file.
  */
-#define NUM_METAS		2
-#define META_PROG_PORT		4401
-#define META_USER_PORT		4400
-#define NUM_META_DATA_FIELDS	18
-#define META_INIT_SOCK {-2, {0, 0}, 0, {0, 0, 0}, null, null}
+public static final int NUM_METAS = 2; public static final int META_PROG_PORT = 4401; public static final int META_USER_PORT = 4400; public static final int NUM_META_DATA_FIELDS = 18; #define META_INIT_SOCK {-2, {0, 0}, 0, {0, 0, 0}, null, null}
 
-#define PING_UNKNOWN	10000	/* never transmitted a ping to it */
-#define PING_NORESP	9999	/* never responded to our ping */
-#define PING_SLOW	9998	/* responded to first ping after
+public static final int PING_UNKNOWN = 10000; /* never transmitted a ping to it */
+public static final int PING_NORESP = 9999; /* never responded to our ping */
+public static final int PING_SLOW = 9998; /* responded to first ping after
 				 * we had already retried (ie slow!) */
 
 /*

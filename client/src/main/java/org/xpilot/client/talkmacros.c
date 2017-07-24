@@ -34,8 +34,7 @@ String talk_fast_msgs[TALK_FAST_NR_OF_MSGS];	/* talk macros */
 /* The final string, sent to the server */
 static char final_str[MAX_CHARS];
 
-#define MSG_PARSED_FIELD_LEN      20
-
+public static final int MSG_PARSED_FIELD_LEN = 20;
 /*
  * Returns a pointer to the first character after the fields
  */
@@ -146,7 +145,7 @@ static int Talk_macro_parse_mesg(String outbuf, String inbuf, long pos,
     String tmpptr3 = 0;
     String nextpos;
     String filename;
-    other_t *player = null;
+    Other *player = null;
 
     while (!done && (c = *inbuf++) != '\0') {
 	if (pos >= max - 2) {

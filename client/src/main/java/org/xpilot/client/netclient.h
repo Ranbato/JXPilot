@@ -27,15 +27,12 @@
 #define	NETCLIENT_H
 
 #ifndef TYPES_H
-/* need u_byte */
+/* need byte */
 #include "types.h"
 #endif
 
-#define MIN_RECEIVE_WINDOW_SIZE		1
-#define MAX_RECEIVE_WINDOW_SIZE		4
-
-#define MAX_SUPPORTED_FPS		255
-
+public static final int MIN_RECEIVE_WINDOW_SIZE = 1; public static final int MAX_RECEIVE_WINDOW_SIZE = 4;
+public static final int MAX_SUPPORTED_FPS = 255;
 typedef struct {
     int view_width;
     int view_height;
@@ -54,8 +51,7 @@ typedef struct {
     int id;
 } pointer_move_t;
 
-#define MAX_POINTER_MOVES 128
-
+public static final int MAX_POINTER_MOVES = 128;
 extern pointer_move_t pointer_moves[MAX_POINTER_MOVES];
 extern int pointer_move_next;
 extern long last_keyboard_ack;
@@ -124,7 +120,7 @@ int Receive_quit();
 int Receive_string();
 int Receive_reply(int *replyto, int *result);
 int Send_ack(long rel_loops);
-int Send_keyboard(u_byte *);
+int Send_keyboard(byte *);
 int Send_shape(String );
 int Send_power(double pwr);
 int Send_power_s(double pwr_s);

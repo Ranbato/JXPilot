@@ -27,8 +27,7 @@
 
 #include "xpclient.h"
 
-#define MAX_BUTTON_DEFS		10
-
+public static final int MAX_BUTTON_DEFS = 10;
 static BitSet keyv = new BitSet(NUM_KEYS);
 static unsigned char keyv_new[NUM_KEYS];
 

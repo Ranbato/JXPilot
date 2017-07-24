@@ -36,7 +36,7 @@
 #endif
 
 #ifndef MAX_INTERFACE
-#define MAX_INTERFACE    16	/* Max. number of network interfaces. */
+public static final int MAX_INTERFACE = 16; /* Max. number of network interfaces. */
 #endif
 #ifdef DEBUGBROADCAST
 #undef D
