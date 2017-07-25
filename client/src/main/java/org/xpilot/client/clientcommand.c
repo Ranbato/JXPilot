@@ -152,12 +152,12 @@ static void ignorePlayer(String name, int level)
     if (other != null) {
 	if (level == 1) {
 	    snprintf(buf, sizeof(buf),
-		     "Ignoring %s (textmask). [*Client reply*]",
+		     "Ignoring {} (textmask). [*Client reply*]",
 		     other.nick_name);
 	    Add_message(buf);
 	} else {
 	    snprintf(buf, sizeof(buf),
-		     "Ignoring %s (completely). [*Client reply*]",
+		     "Ignoring {} (completely). [*Client reply*]",
 		     other.nick_name);
 	    Add_message(buf);
 	}
@@ -172,7 +172,7 @@ static void unignorePlayer(String name)
 
     if (other != null) {
 	snprintf(buf, sizeof(buf),
-		 "Stopped ignoring %s. [*Client reply*]", other.nick_name);
+		 "Stopped ignoring {}. [*Client reply*]", other.nick_name);
 	Add_message(buf);
 	other.ignorelevel = 0;
     }
@@ -247,7 +247,7 @@ void executeCommand(String talk_str)
     case 13:			/* q */
 	Client_exit(0);
     default:
-	warn("BUG: bad command num %d in executeCommand()", command_num);
+	logger.warn("BUG: bad command num {} in executeCommand()", command_num);
 	assert(0);
 	break;
     }

@@ -156,7 +156,7 @@ public	XPPicture Picture_init ( String filename, int count)
 
 
 
-    /*logger.error("Can't find PPM file \"%s\"", filename);*/
+    /*logger.error("Can't find PPM file \"{}\"", filename);*/
     return(file);
 }
 

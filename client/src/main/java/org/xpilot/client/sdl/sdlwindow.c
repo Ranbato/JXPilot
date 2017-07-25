@@ -35,7 +35,7 @@ int sdl_window_init(sdl_window_t *win, int x, int y, int w, int h)
     glGenTextures(1, &win.tx_id);
     win.surface = null;
     if (sdl_window_resize(win, w, h)) {
-	warn("failed to resize window");
+	logger.warn("failed to resize window");
 	return -1;
     }
     sdl_window_move(win, x, y);
@@ -55,7 +55,7 @@ int sdl_window_resize(sdl_window_t *win, int width, int height)
 			     next_p2(width), next_p2(height), 
 			     32, RMASK, GMASK, BMASK, AMASK);
     if (!surface) {
-	error("failed to create SDL surface: %s", SDL_GetError());
+	error("failed to create SDL surface: {}", SDL_GetError());
 	return -1;
     }
 

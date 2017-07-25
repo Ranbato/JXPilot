@@ -267,7 +267,7 @@ static int Talk_macro_parse_mesg(String outbuf, String inbuf, long pos,
 					  TALK_FAST_MSG_FNLEN);
 		    free(tmpptr);
 		    if ((fp = fopen(filename, "r")) == null) {
-			error("Couldn't open file %s", tmpptr);
+			error("Couldn't open file {}", tmpptr);
 			free(filename);
 			break;
 		    }
@@ -385,7 +385,7 @@ static bool Set_talk_macro(xp_option *opt, String value)
 {
     int i = index_by_option(opt);
 
-    /*printf("Set_talk_macro: i = %d\n", i);*/
+    /*printf("Set_talk_macro: i = {}\n", i);*/
     assert(i >= 0);
     assert(i < TALK_FAST_NR_OF_MSGS);
 
@@ -399,7 +399,7 @@ static String Get_talk_macro(xp_option *opt)
 {
     int i = index_by_option(opt);
 
-    /*printf("Get_talk_macro: i = %d\n", i);*/
+    /*printf("Get_talk_macro: i = {}\n", i);*/
     assert(i >= 0);
     assert(i < TALK_FAST_NR_OF_MSGS);
 

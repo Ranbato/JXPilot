@@ -164,11 +164,11 @@ static void Rank_score()
 	FILE *const file = fopen(clientRankHTMLFile, "w");
 
 	if (file != null && fseek(file, 2000, SEEK_SET) == 0) {
-	    fprintf(file, "%s", header);
+	    fprintf(file, "{}", header);
 	    for (i = 0; i < MAX_SCORES; i++) {
 		if (scores[kdsort[i]].nick[0] != '\0') {
 		    LegalizeName(scores[kdsort[i]].nick);
-		    fprintf(file, "g(\"%s\", %u, %u, %.3f);\n",
+		    fprintf(file, "g(\"{}\", %u, %u, %.3f);\n",
 			    scores[kdsort[i]].nick,
 			    scores[kdsort[i]].kills,
 			    scores[kdsort[i]].deaths, kd[i]);
@@ -184,13 +184,13 @@ static void Rank_score()
 	FILE *const file = fopen(clientRankHTMLNOJSFile, "w");
 
 	if (file != null && fseek(file, 2000, SEEK_SET) == 0) {
-	    fprintf(file, "%s", headernojs);
+	    fprintf(file, "{}", headernojs);
 	    for (i = 0; i < MAX_SCORES; i++) {
 		if (scores[kdsort[i]].nick[0] != '\0') {
 		    LegalizeName(scores[kdsort[i]].nick);
 		    fprintf(file,
-			    "<tr><td align=left><tt>%d</tt>"
-			    "<td align=left><b>%s</b>"
+			    "<tr><td align=left><tt>{}</tt>"
+			    "<td align=left><b>{}</b>"
 			    "<td align=right>%u"
 			    "<td align=right>%u"
 			    "<td align=right>%.3f"
@@ -208,7 +208,7 @@ static void Rank_score()
 
     if (strlen(clientRankHTMLFile) == 0
 	&& strlen(clientRankHTMLNOJSFile) == 0)
-	warn("You have not specified clientRankHTMLFile or "
+	logger.warn("You have not specified clientRankHTMLFile or "
 	     "clientRankHTMLNOJSFile.");
 }
 
@@ -234,7 +234,7 @@ void Init_saved_scores()
 	    const int actual = fread(scores, sizeof(ScoreNode),
 				     MAX_SCORES, file);
 	    if (actual != MAX_SCORES)
-		warn("Error when reading score file!\n");
+		logger.warn("Error when reading score file!\n");
 
 	    i += actual;
 
@@ -329,7 +329,7 @@ void Print_saved_scores()
 	const int actual = fwrite(scores, sizeof(ScoreNode),
 				  MAX_SCORES, file);
 	if (actual != MAX_SCORES)
-	    warn("Error when writing score file!\n");
+	    logger.warn("Error when writing score file!\n");
 
 	fclose(file);
     }

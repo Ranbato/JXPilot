@@ -149,7 +149,7 @@ void Paint_objects()
         }
     }
 
-    for (i = 0; i < num_fuels; i++) {
+    for (i = 0; i < fuels.size(); i++) {
 
         Compute_bounds(&min, &max, &fuels[i].bounds);
 
@@ -163,7 +163,7 @@ void Paint_objects()
         }
     }
 
-    for (i = 0; i < num_bases; i++) {
+    for (i = 0; i < bases.size(); i++) {
 
         Compute_bounds(&min, &max, &bases[i].bounds);
 
@@ -178,7 +178,7 @@ void Paint_objects()
         }
     }
 
-    for (i = 0; i < num_checks; i++) {
+    for (i = 0; i < checks.size(); i++) {
 
         Compute_bounds(&min, &max, &checks[i].bounds);
 

@@ -90,7 +90,7 @@ static sample_t *sample_load(String filename)
     alGetError(); /* clear */
     alGenBuffers(1, &sample.buffer);
     if((err = alGetError()) != AL_NO_ERROR) {
-	error("failed to create a sample buffer %x %s", 
+	error("failed to create a sample buffer %x {}",
 	      err, alGetString(err));
 	free(sample);
 	return null;
@@ -101,7 +101,7 @@ static sample_t *sample_load(String filename)
 	alutLoadWAVFile((ALbyte *)filename, &format, &data, &size, &freq, &loop);
     #endif
     if ((err = alGetError()) != AL_NO_ERROR) {
-	error("failed to load sound file %s: %x %s", 
+	error("failed to load sound file {}: %x {}",
 	      filename, err, alGetString(err));
 	alDeleteBuffers(1, &sample.buffer);
 	free(sample);
@@ -109,7 +109,7 @@ static sample_t *sample_load(String filename)
     }
     alBufferData(sample.buffer, format, data, size, freq);
     if((err = alGetError()) != AL_NO_ERROR) {
-	error("failed to load buffer data %x %s\n", 
+	error("failed to load buffer data %x {}\n",
 	      err, alGetString(err));
 	alDeleteBuffers(1, &sample.buffer);
 	free(sample);
@@ -144,7 +144,7 @@ int audioDeviceInit(String display)
     alGetError();
     alGenSources(MAX_SOUNDS, source);
     if ((err = alGetError()) != AL_NO_ERROR) {
-	error("failed to create sources %x %s", 
+	error("failed to create sources %x {}",
 	      err, alGetString(err));
 	return -1;
     }
@@ -169,7 +169,7 @@ void audioDevicePlay(String filename, int type, int volume, void **priv)
     if (!sample) {
 	sample = sample_load(filename);
 	if (!sample) {
-	    error("failed to load sample %s\n", filename);
+	    error("failed to load sample {}\n", filename);
 	    return;
 	}
 	*priv = sample;

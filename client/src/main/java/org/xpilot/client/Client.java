@@ -24,6 +24,9 @@ package org.xpilot.client;
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.xpilot.common.Setup;
 import org.xpilot.common.ShipShape;
 
 
@@ -31,10 +34,15 @@ import java.awt.*;
 import java.util.List;
 
 import static org.xpilot.common.Const.MSG_LEN;
+import static org.xpilot.common.Const.TARGET_DAMAGE;
 import static org.xpilot.common.Const.TEAM_NOT_SET;
 import static org.xpilot.common.Item.NUM_ITEMS;
+import static org.xpilot.common.Rules.WRAP_PLAY;
+import static org.xpilot.common.Setup.*;
 
 public class Client {
+
+    Logger logger = LoggerFactory.getLogger(Client.class);
 
 public static class ClientData {
     boolean	talking;	/* Some talk window is open? */
@@ -487,102 +495,98 @@ byte	lose_item;		/* index for dropping owned item */
 int	lose_item_active;	/* one of the lose keys is pressed */
 
 static double       teamscores[MAX_TEAMS];
-static CannonTime *cannons = null;
-static int          num_cannons = 0;
-static Target     *targets = null;
+List<CannonTime> cannons = null;
+static List<Target> targets = null;
 static int          num_targets = 0;
 
 List<Fuelstation> fuels = null;
-int                 num_fuels = 0;
-List<Homebase>          *bases = null;
-int                 num_bases = 0;
-Checkpoint        *checks = null;
-int                 num_checks = 0;
-XPPolygon        *polygons = null;
+List<Homebase>          bases = null;
+List<Checkpoint> checks = null;
+List<XPPolygon> polygons = null;
 int                 num_polygons = 0;
-EdgeStyle        *edge_styles = null;
+List<EdgeStyle> edge_styles = null;
 int                 num_edge_styles = 0;
-PolygonStyle     *polygon_styles = null;
+List<PolygonStyle> polygon_styles = null;
 int                 num_polygon_styles = 0;
 
 ScoreObject      score_objects[MAX_SCORE_OBJECTS];
 int                 score_object = 0;
-Other             *Others = null;
+List<Other> Others = null;
 int                 num_others = 0, max_others = 0;
-Refuel            *refuel_ptr;
+List<Refuel> refuel_ptr;
 int                 num_refuel, max_refuel;
-Connector         *connector_ptr;
+List<Connector> connector_ptr;
 int                 num_connector, max_connector;
-Laser             *laser_ptr;
+List<Laser> laser_ptr;
 int                 num_laser, max_laser;
-Missile           *missile_ptr;
+List<Missile> missile_ptr;
 int                 num_missile, max_missile;
-Ball              *ball_ptr;
+List<Ball> ball_ptr;
 int                 num_ball, max_ball;
-Ship              *ship_ptr;
+List<Ship> ship_ptr;
 int                 num_ship, max_ship;
-Mine              *mine_ptr;
+List<Mine> mine_ptr;
 int                 num_mine, max_mine;
-ItemType          *itemtype_ptr;
+List<ItemType> itemtype_ptr;
 int                 num_itemtype, max_itemtype;
-ECM               *ecm_ptr;
+List<ECM> ecm_ptr;
 int                 num_ecm, max_ecm;
-Trans             *trans_ptr;
+List<Trans> trans_ptr;
 int                 num_trans, max_trans;
-Paused            *paused_ptr;
+List<Paused> paused_ptr;
 int                 num_paused, max_paused;
-Appearing         *appearing_ptr;
+List<Appearing> appearing_ptr;
 int                 num_appearing, max_appearing;
-Radar             *radar_ptr;
+List<Radar> radar_ptr;
 int                 num_radar, max_radar;
-VCannon           *vcannon_ptr;
+List<VCannon> vcannon_ptr;
 int                 num_vcannon, max_vcannon;
-VFuel             *vfuel_ptr;
+List<VFuel> vfuel_ptr;
 int                 num_vfuel, max_vfuel;
-VBase             *vbase_ptr;
+List<VBase> vbase_ptr;
 int                 num_vbase, max_vbase;
-Debris            *debris_ptr[DEBRIS_TYPES];
+List<Debris> debris_ptr[DEBRIS_TYPES];
 int                 num_debris[DEBRIS_TYPES],
                     max_debris[DEBRIS_TYPES];
-Debris            *fastshot_ptr[DEBRIS_TYPES * 2];
-int                 num_fastshot[DEBRIS_TYPES * 2],
-                    max_fastshot[DEBRIS_TYPES * 2];
-VDecor            *vdecor_ptr;
+List<Debris> fastshot_ptr[List<DEBRIS_TYPES>  2];
+int                 num_fastshot[List<DEBRIS_TYPES>  2],
+                    max_fastshot[List<DEBRIS_TYPES>  2];
+List<VDecor> vdecor_ptr;
 int                 num_vdecor, max_vdecor;
-Wreckage          *wreckage_ptr;
+List<Wreckage> wreckage_ptr;
 int                 num_wreckage, max_wreckage;
-Asteroid          *asteroid_ptr;
+List<Asteroid> asteroid_ptr;
 int                 num_asteroids, max_asteroids;
-Wormhole          *wormhole_ptr;
+List<Wormhole> wormhole_ptr;
 int                 num_wormholes, max_wormholes;
 
 int                 num_playing_teams = 0;
 long		    time_left = -1;
 long		    start_loops, end_loops;
 
-static Fuelstation *Fuelstation_by_pos(int x, int y)
+public Fuelstation Fuelstation_by_pos(int x, int y)
 {
     int			i, lo, hi, pos;
 
     lo = 0;
-    hi = num_fuels - 1;
+    hi = fuels.size() - 1;
     pos = x * Setup.y + y;
     while (lo < hi) {
 	i = (lo + hi) >> 1;
-	if (pos > fuels[i].pos)
+	if (pos > fuels.get(i).pos)
 	    lo = i + 1;
 	else
 	    hi = i;
     }
-    if (lo == hi && pos == fuels[lo].pos)
-	return &fuels[lo];
-    warn("No fuelstation at (%d,%d)", x, y);
+    if (lo == hi && pos == fuels.get(lo).pos)
+	return fuels.get(lo);
+    logger.warn("No fuelstation at ({},{})", x, y);
     return null;
 }
 
 double Fuel_by_pos(int x, int y)
 {
-    Fuelstation	*fuelp;
+    Fuelstation	fuelp;
 
     if ((fuelp = Fuelstation_by_pos(x, y)) == null)
 	return 0;
@@ -618,43 +622,43 @@ int Target_alive(int x, int y, double *damage)
 	*damage = targets[lo].damage;
 	return targets[lo].dead_time;
     }
-    warn("No targets at (%d,%d)", x, y);
+    logger.warn("No targets at ({},{})", x, y);
     return -1;
 }
 
 int Handle_fuel(int ind, double fuel)
 {
-    if (ind < 0 || ind >= num_fuels) {
-	warn("Bad fuelstation index (%d)", ind);
+    if (ind < 0 || ind >= fuels.size()) {
+	logger.warn("Bad fuelstation index ({})", ind);
 	return -1;
     }
-    fuels[ind].fuel = fuel;
+    fuels.get(ind).fuel = fuel;
     return 0;
 }
 
-static CannonTime *Cannon_by_pos(int x, int y)
+public CannonTime Cannon_by_pos(int x, int y)
 {
     int			i, lo, hi, pos;
 
     lo = 0;
-    hi = num_cannons - 1;
+    hi = cannons.size() - 1;
     pos = x * Setup.y + y;
     while (lo < hi) {
 	i = (lo + hi) >> 1;
-	if (pos > cannons[i].pos)
+	if (pos > cannons.get(i).pos)
 	    lo = i + 1;
 	else
 	    hi = i;
     }
-    if (lo == hi && pos == cannons[lo].pos)
-	return &cannons[lo];
-    warn("No cannon at (%d,%d)", x, y);
+    if (lo == hi && pos == cannons.get(lo).pos)
+	return cannons.get(lo);
+    logger.warn("No cannon at ({},{})", x, y);
     return null;
 }
 
 int Cannon_dead_time_by_pos(int x, int y, int *dot)
 {
-    CannonTime	*cannonp;
+    CannonTime	cannonp;
 
     if ((cannonp = Cannon_by_pos(x, y)) == null)
 	return -1;
@@ -664,62 +668,63 @@ int Cannon_dead_time_by_pos(int x, int y, int *dot)
 
 int Handle_cannon(int ind, int dead_time)
 {
-    if (ind < 0 || ind >= num_cannons) {
-	warn("Bad cannon index (%d)", ind);
+    if (ind < 0 || ind >= cannons.size()) {
+	logger.warn("Bad cannon index ({})", ind);
 	return 0;
     }
-    cannons[ind].dead_time = dead_time;
+    cannons.get(ind).dead_time = (short)dead_time;
     return 0;
 }
 
 int Handle_target(int num, int dead_time, double damage)
 {
     if (num < 0 || num >= num_targets) {
-	warn("Bad target index (%d)", num);
+	logger.warn("Bad target index ({})", num);
 	return 0;
     }
     if (dead_time == 0
 	&& (damage <= 0.0 || damage > TARGET_DAMAGE))
-	warn("BUG target %d, dead %d, damage %f", num, dead_time, damage);
+	logger.warn("BUG target {}, dead {}, damage %f", num, dead_time, damage);
 
-    if (targets[num].dead_time > 0 && dead_time == 0) {
-	int pos = targets[num].pos;
+    Target target = targets.get(num);
+    if (target.dead_time > 0 && dead_time == 0) {
+	int pos = target.pos;
 	Radar_show_target(pos / Setup.y, pos % Setup.y);
     }
-    else if (targets[num].dead_time == 0 && dead_time > 0) {
-	int pos = targets[num].pos;
+    else if (target.dead_time == 0 && dead_time > 0) {
+	int pos = target.pos;
 	Radar_hide_target(pos / Setup.y, pos % Setup.y);
     }
 
-    targets[num].dead_time = dead_time;
-    targets[num].damage = damage;
+    target.dead_time = (short)dead_time;
+    target.damage = damage;
 
     return 0;
 }
 
-static Homebase *Homebase_by_pos(int x, int y)
+public Homebase Homebase_by_pos(int x, int y)
 {
     int			i, lo, hi, pos;
 
     lo = 0;
-    hi = num_bases - 1;
+    hi = bases.size() - 1;
     pos = x * Setup.y + y;
     while (lo < hi) {
 	i = (lo + hi) >> 1;
-	if (pos > bases[i].pos)
+	if (pos > bases.get(i).pos)
 	    lo = i + 1;
 	else
 	    hi = i;
     }
-    if (lo == hi && pos == bases[lo].pos)
-	return &bases[lo];
-    warn("No homebase at (%d,%d)", x, y);
+    if (lo == hi && pos == bases.get(lo).pos)
+	return bases.get(lo);
+    logger.warn("No homebase at ({},{})", x, y);
     return null;
 }
 
 int Base_info_by_pos(int x, int y, int *idp, int *teamp)
 {
-    Homebase	*basep;
+    Homebase	basep;
 
     if ((basep = Homebase_by_pos(x, y)) == null)
 	return -1;
@@ -732,29 +737,29 @@ int Handle_base(int id, int ind)
 {
     int		i;
 
-    if (ind < 0 || ind >= num_bases) {
-	warn("Bad homebase index (%d)", ind);
+    if (ind < 0 || ind >= bases.size()) {
+	logger.warn("Bad homebase index ({})", ind);
 	return -1;
     }
-    for (i = 0; i < num_bases; i++) {
-	if (bases[i].id == id)
-	    bases[i].id = -1;
+    for (i = 0; i < bases.size(); i++) {
+	if (bases.get(i).id == id)
+	    bases.get(i).id = -1;
     }
-    bases[ind].id = id;
+    bases.get(ind).id = (short) id;
 
     return 0;
 }
 
 int Check_pos_by_index(int ind, int *xp, int *yp)
 {
-    if (ind < 0 || ind >= num_checks) {
-	warn("Bad checkpoint index (%d)", ind);
+    if (ind < 0 || ind >= checks.size()) {
+	logger.warn("Bad checkpoint index ({})", ind);
 	*xp = 0;
 	*yp = 0;
 	return -1;
     }
-    *xp = checks[ind].pos / Setup.y;
-    *yp = checks[ind].pos % Setup.y;
+    *xp = checks.get(ind).pos / Setup.y;
+    *yp = checks.get(ind).pos % Setup.y;
     return 0;
 }
 
@@ -763,18 +768,18 @@ int Check_index_by_pos(int x, int y)
     int			i, pos;
 
     pos = x * Setup.y + y;
-    for (i = 0; i < num_checks; i++) {
-	if (pos == checks[i].pos)
+    for (i = 0; i < checks.size(); i++) {
+	if (pos == checks.get(i).pos)
 	    return i;
     }
-    warn("Can't find checkpoint (%d,%d)", x, y);
+    logger.warn("Can't find checkpoint ({},{})", x, y);
     return 0;
 }
 
 /*
  * Convert a 'space' map block into a dot.
  */
-static void Map_make_dot(unsigned String data)
+static void Map_make_dot( String data)
 {
     if (*data == SETUP_SPACE)
 	*data = SETUP_SPACE_DOT;
@@ -800,12 +805,11 @@ void Map_dots()
 			x,
 			y,
 			start;
-    unsigned char	dot[256];
+    int	[]dot = new int[256];
 
     /*
      * Lookup table to recognize dots.
      */
-    memset(dot, 0, sizeof dot);
     dot[SETUP_SPACE_DOT] = 1;
     dot[SETUP_DECOR_DOT_FILLED] = 1;
     dot[SETUP_DECOR_DOT_RU] = 1;
@@ -817,7 +821,7 @@ void Map_dots()
      * Restore the map to unoptimized form.
      */
     for (i = Setup.x * Setup.y; i-- > 0; ) {
-	if (dot[Setup.map_data[i]]) {
+	if (dot[Setup.map_data[i]] != 0) {
 	    if (Setup.map_data[i] == SETUP_SPACE_DOT)
 		Setup.map_data[i] = SETUP_SPACE;
 	    else if (Setup.map_data[i] == SETUP_DECOR_DOT_FILLED)
@@ -836,7 +840,7 @@ void Map_dots()
     /*
      * Lookup table to test for map data which can be turned into a dot.
      */
-    memset(dot, 0, sizeof dot);
+    dot = new int[256];
     dot[SETUP_SPACE] = 1;
     if (!instruments.showDecor) {
 	dot[SETUP_DECOR_FILLED] = 1;
@@ -852,11 +856,11 @@ void Map_dots()
     if (backgroundPointSize > 0) {
 	if (Setup.mode.get( WRAP_PLAY)) {
 	    for (x = 0; x < Setup.x; x++) {
-		if (dot[Setup.map_data[x * Setup.y]])
+		if (dot[Setup.map_data[x * Setup.y]]!=0)
 		    Map_make_dot(&Setup.map_data[x * Setup.y]);
 	    }
 	    for (y = 0; y < Setup.y; y++) {
-		if (dot[Setup.map_data[y]])
+		if (dot[Setup.map_data[y]]!= 0)
 		    Map_make_dot(&Setup.map_data[y]);
 	    }
 	    start = backgroundPointDist;
@@ -866,22 +870,23 @@ void Map_dots()
 	if (backgroundPointDist > 0) {
 	    for (x = start; x < Setup.x; x += backgroundPointDist) {
 		for (y = start; y < Setup.y; y += backgroundPointDist) {
-		    if (dot[Setup.map_data[x * Setup.y + y]])
+		    if (dot[Setup.map_data[x * Setup.y + y]]!= 0)
 			Map_make_dot(&Setup.map_data[x * Setup.y + y]);
 		}
 	    }
 	}
-	for (i = 0; i < num_cannons; i++) {
-	    x = cannons[i].pos / Setup.y;
-	    y = cannons[i].pos % Setup.y;
+	for (i = 0; i < cannons.size(); i++) {
+	    CannonTime ct = cannons.get(i);
+	    x = ct.pos / Setup.y;
+	    y = ct.pos % Setup.y;
 	    if ((x == 0 || y == 0) && Setup.mode.get( WRAP_PLAY))
-		cannons[i].dot = 1;
+		ct.dot = 1;
 	    else if (backgroundPointDist > 0
 		&& x % backgroundPointDist == 0
 		&& y % backgroundPointDist == 0)
-		cannons[i].dot = 1;
+		ct.dot = 1;
 	    else
-		cannons[i].dot = 0;
+		ct.dot = 0;
 	}
     }
 }
@@ -924,14 +929,14 @@ void Map_restore(int startx, int starty, int width, int height)
 	    else if ((type & BLUE_FUEL) == BLUE_FUEL)
 		Setup.map_data[map_index] = SETUP_FUEL;
 
-	    else if (type & BLUE_OPEN) {
-		if (type & BLUE_BELOW)
+	    else if ((type & BLUE_OPEN) == BLUE_OPEN) {
+		if ((type & BLUE_BELOW) == BLUE_BELOW)
 		    Setup.map_data[map_index] = SETUP_REC_RD;
 		else
 		    Setup.map_data[map_index] = SETUP_REC_LU;
 	    }
-	    else if (type & BLUE_CLOSED) {
-		if (type & BLUE_BELOW)
+	    else if ((type & BLUE_CLOSED) == BLUE_CLOSED){
+		if ((type & BLUE_BELOW) == BLUE_BELOW)
 		    Setup.map_data[map_index] = SETUP_REC_LD;
 		else
 		    Setup.map_data[map_index] = SETUP_REC_RU;
@@ -1313,13 +1318,13 @@ static int init_polymap()
 	poly.bounds.w = max.x - min.x;
 	poly.bounds.h = max.y - min.y;
     }
-    num_bases = *ptr++ & 0xff;
-    bases = XMALLOC(Homebase, num_bases);
+    bases.size() = *ptr++ & 0xff;
+    bases = XMALLOC(Homebase, bases.size());
     if (bases == null) {
-	error("No memory for Map bases (%d)", num_bases);
+	error("No memory for Map bases ({})", bases.size());
 	exit(1);
     }
-    for (i = 0; i < num_bases; i++) {
+    for (i = 0; i < bases.size(); i++) {
 	/* base.pos is not used */
 	bases[i].id = -1;
 	bases[i].team = *ptr++ & 0xff;
@@ -1342,15 +1347,15 @@ static int init_polymap()
 	bases[i].appeartime = 0;
 	ptr++;
     }
-    num_fuels = get_ushort(&ptr);
-    if (num_fuels != 0) {
-	fuels = XMALLOC(Fuelstation, num_fuels);
+    fuels.size() = get_ushort(&ptr);
+    if (fuels.size() != 0) {
+	fuels = XMALLOC(Fuelstation, fuels.size());
 	if (fuels == null) {
-	    error("No memory for Map fuels (%d)", num_fuels);
+	    error("No memory for Map fuels ({})", fuels.size());
 	    exit(1);
 	}
     }
-    for (i = 0; i < num_fuels; i++) {
+    for (i = 0; i < fuels.size(); i++) {
 	cx = get_ushort(&ptr);
 	cy = get_ushort(&ptr);
 	fuels[i].fuel = MAX_STATION_FUEL;
@@ -1359,16 +1364,16 @@ static int init_polymap()
 	fuels[i].bounds.w = BLOCK_SZ;
 	fuels[i].bounds.h = BLOCK_SZ;
     }
-    num_checks = *ptr++ & 0xff;
-    if (num_checks != 0) {
+    checks.size() = *ptr++ & 0xff;
+    if (checks.size() != 0) {
 
-	checks = XMALLOC(Checkpoint, num_checks);
+	checks = XMALLOC(Checkpoint, checks.size());
 	if (checks == null) {
-	    error("No memory for checkpoints (%d)", num_checks);
+	    error("No memory for checkpoints ({})", checks.size());
 	    exit(1);
 	}
     }
-    for (i = 0; i < num_checks; i++) {
+    for (i = 0; i < checks.size(); i++) {
 	cx = get_ushort(&ptr);
 	cy = get_ushort(&ptr);
 	checks[i].bounds.x = cx - BLOCK_SZ / 2;
@@ -1395,11 +1400,11 @@ static int init_blockmap()
 			type;
     byte		types[256];
 
-    num_fuels = 0;
-    num_bases = 0;
-    num_cannons = 0;
+    fuels.size() = 0;
+    bases.size() = 0;
+    cannons.size() = 0;
     num_targets = 0;
-    num_checks = 0;
+    checks.size() = 0;
     fuels = null;
     bases = null;
     cannons = null;
@@ -1420,68 +1425,68 @@ static int init_blockmap()
     max = Setup.x * Setup.y;
     for (i = 0; i < max; i++) {
 	switch (types[Setup.map_data[i]]) {
-	case 1: num_fuels++; break;
-	case 2: num_cannons++; break;
+	case 1: fuels.size()++; break;
+	case 2: cannons.size()++; break;
 	case 3: num_targets++; break;
-	case 4: num_bases++; break;
-	case 5: num_checks++; break;
+	case 4: bases.size()++; break;
+	case 5: checks.size()++; break;
 	default: break;
 	}
     }
-    if (num_bases != 0) {
-	bases = XMALLOC(Homebase, num_bases);
+    if (bases.size() != 0) {
+	bases = XMALLOC(Homebase, bases.size());
 	if (bases == null) {
-	    error("No memory for Map bases (%d)", num_bases);
+	    error("No memory for Map bases ({})", bases.size());
 	    return -1;
 	}
-	num_bases = 0;
+	bases.size() = 0;
     }
-    if (num_fuels != 0) {
-	fuels = XMALLOC(Fuelstation, num_fuels);
+    if (fuels.size() != 0) {
+	fuels = XMALLOC(Fuelstation, fuels.size());
 	if (fuels == null) {
-	    error("No memory for Map fuels (%d)", num_fuels);
+	    error("No memory for Map fuels ({})", fuels.size());
 	    return -1;
 	}
-	num_fuels = 0;
+	fuels.size() = 0;
     }
     if (num_targets != 0) {
 	targets = XMALLOC(Target, num_targets);
 	if (targets == null) {
-	    error("No memory for Map targets (%d)", num_targets);
+	    error("No memory for Map targets ({})", num_targets);
 	    return -1;
 	}
 	num_targets = 0;
     }
-    if (num_cannons != 0) {
-	cannons = XMALLOC(CannonTime, num_cannons);
+    if (cannons.size() != 0) {
+	cannons = XMALLOC(CannonTime, cannons.size());
 	if (cannons == null) {
-	    error("No memory for Map cannons (%d)", num_cannons);
+	    error("No memory for Map cannons ({})", cannons.size());
 	    return -1;
 	}
-	num_cannons = 0;
+	cannons.size() = 0;
     }
-    if (num_checks != 0) {
-	checks = XMALLOC(Checkpoint, num_checks);
+    if (checks.size() != 0) {
+	checks = XMALLOC(Checkpoint, checks.size());
 	if (checks == null) {
-	    error("No memory for Map checks (%d)", num_checks);
+	    error("No memory for Map checks ({})", checks.size());
 	    return -1;
 	}
-	num_checks = 0;
+	checks.size() = 0;
     }
 
     for (i = 0; i < max; i++) {
 	type = Setup.map_data[i];
 	switch (types[type]) {
 	case 1:
-	    fuels[num_fuels].pos = i;
-	    fuels[num_fuels].fuel = MAX_STATION_FUEL;
-	    num_fuels++;
+	    fuels[fuels.size()].pos = i;
+	    fuels[fuels.size()].fuel = MAX_STATION_FUEL;
+	    fuels.size()++;
 	    break;
 	case 2:
-	    cannons[num_cannons].pos = i;
-	    cannons[num_cannons].dead_time = 0;
-	    cannons[num_cannons].dot = 0;
-	    num_cannons++;
+	    cannons[cannons.size()].pos = i;
+	    cannons[cannons.size()].dead_time = 0;
+	    cannons[cannons.size()].dot = 0;
+	    cannons.size()++;
 	    break;
 	case 3:
 	    targets[num_targets].pos = i;
@@ -1490,17 +1495,17 @@ static int init_blockmap()
 	    num_targets++;
 	    break;
 	case 4:
-	    bases[num_bases].pos = i;
-	    bases[num_bases].id = -1;
-	    bases[num_bases].team = type % 10;
-	    bases[num_bases].type = type - (type % 10);
-	    bases[num_bases].appeartime = 0;
-	    num_bases++;
+	    bases[bases.size()].pos = i;
+	    bases[bases.size()].id = -1;
+	    bases[bases.size()].team = type % 10;
+	    bases[bases.size()].type = type - (type % 10);
+	    bases[bases.size()].appeartime = 0;
+	    bases.size()++;
 	    Setup.map_data[i] = type - (type % 10);
 	    break;
 	case 5:
 	    checks[type - SETUP_CHECK].pos = i;
-	    num_checks++;
+	    checks.size()++;
 	    Setup.map_data[i] = SETUP_CHECK;
 	    break;
 	default:
@@ -1517,21 +1522,21 @@ static int Map_init()
 
 static int Map_cleanup()
 {
-    if (num_bases > 0) {
+    if (bases.size() > 0) {
 	XFREE(bases);
-	num_bases = 0;
+	bases.size() = 0;
     }
-    if (num_fuels > 0) {
+    if (fuels.size() > 0) {
 	XFREE(fuels);
-	num_fuels = 0;
+	fuels.size() = 0;
     }
     if (num_targets > 0) {
 	XFREE(targets);
 	num_targets = 0;
     }
-    if (num_cannons > 0) {
+    if (cannons.size() > 0) {
 	XFREE(cannons);
-	num_cannons = 0;
+	cannons.size() = 0;
     }
     return 0;
 }
@@ -1542,7 +1547,7 @@ Homebase *Homebase_by_id(int id)
     int i;
 
     if (id != -1) {
-	for (i = 0; i < num_bases; i++) {
+	for (i = 0; i < bases.size(); i++) {
 	    if (bases[i].id == id)
 		return &bases[i];
 	}
@@ -1642,7 +1647,7 @@ int Handle_leave(int id)
 
     if ((other = Other_by_id(id)) != null) {
 	if (other == self) {
-	    warn("Self left?!");
+	    logger.warn("Self left?!");
 	    self = null;
 	}
 	Free_ship_shape(other.ship);
@@ -1651,7 +1656,7 @@ int Handle_leave(int id)
 	 * Silent about tanks and robots.
 	 */
 	if (other.mychar != 'T' && other.mychar != 'R') {
-	    sprintf(msg, "%s left this world.", other.nick_name);
+	    sprintf(msg, "{} left this world.", other.nick_name);
 	    Add_message(msg);
 	}
 	num_others--;
@@ -1672,7 +1677,7 @@ int Handle_player(int id, int player_team, int mychar,
 
     if (Setup.mode.get( TEAM_PLAY)
 	&& (player_team < 0 || player_team >= MAX_TEAMS)) {
-	warn("Illegal team %d for received player, setting to 0", player_team);
+	logger.warn("Illegal team {} for received player, setting to 0", player_team);
 	player_team = 0;
     }
     if ((other = Other_by_id(id)) == null) {
@@ -1723,11 +1728,11 @@ int Handle_team(int id, int pl_team)
 
     other = Other_by_id(id);
     if (other == null) {
-	warn("Received packet to change team for nonexistent id %d", id);
+	logger.warn("Received packet to change team for nonexistent id {}", id);
 	return 0;
     }
     if (Setup.mode.get( TEAM_PLAY) && (pl_team < 0 || pl_team >= MAX_TEAMS)) {
-	warn("Illegal team %d received for player id %d", pl_team, id);
+	logger.warn("Illegal team {} received for player id {}", pl_team, id);
 	return 0;
     }
     other.team = pl_team;
@@ -1741,7 +1746,7 @@ int Handle_score(int id, double score, int life, int mychar, int alliance)
     Other		*other;
 
     if ((other = Other_by_id(id)) == null) {
-	warn("Can't update score for non-existing player %d,%.2f,%d",
+	logger.warn("Can't update score for non-existing player {},%.2f,{}",
 	      id, score, life);
 	return 0;
     }
@@ -1774,7 +1779,7 @@ int Handle_timing(int id, int check, int round, long tloops)
     Other		*other;
 
     if ((other = Other_by_id(id)) == null) {
-	warn("Can't update timing for non-existing player %d,%d,%d",
+	logger.warn("Can't update timing for non-existing player {},{},{}",
 	      id, check, round);
 	return 0;
     }
@@ -1782,7 +1787,7 @@ int Handle_timing(int id, int check, int round, long tloops)
 	|| other.round != round) {
 	other.check = check;
 	other.round = round;
-	other.timing = round * num_checks + check;
+	other.timing = round * checks.size() + check;
 	other.timing_loops = tloops;
 	scoresChanged = true;
     }
@@ -1802,10 +1807,10 @@ int Handle_score_object(double score, int x, int y, String msg)
     /* Initialize sobj.hud_msg (is shown on the HUD) */
     if (msg[0] != '\0') {
 	if (Using_score_decimals())
-	    sprintf(sobj.hud_msg, "%s %.*f", msg, showScoreDecimals, score);
+	    sprintf(sobj.hud_msg, "{} %.*f", msg, showScoreDecimals, score);
 	else {
 	    int sc = (int)(score >= 0.0 ? score + 0.5 : score - 0.5);
-	    sprintf(sobj.hud_msg, "%s %d", msg, sc);
+	    sprintf(sobj.hud_msg, "{} {}", msg, sc);
 	}
 	sobj.hud_msg_len = strlen(sobj.hud_msg);
 	sobj.hud_msg_width = -1;
@@ -1817,7 +1822,7 @@ int Handle_score_object(double score, int x, int y, String msg)
 	sprintf(sobj.msg, "%.*f", showScoreDecimals, score);
     else {
 	int sc = (int)(score >= 0.0 ? score + 0.5 : score - 0.5);
-	sprintf(sobj.msg, "%d", sc);
+	sprintf(sobj.msg, "{}", sc);
     }
     sobj.msg_len = strlen(sobj.msg);
     sobj.msg_width = -1;
@@ -2190,7 +2195,7 @@ int Handle_item(int x, int y, int type)
 	max_ = _n;						\
     }								\
     else if (_n <= 0) {						\
-	printf("debris %d < 0\n", _n);				\
+	printf("debris {} < 0\n", _n);				\
 	return 0;						\
     }								\
     num_ = _n;							\
@@ -2262,7 +2267,7 @@ int Handle_polystyle(int polyind, int newstyle)
 
     poly = &polygons[polyind];
     poly.style = newstyle;
-    /*warn("polygon %d style set to %d", polyind, newstyle);*/
+    /*logger.warn("polygon {} style set to {}", polyind, newstyle);*/
     UpdateRadar=true;
     return 0;
 }

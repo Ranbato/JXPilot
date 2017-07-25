@@ -109,7 +109,7 @@ void Paint_frame_start()
     }
 
     if (start_loops != end_loops)
-	warn("Start neq. End (%ld,%ld,%ld)", start_loops, end_loops, loops);
+	logger.warn("Start neq. End (%ld,%ld,%ld)", start_loops, end_loops, loops);
     loops = end_loops;
 
     /*
@@ -241,7 +241,7 @@ static int Team_heading(int entrynum, int teamnum,
     tmp.name_width = 0;
     tmp.ship = null;
     if (teamnum != TEAM_PAUSEHACK)
-	sprintf(tmp.nick_name, "TEAM %d", tmp.team);
+	sprintf(tmp.nick_name, "TEAM {}", tmp.team);
     else
 	sprintf(tmp.nick_name, "Pause Wusses");
     strcpy(tmp.user_name, tmp.nick_name);

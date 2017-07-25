@@ -106,21 +106,21 @@ public class TextInterface{
 //		    sizeof(conpar.server_name));
 //
 //	if (Packet_scanf(sbuf, "%u%c%c", &magic, &reply_to, &status) <= 0)
-//	    warn("Incomplete contact reply message (%d)", len);
+//	    logger.warn("Incomplete contact reply message ({})", len);
 //	else if ((magic & 0xFFFF) != (MAGIC & 0xFFFF))
-//	    warn("Bad magic on contact message (0x%x).", magic);
+//	    logger.warn("Bad magic on contact message (0x%x).", magic);
 //	else {
 //	    server_version = MAGIC2VERSION(magic);
 //	    if (!((server_version >= MIN_SERVER_VERSION &&
 //		   server_version <= MAX_SERVER_VERSION) ||
 //		  (server_version >= MIN_OLD_SERVER_VERSION &&
 //		   server_version <= MAX_OLD_SERVER_VERSION))) {
-//		warn("Incompatible version with server %s.",
+//		logger.warn("Incompatible version with server {}.",
 //		     conpar.server_name);
-//		warn("We run version %04x, while server is running %04x.",
+//		logger.warn("We run version %04x, while server is running %04x.",
 //		     MY_VERSION, server_version);
 //		if ((MY_VERSION >> 4) < (server_version >> 4))
-//		    warn("Time for us to upgrade?");
+//		    logger.warn("Time for us to upgrade?");
 //		readable = 2;
 //	    } else {
 //		/*
@@ -148,24 +148,24 @@ public class TextInterface{
 //    if (sock_readable(&ibuf.sock)) {
 //	Sockbuf_clear(ibuf);
 //	if ((len = sock_read(&ibuf.sock, ibuf.buf, ibuf.size)) == -1) {
-//	    error("Can't read reply message from %s/%d",
+//	    error("Can't read reply message from {}/{}",
 //		  conpar.server_addr, conpar.server_port);
 //	    exit(1);
 //	}
 //
 //	ibuf.len = len;
 //	if (Packet_scanf(ibuf, "%u", &magic) <= 0) {
-//	    warn("Incomplete reply packet (%d)", len);
+//	    logger.warn("Incomplete reply packet ({})", len);
 //	    return 0;
 //	}
 //
 //	if ((magic & 0xFFFF) != (MAGIC & 0xFFFF)) {
-//	    warn("Wrong MAGIC in reply pack (0x%x).", magic);
+//	    logger.warn("Wrong MAGIC in reply pack (0x%x).", magic);
 //	    return 0;
 //	}
 //
 //	if (MAGIC2VERSION(magic) != conpar.server_version) {
-//	    printf("Incompatible version with server on %s.\n",
+//	    printf("Incompatible version with server on {}.\n",
 //		    conpar.server_name);
 //	    printf("We run version %04x, while server is running %04x.\n",
 //		   MY_VERSION, MAGIC2VERSION(magic));
@@ -227,7 +227,7 @@ public class TextInterface{
 //#endif
 //
 //    if (auto_connect && !list_servers && !auto_shutdown)
-//	xpprintf("*** Connected to %s\n", conpar.server_name);
+//	xpprintf("*** Connected to {}\n", conpar.server_name);
 //
 //    for (;;) {
 //
@@ -241,7 +241,7 @@ public class TextInterface{
 //	    cmd_credentials = 0;
 //	}
 //	else if (!auto_connect) {
-//	    printf("*** Server on %s. Enter command> ", conpar.server_name);
+//	    printf("*** Server on {}. Enter command> ", conpar.server_name);
 //
 //	    get_line(linebuf, MAX_LINE, stdin);
 //	    if (feof(stdin)) {
@@ -279,7 +279,7 @@ public class TextInterface{
 //		success = create_dgram_addr_socket(
 //		    &ibuf.sock, conpar.server_addr, 0);
 //		if (success == SOCK_IS_ERROR) {
-//		    printf("Server %s is not local, "
+//		    printf("Server {} is not local, "
 //			   "privileged command not possible.\n",
 //			   conpar.server_addr);
 //		    continue;
@@ -293,7 +293,7 @@ public class TextInterface{
 //	    }
 //	    if (sock_connect(&ibuf.sock, localhost, conpar.server_port)
 //		== SOCK_IS_ERROR) {
-//		error("Can't connect to local server %s on port %d\n",
+//		error("Can't connect to local server {} on port {}\n",
 //		      localhost, conpar.server_port);
 //		return false;
 //	    }
@@ -307,14 +307,14 @@ public class TextInterface{
 //		&ibuf.sock, conpar.server_addr, conpar.server_port)
 //		== SOCK_IS_ERROR
 //		&& !dgram_one_socket) {
-//		error("Can't connect to server %s on port %d\n",
+//		error("Can't connect to server {} on port {}\n",
 //		      conpar.server_addr, conpar.server_port);
 //		return false;
 //	    }
 //	}
 //
 //	Sockbuf_clear(ibuf);
-//	Packet_printf(ibuf, "%u%s%hu", VERSION2MAGIC(conpar.server_version),
+//	Packet_printf(ibuf, "%u{}%hu", VERSION2MAGIC(conpar.server_version),
 //		      conpar.user_name, sock_get_port(&ibuf.sock));
 //
 //	if (privileged_cmd && !has_credentials)
@@ -335,7 +335,7 @@ public class TextInterface{
 //		    continue;
 //		}
 //		linebuf[MAX_NAME_LEN - 1] = '\0';
-//		Packet_printf(ibuf, "%c%ld%s", KICK_PLAYER_pack, key, linebuf);
+//		Packet_printf(ibuf, "%c%ld{}", KICK_PLAYER_pack, key, linebuf);
 //		break;
 //
 //	    case 'M':				/* Send a message to server. */
@@ -346,7 +346,7 @@ public class TextInterface{
 //		    continue;
 //		}
 //		linebuf[MAX_CHARS - 1] = '\0';
-//		Packet_printf(ibuf, "%c%ld%s", MESSAGE_pack, key, linebuf);
+//		Packet_printf(ibuf, "%c%ld{}", MESSAGE_pack, key, linebuf);
 //		break;
 //
 //	    case 'L':				/* Lock the game. */
@@ -360,7 +360,7 @@ public class TextInterface{
 //		    /*
 //		     * No argument = cancel shutdown = arg_int=0
 //		     */
-//		    if (sscanf(linebuf, "%d", &delay) <= 0)
+//		    if (sscanf(linebuf, "{}", &delay) <= 0)
 //			delay = 0;
 //		    else
 //			if (delay <= 0)
@@ -373,7 +373,7 @@ public class TextInterface{
 //		    delay = 60;
 //		}
 //		linebuf[MAX_CHARS - 1] = '\0';
-//		Packet_printf(ibuf, "%c%ld%d%s",
+//		Packet_printf(ibuf, "%c%ld{}{}",
 //			      SHUTDOWN_pack, key, delay, linebuf);
 //		break;
 //
@@ -385,7 +385,7 @@ public class TextInterface{
 //		    printf("Nothing changed.\n");
 //		    continue;
 //		}
-//		printf("Enter new value for %s: ", linebuf);
+//		printf("Enter new value for {}: ", linebuf);
 //		fflush(stdout);
 //		strcat(linebuf, ":"); len++;
 //		if (!get_line(&linebuf[len], MAX_LINE-len, stdin)
@@ -393,8 +393,8 @@ public class TextInterface{
 //		    printf("Nothing changed.\n");
 //		    continue;
 //		}
-//		printf("option \"%s\"\n", linebuf); fflush(stdout);
-//		Packet_printf(ibuf, "%c%ld%S", OPTION_TUNE_pack, key, linebuf);
+//		printf("option \"{}\"\n", linebuf); fflush(stdout);
+//		Packet_printf(ibuf, "%c%ld{}", OPTION_TUNE_pack, key, linebuf);
 //		break;
 //
 //		/*
@@ -408,7 +408,7 @@ public class TextInterface{
 //		}
 //		else if (linebuf[1] > '0' && linebuf[1] <= '9') {
 //		    conpar.team = linebuf[1] - '0';
-//		    printf("Joining team %d\n", conpar.team);
+//		    printf("Joining team {}\n", conpar.team);
 //		}
 //		else if (linebuf[1] == '-') {
 //		    conpar.team = TEAM_NOT_SET;
@@ -417,7 +417,7 @@ public class TextInterface{
 //		else if (linebuf[1] != '\0')
 //		    conpar.team = TEAM_NOT_SET;
 //
-//		Packet_printf(ibuf, "%c%s%s%s%d", ENTER_QUEUE_pack,
+//		Packet_printf(ibuf, "%c{}{}{}{}", ENTER_QUEUE_pack,
 //			      conpar.nick_name, conpar.disp_name,
 //			      conpar.host_name, conpar.team);
 //		time(&qsent);
@@ -447,11 +447,11 @@ public class TextInterface{
 //		    printf("Nothing changed.\n");
 //		else {
 //		    int newteam;
-//		    if (sscanf(linebuf, " %d", &newteam) != 1)
-//			printf("Invalid team specification: %s.\n", linebuf);
+//		    if (sscanf(linebuf, " {}", &newteam) != 1)
+//			printf("Invalid team specification: {}.\n", linebuf);
 //		    else if (newteam >= 0 && newteam <= 9) {
 //			conpar.team = newteam;
-//			printf("Team set to %d\n", conpar.team);
+//			printf("Team set to {}\n", conpar.team);
 //		    } else {
 //			conpar.team = TEAM_NOT_SET;
 //			printf("Team set to unspecified\n");
@@ -495,11 +495,11 @@ public class TextInterface{
 //	do {
 //	    Sockbuf_clear(ibuf);
 //	    if (Get_reply_message(ibuf, conpar) <= 0) {
-//		warn("No answer from server");
+//		logger.warn("No answer from server");
 //		return false;
 //	    }
 //	    if (Packet_scanf(ibuf, "%c%c", &reply_to, &status) <= 0) {
-//		warn("Incomplete reply from server");
+//		logger.warn("Incomplete reply from server");
 //		return false;
 //	    }
 //
@@ -518,8 +518,8 @@ public class TextInterface{
 //		switch (reply_to & 0xFF) {
 //
 //		case OPTION_LIST_pack:
-//		    while (Packet_scanf(ibuf, "%S", linebuf) > 0)
-//			printf("%s\n", linebuf);
+//		    while (Packet_scanf(ibuf, "{}", linebuf) > 0)
+//			printf("{}\n", linebuf);
 //		    break;
 //
 //		case REPORT_STATUS_pack:
@@ -529,7 +529,7 @@ public class TextInterface{
 //		    if (ibuf.len > ibuf.ptr - ibuf.buf
 //			&& (!auto_connect || list_servers)) {
 //			if (list_servers)
-//			    printf("SERVER HOST......: %s\n",
+//			    printf("SERVER HOST......: {}\n",
 //				   conpar.server_name);
 //			if (*ibuf.ptr != '\0') {
 //			    if (ibuf.len < ibuf.size)
@@ -537,7 +537,7 @@ public class TextInterface{
 //			    else
 //				ibuf.buf[ibuf.size - 1] = '\0';
 //			    Clean_string(ibuf.ptr);
-//			    printf("%s", ibuf.ptr);
+//			    printf("{}", ibuf.ptr);
 //			    if (ibuf.ptr[strlen(ibuf.ptr) - 1] != '\n')
 //				printf("\n");
 //			}
@@ -553,7 +553,7 @@ public class TextInterface{
 //
 //		case ENTER_GAME_pack:
 //		    if (Packet_scanf(ibuf, "%hu", &port) <= 0) {
-//			warn("Incomplete login reply from server");
+//			logger.warn("Incomplete login reply from server");
 //			conpar.login_port = -1;
 //		    } else {
 //			conpar.login_port = port;
@@ -563,7 +563,7 @@ public class TextInterface{
 //
 //		case ENTER_QUEUE_pack:
 //		    if (Packet_scanf(ibuf, "%hu", &qpos) <= 0)
-//			warn("Incomplete queue reply from server");
+//			logger.warn("Incomplete queue reply from server");
 //		    else {
 //			printf("... queued at position %2d\n", qpos);
 //			IFWINDOWS(Progress("Queued at position %2d\n", qpos));
@@ -574,11 +574,11 @@ public class TextInterface{
 //		     */
 //		    if (qsent + 10 <= time(null)) {
 //			Sockbuf_clear(ibuf);
-//			Packet_printf(ibuf, "%u%s%hu",
+//			Packet_printf(ibuf, "%u{}%hu",
 //				      VERSION2MAGIC(conpar.server_version),
 //				      conpar.user_name,
 //				      sock_get_port(&ibuf.sock));
-//			Packet_printf(ibuf, "%c%s%s%s%d", ENTER_QUEUE_pack,
+//			Packet_printf(ibuf, "%c{}{}{}{}", ENTER_QUEUE_pack,
 //				      conpar.nick_name, conpar.disp_name,
 //				      conpar.host_name, conpar.team);
 //			if (sock_write(&ibuf.sock, ibuf.buf, ibuf.len)
@@ -594,7 +594,7 @@ public class TextInterface{
 //
 //		case CREDENTIALS_pack:
 //		    if (Packet_scanf(ibuf, "%ld", &key) <= 0)
-//			warn("Incomplete credentials reply from server");
+//			logger.warn("Incomplete credentials reply from server");
 //		    else {
 //			has_credentials = true;
 //			cmd_credentials = c;
@@ -609,44 +609,44 @@ public class TextInterface{
 //		break;
 //
 //	    case E_NOT_OWNER:
-//		warn("Permission denied, not owner");
+//		logger.warn("Permission denied, not owner");
 //		break;
 //	    case E_GAME_FULL:
-//		warn("Sorry, game full");
+//		logger.warn("Sorry, game full");
 //		break;
 //	    case E_TEAM_FULL:
-//		warn("Sorry, team %d is full", conpar.team);
+//		logger.warn("Sorry, team {} is full", conpar.team);
 //		break;
 //	    case E_TEAM_NOT_SET:
-//		warn("Sorry, team play selected "
+//		logger.warn("Sorry, team play selected "
 //		     "and you haven't specified your team");
 //		break;
 //	    case E_GAME_LOCKED:
-//		warn("Sorry, game locked");
+//		logger.warn("Sorry, game locked");
 //		break;
 //	    case E_NOT_FOUND:
-//		warn("That player is not logged on this server");
+//		logger.warn("That player is not logged on this server");
 //		break;
 //	    case E_IN_USE:
-//		warn("Your nick is already used");
+//		logger.warn("Your nick is already used");
 //		break;
 //	    case E_SOCKET:
-//		warn("Server can't setup socket");
+//		logger.warn("Server can't setup socket");
 //		break;
 //	    case E_INVAL:
-//		warn("Invalid input parameters says the server");
+//		logger.warn("Invalid input parameters says the server");
 //		break;
 //	    case E_VERSION:
-//		warn("We have an incompatible version says the server");
+//		logger.warn("We have an incompatible version says the server");
 //		break;
 //	    case E_NOENT:
-//		warn("No such variable, says the server");
+//		logger.warn("No such variable, says the server");
 //		break;
 //	    case E_UNDEFINED:
-//		warn("Requested operation is undefined, says the server");
+//		logger.warn("Requested operation is undefined, says the server");
 //		break;
 //	    default:
-//		warn("Server answers with unknown error status '%02x'",
+//		logger.warn("Server answers with unknown error status '%02x'",
 //		     status);
 //		break;
 //	    }
@@ -752,7 +752,7 @@ public class TextInterface{
 //	compat_mode = false;
 //	do {
 //	    Sockbuf_clear(&sbuf);
-//	    Packet_printf(&sbuf, "%u%s%hu%c", MAGIC, conpar.user_name,
+//	    Packet_printf(&sbuf, "%u{}%hu%c", MAGIC, conpar.user_name,
 //			  sock_get_port(&sbuf.sock), CONTACT_pack);
 //	    assert(sbuf.len >= 0);
 //	    if (Query_all(&sbuf.sock, conpar.contact_port,
@@ -806,10 +806,10 @@ public class TextInterface{
 //	    retries = 0;
 //	    contacted = 0;
 //	    do {
-//		printf("Contacting server %s.\n", servers[i]);
-//		IFWINDOWS( Progress("Contacting server %s", servers[i]) );
+//		printf("Contacting server {}.\n", servers[i]);
+//		IFWINDOWS( Progress("Contacting server {}", servers[i]) );
 //		Sockbuf_clear(&sbuf);
-//		Packet_printf(&sbuf, "%u%s%hu%c",
+//		Packet_printf(&sbuf, "%u{}%hu%c",
 //			      compat_mode ? COMPATIBILITY_MAGIC : MAGIC,
 //			      conpar.user_name, sock_get_port(&sbuf.sock),
 //			      CONTACT_pack);
@@ -817,17 +817,17 @@ public class TextInterface{
 //			      conpar.contact_port,
 //			      sbuf.buf, sbuf.len) == -1) {
 //		    if (sbuf.sock.error.call == SOCK_CALL_GETHOSTBYNAME) {
-//			printf("Can't find the server '%s'.\n", servers[i]);
-//			IFWINDOWS( Progress("Can't find the server '%s'.",
+//			printf("Can't find the server '{}'.\n", servers[i]);
+//			IFWINDOWS( Progress("Can't find the server '{}'.",
 //					    servers[i]) );
 //			break;
 //		    }
-//		    error("Can't contact %s on port %d",
+//		    error("Can't contact {} on port {}",
 //			  servers[i], conpar.contact_port);
 //		}
 //		if (retries) {
-//		    printf("Retrying %s...\n", servers[i]);
-//		    IFWINDOWS( Progress("Retrying %s...", servers[i]) );
+//		    printf("Retrying {}...\n", servers[i]);
+//		    IFWINDOWS( Progress("Retrying {}...", servers[i]) );
 //		}
 //		ret = Get_contact_message(&sbuf, servers[i], conpar);
 //		if (ret == 2 && !compat_mode) {
@@ -839,7 +839,7 @@ public class TextInterface{
 //		}
 //		if (ret == 1) {
 //		    contacted++;
-//		    IFWINDOWS( Progress("Contacted %s", servers[i]) );
+//		    IFWINDOWS( Progress("Contacted {}", servers[i]) );
 //		    connected = Connect_to_server(auto_connect, list_servers,
 //						  auto_shutdown,
 //						  shutdown_reason,

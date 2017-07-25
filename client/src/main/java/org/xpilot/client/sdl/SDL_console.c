@@ -35,7 +35,7 @@
 # define __FUNCTION__ ""
 # define vsnprintf _vsnprintf
 #endif
-#define PRINT_ERROR(X) fprintf(stderr, "ERROR in %s:%s(): %s\n", __FILE__, __FUNCTION__, X)
+#define PRINT_ERROR(X) fprintf(stderr, "ERROR in {}:{}(): {}\n", __FILE__, __FUNCTION__, X)
 
 /* This contains a pointer to the "topmost" console. The console that
  * is currently taking keyboard input. */
@@ -151,11 +151,11 @@ SDL_Event *CON_Events(SDL_Event * event)
 		    strcpy(Topmost.CommandLines[0], Topmost.Command);
 
 		    /* display the command including the prompt */
-		    CON_Out(Topmost, "%s%s", Topmost.Prompt,
+		    CON_Out(Topmost, "{}{}", Topmost.Prompt,
 			    Topmost.Command);
 
 		    CON_Execute(Topmost, Topmost.Command);
-		    /* printf("Command: %s\n", Topmost.Command); */
+		    /* printf("Command: {}\n", Topmost.Command); */
 
 		    Clear_Command(Topmost);
 		    Topmost.CommandScrollBack = -1;
@@ -361,7 +361,7 @@ ConsoleInformation *CON_Init(String FontName,
     /* Load the consoles font */
     if (-1 == (newinfo.FontNumber = DT_LoadFont(FontName, TRANS_FONT))) {
 	PRINT_ERROR("Could not load the font ");
-	fprintf(stderr, "\"%s\" for the console!\n", FontName);
+	fprintf(stderr, "\"{}\" for the console!\n", FontName);
 	return null;
     }
 
@@ -679,7 +679,7 @@ void CON_Out(ConsoleInformation * console, String str, ...)
     }
 
     /* And print to stdout */
-    /* printf("%s\n", temp); */
+    /* printf("{}\n", temp); */
 }
 
 
@@ -722,7 +722,7 @@ int CON_Background(ConsoleInformation * console, String image, int x,
     temp = SDL_LoadBMP(image);
 #endif
     if (!temp) {
-	CON_Out(console, "Cannot load background %s.", image);
+	CON_Out(console, "Cannot load background {}.", image);
 	return 1;
     }
 
@@ -932,7 +932,7 @@ void Default_CmdFunction(ConsoleInformation * console, String command)
     CON_Out(console, "     No CommandFunction registered");
     CON_Out(console, "     use 'CON_SetExecuteFunction' to register one");
     CON_Out(console, " ");
-    CON_Out(console, "Unknown Command \"%s\"", command);
+    CON_Out(console, "Unknown Command \"{}\"", command);
 }
 
 void CON_SetTabCompletion(ConsoleInformation * console,
@@ -999,7 +999,7 @@ void Cursor_Left(ConsoleInformation * console)
 	       &Topmost.LCommand[strlen(Topmost.LCommand) - 1]);
 	strcat(Topmost.RCommand, temp);
 	Topmost.LCommand[strlen(Topmost.LCommand) - 1] = '\0';
-	/* CON_Out(Topmost, "L:%s, R:%s", Topmost.LCommand, Topmost.RCommand); */
+	/* CON_Out(Topmost, "L:{}, R:{}", Topmost.LCommand, Topmost.RCommand); */
     }
 }
 
@@ -1012,7 +1012,7 @@ void Cursor_Right(ConsoleInformation * console)
 	strncat(Topmost.LCommand, Topmost.RCommand, 1);
 	strcpy(temp, Topmost.RCommand);
 	strcpy(Topmost.RCommand, &temp[1]);
-	/* CON_Out(Topmost, "L:%s, R:%s", Topmost.LCommand, Topmost.RCommand); */
+	/* CON_Out(Topmost, "L:{}, R:{}", Topmost.LCommand, Topmost.RCommand); */
     }
 }
 

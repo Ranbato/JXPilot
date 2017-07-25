@@ -70,7 +70,7 @@ void audioInit(String display)
     }
 #endif
     if (!(fp = fopen(soundFile, "r"))) {
-	error("Could not open soundfile %s", soundFile);
+	error("Could not open soundfile {}", soundFile);
 	return;
     }
 
@@ -112,7 +112,7 @@ void audioInit(String display)
 	    }
 
 	if (i == MAX_SOUNDS)
-	    warn("audioInit: Unknown sound '%s' (ignored)", soundstr);
+	    logger.warn("audioInit: Unknown sound '{}' (ignored)", soundstr);
 
     }
 

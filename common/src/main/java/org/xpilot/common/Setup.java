@@ -30,6 +30,8 @@ package org.xpilot.common;
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
+import java.util.BitSet;
+
 public class Setup{
 
 /*
@@ -122,25 +124,25 @@ public static final int DECOR_BELOW = 0x40;
  * Structure defining the server configuration, including the map layout.
  */
 
-    long		setup_size;		/* size including map data */
-    long		map_data_len;		/* num. compressed map bytes */
-    long		mode;			/* playing mode */
-    short		lives;			/* max. number of lives */
-    short		x;			/* OLD width in blocks */
-    short		y;			/* OLD height in blocks */
-    short		width;			/* width in pixels */
-    short		height;			/* height in pixels */
-    public static short		frames_per_second;	/* FPS */
-    short		map_order;		/* OLD row or col major */
-    short		unused1;		/* padding */
-    String		name;//[MAX_CHARS];	/* name of map */
-    String		author;//[MAX_CHARS];	/* name of author of map */
-    String		data_url;//[MSG_LEN];
+public static   long		setup_size;		/* size including map data */
+public static   long		map_data_len;		/* num. compressed map bytes */
+public static BitSet mode = new BitSet(32);			/* playing mode */
+public static   short		lives;			/* max. number of lives */
+public static   short		x;			/* OLD width in blocks */
+public static   short		y;			/* OLD height in blocks */
+public static   short		width;			/* width in pixels */
+public static   short		height;			/* height in pixels */
+public static   short		frames_per_second;	/* FPS */
+public static   short		map_order;		/* OLD row or col major */
+public static   short		unused1;		/* padding */
+public static   String		name;//[MAX_CHARS];	/* name of map */
+public static   String		author;//[MAX_CHARS];	/* name of author of map */
+public static   String		data_url;//[MSG_LEN];
      	/* location where client
 						   can load additional data
 						   like bitmaps; MSG_LEN to
 						   allow >80 chars */
-    char[]	map_data = new char[4];		/* compressed map data */
+ public static   char[]	map_data = new char[4];		/* compressed map data */
     /* plus more mapdata here (HACK) */
 
 /*

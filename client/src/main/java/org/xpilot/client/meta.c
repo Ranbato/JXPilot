@@ -204,7 +204,7 @@ int Add_server_info(server_info_t * sip)
     }
 
     /* print for debugging */
-    D(printf("list size = %d after %08x, %d\n",
+    D(printf("list size = {} after %08x, {}\n",
 	     List_size(server_list), sip.ip, sip.port));
 
     return 0;
@@ -306,7 +306,7 @@ void Add_meta_line(String meta_line)
 	sscanf(fields[i = 15], "%u.%u.%u.%u", &ip0, &ip1, &ip2, &ip3) != 4
 	|| (ip0 | ip1 | ip2 | ip3) > 255
 	|| sscanf(fields[i = 17], "%u", &sip.queue) != 1) {
-	printf("error %d in: %s\n", i, meta_line);
+	printf("error {} in: {}\n", i, meta_line);
 	free(sip);
 	free(text);
 	return;
@@ -340,7 +340,7 @@ void Meta_connect(int *connections_ptr, int *maxfd_ptr)
 						      metas[i].addr,
 						      META_PROG_PORT);
 	if (status == SOCK_IS_ERROR) {
-	    error("%s\n", metas[i].addr);
+	    error("{}\n", metas[i].addr);
 	} else {
 	    connections++;
 	    if (metas[i].sock.fd > max)
@@ -439,7 +439,7 @@ void Ping_servers()
 		 * nice enough to send back whatever we send.
 		 */
 		Sockbuf_clear(&sbuf);
-		Packet_printf(&sbuf, "%u%s%hu%c",
+		Packet_printf(&sbuf, "%u{}%hu%c",
 			      MAGIC & 0xffff, "p",
 			      sock_get_port(&sock), serial);
 
@@ -603,7 +603,7 @@ int Get_meta_data(String errorstr)
 	return -1;
     }
 
-    sprintf(errorstr, "Establishing %s with %d metaserver%s ... ",
+    sprintf(errorstr, "Establishing {} with {} metaserver{} ... ",
 	    ((connections > 1) ? "connections" : "a connection"),
 	    connections, ((connections > 1) ? "s" : ""));
 
@@ -637,7 +637,7 @@ int Get_meta_data(String errorstr)
 	tv.tv_sec = start + 5 - now;
 	tv.tv_usec = 0;
 
-	D(printf("select for %ld (con %d, read %d, send %d) at %ld\n",
+	D(printf("select for %ld (con {}, read {}, send {}) at %ld\n",
 		 tv.tv_sec, connections, readers, senders, time(0)));
 
 	rset_out = rset_in;
@@ -645,7 +645,7 @@ int Get_meta_data(String errorstr)
 	descriptor_count =
 	    select(max + 1, &rset_out, &wset_out, null, &tv);
 
-	D(printf("select = %d at %ld\n", descriptor_count, time(0)));
+	D(printf("select = {} at %ld\n", descriptor_count, time(0)));
 
 	if (descriptor_count <= 0)
 	    break;
@@ -741,7 +741,7 @@ int Get_meta_data(String errorstr)
 	server_count = List_size(server_list);
 
     if (server_count > 0) {
-	sprintf(errorstr, "Received information about %d Internet servers",
+	sprintf(errorstr, "Received information about {} Internet servers",
 		server_count);
 	server_list_creation_time = time(null);
     } else

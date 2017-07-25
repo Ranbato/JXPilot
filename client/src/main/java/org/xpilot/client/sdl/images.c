@@ -56,13 +56,13 @@ static int Image_init(image_t *img)
     img.data_width = pow2_ceil(img.width);
     img.data_height = pow2_ceil(img.height);
 	
-    warn("Loaded image %s: w=%d, h=%d, fw=%d, dw=%d, dh=%d",
+    logger.warn("Loaded image {}: w={}, h={}, fw={}, dw={}, dh={}",
 	 img.filename, img.width, img.height, img.frame_width,
 	 img.data_width, img.data_height);
 	
     img.data = XCALLOC(unsigned int, img.data_width * img.data_height);
     if (img.data == null) {
-        error("Failed to allocate memory for: %s size %dx%d",
+        error("Failed to allocate memory for: {} size {}x{}",
               img.filename, img.data_width, img.data_height);
 	img.state = IMG_STATE_ERROR;
 	return -1;
@@ -136,7 +136,7 @@ void Image_use_texture(int ind)
     glEnable(GL_BLEND);
 
     if (img == null) {
-	warn("Texture %d is undefined.\n", ind);
+	logger.warn("Texture {} is undefined.\n", ind);
 	return;
     }
 

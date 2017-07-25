@@ -55,7 +55,7 @@ void Game_loop()
         }
 	if (n > 0) {
 	    if (Net_input() == -1) {
-		warn("Bad net input.  Have a nice day!");
+		logger.warn("Bad net input.  Have a nice day!");
 		return;
 	    }
 	}

@@ -53,10 +53,10 @@ static String Option_default_value_to_string(xp_option *opt)
 	strcpy(buf, "");
 	break;
     case xp_bool_option:
-	sprintf(buf, "%s", opt.bool_defval ? "yes" : "no");
+	sprintf(buf, "{}", opt.bool_defval ? "yes" : "no");
 	break;
     case xp_int_option:
-	sprintf(buf, "%d", opt.int_defval);
+	sprintf(buf, "{}", opt.int_defval);
 	break;
     case xp_double_option:
 	sprintf(buf, "%.3f", opt.dbl_defval);
@@ -92,14 +92,14 @@ static void Print_default_value(xp_option *opt)
     case xp_double_option:
     case xp_string_option:
 	if (strlen(defval) > 0)
-	    printf("        The default value is: %s.\n", defval);
+	    printf("        The default value is: {}.\n", defval);
 	else
 	    printf("        There is no default value for this option.\n");
 	break;
 
     case xp_key_option:
 	if (opt.key_defval && strlen(opt.key_defval) > 0)
-	    printf("        The default %s: %s.\n",
+	    printf("        The default {}: {}.\n",
 		   (strchr(opt.key_defval, ' ') == null
 		    ? "key is" : "keys are"), opt.key_defval);
 	else
@@ -114,12 +114,12 @@ void Usage()
 {
     int i;
 
-    printf("Usage: %s [-options ...] [server]\n"
+    printf("Usage: {} [-options ...] [server]\n"
 	   "Where options include:\n" "\n", Program_name());
     for (i = 0; i < num_options; i++) {
 	xp_option *opt = Option_by_index(i);
 
-	printf("    -%s %s\n", opt.name,
+	printf("    -{} {}\n", opt.name,
 	       (opt.type != xp_noarg_option) ? "<value>" : "");
 	if (opt.help && opt.help[0]) {
 	    String str;
@@ -147,7 +147,7 @@ void Usage()
 
 static void Version()
 {
-    printf("%s %s\n", Program_name(), VERSION);
+    printf("{} {}\n", Program_name(), VERSION);
     exit(0);
 }
 
@@ -196,20 +196,20 @@ bool Set_int_option(xp_option *opt, int value, xp_option_origin_t origin)
 
 	if (value < opt.int_minval) {
 	    snprintf(msg, sizeof(msg),
-		     "Minimum value for option %s is %d. [*Client reply*]",
+		     "Minimum value for option {} is {}. [*Client reply*]",
 		     opt.name, opt.int_minval);
 	    Add_message(msg);
 	}
 	if (value > opt.int_maxval) {
 	    snprintf(msg, sizeof(msg),
-		     "Maximum value for option %s is %d. [*Client reply*]",
+		     "Maximum value for option {} is {}. [*Client reply*]",
 		     opt.name, opt.int_maxval);
 	    Add_message(msg);
 	}
     }
     else {
 	if (!(value >= opt.int_minval && value <= opt.int_maxval)) {
-	    warn("Bad value %d for option \"%s\", using default...",
+	    logger.warn("Bad value {} for option \"{}\", using default...",
 		 value, opt.name);
 	    value = opt.int_defval;
 	}
@@ -242,20 +242,20 @@ bool Set_double_option(xp_option *opt, double value,
 
 	if (value < opt.dbl_minval) {
 	    snprintf(msg, sizeof(msg),
-		     "Minimum value for option %s is %.3f. [*Client reply*]",
+		     "Minimum value for option {} is %.3f. [*Client reply*]",
 		     opt.name, opt.dbl_minval);
 	    Add_message(msg);
 	}
 	if (value > opt.dbl_maxval) {
 	    snprintf(msg, sizeof(msg),
-		     "Maximum value for option %s is %.3f. [*Client reply*]",
+		     "Maximum value for option {} is %.3f. [*Client reply*]",
 		     opt.name, opt.dbl_maxval);
 	    Add_message(msg);
 	}
     }
     else {
 	if (!(value >= opt.dbl_minval && value <= opt.dbl_maxval)) {
-	    warn("Bad value %.3f for option \"%s\", using default...",
+	    logger.warn("Bad value %.3f for option \"{}\", using default...",
 		 value, opt.name);
 	    value = opt.dbl_defval;
 	}
@@ -348,7 +348,7 @@ static void Store_keydef(int ks, keys_t key)
 	xp_keydefs_t *kd = &keydefs[i];
 
 	if (kd.keysym == ks && kd.key == key) {
-	    /*warn("Pair (%d, %d) exist from before", ks, (int) key);*/
+	    /*logger.warn("Pair ({}, {}) exist from before", ks, (int) key);*/
 	    /*
 	     * already exists, no need to store 
 	     */
@@ -367,7 +367,7 @@ static void Store_keydef(int ks, keys_t key)
 
 	if (kd.key == KEY_DUMMY) {
 	    assert(kd.keysym == XP_KS_UNKNOWN);
-	    /*warn("Store_keydef: Found dummy at index %d", i);*/
+	    /*logger.warn("Store_keydef: Found dummy at index {}", i);*/
 	    *kd = keydef;
 	    return;
 	}
@@ -391,7 +391,7 @@ static void Remove_key_from_keydefs(keys_t key)
 	 * lazy deletion 
 	 */
 	if (kd.key == key) {
-	    /*warn("Remove_key_from_keydefs: Removing key at index %d", i);*/
+	    /*logger.warn("Remove_key_from_keydefs: Removing key at index {}", i);*/
 	    kd.keysym = XP_KS_UNKNOWN;
 	    kd.key = KEY_DUMMY;
 	}
@@ -411,7 +411,7 @@ static bool Set_key_option(xp_option *opt, String value,
     assert(value);
 
     /*
-     * warn("Setting key option %s to \"%s\"", opt.name, value);
+     * logger.warn("Setting key option {} to \"{}\"", opt.name, value);
      */
 
     /*
@@ -438,7 +438,7 @@ static bool Set_key_option(xp_option *opt, String value,
 
 	ks = String_to_xp_keysym(str);
 	if (ks == XP_KS_UNKNOWN) {
-	    warn("Invalid keysym \"%s\" for key \"%s\".\n", str, opt.name);
+	    logger.warn("Invalid keysym \"{}\" for key \"{}\".\n", str, opt.name);
 	    continue;
 	}
 
@@ -461,7 +461,7 @@ static bool is_legal_value(xp_option_type_t type, String value)
     if (type == xp_int_option) {
 	int foo;
 
-	if (sscanf(value, "%d", &foo) <= 0)
+	if (sscanf(value, "{}", &foo) <= 0)
 	    return false;
 	return true;
     }
@@ -487,12 +487,12 @@ bool Set_option(String name, String value, xp_option_origin_t origin)
 
     if (!is_legal_value(opt.type, value)) {
 	if (origin != xp_option_origin_setcmd)
-	    warn("Bad value \"%s\" for option %s.", value, opt.name);
+	    logger.warn("Bad value \"{}\" for option {}.", value, opt.name);
 	else {
 	    char msg[MSG_LEN];
 	
 	    snprintf(msg, sizeof(msg),
-		     "Bad value \"%s\" for option %s. [*Client reply*]",
+		     "Bad value \"{}\" for option {}. [*Client reply*]",
 		     value, opt.name);
 	    Add_message(msg);
 	}
@@ -543,7 +543,7 @@ void Set_command(String args)
 
     if (!opt) {
 	snprintf(msg, sizeof(msg),
-		 "Unknown option \"%s\". [*Client reply*]", name);
+		 "Unknown option \"{}\". [*Client reply*]", name);
 	Add_message(msg);
 	goto out;
     }
@@ -561,7 +561,7 @@ void Set_command(String args)
 
 	newvalue = Option_value_to_string(opt);
 	snprintf(msg, sizeof(msg),
-		 "The value of %s is now %s. [*Client reply*]",
+		 "The value of {} is now {}. [*Client reply*]",
 		 nm, newvalue);
 	Add_message(msg);
     }
@@ -576,13 +576,13 @@ String Option_value_to_string(xp_option *opt)
 
     switch (opt.type) {
     case xp_noarg_option:
-	sprintf(buf, "%s", *opt.noarg_ptr ? "yes" : "no");
+	sprintf(buf, "{}", *opt.noarg_ptr ? "yes" : "no");
 	break;
     case xp_bool_option:
-	sprintf(buf, "%s", *opt.bool_ptr ? "yes" : "no");
+	sprintf(buf, "{}", *opt.bool_ptr ? "yes" : "no");
 	break;
     case xp_int_option:
-	sprintf(buf, "%d", *opt.int_ptr);
+	sprintf(buf, "{}", *opt.int_ptr);
 	break;
     case xp_double_option:
 	sprintf(buf, "%.3f", *opt.dbl_ptr);
@@ -627,14 +627,14 @@ void Get_command(String args)
 
 	if (val && strlen(val) > 0)
 	    snprintf(msg, sizeof(msg),
-		     "The value of %s is %s. [*Client reply*]", nm, val);
+		     "The value of {} is {}. [*Client reply*]", nm, val);
 	else
 	    snprintf(msg, sizeof(msg),
-		     "The option %s has no value. [*Client reply*]", nm);
+		     "The option {} has no value. [*Client reply*]", nm);
 	Add_message(msg);
     } else {
 	snprintf(msg, sizeof(msg),
-		 "No client option named \"%s\". [*Client reply*]", name);
+		 "No client option named \"{}\". [*Client reply*]", name);
 	Add_message(msg);
     }
 
@@ -657,7 +657,7 @@ void Store_option(xp_option *opt)
      * Let's not allow several options with the same name 
      */
     if (Find_option(opt.name) != null) {
-	warn("Trying to store duplicate option \"%s\"", opt.name);
+	logger.warn("Trying to store duplicate option \"{}\"", opt.name);
 	assert(0);
     }
 
@@ -702,7 +702,7 @@ void Store_option(xp_option *opt)
 	Set_key_option(opt, opt.key_defval, xp_option_origin_default);
 	break;
     default:
-	warn("Could not set default value for option %s", opt.name);
+	logger.warn("Could not set default value for option {}", opt.name);
 	break;
     }
 
@@ -754,8 +754,8 @@ static void Parse_xpilotrc_line(String line)
     colon = strchr(l, ':');
     if (colon == null) {
 	/* no colon on line, not ok */
-	warn("Xpilotrc line %d:", num_xpilotrc_lines + 1);
-	warn("Line has no colon after option name, ignoring.");
+	logger.warn("Xpilotrc line {}:", num_xpilotrc_lines + 1);
+	logger.warn("Line has no colon after option name, ignoring.");
 	goto line_is_comment;
     }
 
@@ -772,7 +772,7 @@ static void Parse_xpilotrc_line(String line)
 	l[i--] = '\0';
 
     name = l;
-    /*warn("looking for option \"%s\": %s",
+    /*logger.warn("looking for option \"{}\": {}",
       name, Find_option(name) ? "found" : "not found");*/
 
     opt = Find_option(name);
@@ -781,9 +781,9 @@ static void Parse_xpilotrc_line(String line)
 
     if (Option_get_flags(opt) & XP_OPTFLAG_NEVER_SAVE) {
 	/* discard the line */
-	warn("Xpilotrc line %d:", num_xpilotrc_lines + 1);
-	warn("Option %s must not be specified in xpilotrc.", name);
-	warn("It will be removed from xpilotrc if you save configuration.");
+	logger.warn("Xpilotrc line {}:", num_xpilotrc_lines + 1);
+	logger.warn("Option {} must not be specified in xpilotrc.", name);
+	logger.warn("It will be removed from xpilotrc if you save configuration.");
 	XFREE(lcpy);
 	return;
     }
@@ -794,8 +794,8 @@ static void Parse_xpilotrc_line(String line)
 	
 	if (x.opt == opt) {
 	    /* same option defined several times in xpilotrc */
-	    warn("Xpilotrc line %d:", num_xpilotrc_lines + 1);
-	    warn("Option %s previously given on line %d, ignoring new value.",
+	    logger.warn("Xpilotrc line {}:", num_xpilotrc_lines + 1);
+	    logger.warn("Option {} previously given on line {}, ignoring new value.",
 		 name, i + 1);
 	    goto line_is_comment;
 	}
@@ -812,18 +812,18 @@ static void Parse_xpilotrc_line(String line)
     /* everything after semicolon is comment, ignore it. */
     semicolon = strchr(l, ';');
     if (semicolon) {
-	/*warn("found comment \"%s\" on line \"%s\"\n", semicolon, line);*/
+	/*logger.warn("found comment \"{}\" on line \"{}\"\n", semicolon, line);*/
 	comment = xp_safe_strdup(semicolon);
 	*semicolon = '\0';
     }
 
     if (!Set_option(name, value, xp_option_origin_xpilotrc)) {
-	warn("Xpilotrc line %d:", num_xpilotrc_lines + 1);
-	warn("Failed to set option %s value \"%s\", ignoring.", name, value);
+	logger.warn("Xpilotrc line {}:", num_xpilotrc_lines + 1);
+	logger.warn("Failed to set option {} value \"{}\", ignoring.", name, value);
 	goto line_is_comment;
     }
 
-    /*warn("option %s value is \"%s\"", name, value);*/
+    /*logger.warn("option {} value is \"{}\"", name, value);*/
 
     t.opt = opt;
     t.comment = comment;
@@ -837,7 +837,7 @@ static void Parse_xpilotrc_line(String line)
     /*
      * If we can't parse the line, then we just treat it as a comment.
      */
-    /*warn("Comment: \"%s\"", line);*/
+    /*logger.warn("Comment: \"{}\"", line);*/
     XFREE(comment);
     t.opt = null;
     t.comment = xp_safe_strdup(line);
@@ -862,17 +862,17 @@ int Xpilotrc_read(String path)
 
     assert(path);
     if (strlen(path) == 0) {
-	warn("Xpilotrc_read: Zero length filename.");
+	logger.warn("Xpilotrc_read: Zero length filename.");
 	return -1;
     }
 
     fp = fopen(path, "r");
     if (fp == null) {
-	error("Xpilotrc_read: Failed to open file \"%s\"", path);
+	error("Xpilotrc_read: Failed to open file \"{}\"", path);
 	return -2;
     }
 
-    xpinfo("Reading options from xpilotrc file %s.", path);
+    xpinfo("Reading options from xpilotrc file {}.", path);
 
     while (fgets(buf, sizeof buf, fp)) {
 	String cp;
@@ -886,9 +886,9 @@ int Xpilotrc_read(String path)
 	Parse_xpilotrc_line(buf);
     }
 
-    /*warn("Total number of nonempty lines in xpilotrc: %d",
+    /*logger.warn("Total number of nonempty lines in xpilotrc: {}",
       num_xpilotrc_lines);
-      warn("Number of options set: %d\n", num_ok_options);*/
+      logger.warn("Number of options set: {}\n", num_ok_options);*/
 
     fclose(fp);
 
@@ -919,7 +919,7 @@ public static final int TABSIZE = 8; static void Xpilotrc_create_line(String buf
     if (opt) {
 	String value;
 
-	snprintf(buf, size, "xpilot.%s:", opt.name);
+	snprintf(buf, size, "xpilot.{}:", opt.name);
 	len = (int) strlen(buf);
 	/* assume tabs are max size of TABSIZE */
 	numtabs = ((5 * TABSIZE - 1) - len) / TABSIZE;
@@ -942,9 +942,9 @@ static void Xpilotrc_write_line(FILE *fp, String buf)
 #else
     String endline = "\r\n"; /* CR LF */
 #endif
-    /*warn("writing line \"%s\"", buf);*/
+    /*logger.warn("writing line \"{}\"", buf);*/
 
-    fprintf(fp, "%s%s", buf, endline);
+    fprintf(fp, "{}{}", buf, endline);
 }
 
 int Xpilotrc_write(String path)
@@ -954,13 +954,13 @@ int Xpilotrc_write(String path)
 
     assert(path);
     if (strlen(path) == 0) {
-	warn("Xpilotrc_write: Zero length filename.");
+	logger.warn("Xpilotrc_write: Zero length filename.");
 	return -1;
     }
 
     fp = fopen(path, "w");
     if (fp == null) {
-	error("Xpilotrc_write: Failed to open file \"%s\"", path);
+	error("Xpilotrc_write: Failed to open file \"{}\"", path);
 	return -2;
     }
 
@@ -1096,8 +1096,8 @@ void Parse_options(int *argcp, char **argvp)
 		}
 
 		if (!ok) {
-		    warn("Unknown or incomplete option '%s'", argvp[arg_ind]);
-		    warn("Type: %s -help to see a list of options", argvp[0]);
+		    logger.warn("Unknown or incomplete option '{}'", argvp[arg_ind]);
+		    logger.warn("Type: {} -help to see a list of options", argvp[0]);
 		    exit(1);
 		}
 	    }

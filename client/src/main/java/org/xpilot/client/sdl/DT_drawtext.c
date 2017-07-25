@@ -53,7 +53,7 @@
 #ifdef _WINDOWS
 #define __FUNCTION__ ""
 #endif
-#define PRINT_ERROR(X) fprintf(stderr, "ERROR in %s:%s(): %s\n", __FILE__, __FUNCTION__, X)
+#define PRINT_ERROR(X) fprintf(stderr, "ERROR in {}:{}(): {}\n", __FILE__, __FUNCTION__, X)
 
 
 static BitFont *BitFonts = null;	/* Linked list of fonts */
@@ -83,7 +83,7 @@ int DT_LoadFont(String BitmapName, int flags) {
 
     if(Temp == null) {
 		PRINT_ERROR("Cannot load file ");
-		printf("%s: %s\n", BitmapName, SDL_GetError());
+		printf("{}: {}\n", BitmapName, SDL_GetError());
 		return -1;
 	}
 

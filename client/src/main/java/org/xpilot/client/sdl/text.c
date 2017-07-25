@@ -163,12 +163,12 @@ int FTinit(font_data *font, String  fontname, int ptsize)
     
     /* Initialize the TTF library */
     /*if ( TTF_Init() < 0 ) {
-    	fprintf(stderr, "Couldn't initialize TTF: %s\n",SDL_GetError());
+    	fprintf(stderr, "Couldn't initialize TTF: {}\n",SDL_GetError());
     	return(2);
     }*/
     font.ttffont = TTF_OpenFont(fontname, ptsize);
     if ( font.ttffont == null ) {
-    	fprintf(stderr, "Couldn't load %d pt font from %s: %s\n", ptsize, fontname, SDL_GetError());
+    	fprintf(stderr, "Couldn't load {} pt font from {}: {}\n", ptsize, fontname, SDL_GetError());
     	return(2);
     }
     TTF_SetFontStyle(font.ttffont, renderstyle);
@@ -341,7 +341,7 @@ fontbounds printsize(font_data *ft_font, String fmt, ...)
     	vsnprintf(text, BUFSIZE, fmt, ap);    /* And Converts Symbols To Actual Numbers */
     	va_end(ap); 	    	    /* Results Are Stored In Text */
     }
-    return nprintsize(ft_font, BUFSIZE, "%s", text);
+    return nprintsize(ft_font, BUFSIZE, "{}", text);
 }
 
 bool render_text(font_data *ft_font, String text, string_tex_t *string_tex)
@@ -378,7 +378,7 @@ bool render_text(font_data *ft_font, String text, string_tex_t *string_tex)
     if (string_glyph) {
     	int i, num = 1 + string_glyph.w / 254;
  	string_tex.text = (String )malloc(sizeof(char)*(strlen(text)+1));
-	sprintf(string_tex.text,"%s",text);
+	sprintf(string_tex.text,"{}",text);
    	for( i=0 ; i<num ; ++i ) {
 	    tex_t tex;
 	    
@@ -416,7 +416,7 @@ bool render_text(font_data *ft_font, String text, string_tex_t *string_tex)
 	}
 	SDL_FreeSurface(string_glyph);
     } else {
-    	printf("TTF_RenderText_Blended failed for [%s]\n",text);
+    	printf("TTF_RenderText_Blended failed for [{}]\n",text);
 	return false;
     }
     return true;
@@ -541,7 +541,7 @@ void print(font_data *ft_font, int color, int XALIGN, int YALIGN, int x, int y, 
     
     font=ft_font.list_base;
 
-    returnval = nprintsize(ft_font,length,"%s",text);
+    returnval = nprintsize(ft_font,length,"{}",text);
     
     yoff = (returnval.height/2.0f)*((float)YALIGN) - ft_font.h;
 

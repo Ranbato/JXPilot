@@ -44,7 +44,7 @@ static bool Set_nickName(xp_option *opt, String value)
     strlcpy(connectParam.nick_name, value, sizeof(connectParam.nick_name));
     CAP_LETTER(connectParam.nick_name[0]);
     if (connectParam.nick_name[0] < 'A' || connectParam.nick_name[0] > 'Z') {
-	warn("Your player name \"%s\" should start with an uppercase letter.",
+	logger.warn("Your player name \"{}\" should start with an uppercase letter.",
 	     connectParam.nick_name);
 	connectParam.nick_name[0] = 'X';
     }
@@ -54,11 +54,11 @@ static bool Set_nickName(xp_option *opt, String value)
 
 	strlcpy(nick, connectParam.nick_name, sizeof(nick));
 	Fix_nick_name(connectParam.nick_name);
-	warn("Fixing nick from \"%s\" to \"%s\".\n",
+	logger.warn("Fixing nick from \"{}\" to \"{}\".\n",
 	     nick, connectParam.nick_name);
     }
 
-    /*warn("Nick name set to \"%s\".\n", connectParam.nick_name);*/
+    /*logger.warn("Nick name set to \"{}\".\n", connectParam.nick_name);*/
 
     return true;
 }
@@ -83,7 +83,7 @@ static bool Set_userName(xp_option *opt, String value)
 
 	strlcpy(user, connectParam.user_name, sizeof(user));
 	Fix_user_name(connectParam.user_name);
-	warn("Fixing username from \"%s\" to \"%s\".\n",
+	logger.warn("Fixing username from \"{}\" to \"{}\".\n",
 	     user, connectParam.user_name);
     }
 
@@ -91,7 +91,7 @@ static bool Set_userName(xp_option *opt, String value)
     if (strlen(connectParam.nick_name) == 0)
 	Set_nickName(null, connectParam.user_name);
 
-    /*warn("User name set to \"%s\".\n", connectParam.user_name);*/
+    /*logger.warn("User name set to \"{}\".\n", connectParam.user_name);*/
 
     return true;
 }
@@ -118,11 +118,11 @@ static bool Set_hostName(xp_option *opt, String value)
 
 	strlcpy(host, connectParam.host_name, sizeof(host));
 	Fix_host_name(connectParam.host_name);
-	warn("Fixing host from \"%s\" to \"%s\".\n",
+	logger.warn("Fixing host from \"{}\" to \"{}\".\n",
 	     host, connectParam.host_name);
     }
 
-    /*warn("Host name set to \"%s\".\n", connectParam.host_name);*/
+    /*logger.warn("Host name set to \"{}\".\n", connectParam.host_name);*/
 
     return true;
 }
@@ -214,7 +214,7 @@ static void tryToSetShipShape()
 	    shipShape = xp_safe_strdup(shipShapeSetting);
 	    xpinfo("Your shipShape is valid. Have a nice day.\n");
 	} else
-	    warn("Your shipShape isn't valid. Please fix it.");
+	    logger.warn("Your shipShape isn't valid. Please fix it.");
 	return;
     }
 
@@ -227,7 +227,7 @@ static void tryToSetShipShape()
 
     fp = fopen(shipShapeFile, "r");
     if (!fp) {
-	error("Can't open shipShapeFile \"%s\".", shipShapeFile);
+	error("Can't open shipShapeFile \"{}\".", shipShapeFile);
 	return;
     }
 
@@ -253,18 +253,18 @@ static void tryToSetShipShape()
     fclose(fp);
 
     if (!ss_candidate) {
-	warn("Could not find the ship \"%s\" in shipShapeFile %s.",
+	logger.warn("Could not find the ship \"{}\" in shipShapeFile {}.",
 	     shipShapeSetting, shipShapeFile);
 	return;
     }
 
     valid = Validate_shape_str(ss_candidate);
     if (valid) {
-	xpinfo("Ship shape \"%s\" is now in use.\n", shipShapeSetting);
+	xpinfo("Ship shape \"{}\" is now in use.\n", shipShapeSetting);
 	shipShape = ss_candidate;
     } else {
 	XFREE(ss_candidate);
-	warn("Your shipShape \"%s\" isn't valid. Please fix it.",
+	logger.warn("Your shipShape \"{}\" isn't valid. Please fix it.",
 	     shipShapeSetting);
     }
 }
@@ -383,7 +383,7 @@ static bool Set_maxMouseTurnsPS(xp_option *opt, int val)
 	if (mouseMovementInterval * maxMouseTurnsPS < 1000000)
 	    mouseMovementInterval++;
     }
-    /*warn("mouseMovementInterval = %d", mouseMovementInterval);*/
+    /*logger.warn("mouseMovementInterval = {}", mouseMovementInterval);*/
     return true;
 }
 

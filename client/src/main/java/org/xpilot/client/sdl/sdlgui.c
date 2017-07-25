@@ -501,16 +501,16 @@ void Gui_paint_base(int x, int y, int id, int team, int type)
 
     switch (type) {
     case SETUP_BASE_UP:
-	mapnprint(&mapfont,color,CENTER,DOWN ,(x) ,(y - BLOCK_SZ / 2),maxCharsInNames,"%s",other.nick_name);
+	mapnprint(&mapfont,color,CENTER,DOWN ,(x) ,(y - BLOCK_SZ / 2),maxCharsInNames,"{}",other.nick_name);
         break;
     case SETUP_BASE_DOWN:
-	mapnprint(&mapfont,color,CENTER,UP   ,(x) ,(int)(y + BLOCK_SZ / 1.5),maxCharsInNames,"%s",other.nick_name);
+	mapnprint(&mapfont,color,CENTER,UP   ,(x) ,(int)(y + BLOCK_SZ / 1.5),maxCharsInNames,"{}",other.nick_name);
         break;
     case SETUP_BASE_LEFT:
-	mapnprint(&mapfont,color,RIGHT,UP    ,(x + BLOCK_SZ / 2) ,(y),maxCharsInNames,"%s",other.nick_name);
+	mapnprint(&mapfont,color,RIGHT,UP    ,(x + BLOCK_SZ / 2) ,(y),maxCharsInNames,"{}",other.nick_name);
         break;
     case SETUP_BASE_RIGHT:
-	mapnprint(&mapfont,color,LEFT,UP     ,(x - BLOCK_SZ / 2) ,(y),maxCharsInNames,"%s",other.nick_name);
+	mapnprint(&mapfont,color,LEFT,UP     ,(x - BLOCK_SZ / 2) ,(y),maxCharsInNames,"{}",other.nick_name);
         break;
     default:
         errno = 0;
@@ -747,7 +747,7 @@ void Gui_paint_setup_target(int x, int y, int team, double damage, bool own)
 
 	Image_paint(IMG_TARGET, x, y, 0, whiteRGBA);
 	if (Setup.mode.get( TEAM_PLAY)) {
-		mapprint(&mapfont, whiteRGBA, RIGHT, UP, x + BLOCK_SZ, y, "%d", team);
+		mapprint(&mapfont, whiteRGBA, RIGHT, UP, x + BLOCK_SZ, y, "{}", team);
 	}
 	if (damage != TARGET_DAMAGE) {
 		damage_y = y + (int)((BLOCK_SZ - 3) * (damage / TARGET_DAMAGE));
@@ -945,7 +945,7 @@ void Gui_paint_mine(int x, int y, int teammine, String name)
     	    	    teammine ? blueRGBA : whiteRGBA,
     	    	    CENTER, DOWN,
     	    	    x, y - 15, 
-    	    	    maxCharsInNames,"%s", name	);
+    	    	    maxCharsInNames,"{}", name	);
     }
 }
 
@@ -1352,7 +1352,7 @@ static void Gui_paint_ship_name(int x, int y, Other *other)
 	if (!color)
 	    color = shipNameColorRGBA;
 
-	mapnprint(&mapfont, color, CENTER, DOWN,x,y - SHIP_SZ,maxCharsInNames,"%s",other.id_string);
+	mapnprint(&mapfont, color, CENTER, DOWN,x,y - SHIP_SZ,maxCharsInNames,"{}",other.id_string);
     } else
 	color = blueRGBA;
 
@@ -1361,7 +1361,7 @@ static void Gui_paint_ship_name(int x, int y, Other *other)
 	if (other.life < 1)
 	    color = whiteRGBA;
 
-	mapprint(&mapfont, color, LEFT, CENTER,x + SHIP_SZ,y,"%d", other.life);
+	mapprint(&mapfont, color, LEFT, CENTER,x + SHIP_SZ,y,"{}", other.life);
     }
 }
 
@@ -1446,7 +1446,7 @@ void Paint_score_objects()
 		x = sobj.x * BLOCK_SZ + BLOCK_SZ/2;
 		y = sobj.y * BLOCK_SZ + BLOCK_SZ/2;
   		if (wrap(&x, &y)) {
-		    /*mapprint(&mapfont,scoreObjectColorRGBA,CENTER,CENTER,x,y,"%s",sobj.msg);*/
+		    /*mapprint(&mapfont,scoreObjectColorRGBA,CENTER,CENTER,x,y,"{}",sobj.msg);*/
 		    if (!score_object_texs[i].tex_list || strcmp(sobj.msg,score_object_texs[i].text)) {
 		    	free_string_texture(&score_object_texs[i]);
 		    	draw_text(&mapfont, scoreObjectColorRGBA
@@ -1675,7 +1675,7 @@ static void Paint_lock(int hud_pos_x, int hud_pos_y)
 		  color,CENTER,CENTER,
 		  hud_pos_x,
 		  hud_pos_y -(- hudSize + HUD_OFFSET - BORDER),
-		  strlen(target.id_string),"%s",target.id_string);
+		  strlen(target.id_string),"{}",target.id_string);
 
     }
 
@@ -1832,13 +1832,13 @@ static void Paint_HUD_items(int hud_pos_x, int hud_pos_y)
 	    }
 
 	    /* Paint item count */
-	    sprintf(str, "%d", num);
-	    fb = printsize(&gamefont,"%s",str);
+	    sprintf(str, "{}", num);
+	    fb = printsize(&gamefont,"{}",str);
 
 	    maxWidth = Math.max(maxWidth, fb.width + BORDER + ITEM_SIZE);
 	    
 	    HUDprint(&gamefont,hudItemsColorRGBA,RIGHT,UP,horiz_pos - ITEM_SIZE - BORDER
-	    	    ,draw_height - vert_pos - ITEM_SIZE,"%s",str);
+	    	    ,draw_height - vert_pos - ITEM_SIZE,"{}",str);
 
 	    vert_pos += vertSpacing;
 
@@ -1993,7 +1993,7 @@ void Paint_HUD()
 	    if (fuelCurrent == 0)
 		strcpy(str,"M ");
 	    else
-		sprintf(str, "T%d", fuelCurrent);
+		sprintf(str, "T{}", fuelCurrent);
 
 	    tex_index=1;
 	    if (strcmp(str,hud_texts[tex_index])!=0) {
@@ -2019,7 +2019,7 @@ void Paint_HUD()
 	for (i = 0, j = 0; i < MAX_SCORE_OBJECTS; i++) {
 	    ScoreObject*	sobj = &score_objects[(i+score_object)%MAX_SCORE_OBJECTS];
 	    if (sobj.hud_msg_len > 0) {
-	    	dummy = printsize(&gamefont,"%s",sobj.hud_msg);
+	    	dummy = printsize(&gamefont,"{}",sobj.hud_msg);
 		if (sobj.hud_msg_width == -1)
 		    sobj.hud_msg_width = (int)dummy.width;
 		if (j == 0 &&

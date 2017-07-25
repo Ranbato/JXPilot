@@ -104,7 +104,7 @@ static void Scroll_PlayerListWidget(GLfloat pos, void *data)
     
     widget = (GLWidget*)data;
     if (widget.WIDGET != PLAYERLISTWIDGET) {
-	error("expected PLAYERLISTWIDGET got [%d]", widget.WIDGET);
+	error("expected PLAYERLISTWIDGET got [{}]", widget.WIDGET);
 	return;
     }
 
@@ -131,7 +131,7 @@ static void SetBounds_PlayerListWidget(GLWidget *widget, SDL_Rect *b)
     SDL_Rect *wb, sb, rb, hb;
 
     if (widget.WIDGET != PLAYERLISTWIDGET) {
-	error("expected PLAYERLISTWIDGET got [%d]", widget.WIDGET);
+	error("expected PLAYERLISTWIDGET got [{}]", widget.WIDGET);
 	return;
     }
 
@@ -201,7 +201,7 @@ static void Close_PlayerListWidget(GLWidget *widget)
     PlayerListWidget *info;
 
     if (widget.WIDGET != PLAYERLISTWIDGET) {
-	error("expected PLAYERLISTWIDGET got [%d]", widget.WIDGET);
+	error("expected PLAYERLISTWIDGET got [{}]", widget.WIDGET);
 	return;
     }
     
@@ -387,7 +387,7 @@ static GLWidget *Init_StatusWidget(server_info_t *sip)
 	free(tmp);
 	return null;
     }
-    sprintf(info.address_str, "%s:%u", sip.ip_str, sip.port);
+    sprintf(info.address_str, "{}:%u", sip.ip_str, sip.port);
     sprintf(info.fps_str, "%u", sip.fps);
     info.sip           = sip;
     info.name_fg       = STATUS_FIELD_FG;
@@ -423,7 +423,7 @@ static void SelectRow_MetaWidget(GLWidget *widget, MetaRowWidget *row)
     SDL_Rect status_bounds, plist_bounds;
 
     if (widget.WIDGET != METAWIDGET) {
-	error("expected METAWIDGET got [%d]", widget.WIDGET);
+	error("expected METAWIDGET got [{}]", widget.WIDGET);
 	return;
     }
     meta = (MetaWidget*)widget.wid_info;
@@ -469,7 +469,7 @@ static server_info_t *GetSelectedServer_MetaWidget(GLWidget *widget)
     MetaWidget *meta;
 
     if (widget.WIDGET != METAWIDGET) {
-	error("expected METAWIDGET got [%d]", widget.WIDGET);
+	error("expected METAWIDGET got [{}]", widget.WIDGET);
 	return null;
     }
     meta = (MetaWidget*)widget.wid_info;
@@ -482,7 +482,7 @@ static void Paint_MetaRowWidget(GLWidget *widget)
     MetaRowWidget *row;
 
     if (widget.WIDGET != METAROWWIDGET) {
-	error("expected METAROWWIDGET got [%d]", widget.WIDGET);
+	error("expected METAROWWIDGET got [{}]", widget.WIDGET);
 	return;
     }
 
@@ -543,7 +543,7 @@ static void Button_MetaRowWidget(Uint8 button, Uint8 state, Uint16 x,
 
     widget = (GLWidget*)data;
     if (widget.WIDGET != METAROWWIDGET) {
-	error("expected METAROWWIDGET got [%d]", widget.WIDGET);
+	error("expected METAROWWIDGET got [{}]", widget.WIDGET);
 	return;
     }
 
@@ -556,24 +556,24 @@ static void Button_MetaRowWidget(Uint8 button, Uint8 state, Uint16 x,
     } else {
 	SelectRow_MetaWidget(row.table.meta, row);
 #if 0
-	printf("version: %s\n", row.sip.version);
-	printf("hostname: %s\n", row.sip.hostname);
-	printf("users_str: %s\n", row.sip.users_str);
-	printf("mapname: %s\n", row.sip.mapname);
-	printf("mapsize: %s\n", row.sip.mapsize);
-	printf("author: %s\n", row.sip.author);
-	printf("status: %s\n", row.sip.status);
-	printf("bases_str: %s\n", row.sip.bases_str);
-	printf("fps_str: %s\n", row.sip.fps_str);
-	printf("playlist: %s\n", row.sip.playlist);
-	printf("sound: %s\n", row.sip.sound);
-	printf("teambases_str: %s\n", row.sip.teambases_str);
-	printf("timing: %s\n", row.sip.timing);
-	printf("ip_str: %s\n", row.sip.ip_str);
-	printf("freebases: %s\n", row.sip.freebases);
-	printf("queue_str: %s\n", row.sip.queue_str);
-	printf("domain: %s\n", row.sip.domain);
-	printf("pingtime_str: %s\n", row.sip.pingtime_str);
+	printf("version: {}\n", row.sip.version);
+	printf("hostname: {}\n", row.sip.hostname);
+	printf("users_str: {}\n", row.sip.users_str);
+	printf("mapname: {}\n", row.sip.mapname);
+	printf("mapsize: {}\n", row.sip.mapsize);
+	printf("author: {}\n", row.sip.author);
+	printf("status: {}\n", row.sip.status);
+	printf("bases_str: {}\n", row.sip.bases_str);
+	printf("fps_str: {}\n", row.sip.fps_str);
+	printf("playlist: {}\n", row.sip.playlist);
+	printf("sound: {}\n", row.sip.sound);
+	printf("teambases_str: {}\n", row.sip.teambases_str);
+	printf("timing: {}\n", row.sip.timing);
+	printf("ip_str: {}\n", row.sip.ip_str);
+	printf("freebases: {}\n", row.sip.freebases);
+	printf("queue_str: {}\n", row.sip.queue_str);
+	printf("domain: {}\n", row.sip.domain);
+	printf("pingtime_str: {}\n", row.sip.pingtime_str);
 	printf("port: %u\n", row.sip.port);
 	printf("ip: %u\n", row.sip.ip);
 	printf("users: %u\n", row.sip.users);
@@ -673,7 +673,7 @@ static void Scroll_MetaTableWidget(GLfloat pos, void *data)
     
     widget = (GLWidget*)data;
     if (widget.WIDGET != METATABLEWIDGET) {
-	error("expected METATABLEWIDGET got [%d]", widget.WIDGET);
+	error("expected METATABLEWIDGET got [{}]", widget.WIDGET);
 	return;
     }
 
@@ -700,7 +700,7 @@ static void SetBounds_MetaTableWidget(GLWidget *widget, SDL_Rect *b)
     SDL_Rect *wb, sb, rb, hb;
 
     if (widget.WIDGET != METATABLEWIDGET) {
-	error("expected METATABLEWIDGET got [%d]", widget.WIDGET);
+	error("expected METATABLEWIDGET got [{}]", widget.WIDGET);
 	return;
     }
 
@@ -806,7 +806,7 @@ static void Paint_MetaWidget(GLWidget *widget)
     SDL_Rect *b;
 
     if (widget.WIDGET != METAWIDGET) {
-	error("expected METAWIDGET got [%d]", widget.WIDGET);
+	error("expected METAWIDGET got [{}]", widget.WIDGET);
 	return;
     }
     info = (MetaWidget*)widget.wid_info;
@@ -836,7 +836,7 @@ static void Close_MetaWidget(GLWidget *widget)
     MetaWidget *info;
 
     if (widget.WIDGET != METAWIDGET) {
-	error("expected METAWIDGET got [%d]", widget.WIDGET);
+	error("expected METAWIDGET got [{}]", widget.WIDGET);
 	return;
     }
     info = (MetaWidget*)widget.wid_info;
@@ -935,7 +935,7 @@ static bool join_server(ConnectParam *conpar, server_info_t *sip)
 			0, null, null, null, null, conpar)) {
 	return true;
     }
-    printf("Server %s (%s) didn't respond on port %d\n",
+    printf("Server {} ({}) didn't respond on port {}\n",
 	   conpar.server_name, conpar.server_addr,
 	   conpar.contact_port);
     return false;
@@ -993,7 +993,7 @@ int Meta_window(ConnectParam *conpar)
 	    error("Couldn't get meta list.");
 	    return -1;
 	} else
-	    warn("Got %d servers.", num_serv);
+	    logger.warn("Got {} servers.", num_serv);
     }
     
     if (Welcome_sort_server_list() == -1) {

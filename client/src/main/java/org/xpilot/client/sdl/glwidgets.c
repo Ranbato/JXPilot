@@ -1545,7 +1545,7 @@ static void IntChooserWidget_Add( void *data )
 	snprintf(valuetext,15,"%i",*(tmp.value));
 	free_string_texture(&(tmp.valuetex));
 	if(!render_text(&gamefont,valuetext,&(tmp.valuetex)))
-	    error("Failed to make value (%s=%i) texture for IntChooserWidget!\n",
+	    error("Failed to make value ({}=%i) texture for IntChooserWidget!\n",
 	    	((LabelWidget *)(tmp.name.wid_info)).tex.text,*(tmp.value));
     } else {
     	++tmp.direction;
@@ -1583,7 +1583,7 @@ static void IntChooserWidget_Subtract( void *data )
 	snprintf(valuetext,15,"%i",*(tmp.value));
 	free_string_texture(&(tmp.valuetex));
 	if(!render_text(&gamefont,valuetext,&(tmp.valuetex)))
-	    error("Failed to make value (%s=%i) texture for IntChooserWidget!\n",
+	    error("Failed to make value ({}=%i) texture for IntChooserWidget!\n",
 	    ((LabelWidget *)(tmp.name.wid_info)).tex.text,*(tmp.value));
     } else {
     	--tmp.direction;
@@ -1692,7 +1692,7 @@ GLWidget *Init_IntChooserWidget( String name, int *value, int minval, int maxval
     
     if ( !AppendGLWidgetList(&(tmp.children),(wid_info.name = Init_LabelWidget(name,fgcolor,&nullRGBA,LEFT,CENTER))) ) {
     	Close_Widget(&tmp);
-    	error("Init_IntChooserWidget: Failed to initialize label [%s]",name);
+    	error("Init_IntChooserWidget: Failed to initialize label [{}]",name);
 	return null;
     }
     
@@ -1811,7 +1811,7 @@ static void DoubleChooserWidget_Add( void *data )
 	snprintf(valuetext,15,"%1.2f",*(tmp.value));
 	free_string_texture(&(tmp.valuetex));
 	if(!render_text(&gamefont,valuetext,&(tmp.valuetex)))
-	    error("Failed to make value (%s=%1.2f) texture for doubleChooserWidget!\n",
+	    error("Failed to make value ({}=%1.2f) texture for doubleChooserWidget!\n",
 	    	    ((LabelWidget *)(tmp.name.wid_info)).tex.text,*(tmp.value));
     } else {
     	((ArrowWidget *)tmp.rightarrow.wid_info).locked = true;
@@ -1845,7 +1845,7 @@ static void DoubleChooserWidget_Subtract( void *data )
 	snprintf(valuetext,15,"%1.2f",*(tmp.value));
 	free_string_texture(&(tmp.valuetex));
 	if(!render_text(&gamefont,valuetext,&(tmp.valuetex)))
-	    error("Failed to make value (%s=%1.2f) texture for doubleChooserWidget!\n",
+	    error("Failed to make value ({}=%1.2f) texture for doubleChooserWidget!\n",
 	    	    ((LabelWidget *)(tmp.name.wid_info)).tex.text,*(tmp.value));
     } else {
     	((ArrowWidget *)tmp.leftarrow.wid_info).locked = true;
@@ -1955,7 +1955,7 @@ GLWidget *Init_DoubleChooserWidget( String name, double *value, double minval, d
     
     if ( !AppendGLWidgetList(&(tmp.children),(wid_info.name = Init_LabelWidget(name,fgcolor,&nullRGBA,LEFT,CENTER))) ) {
     	Close_Widget(&tmp);
-    	error("Init_DoubleChooserWidget: Failed to initialize label [%s]",name);
+    	error("Init_DoubleChooserWidget: Failed to initialize label [{}]",name);
 	return null;
     }
     
@@ -2165,7 +2165,7 @@ GLWidget *Init_ColorChooserWidget( String name, Uint32 *value, Uint32 *fgcolor, 
     
     if ( !AppendGLWidgetList(&(tmp.children),(wid_info.name = Init_LabelWidget(name,fgcolor,&nullRGBA,LEFT,CENTER))) ) {
     	Close_Widget(&tmp);
-    	error("Init_ColorChooserWidget: Failed to initialize label [%s]",name);
+    	error("Init_ColorChooserWidget: Failed to initialize label [{}]",name);
 	return null;
     }
 
@@ -2399,22 +2399,22 @@ GLWidget *Init_ColorModWidget( Uint32 *value, Uint32 *fgcolor, Uint32 *bgcolor,
     
     if ( !AppendGLWidgetList(&(tmp.children),(wid_info.redpick = Init_IntChooserWidget("Red",&(wid_info.red),0,255,fgcolor,&nullRGBA,Callback_ColorModWidget,tmp))) ) {
     	Close_Widget(&tmp);
-    	error("Init_ColorModWidget: Failed to initialize label [%s]","Red");
+    	error("Init_ColorModWidget: Failed to initialize label [{}]","Red");
 	return null;
     }
     if ( !AppendGLWidgetList(&(tmp.children),(wid_info.greenpick = Init_IntChooserWidget("Green",&(wid_info.green),0,255,fgcolor,&nullRGBA,Callback_ColorModWidget,tmp))) ) {
     	Close_Widget(&tmp);
-    	error("Init_ColorModWidget: Failed to initialize label [%s]","Green");
+    	error("Init_ColorModWidget: Failed to initialize label [{}]","Green");
 	return null;
     }
     if ( !AppendGLWidgetList(&(tmp.children),(wid_info.bluepick = Init_IntChooserWidget("Blue",&(wid_info.blue),0,255,fgcolor,&nullRGBA,Callback_ColorModWidget,tmp))) ) {
     	Close_Widget(&tmp);
-    	error("Init_ColorModWidget: Failed to initialize label [%s]","Blue");
+    	error("Init_ColorModWidget: Failed to initialize label [{}]","Blue");
 	return null;
     }
     if ( !AppendGLWidgetList(&(tmp.children),(wid_info.alphapick = Init_IntChooserWidget("Alpha",&(wid_info.alpha),0,255,fgcolor,&nullRGBA,Callback_ColorModWidget,tmp))) ) {
     	Close_Widget(&tmp);
-    	error("Init_ColorModWidget: Failed to initialize label [%s]","Alpha");
+    	error("Init_ColorModWidget: Failed to initialize label [{}]","Alpha");
 	return null;
     }
 
@@ -3502,7 +3502,7 @@ static void ConfMenuWidget_Join_Team( void *data )
     	SetBounds_GLWidget(widget,&(widget.bounds));
     }
     
-    snprintf(msg, sizeof(msg), "/team %d", ((Join_Team_Data *)data).team);
+    snprintf(msg, sizeof(msg), "/team {}", ((Join_Team_Data *)data).team);
     Net_talk(msg);
     
     Pointer_control_set_state(true);
@@ -3592,7 +3592,7 @@ static void ConfMenuWidget_Join( void *data )
     	
     	memset(has_base, 0, sizeof(has_base));
     	if ((Setup.mode & TEAM_PLAY) != 0) {
-    	    for (i = 0; i < num_bases; i++) {
+    	    for (i = 0; i < bases.size(); i++) {
     	    	t = bases[i].team;
 	    	    if (t >= 0 && t < MAX_TEAMS)
 	            	has_base[t] = true;
@@ -3946,7 +3946,7 @@ static void Button_ImageButtonWidget(Uint8 button, Uint8 state, Uint16 x,
 
     widget = (GLWidget*)data;
     if (widget.WIDGET != IMAGEBUTTONWIDGET) {
-	error("expected IMAGEBUTTONWIDGET got [%d]", widget.WIDGET);
+	error("expected IMAGEBUTTONWIDGET got [{}]", widget.WIDGET);
 	return;
     }
     info = (ImageButtonWidget*)widget.wid_info;
@@ -4081,7 +4081,7 @@ GLWidget *Init_ImageButtonWidget(String text,
     height = info.tex.height + 1;
 
 #ifdef HAVE_SDL_IMAGE
-    sprintf(imagePath, "%s%s", CONF_TEXTUREDIR, upImage);
+    sprintf(imagePath, "{}{}", CONF_TEXTUREDIR, upImage);
     surface = IMG_Load(imagePath);
     if (surface) {
 	info.imageUp = SDL_GL_LoadTexture(surface, &(info.txcUp));
@@ -4089,9 +4089,9 @@ GLWidget *Init_ImageButtonWidget(String text,
 	if (height < surface.h) height = surface.h;
 	SDL_FreeSurface(surface);
     } else {
-	error("Failed to load button image %s", imagePath);
+	error("Failed to load button image {}", imagePath);
     }
-    sprintf(imagePath, "%s%s", CONF_TEXTUREDIR, downImage);
+    sprintf(imagePath, "{}{}", CONF_TEXTUREDIR, downImage);
     surface = IMG_Load(imagePath);
     if (surface) {
 	info.imageDown = SDL_GL_LoadTexture(surface, &(info.txcDown));
@@ -4099,7 +4099,7 @@ GLWidget *Init_ImageButtonWidget(String text,
 	if (height < surface.h) height = surface.h;
 	SDL_FreeSurface(surface);
     } else {
-	error("Failed to load button image %s", imagePath);
+	error("Failed to load button image {}", imagePath);
     }
 #endif
 

@@ -98,7 +98,7 @@ convert_format(int type)
       {
         char format[sizeof(FORMAT_PREFIX)+8+1];
 
-        sprintf(format, "%s%08lx", FORMAT_PREFIX, (unsigned long)type);
+        sprintf(format, "{}%08lx", FORMAT_PREFIX, (unsigned long)type);
 
 #if defined(X11_SCRAP)
 /* * */

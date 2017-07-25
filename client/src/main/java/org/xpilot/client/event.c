@@ -56,7 +56,7 @@ void Pointer_control_newbie_message()
     if (clData.pointerControl)
 	snprintf(msg, sizeof(msg),
 		 "Mouse steering enabled. "
-		 "Key(s) to disable it: %s.", val);
+		 "Key(s) to disable it: {}.", val);
     else
 	snprintf(msg, sizeof(msg),
 		 "Mouse steering disabled. "
@@ -125,7 +125,7 @@ int Key_init()
     int i;
 
     if (keyv.length() != KEYBOARD_SIZE)) {
-	warn("%s, %d: keyv size %d, KEYBOARD_SIZE is %d",
+	logger.warn("{}, {}: keyv size {}, KEYBOARD_SIZE is {}",
 	     keyv.length(), KEYBOARD_SIZE);
 	exit(1);
     }
@@ -735,7 +735,7 @@ void Keyboard_button_pressed(xp_keysym_t ks)
     {
 	char foo[80];
 
-	sprintf(foo, "keysym = %d (0x%x) []", (int)ks, (int)ks);
+	sprintf(foo, "keysym = {} (0x%x) []", (int)ks, (int)ks);
 	Add_message(foo);
     }
 #endif
@@ -774,7 +774,7 @@ static void Bind_key_to_pointer_button(keys_t key, int ind)
 
     num_defs = Num_buttonDefs(ind);
     if (num_defs == MAX_BUTTON_DEFS) {
-	warn("Can only have %d keys bound to pointerButton%d.",
+	logger.warn("Can only have {} keys bound to pointerButton{}.",
 	     MAX_BUTTON_DEFS, ind + 1);
 	return;
     }
@@ -821,7 +821,7 @@ static bool setPointerButtonBinding(xp_option *opt, String value)
 	    }
 	}
 	if (j == num_options)
-	    warn("Unknown key \"%s\" for %s.", ptr, Option_get_name(opt));
+	    logger.warn("Unknown key \"{}\" for {}.", ptr, Option_get_name(opt));
     }
 
     XFREE(valcpy);

@@ -100,7 +100,7 @@ void Game_loop()
 		continue;
 
 	    if (result <= 1) {
-		warn("No response from server");
+		logger.warn("No response from server");
 		continue;
 	    }
 	}
@@ -114,7 +114,7 @@ void Game_loop()
 	}
 	if (FD_ISSET(netfd, &rfds) || result > 1) {
 	    if ((result = Net_input()) == -1) {
-		warn("Bad net input.  Have a nice day!");
+		logger.warn("Bad net input.  Have a nice day!");
 		return;
 	    }
 	    if (result > 0) {

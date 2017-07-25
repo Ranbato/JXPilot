@@ -154,7 +154,7 @@ GLWidget *Init_ScorelistWidget()
 
     scoreListFont = TTF_OpenFont(scoreListFontName, 11);
     if (scoreListFont == null) {
-	error("opening font %s failed", scoreListFontName);
+	error("opening font {} failed", scoreListFontName);
 	free(tmp);
 	return null;
     }
@@ -361,7 +361,7 @@ void Paint_score_start()
     SDL_FillRect(scoreListWin.surface, null, 0);
     header = TTF_RenderText_Blended(scoreListFont, headingStr, fg);
     if (header == null) {
-	error("scorelist header rendering failed: %s", SDL_GetError());
+	error("scorelist header rendering failed: {}", SDL_GetError());
 	return;
     }
     scoreEntryRect.x = scoreEntryRect.y = SCORE_BORDER;
@@ -403,8 +403,8 @@ void Paint_score_entry(int entry_num, Other *other, bool is_team)
 	if (lineSpacing == 1) {
 	    static bool warned = false;
 	    if (!warned) {
-		warn("Enabling workaround for bug in SDL_ttf 1.2.");
-		warn("SDL_ttf 2.0 or newer should not have this problem.");
+		logger.warn("Enabling workaround for bug in SDL_ttf 1.2.");
+		logger.warn("SDL_ttf 2.0 or newer should not have this problem.");
 		warned = true;
 	    }
 	    lineSpacing = 15;
@@ -419,7 +419,7 @@ void Paint_score_entry(int entry_num, Other *other, bool is_team)
      * Setup the status line
      */
     if (showUserName)
-	sprintf(label, "%s=%s@%s",
+	sprintf(label, "{}={}@{}",
 		other.nick_name, other.user_name, other.host_name);
     else {
 	if (Setup.mode.get( TIMING)) {
@@ -430,7 +430,7 @@ void Paint_score_entry(int entry_num, Other *other, bool is_team)
 		if (other.round > 99)
 		    sprintf(raceStr, "%3d", other.round);
 		else
-		    sprintf(raceStr, "%d.%c",
+		    sprintf(raceStr, "{}.%c",
 			    other.round, other.check + 'a');
 	    }
 	}
@@ -453,10 +453,10 @@ void Paint_score_entry(int entry_num, Other *other, bool is_team)
 	}
 
 	if (Setup.mode.get( TEAM_PLAY))
-	    sprintf(label, "%c%s %-15s%s",
+	    sprintf(label, "%c{} %-15s{}",
 		    other.mychar, scoreStr, other.nick_name, lifeStr);
 	else
-	    sprintf(label, "%c %s%s%s%s  %s",
+	    sprintf(label, "%c {}{}{}{}  {}",
 		    other.mychar, raceStr, teamStr,
 		    scoreStr, lifeStr,
 		    other.nick_name);
@@ -493,7 +493,7 @@ void Paint_score_entry(int entry_num, Other *other, bool is_team)
 	fg.unused = color & 255;
     line = TTF_RenderText_Blended(scoreListFont, label, fg);
     if (line == null) {
-	error("scorelist rendering failed: %s", SDL_GetError());
+	error("scorelist rendering failed: {}", SDL_GetError());
 	return;
     }
     SDL_SetAlpha(line, 0, 0);

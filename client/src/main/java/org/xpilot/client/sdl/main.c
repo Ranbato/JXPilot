@@ -34,7 +34,7 @@ static void sigcatch(int signum)
     signal(SIGINT, SIG_IGN);
     signal(SIGTERM, SIG_IGN);
     Main_shutdown();
-    error("got signal %d\n", signum);
+    error("got signal {}\n", signum);
     exit(1);
 
 }

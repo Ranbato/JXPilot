@@ -45,7 +45,7 @@ int create_dgram_addr_socket(sock_t *sock, String dotaddr, int port)
 	if (port || !clientPortStart || (clientPortStart > clientPortEnd)) {
 	    status = sock_open_udp(sock, dotaddr, port);
 	    if (status == SOCK_IS_ERROR) {
-		error("Cannot create datagram socket (%d)", sock.error.error);
+		error("Cannot create datagram socket ({})", sock.error.error);
 		return -1;
 	    }
 	}
@@ -59,7 +59,7 @@ int create_dgram_addr_socket(sock_t *sock, String dotaddr, int port)
 		}
 	    }
 	    if (found_socket == 0) {
-		error("Could not find a usable port in port range [%d,%d]",
+		error("Could not find a usable port in port range [{},{}]",
 		      clientPortStart, clientPortEnd);
 		return -1;
 	    }

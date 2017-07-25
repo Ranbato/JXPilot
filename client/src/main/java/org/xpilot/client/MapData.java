@@ -63,14 +63,14 @@ boolean Mapdata_setup(String urlstr) {
     try {
         url = new URL(urlstr);
     } catch (MalformedURLException e) {
-        logger.warn("malformed URL: {}", urlstr, e);
+        logger.logger.warn("malformed URL: {}", urlstr, e);
         return false;
     }
 
 
     String urlPath = url.getPath();
     if (urlPath.isEmpty()) {
-        logger.warn("no file name in URL: {}", urlstr);
+        logger.logger.warn("no file name in URL: {}", urlstr);
         return rv;
     }
 
@@ -125,21 +125,21 @@ boolean Mapdata_setup(String urlstr) {
         }
 
         if (path.exists()) {
-            logger.warn("Required bitmaps have already been downloaded.");
+            logger.logger.warn("Required bitmaps have already been downloaded.");
             rv = true;
             return rv;
         }
 
 
-        logger.warn("Downloading map data from {} to {}.", urlstr, path);
+        logger.logger.warn("Downloading map data from {} to {}.", urlstr, path);
 
         if (!Mapdata_download(url, path)) {
-            logger.warn("downloading map data failed");
+            logger.logger.warn("downloading map data failed");
             return rv;
         }
 
         if (!Mapdata_extract(path)) {
-            logger.warn("extracting map data failed");
+            logger.logger.warn("extracting map data failed");
             return rv;
         }
     }
@@ -201,7 +201,7 @@ static boolean Mapdata_extract(File name)
         fname = new File(dir, data);
         size = input.nextInt();
 
-        logger.warn("Extracting {} ({})", fname.getPath(), size);
+        logger.logger.warn("Extracting {} ({})", fname.getPath(), size);
 
         try (BufferedOutputStream out = new BufferedOutputStream(new FileOutputStream(fname))) {
             while (size > 0) {
@@ -248,7 +248,7 @@ static boolean Mapdata_download(URL url, File filePath) {
     boolean rv = true;
 
     if (!url.getProtocol().equalsIgnoreCase("http")) {
-        logger.warn("unsupported protocol {}, trying anyway", url.getProtocol());
+        logger.logger.warn("unsupported protocol {}, trying anyway", url.getProtocol());
     }
     try {
         URLConnection conn = url.openConnection();

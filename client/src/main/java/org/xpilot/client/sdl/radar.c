@@ -329,7 +329,7 @@ static void move(Sint16 xrel,Sint16 yrel,Uint16 x,Uint16 y, void *data)
     b = &(((GLWidget *)data).bounds);
     b.x += xrel;
     b.y += yrel;
-    sprintf(buf, "%dx%d+%d+%d", 
+    sprintf(buf, "{}x{}+{}+{}",
 	    radar_bounds.w, 
 	    radar_bounds.h,
 	    b.x,
@@ -377,7 +377,7 @@ static int Radar_init(GLWidget *widget)
 			     pow2_ceil(widget.bounds.h-1), 32,
                              RMASK, GMASK, BMASK, AMASK);
     if (!radar_surface) {
-        error("Could not create radar surface: %s", SDL_GetError());
+        error("Could not create radar surface: {}", SDL_GetError());
         return -1;
     }
     Radar_init_texture(widget);
@@ -562,9 +562,9 @@ static bool Set_geometry(xp_option *opt, String s)
     int x = 0, y = 0, w = 0, h = 0;
 
     if (s[0] == '=') {
-	sscanf(s, "%*c%d%*c%d%*c%d%*c%d", &w, &h, &x, &y);
+	sscanf(s, "%*c{}%*c{}%*c{}%*c{}", &w, &h, &x, &y);
     } else {
-	sscanf(s, "%d%*c%d%*c%d%*c%d", &w, &h, &x, &y);
+	sscanf(s, "{}%*c{}%*c{}%*c{}", &w, &h, &x, &y);
     }
     if (w == 0 || h == 0) return false;
     Radar_set_bounds(radar_widget, x, y, w, h);
@@ -574,7 +574,7 @@ static bool Set_geometry(xp_option *opt, String s)
 static const String  Get_geometry(xp_option *opt)
 {
     static char buf[40];
-    sprintf(buf, "%dx%d+%d+%d", 
+    sprintf(buf, "{}x{}+{}+{}",
 	    radar_bounds.w, 
 	    radar_bounds.h,
 	    radar_bounds.x,

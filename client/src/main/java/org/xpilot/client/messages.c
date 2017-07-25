@@ -104,8 +104,8 @@ static bool Msg_match_fmt(String msg, String fmt, msgnames_t *mn)
     int i;
     size_t len;
 
-    DP(printf("Msg_match_fmt - fmt = '%s'\n", fmt));
-    DP(printf("Msg_match_fmt - msg = '%s'\n", msg));
+    DP(printf("Msg_match_fmt - fmt = '{}'\n", fmt));
+    DP(printf("Msg_match_fmt - msg = '{}'\n", msg));
 
     /* check that msg and fmt match to % */
     fp = strstr(fmt, "%");
@@ -310,7 +310,7 @@ static void Msg_scan_death(int id)
     if (Setup.mode.get( LIMITED_LIVES)	&& other.life == 0)
 	return;
 
-    for (i = 0; i < num_bases; i++) {
+    for (i = 0; i < bases.size(); i++) {
 	if (bases[i].id == id) {
 	    bases[i].appeartime = (long) (end_loops + 3 * clientFPS);
 	    break;
@@ -334,7 +334,7 @@ static void Msg_scan_game_msg(String message)
     bool i_am_victim2 = false;
     Other *other = null;
 
-    DP(printf("MESSAGE: \"%s\"\n", message));
+    DP(printf("MESSAGE: \"{}\"\n", message));
 
     /*
      * First check if it is a message indicating end of round.
@@ -358,7 +358,7 @@ static void Msg_scan_game_msg(String message)
     }
 
     if (!self) {
-	warn("Variable 'self' is null!");
+	logger.warn("Variable 'self' is null!");
 	return;
     }
 
@@ -372,7 +372,7 @@ static void Msg_scan_game_msg(String message)
      * parsing succeeded.
      */
 
-    if (Msg_match_fmt(message, "%n was killed by %s from %n.", &mn)) {
+    if (Msg_match_fmt(message, "%n was killed by {} from %n.", &mn)) {
 	DP(printf("shot:\n"));
 	killer = mn.nick_name[0];
 	victim = mn.nick_name[1];
@@ -444,19 +444,19 @@ static void Msg_scan_game_msg(String message)
 
 
     if (killer != null) {
-	DP(printf("Killer is %s.\n", killer));
+	DP(printf("Killer is {}.\n", killer));
 	if (strcmp(killer, self.nick_name) == 0)
 	    i_am_killer = true;
     }
 
     if (victim != null) {
-	DP(printf("Victim is %s.\n", victim));
+	DP(printf("Victim is {}.\n", victim));
 	if (strcmp(victim, self.nick_name) == 0)
 	    i_am_victim = true;
     }
 
     if (victim2 != null) {
-	DP(printf("Second victim is %s.\n", victim2));
+	DP(printf("Second victim is {}.\n", victim2));
 	if (strcmp(victim2, self.nick_name) == 0)
 	    i_am_victim2 = true;
     }
@@ -470,7 +470,7 @@ static void Msg_scan_game_msg(String message)
 	if (other != null)
 	    Msg_scan_death(other.id);
     } else {
-	DP(printf("*** [%s] was not found in the players array! ***\n",
+	DP(printf("*** [{}] was not found in the players array! ***\n",
 		  victim));
     }
 
@@ -479,7 +479,7 @@ static void Msg_scan_game_msg(String message)
 	if (other != null)
 	    Msg_scan_death(other.id);
     } else {
-	DP(printf("*** [%s] was not found in the players array! ***\n",
+	DP(printf("*** [{}] was not found in the players array! ***\n",
 		  victim));
     }
 
@@ -490,7 +490,7 @@ static void Msg_scan_game_msg(String message)
 	    static char		mybuf[MSG_LEN];
 
 	    if (killratio_deaths > 0)
-		sprintf(mybuf, "Current kill ratio: %d/%d (%.03f).",
+		sprintf(mybuf, "Current kill ratio: {}/{} (%.03f).",
 			killratio_kills, killratio_deaths, 
 			(double)killratio_kills / killratio_deaths);
 
@@ -514,7 +514,7 @@ static void Msg_scan_game_msg(String message)
 		  kills = Get_kills(victim);
 		  deaths = Get_deaths(victim);
 		  if (deaths > kills) {
-		  sprintf(tauntstr, "%s: %i-%i HEHEHEHE\0",
+		  sprintf(tauntstr, "{}: %i-%i HEHEHEHE\0",
 		  victim, deaths, kills);
 		  Net_talk(tauntstr);
 		  }
@@ -630,7 +630,7 @@ static bool Msg_is_from_our_team(String message, String *msg2)
 	    continue;
 
 	/* first check if someone in your team sent the message for all */
-	sprintf(buf, "[%s]", other.nick_name);
+	sprintf(buf, "[{}]", other.nick_name);
 	bufstrlen = strlen(buf);
 	if (len < bufstrlen)
 	    continue;
@@ -641,7 +641,7 @@ static bool Msg_is_from_our_team(String message, String *msg2)
 	}
 
 	/* if not, check if it was sent to your team only */
-	sprintf(buf, "[%s]:[%d]", other.nick_name, other.team);
+	sprintf(buf, "[{}]:[{}]", other.nick_name, other.team);
 	bufstrlen = strlen(buf);
 	if (len < bufstrlen)
 	    continue;
@@ -902,7 +902,7 @@ void Add_message(String message)
 	(messagesToStdout == 1 &&
 	 message[0] &&
 	 message[strlen(message)-1] == ']'))
-	xpprintf("%s\n", message);
+	xpprintf("{}\n", message);
 }
 
 void Add_newbie_message(String message)
@@ -912,7 +912,7 @@ void Add_newbie_message(String message)
     if (!newbie)
 	return;
 
-    snprintf(msg, sizeof(msg), "%s [*Newbie help*]", message);
+    snprintf(msg, sizeof(msg), "{} [*Newbie help*]", message);
 
     Add_alert_message(msg,10.0);
 }
@@ -994,8 +994,8 @@ void Add_roundend_messages(Other **order)
 	sprintf(killsperround, "%.2f",
 		(double)killratio_totalkills / rounds_played);
 
-    sprintf(hackbuf, "Kill ratio - Round: %d/%d Total: %d/%d (%s) "
-	    "Rounds played: %d  Avg.kills/round: %s",
+    sprintf(hackbuf, "Kill ratio - Round: {}/{} Total: {}/{} ({}) "
+	    "Rounds played: {}  Avg.kills/round: {}",
 	    killratio_kills, killratio_deaths,
 	    killratio_totalkills, killratio_totaldeaths, kdratio,
 	    rounds_played, killsperround);
@@ -1004,7 +1004,7 @@ void Add_roundend_messages(Other **order)
     killratio_deaths = 0;
     Add_message(hackbuf);
 
-    sprintf(hackbuf, "Ballstats - Cash/Repl/Team/Lost: %d/%d/%d/%d",
+    sprintf(hackbuf, "Ballstats - Cash/Repl/Team/Lost: {}/{}/{}/{}",
 	    ballstats_cashes, ballstats_replaces,
 	    ballstats_teamcashes, ballstats_lostballs);
     Add_message(hackbuf);
@@ -1020,22 +1020,22 @@ void Add_roundend_messages(Other **order)
 	    continue;
 
 	if (Using_score_decimals()) {
-	    sprintf(hackbuf2, "%s: %.*f ", other.nick_name,
+	    sprintf(hackbuf2, "{}: %.*f ", other.nick_name,
 		    showScoreDecimals, other.score);
 	    if ((s - hackbuf) + strlen(hackbuf2) > MSG_LEN) {
 		Add_message(hackbuf);
 		s = hackbuf;
 	    }
-	    s += sprintf(s, "%s", hackbuf2);
+	    s += sprintf(s, "{}", hackbuf2);
 	} else {
 	    double score = other.score;
 	    int sc = (int)(score >= 0.0 ? score + 0.5 : score - 0.5);
-	    sprintf(hackbuf2, "%s: %d ", other.nick_name, sc);
+	    sprintf(hackbuf2, "{}: {} ", other.nick_name, sc);
 	    if ((s - hackbuf) + strlen(hackbuf2) > MSG_LEN) {
 		Add_message(hackbuf);
 		s = hackbuf;
 	    }
-	    s += sprintf(s,"%s",hackbuf2);
+	    s += sprintf(s,"{}",hackbuf2);
 	}
     }
     Add_message(hackbuf);
@@ -1051,13 +1051,13 @@ void Print_messages_to_stdout()
     xpprintf("[talk messages]\n");
     for (i = 0; i < maxMessages; i++) {
 	if (TalkMsg[i] && TalkMsg[i].len > 0)
-	    xpprintf("  %s\n", TalkMsg[i].txt);
+	    xpprintf("  {}\n", TalkMsg[i].txt);
     }
 
     xpprintf("[server messages]\n");
     for (i = maxMessages - 1; i >= 0; i--) {
 	if (GameMsg[i] && GameMsg[i].len > 0)
-	    xpprintf("  %s\n", GameMsg[i].txt);
+	    xpprintf("  {}\n", GameMsg[i].txt);
     }
     xpprintf("\n");
 }

@@ -122,15 +122,15 @@ int Init_window()
     bool gf_exists = true,df_exists = true,gf_init = false, mf_init = false;
     
     if (TTF_Init()) {
-    	error("SDL_ttf initialization failed: %s", SDL_GetError());
+    	error("SDL_ttf initialization failed: {}", SDL_GetError());
     	return -1;
     }
-    warn("SDL_ttf initialized.\n");
+    logger.warn("SDL_ttf initialized.\n");
 
     Conf_print();
 
     if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_NOPARACHUTE) < 0) {
-        error("failed to initialize SDL: %s", SDL_GetError());
+        error("failed to initialize SDL: {}", SDL_GetError());
         return -1;
     }
 
@@ -178,13 +178,13 @@ int Init_window()
     }
 
     SDL_GL_GetAttribute(SDL_GL_RED_SIZE, &value);
-    printf("RGB bpp %d/", value);
+    printf("RGB bpp {}/", value);
     SDL_GL_GetAttribute(SDL_GL_GREEN_SIZE,&value);
-    printf("%d/", value);
+    printf("{}/", value);
     SDL_GL_GetAttribute(SDL_GL_BLUE_SIZE, &value);
-    printf("%d ", value);
+    printf("{} ", value);
     SDL_GL_GetAttribute(SDL_GL_DEPTH_SIZE, &value);
-    printf("Bit Depth is %d\n",value);
+    printf("Bit Depth is {}\n",value);
 
     glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
     glViewport(0, 0, draw_width, draw_height);
@@ -199,13 +199,13 @@ int Init_window()
     
     /* this prevents a freetype crash if you pass non existant fonts */
     if (!file_exists(gamefontname)) {
-    	error("cannot find your game font '%s'.\n" \
+    	error("cannot find your game font '{}'.\n" \
             "Please check that it exists!",gamefontname);
-    	xpprintf("Reverting to defaultfont '%s'\n",defaultfontname);
+    	xpprintf("Reverting to defaultfont '{}'\n",defaultfontname);
     	gf_exists = false;
     }
     if (!file_exists(defaultfontname)) {
-    	error("cannot find the default font! '%s'" ,defaultfontname);
+    	error("cannot find the default font! '{}'" ,defaultfontname);
 	df_exists = false;
     }
     
@@ -218,12 +218,12 @@ int Init_window()
       
     if (gf_exists) {
     	if (fontinit(&gamefont,gamefontname,gameFontSize)) {
-    	    error("Font initialization failed with %s", gamefontname);
+    	    error("Font initialization failed with {}", gamefontname);
 	} else gf_init = true;
     }
     if (!gf_init && df_exists) {
     	if (fontinit(&gamefont,defaultfontname,gameFontSize)) {
-    	    error("Default font initialization failed with %s", defaultfontname);
+    	    error("Default font initialization failed with {}", defaultfontname);
     	} else gf_init = true;
     }
     
@@ -234,12 +234,12 @@ int Init_window()
     
     if (gf_exists) {
     	if (fontinit(&mapfont,gamefontname,mapFontSize)) {
-    	    error("Font initialization failed with %s", gamefontname);
+    	    error("Font initialization failed with {}", gamefontname);
 	} else mf_init = true;
     }
     if (!mf_init && df_exists) {
     	if (fontinit(&mapfont,defaultfontname,mapFontSize)) {
-    	    error("Default font initialization failed with %s", defaultfontname);
+    	    error("Default font initialization failed with {}", defaultfontname);
     	} else mf_init = true;
     }
 
@@ -250,7 +250,7 @@ int Init_window()
 
     /* Set up the clipboard */
     if ( init_scrap() < 0 ) {
-    	error("Couldn't init clipboard: %s\n");
+    	error("Couldn't init clipboard: {}\n");
     }
 
     return 0;
@@ -312,9 +312,9 @@ static bool Set_geometry(xp_option *opt, String s)
     int w = 0, h = 0;
 
     if (s[0] == '=') {
-	sscanf(s, "%*c%d%*c%d", &w, &h);
+	sscanf(s, "%*c{}%*c{}", &w, &h);
     } else {
-	sscanf(s, "%d%*c%d", &w, &h);
+	sscanf(s, "{}%*c{}", &w, &h);
     }
     if (w == 0 || h == 0) return false;
     if (MainSDLSurface != null) {
@@ -329,7 +329,7 @@ static bool Set_geometry(xp_option *opt, String s)
 static const String  Get_geometry(xp_option *opt)
 {
     static char buf[20]; /* should be enough */
-    snprintf(buf, 20, "%dx%d", draw_width, draw_height);
+    snprintf(buf, 20, "{}x{}", draw_width, draw_height);
     return buf;
 }
 

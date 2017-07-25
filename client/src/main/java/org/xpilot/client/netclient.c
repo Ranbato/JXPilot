@@ -173,7 +173,7 @@ static int Uncompress_map()
 		count;
 
     if (Setup.map_order != SETUP_MAP_ORDER_XY) {
-	warn("Unknown map ordering in setup (%d)", Setup.map_order);
+	logger.warn("Unknown map ordering in setup ({})", Setup.map_order);
 	return -1;
     }
 
@@ -197,7 +197,7 @@ static int Uncompress_map()
 	while (p < cmp) {
 	    count = *cmp--;
 	    if (count < 2) {
-		warn("Map compress count error %d", count);
+		logger.warn("Map compress count error {}", count);
 		return -1;
 	    }
 	    *cmp &= ~SETUP_COMPRESSED;
@@ -205,14 +205,14 @@ static int Uncompress_map()
 		*ump-- = *cmp;
 	    cmp--;
 	    if (ump < cmp) {
-		warn("Map uncompression error (%d,%d)",
+		logger.warn("Map uncompression error ({},{})",
 		     cmp - Setup.map_data, ump - Setup.map_data);
 		return -1;
 	    }
 	}
     }
     if (ump != cmp) {
-	warn("map uncompress error (%d,%d)",
+	logger.warn("map uncompress error ({},{})",
 	     cmp - Setup.map_data, ump - Setup.map_data);
 	return -1;
     }
@@ -249,7 +249,7 @@ int Net_setup()
 	    if (done == 0) {
 		if (oldServer) {
 		    n = Packet_scanf(&cbuf,
-				     "%ld" "%ld%hd" "%hd%hd" "%hd%hd" "%s%s",
+				     "%ld" "%ld%hd" "%hd%hd" "%hd%hd" "{}{}",
 				     &Setup.map_data_len,
 				     &Setup.mode, &Setup.lives,
 				     &Setup.x, &Setup.y,
@@ -260,7 +260,7 @@ int Net_setup()
 		    Setup.height = Setup.y * BLOCK_SZ;
 		} else {
 		    n = Packet_scanf(&cbuf,
-				     "%ld" "%ld%hd" "%hd%hd" "%hd%s" "%s%S",
+				     "%ld" "%ld%hd" "%hd%hd" "%hd{}" "{}{}",
 				     &Setup.map_data_len,
 				     &Setup.mode, &Setup.lives,
 				     &Setup.width, &Setup.height,
@@ -269,7 +269,7 @@ int Net_setup()
 				     Setup.data_url);
 		}
 		if (n <= 0) {
-		    warn("Can't read setup info from reliable data buffer");
+		    logger.warn("Can't read setup info from reliable data buffer");
 		    return -1;
 		}
 
@@ -281,13 +281,13 @@ int Net_setup()
 		    || Setup.height <= 0
 		    || (oldServer && Setup.map_data_len >
 			Setup.x * Setup.y)) {
-		    warn("Got bad map specs from server (%d,%d,%d)",
+		    logger.warn("Got bad map specs from server ({},{},{})",
 			 Setup.map_data_len, Setup.width, Setup.height);
 		    return -1;
 		}
 		if (oldServer && Setup.map_order != SETUP_MAP_ORDER_XY
 		    && Setup.map_order != SETUP_MAP_UNCOMPRESSED) {
-		    warn("Unknown map order type (%d)", Setup.map_order);
+		    logger.warn("Unknown map order type ({})", Setup.map_order);
 		    return -1;
 		}
 		size = sizeof(setup_t) + Setup.map_data_len;
@@ -314,10 +314,10 @@ int Net_setup()
 	    if (rbuf.len > 0) {
 		if (rbuf.ptr[0] != PKT_RELIABLE) {
 		    if (rbuf.ptr[0] == PKT_QUIT) {
-			warn("Server closed connection");
+			logger.warn("Server closed connection");
 			return -1;
 		    } else {
-			warn("Not a reliable packet (%d) in setup",
+			logger.warn("Not a reliable packet ({}) in setup",
 			     rbuf.ptr[0]);
 			return -1;
 		    }
@@ -333,8 +333,8 @@ int Net_setup()
 		continue;
 	    for (retries = 0;; retries++) {
 		if (retries >= 10) {
-		    warn("Can't read setup after %d retries "
-			 "(todo=%d, left=%d)",
+		    logger.warn("Can't read setup after {} retries "
+			 "(todo={}, left={})",
 			 retries, todo, cbuf.len - (cbuf.ptr - cbuf.buf));
 		    return -1;
 		}
@@ -380,12 +380,12 @@ int Net_verify(String user_name, String nick_name, String disp)
     for (retries = 0;;) {
 	if (retries == 0 || time(null) - last >= 3) {
 	    if (retries++ >= MAX_VERIFY_RETRIES) {
-		warn("Can't connect to server after %d retries", retries);
+		logger.warn("Can't connect to server after {} retries", retries);
 		return -1;
 	    }
 	    Sockbuf_clear(&wbuf);
-	    /* IFWINDOWS( Trace("Verifying to sock=%d\n", wbuf.sock) ); */
-	    n = Packet_printf(&wbuf, "%c%s%s%s", PKT_VERIFY,
+	    /* IFWINDOWS( Trace("Verifying to sock={}\n", wbuf.sock) ); */
+	    n = Packet_printf(&wbuf, "%c{}{}{}", PKT_VERIFY,
 			      user_name, nick_name, disp);
 	    if (n <= 0 || Sockbuf_flush(&wbuf) <= 0) {
 		error("Can't send verify packet");
@@ -409,10 +409,10 @@ int Net_verify(String user_name, String nick_name, String disp)
 	    continue;
 	if (rbuf.ptr[0] != PKT_RELIABLE) {
 	    if (rbuf.ptr[0] == PKT_QUIT) {
-		warn("Server closed connection");
+		logger.warn("Server closed connection");
 		return -1;
 	    } else {
-		warn("Bad packet type when verifying (%d)", rbuf.ptr[0]);
+		logger.warn("Bad packet type when verifying ({})", rbuf.ptr[0]);
 		return -1;
 	    }
 	}
@@ -423,15 +423,15 @@ int Net_verify(String user_name, String nick_name, String disp)
 	if (cbuf.len == 0)
 	    continue;
 	if (Receive_reply(&type, &result) <= 0) {
-	    warn("Can't receive verify reply packet");
+	    logger.warn("Can't receive verify reply packet");
 	    return -1;
 	}
 	if (type != PKT_VERIFY) {
-	    warn("Verify wrong reply type (%d)", type);
+	    logger.warn("Verify wrong reply type ({})", type);
 	    return -1;
 	}
 	if (result != PKT_SUCCESS) {
-	    warn("Verification failed (%d)", result);
+	    logger.warn("Verification failed ({})", result);
 	    return -1;
 	}
 	if (Receive_magic() <= 0) {
@@ -477,7 +477,7 @@ int Net_init(String server, int port)
     if (!clientPortStart || !clientPortEnd ||
 	(clientPortStart > clientPortEnd)) {
 	if (sock_open_udp(&sock, null, 0) == SOCK_IS_ERROR) {
-	    error("Cannot create datagram socket (%d)", sock.error.error);
+	    error("Cannot create datagram socket ({})", sock.error.error);
 	    return -1;
 	}
     } else {
@@ -495,7 +495,7 @@ int Net_init(String server, int port)
     }
 
     if (sock_connect(&sock, server, port) == -1) {
-	error("Can't connect to server %s on port %d", server, port);
+	error("Can't connect to server {} on port {}", server, port);
 	sock_close(&sock);
 	return -1;
     }
@@ -505,10 +505,10 @@ int Net_init(String server, int port)
 	return -1;
     }
     if (sock_set_send_buffer_size(&sock, CLIENT_SEND_SIZE + 256) == -1)
-	error("Can't set send buffer size to %d", CLIENT_SEND_SIZE + 256);
+	error("Can't set send buffer size to {}", CLIENT_SEND_SIZE + 256);
 
     if (sock_set_receive_buffer_size(&sock, CLIENT_RECV_SIZE + 256) == -1)
-	error("Can't set receive buffer size to %d", CLIENT_RECV_SIZE + 256);
+	error("Can't set receive buffer size to {}", CLIENT_RECV_SIZE + 256);
 
     size = receive_window_size * sizeof(frame_buf_t);
     if ((Frames = (frame_buf_t *) malloc(size)) == null) {
@@ -659,7 +659,7 @@ int Net_start()
 	if (retries == 0
 	    || (time(null) - last) > 1) {
 	    if (retries++ >= 10) {
-		warn("Can't start play after %d retries", retries);
+		logger.warn("Can't start play after {} retries", retries);
 		return -1;
 	    }
 	    Sockbuf_clear(&wbuf);
@@ -695,7 +695,7 @@ int Net_start()
 		continue;
 	    if (rbuf.ptr[0] != PKT_RELIABLE) {
 		if (rbuf.ptr[0] == PKT_QUIT) {
-		    warn("Server closed connection");
+		    logger.warn("Server closed connection");
 		    return -1;
 		}
 		else if (rbuf.ptr[0] == PKT_START) {
@@ -720,7 +720,7 @@ int Net_start()
 		    }
 		    printf("abusing unexpected frame while starting\n");
 		} else {
-		    printf("strange packet type while starting (%d)\n",
+		    printf("strange packet type while starting ({})\n",
 			rbuf.ptr[0]);
 		    /*
 		     * What the hack do we care when we wanna play.
@@ -738,20 +738,20 @@ int Net_start()
 	if (cbuf.ptr - cbuf.buf >= cbuf.len)
 	    continue;
 	if (cbuf.ptr[0] != PKT_REPLY) {
-	    warn("Not a reply packet after play (%d,%d,%d)",
+	    logger.warn("Not a reply packet after play ({},{},{})",
 		 cbuf.ptr[0], cbuf.ptr - cbuf.buf, cbuf.len);
 	    return -1;
 	}
 	if (Receive_reply(&type, &result) <= 0) {
-	    warn("Can't receive reply packet after play");
+	    logger.warn("Can't receive reply packet after play");
 	    return -1;
 	}
 	if (type != PKT_PLAY) {
-	    warn("Can't receive reply packet after play");
+	    logger.warn("Can't receive reply packet after play");
 	    return -1;
 	}
 	if (result != PKT_SUCCESS) {
-	    warn("Start play not allowed (%d)", result);
+	    logger.warn("Start play not allowed ({})", result);
 	    return -1;
 	}
 	break;
@@ -815,7 +815,7 @@ static int Net_packet()
 	type = (*rbuf.ptr & 0xFF);
 
 	if (receive_tbl[type] == null) {
-	    warn("Received unknown packet type (%d, %d), "
+	    logger.warn("Received unknown packet type ({}, {}), "
 		 "dropping frame.", type, prev_type);
 	    Sockbuf_clear(&rbuf);
 	    break;
@@ -823,7 +823,7 @@ static int Net_packet()
 	else if ((result = (*receive_tbl[type])()) <= 0) {
 	    if (result == -1) {
 		if (type != PKT_QUIT)
-		    warn("Processing packet type (%d, %d) failed",
+		    logger.warn("Processing packet type ({}, {}) failed",
 			 type, prev_type);
 		return -1;
 	    }
@@ -842,12 +842,12 @@ static int Net_packet()
 		return -1;
 	    }
 	    /* should do something more appropriate than this with the reply */
-	    warn("Got reply packet (%d,%d)", replyto, status);
+	    logger.warn("Got reply packet ({},{})", replyto, status);
 	}
 	else if (reliable_tbl[type] == null) {
 	    int i;
 
-	    warn("Received unknown reliable data packet type (%d,%d,%d)",
+	    logger.warn("Received unknown reliable data packet type ({},{},{})",
 		 type, cbuf.ptr - cbuf.buf, cbuf.len);
 	    printf("\tdumping buffer for debugging:\n");
 	    for (i = 0; i < cbuf.len; i++) {
@@ -909,7 +909,7 @@ static void Net_keyboard_track()
     keyboard_acktime[ind] = -1;
 
 #if 0
-    printf("T;%d;%ld;%ld ", ind, last_keyboard_change, last_keyboard_update);
+    printf("T;{};%ld;%ld ", ind, last_keyboard_change, last_keyboard_update);
 #endif
 }
 
@@ -973,7 +973,7 @@ static void Net_lag_measurement(long key_ack)
 	    && keyboard_acktime[i] == -1) {
 	    keyboard_acktime[i] =last_loops - 1;
 #if 0
-	    printf("A;%d;%ld;%ld ",
+	    printf("A;{};%ld;%ld ",
 		   i, keyboard_change[i], keyboard_acktime[i]);
 #endif
 	    break;
@@ -1023,7 +1023,7 @@ static int Net_read(frame_buf_t *frame)
 	    Sockbuf_clear(&frame.sbuf);
 	    return 0;
 	}
-	/*IFWINDOWS( Trace("Net_read: read %d bytes type=%d\n",
+	/*IFWINDOWS( Trace("Net_read: read {} bytes type={}\n",
 	  frame.sbuf.len, frame.sbuf.ptr[0]) ); */
 	if (frame.sbuf.ptr[0] != PKT_START)
 	    /*
@@ -1035,7 +1035,7 @@ static int Net_read(frame_buf_t *frame)
 
 	/* Peek at the frame loop number. */
 	n = Packet_scanf(&frame.sbuf, "%c%ld", &ch, &loop);
-	/*IFWINDOWS( Trace("Net_read: frame # %d\n", loop) );*/
+	/*IFWINDOWS( Trace("Net_read: frame # {}\n", loop) );*/
 	frame.sbuf.ptr = frame.sbuf.buf;
 	if (n <= 0) {
 	    if (n == -1) {
@@ -1056,7 +1056,7 @@ static int Net_read(frame_buf_t *frame)
 	     */
 	}
     }
-    /*IFWINDOWS( Trace("Net_read: wbuf.len=%d\n", wbuf.len) );*/
+    /*IFWINDOWS( Trace("Net_read: wbuf.len={}\n", wbuf.len) );*/
 }
 
 /*
@@ -1201,7 +1201,7 @@ int Net_input()
 	 * Couldn't find a non-empty packet.
 	 */
 	if (oldest_frame.loops > 0) {
-	    warn("bug %s,%d", __FILE__, __LINE__);
+	    logger.warn("bug {},{}", __FILE__, __LINE__);
 	    oldest_frame.loops = 0;
 	}
 	return 0;
@@ -1330,7 +1330,7 @@ int Receive_message()
     byte	ch;
     char	msg[MSG_LEN];
 
-    if ((n = Packet_scanf(&cbuf, "%c%S", &ch, msg)) <= 0)
+    if ((n = Packet_scanf(&cbuf, "%c{}", &ch, msg)) <= 0)
 	return n;
     if ((n = Handle_message(msg)) == -1)
 	return -1;
@@ -1400,11 +1400,11 @@ int Receive_motd()
 int Net_ask_for_motd(long offset, long maxlen)
 {
     if (offset < 0 || maxlen <= 0) {
-	warn("Bad motd request (%ld, %ld)", offset, maxlen);
+	logger.warn("Bad motd request (%ld, %ld)", offset, maxlen);
 	return -1;
     }
     if (Packet_printf(&wbuf, "%c%ld%ld", PKT_MOTD, offset, maxlen) <= 0) {
-	warn("Can't ask motd");
+	logger.warn("Can't ask motd");
 	return -1;
     }
 
@@ -1494,10 +1494,10 @@ int Receive_self()
     server_display.view_height = sViewHeight;
     LIMIT(server_display.view_width, MIN_VIEW_SIZE, MAX_VIEW_SIZE);
     if (sViewWidth != server_display.view_width)
-	warn("unsupported view width from server");
+	logger.warn("unsupported view width from server");
     LIMIT(server_display.view_height, MIN_VIEW_SIZE, MAX_VIEW_SIZE);
     if (sViewHeight != server_display.view_height)
-	warn("unsupported view height from server");
+	logger.warn("unsupported view height from server");
     server_display.num_spark_colors = sNumSparkColors;
 
     Handle_self(x, y, vx, vy, sHeading,
@@ -1522,7 +1522,7 @@ int Receive_modifiers()
     char	sMods[MAX_CHARS];
     byte	ch;
 
-    if ((n = Packet_scanf(&rbuf, "%c%s", &ch, sMods)) <= 0)
+    if ((n = Packet_scanf(&rbuf, "%c{}", &ch, sMods)) <= 0)
 	return n;
     if ((n = Handle_modifiers(sMods)) == -1)
 	return -1;
@@ -1977,7 +1977,7 @@ int Receive_player()
 			*cbuf_ptr = cbuf.ptr;
 
     if ((n = Packet_scanf(&cbuf,
-			  "%c%hd%c%c" "%s%s%s" "%S",
+			  "%c%hd%c%c" "{}{}{}" "{}",
 			  &ch, &id, &myteam, &mychar,
 			  nick_name, user_name, host_name,
 			  shape)) <= 0)
@@ -1987,9 +1987,9 @@ int Receive_player()
     host_name[MAX_HOST_LEN - 1] = '\0';
 
     if (version < 0x4F10)
-	n = Packet_scanf(&cbuf, "%S", &shape[strlen(shape)]);
+	n = Packet_scanf(&cbuf, "{}", &shape[strlen(shape)]);
     else
-	n = Packet_scanf(&cbuf, "%S%c", &shape[strlen(shape)], &myself);
+	n = Packet_scanf(&cbuf, "{}%c", &shape[strlen(shape)], &myself);
     if (n <= 0) {
 	cbuf.ptr = cbuf_ptr;
 	return n;
@@ -2024,13 +2024,13 @@ int Receive_score_object()
 
     if (version < 0x4500 || (version >= 0x4F09 && version < 0x4F11)) {
 	short	rcv_score;
-	n = Packet_scanf(&cbuf, "%c%hd%hu%hu%s",
+	n = Packet_scanf(&cbuf, "%c%hd%hu%hu{}",
 			 &ch, &rcv_score, &x, &y, msg);
 	score = rcv_score;
     } else {
 	/* newer servers send scores with two decimals */
 	int	rcv_score;
-	n = Packet_scanf(&cbuf, "%c%d%hu%hu%s",
+	n = Packet_scanf(&cbuf, "%c{}%hu%hu{}",
 			 &ch, &rcv_score, &x, &y, msg);
 	score = (double)rcv_score / 100;
     }
@@ -2058,7 +2058,7 @@ int Receive_score()
     } else {
 	/* newer servers send scores with two decimals */
 	int	rcv_score;
-	n = Packet_scanf(&cbuf, "%c%hd%d%hd%c%c", &ch,
+	n = Packet_scanf(&cbuf, "%c%hd{}%hd%c%c", &ch,
 			 &id, &rcv_score, &life, &mychar, &alliance);
 	score = (double)rcv_score / 100;
     }
@@ -2077,7 +2077,7 @@ int Receive_team_score()
     int			rcv_score;
     double		score;
 
-    if ((n = Packet_scanf(&cbuf, "%c%hd%d", &ch, &team, &rcv_score)) <= 0)
+    if ((n = Packet_scanf(&cbuf, "%c%hd{}", &ch, &team, &rcv_score)) <= 0)
 	return n;
     score = (double)rcv_score / 100;
     if ((n = Handle_team_score(team, score)) == -1)
@@ -2097,8 +2097,8 @@ int Receive_timing()
     n = Packet_scanf(&cbuf, "%c%hd%hu", &ch, &id, &timing);
     if (n <= 0)
 	return n;
-    check = timing % num_checks;
-    round = timing / num_checks;
+    check = timing % checks.size();
+    round = timing / checks.size();
     if ((n = Handle_timing(id, check, round, last_loops)) == -1)
 	return -1;
     return 1;
@@ -2245,20 +2245,20 @@ int Receive_reliable()
 			  &ch, &len, &rel, &rel_loops)) == -1)
 	return -1;
     if (n == 0) {
-	warn("Incomplete reliable data packet");
+	logger.warn("Incomplete reliable data packet");
 	return 0;
     }
 #ifdef DEBUG
     if (reliable_offset >= rel + len)
-	printf("Reliable my=%ld pkt=%ld len=%d loops=%ld\n",
+	printf("Reliable my=%ld pkt=%ld len={} loops=%ld\n",
 	       reliable_offset, rel, len, rel_loops);
 #endif
     if (len <= 0) {
-	warn("Bad reliable data length (%d)", len);
+	logger.warn("Bad reliable data length ({})", len);
 	return -1;
     }
     if (rbuf.ptr + len > rbuf.buf + rbuf.len) {
-	warn("Not all reliable data in packet (%d,%d,%d)",
+	logger.warn("Not all reliable data in packet ({},{},{})",
 	     rbuf.ptr - rbuf.buf, len, rbuf.len);
 	rbuf.ptr += len;
 	Sockbuf_advance(&rbuf, rbuf.ptr - rbuf.buf);
@@ -2295,7 +2295,7 @@ int Receive_reliable()
     if (cbuf.ptr > cbuf.buf)
 	Sockbuf_advance(&cbuf, cbuf.ptr - cbuf.buf);
     if (Sockbuf_write(&cbuf, rbuf.ptr, len) != len) {
-	warn("Can't copy reliable data to buffer");
+	logger.warn("Can't copy reliable data to buffer");
 	rbuf.ptr += len;
 	Sockbuf_advance(&rbuf, rbuf.ptr - rbuf.buf);
 	return -1;
@@ -2354,9 +2354,9 @@ int Send_shape(String str)
     w = Convert_shape_str(str);
     Convert_ship_2_string(w, buf, ext, 0x3200);
     Free_ship_shape(w);
-    if (Packet_printf(&wbuf, "%c%S", PKT_SHAPE, buf) <= 0)
+    if (Packet_printf(&wbuf, "%c{}", PKT_SHAPE, buf) <= 0)
 	return -1;
-    if (Packet_printf(&wbuf, "%S", ext) <= 0)
+    if (Packet_printf(&wbuf, "{}", ext) <= 0)
 	return -1;
     return 0;
 }
@@ -2420,11 +2420,11 @@ int Receive_quit()
     else
 	sbuf = &cbuf;
     if (Packet_scanf(sbuf, "%c", &pkt) != 1)
-	warn("Can't read quit packet");
+	logger.warn("Can't read quit packet");
     else {
-	if (Packet_scanf(sbuf, "%s", reason) <= 0)
+	if (Packet_scanf(sbuf, "{}", reason) <= 0)
 	    strlcpy(reason, "unknown reason", MAX_CHARS);
-	warn("Got quit packet: \"%s\"", reason);
+	logger.warn("Got quit packet: \"{}\"", reason);
     }
     return -1;
 }
@@ -2479,7 +2479,7 @@ int Send_talk()
 	return 0;
     if (last_loops - talk_last_send < TALK_RETRY)
 	return 0;
-    if (Packet_printf(&wbuf, "%c%ld%s", PKT_TALK, talk_pending, talk_str) ==-1)
+    if (Packet_printf(&wbuf, "%c%ld{}", PKT_TALK, talk_pending, talk_str) ==-1)
 	return -1;
     talk_last_send = last_loops;
     return 0;
@@ -2515,7 +2515,7 @@ int Send_modifier_bank(int bank)
 {
     if (bank < 0 || bank >= NUM_MODBANKS)
 	return -1;
-    if (Packet_printf(&wbuf, "%c%c%s", PKT_MODIFIERBANK,
+    if (Packet_printf(&wbuf, "%c%c{}", PKT_MODIFIERBANK,
 		      bank, modBankStr[bank]) == -1)
 	return -1;
     return 0;
@@ -2539,12 +2539,12 @@ int Send_pointer_move(int movement)
     t = s + u * 1e-6;
 
     if (tv.tv_sec != old_tv.tv_sec) {
-	warn("Send_pointer_moves = %d", num);
+	logger.warn("Send_pointer_moves = {}", num);
 	num = 1;
     } else
 	num ++;
 
-    /*warn("%d %.2f: %d", num, t - oldt, movement);*/
+    /*logger.warn("{} %.2f: {}", num, t - oldt, movement);*/
 
     oldt = t;
     old_tv = tv;
@@ -2577,7 +2577,7 @@ int Send_pointer_move(int movement)
 int Send_audio_request(int on)
 {
 #ifdef DEBUG_SOUND
-    printf("Send_audio_request %d\n", on);
+    printf("Send_audio_request {}\n", on);
 #endif
 
 #ifndef SOUND
