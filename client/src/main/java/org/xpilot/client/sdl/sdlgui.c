@@ -2187,7 +2187,7 @@ void Clear_alert_messages()
 void Paint_messages()
 {
     static int old_maxMessages = 0;
-    static message_t **msgs[2];
+    static Message **msgs[2];
     static GLWidget *msg_list[2] = {null,null};
     static bool showMessages = true;
 
@@ -2196,7 +2196,7 @@ void Paint_messages()
     /*const int BORDER = 10;*/
     GLWidget *tmp = null,*tmp2 = null;
     LabelWidget *wi;
-    message_t	*msg;
+    Message	*msg;
 
     alert_timeout *garbage, **tol = &alert_timeout_list;
     static int lastloops;

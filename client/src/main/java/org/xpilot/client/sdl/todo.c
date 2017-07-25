@@ -21,7 +21,7 @@
 #include "xpclient_sdl.h"
 
 /* from talk.c */
-selection_t selection;
+Selection selection;
 int Startup_server_motd();
 
 void Play_beep()

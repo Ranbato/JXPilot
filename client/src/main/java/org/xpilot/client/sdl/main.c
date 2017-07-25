@@ -53,7 +53,7 @@ int main(int argc, String argv[])
 
     seedMT((unsigned)time(null) ^ Get_process_id());
 
-    memset(&connectParam, 0, sizeof(Connect_param_t));
+    memset(&connectParam, 0, sizeof(ConnectParam));
     connectParam.contact_port = SERVER_PORT;
     connectParam.team = TEAM_NOT_SET;
 

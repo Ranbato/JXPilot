@@ -1,4 +1,4 @@
-
+package org.xpilot.client;
 /*
  * XPilot NG, a multiplayer space war game.
  *
@@ -65,7 +65,7 @@ public class TextInterface{
 //
 //static int Get_contact_message(sockbuf_t *sbuf,
 //			       String contact_server,
-//			       Connect_param_t *conpar)
+//			       ConnectParam *conpar)
 //{
 //    int			len;
 //    int			server_version;
@@ -139,7 +139,7 @@ public class TextInterface{
 //
 //
 //static int Get_reply_message(sockbuf_t *ibuf,
-//			     Connect_param_t *conpar)
+//			     ConnectParam *conpar)
 //{
 //    int			len;
 //    unsigned		magic;
@@ -211,7 +211,7 @@ public class TextInterface{
 //static bool Process_commands(sockbuf_t *ibuf,
 //			     int auto_connect, int list_servers,
 //			     int auto_shutdown, String shutdown_reason,
-//			     Connect_param_t *conpar)
+//			     ConnectParam *conpar)
 //{
 //    int i, len, retries, delay, success, cmd_credentials = 0, max_replies;
 //    char c, status, reply_to, linebuf[MAX_LINE];
@@ -694,7 +694,7 @@ public class TextInterface{
 // */
 //int Connect_to_server(int auto_connect, int list_servers,
 //		      int auto_shutdown, String shutdown_reason,
-//		      Connect_param_t *conpar)
+//		      ConnectParam *conpar)
 //{
 //    sockbuf_t		ibuf;			/* info buffer */
 //    int			result;
@@ -724,7 +724,7 @@ public class TextInterface{
 //		    int find_max, int *num_found,
 //		    String *server_addresses, String *server_names,
 //		    unsigned *server_versions,
-//		    Connect_param_t *conpar)
+//		    ConnectParam *conpar)
 //{
 //    int			connected = false;
 //    const int		max_retries = 2;

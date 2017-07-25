@@ -27,8 +27,8 @@
 
 #include "xpclient.h"
 
-message_t	*TalkMsg[MAX_MSGS], *GameMsg[MAX_MSGS];
-message_t	*TalkMsg_pending[MAX_MSGS], *GameMsg_pending[MAX_MSGS];
+Message	*TalkMsg[MAX_MSGS], *GameMsg[MAX_MSGS];
+Message	*TalkMsg_pending[MAX_MSGS], *GameMsg_pending[MAX_MSGS];
 char		*HistoryMsg[MAX_HIST_MSGS];
 
 /* provide cut&paste and message history */
@@ -52,8 +52,8 @@ static int ballstats_lostballs = 0;
 bool played_this_round = false;
 static int rounds_played = 0;
 
-static message_t	*MsgBlock = null;
-static message_t	*MsgBlock_pending = null;
+static Message	*MsgBlock = null;
+static Message	*MsgBlock_pending = null;
 
 static void Delete_pending_messages();
 
@@ -656,16 +656,16 @@ static bool Msg_is_from_our_team(String message, String *msg2)
 
 int Alloc_msgs()
 {
-    message_t *x, *x2 = null;
+    Message *x, *x2 = null;
     int i;
 
-    x = XMALLOC(message_t, 2 * MAX_MSGS);
+    x = XMALLOC(Message, 2 * MAX_MSGS);
     if (x == null) {
 	error("No memory for messages");
 	return -1;
     }
 
-    x2 = XMALLOC(message_t, 2 * MAX_MSGS);
+    x2 = XMALLOC(Message, 2 * MAX_MSGS);
     if (x2 == null) {
 	error("No memory for history messages");
 	free(x);
@@ -798,7 +798,7 @@ void Bms_set_state(MsgBms bms)
 void Add_message(String message)
 {
     int i, last_msg_index;
-    message_t *msg, **msg_set;
+    Message *msg, **msg_set;
     MsgBms bmsinfo = BmsNone;
     String msg2;
     bool is_game_msg = false;
@@ -922,7 +922,7 @@ void Add_newbie_message(String message)
  */
 static void Delete_pending_messages()
 {
-    message_t *msg;
+    Message *msg;
     int i;
 
     for (i = 0; i < maxMessages; i++) {

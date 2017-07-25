@@ -26,9 +26,13 @@ package org.xpilot.client;
 
 import org.xpilot.common.ShipShape;
 
+
 import java.awt.*;
+import java.util.List;
 
 import static org.xpilot.common.Const.MSG_LEN;
+import static org.xpilot.common.Const.TEAM_NOT_SET;
+import static org.xpilot.common.Item.NUM_ITEMS;
 
 public class Client {
 
@@ -150,7 +154,7 @@ public static final class Target{
 
 public static final class Checkpoint{
     int		pos;		/* Block index */
-    Rectangle	bounds;		/* Location on map */
+    Rectangle bounds;		/* Location on map */
 }
 
 public static final class EdgeStyle{
@@ -276,9 +280,9 @@ public static final class Asteroid{
     byte		type, size, rotation;
 }
 
-public static final class {
+public static final class Wormhole{
     short		x, y;
-} Wormhole;
+}
 
 
 /*static public final float SCORE_OBJECT_COUNT= 100;*/
@@ -307,28 +311,30 @@ public static final int SEL_NONE    =   (1 << 0);
 /*
  * a selection (text, string indices, state,...)
  */
-public static final class {
+public static class Selection {
     /* a selection in the talk window */
-    struct {
+    public static class Talk {
         boolean    state;	/* current state of the selection */
-        size_t  x1;	/* string indices */
-        size_t  x2;
+        int  x1;	/* string indices */
+        int  x2;
         boolean    incl_nl;/* include a '\n'? */
-    } talk ;
+    }
+    public Talk talk = new Talk();
     /* a selection in the draw window */
-    struct {
+    public static class Draw {
         boolean    state;
         int     x1;	/* string indices (for TalkMsg[].txt) */
         int     x2;	/* they are modified when the emphasized area */
         int     y1;	/* is scrolled down by new messages coming in */
         int     y2;
-    } draw;
-    char	*txt;   /* allocated when needed */
-    size_t	txt_size;	/* size of txt buffer */
-    size_t	len;
+    }
+    public Draw draw = new Draw();
+    String	txt;   /* allocated when needed */
+    int	txt_size;	/* size of txt buffer */
+    int	len;
     /* when a message 'jumps' from talk window to the player messages: */
     boolean	keep_emphasizing;
-} selection_t;
+}
 
 /* typedefs begin */
  public enum MsgBms{
@@ -339,21 +345,20 @@ public static final class {
     BmsPop
 }
 
-public static final class {
-    char		txt[MSG_LEN];
-    size_t		len;
+public static final class Message{
+    String		txt;
+    int		len;
     /*short		pixelLen;*/
     double		lifeTime;
     MsgBms		bmsinfo;
-} message_t;
-/* typedefs end */
+}
 
 
 ClientData	clData = new ClientData();
 
 char	*geometry;
 XPArgs xpArgs;
-Connect_param_t connectParam;
+ConnectParam connectParam;
 
 boolean	newbie;
 int	baseWarningType;	/* Which type of base warning you prefer */
@@ -378,9 +383,9 @@ Point 	selfVel;
 short	heading;
 short	nextCheckPoint;
 
-byte	numItems[NUM_ITEMS];	/* Count of currently owned items */
-byte	lastNumItems[NUM_ITEMS];/* Last item count shown */
-int	numItemsTime[NUM_ITEMS];/* Number of frames to show this item count */
+byte	[]numItems = new byte[NUM_ITEMS.ord];	/* Count of currently owned items */
+byte	[]lastNumItems=new byte[NUM_ITEMS.ord];/* Last item count shown */
+int	[]numItemsTime=new int[NUM_ITEMS.ord];/* Number of frames to show this item count */
 double	showItemsTime;		/* How long to show changed item count for */
 double	scoreObjectTime;	/* How long to flash score objects */
 
@@ -468,7 +473,7 @@ int	maxFPS;			/* Max FPS player wants from server */
 int	oldMaxFPS = 0;
 double	clientFPS = 1.0;	/* FPS client is drawing at */
 int	recordFPS = 0;		/* What FPS to record at */
-time_t	currentTime = 0;	/* Current value of time() */
+long	currentTime = 0;	/* Current value of time() */
 boolean	newSecond = false;	/* Did time() increment this frame? */
 
 int	maxMouseTurnsPS = 0;
@@ -487,9 +492,9 @@ static int          num_cannons = 0;
 static Target     *targets = null;
 static int          num_targets = 0;
 
-Fuelstation       *fuels = null;
+List<Fuelstation> fuels = null;
 int                 num_fuels = 0;
-Homebase          *bases = null;
+List<Homebase>          *bases = null;
 int                 num_bases = 0;
 Checkpoint        *checks = null;
 int                 num_checks = 0;

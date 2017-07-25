@@ -924,7 +924,7 @@ static GLWidget *Init_MetaWidget(list_t servers)
     return tmp;
 }
 
-static bool join_server(Connect_param_t *conpar, server_info_t *sip)
+static bool join_server(ConnectParam *conpar, server_info_t *sip)
 {
     String server_addr_ptr = conpar.server_addr;
     strlcpy(conpar.server_name, sip.hostname,
@@ -975,7 +975,7 @@ static void handleKeyPress(GLWidget *meta, SDL_keysym *keysym )
     return;
 }
 
-int Meta_window(Connect_param_t *conpar)
+int Meta_window(ConnectParam *conpar)
 {
     static char err[MSG_LEN] = {0};
     int num_serv = 0;

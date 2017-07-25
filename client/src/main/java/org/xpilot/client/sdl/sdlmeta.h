@@ -23,6 +23,6 @@
 
 #include "xpclient_sdl.h"
 
-int Meta_window(Connect_param_t *conpar);
+int Meta_window(ConnectParam *conpar);
 
 #endif

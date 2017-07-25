@@ -49,7 +49,7 @@ public enum Item {
     ITEM_ARMOR(20),
     NUM_ITEMS(21);
     
-    int ord;
+    public int ord;
     
      Item(int ord){
         this.ord = ord;
