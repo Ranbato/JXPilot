@@ -30,10 +30,15 @@ import org.xpilot.common.Setup;
 import org.xpilot.common.ShipShape;
 
 
+import javax.xml.crypto.Data;
 import java.awt.*;
+import java.io.ByteArrayInputStream;
+import java.io.DataInputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import static java.lang.System.exit;
 import static org.xpilot.common.Const.*;
 import static org.xpilot.common.Item.NUM_ITEMS;
 import static org.xpilot.common.Rules.WRAP_PLAY;
@@ -503,10 +508,8 @@ List<Homebase>          bases = null;
 List<Checkpoint> checks = null;
 List<XPPolygon> polygons = null;
 int                 num_polygons = 0;
-List<EdgeStyle> edge_styles = null;
-int                 num_edge_styles = 0;
-List<PolygonStyle> polygon_styles = null;
-int                 num_polygon_styles = 0;
+EdgeStyle[] edge_styles = null;
+PolygonStyle[] polygon_styles = null;
 
 ScoreObject  []    score_objects = new ScoreObject[MAX_SCORE_OBJECTS];
 int                 score_object = 0;
@@ -778,7 +781,7 @@ int Check_index_by_pos(int x, int y)
 /*
  * Convert a 'space' map block into a dot.
  */
-static void Map_make_dot( int[] data, int index)
+static void Map_make_dot( byte[] data, int index)
 {
     if (data[index] == SETUP_SPACE)
         data[index] = SETUP_SPACE_DOT;
@@ -950,8 +953,8 @@ void Map_blue(int startx, int starty, int width, int height)
     int			i, j,
 			x, y,
 			map_index,
-			type,
-			newtype;
+			type;
+	byte		newtype;
      char	[]blue;
     boolean		outline = false;
 
@@ -1164,33 +1167,32 @@ static int get_32bit(char **ptr)
     return res + get_ushort(ptr);
 }
 
- void parse_styles(char **callptr)
-{
+ void parse_styles(DataInputStream callptr) throws IOException {
     int i, num_bmaps;
     String ptr;
+    byte temp;
 
-    ptr = *callptr;
-    num_polygon_styles = *ptr++ & 0xff;
-    num_edge_styles = *ptr++ & 0xff;
-    num_bmaps = *ptr++ & 0xff;
+    int num_polygon_styles = callptr.readByte() & 0xff;
+    int num_edge_styles = callptr.readByte() & 0xff;
+    num_bmaps = callptr.readByte() & 0xff;
 
-    polygon_styles = XMALLOC(PolygonStyle, Math.max(1, num_polygon_styles));
+    polygon_styles = new PolygonStyle[Math.max(1, num_polygon_styles)];
     if (polygon_styles == null) {
 	logger.error("no memory for polygon styles");
 	exit(1);
     }
 
-    edge_styles = XMALLOC(EdgeStyle, Math.max(1, num_edge_styles));
+    edge_styles = new EdgeStyle[Math.max(1, num_edge_styles)];
     if (edge_styles == null) {
 	logger.error("no memory for edge styles");
 	exit(1);
     }
 
     for (i = 0; i < num_polygon_styles; i++) {
-	polygon_styles[i].rgb = get_32bit(&ptr);
-	polygon_styles[i].texture = *ptr++ & 0xff;
-	polygon_styles[i].def_edge_style = *ptr++ & 0xff;
-	polygon_styles[i].flags = *ptr++ & 0xff;
+	polygon_styles[i].rgb = callptr.readInt();
+	polygon_styles[i].texture = callptr.readByte() & 0xff;
+	polygon_styles[i].def_edge_style = callptr.readByte() & 0xff;
+	polygon_styles[i].flags = callptr.readByte() & 0xff;
     }
 
     if (num_polygon_styles == 0) {
@@ -1201,43 +1203,42 @@ static int get_32bit(char **ptr)
     }
 
     for (i = 0; i < num_edge_styles; i++) {
-	edge_styles[i].width = *ptr++; /* -1 means hidden */
-	edge_styles[i].rgb = get_32bit(&ptr);
+	edge_styles[i].width = callptr.readByte(); /* -1 means hidden */
+	edge_styles[i].rgb = callptr.read();
 	/* kps - what the **** is this ? */
 	/* baron - it's line style from XSetLineAttributes */
 	/* 0 = LineSolid, 1 = LineOnOffDash, 2 = LineDoubleDash */
+	temp = callptr.readByte();
 	edge_styles[i].style =
-	    (*ptr == 1) ? 1 :
-	    (*ptr == 2) ? 2 : 0;
-	ptr++;
+	    (temp == 1) ? 1 :
+	    (temp == 2) ? 2 : 0;
     }
 
     for (i = 0; i < num_bmaps; i++) {
-	char fname[30];
+	byte[] buf = new byte[30];
+	String fname;
 	int flags;
-
-	strlcpy(fname, ptr, 30);
-	ptr += strlen(fname) + 1;
-	flags = *ptr++ & 0xff;
+	callptr.read(buf,0,buf.length);
+	fname = new String(buf);
+	flags = callptr.readByte() & 0xff;
 	Bitmap_add(fname, 1, flags);
     }
-    *callptr = ptr;
 }
 
- int init_polymap()
-{
+ int init_polymap() throws IOException {
     int i, j, startx, starty, ecount, edgechange, current_estyle;
     int dx, dy, cx, cy, pc;
     int []styles;
     XPPolygon poly;
     List<Point>  points;
     Point min, max;
-    int ptr, edgeptr;
+    DataInputStream ptr;
+    DataInputStream edgeptr;
 
     oldServer = 0;
-    ptr = (String )Setup.map_data;
+    ptr = new DataInputStream(new ByteArrayInputStream(Setup.map_data));
 
-    parse_styles(&ptr);
+    parse_styles(ptr);
 
     num_polygons = get_ushort(&ptr);
     polygons = XMALLOC(XPPolygon, num_polygons);

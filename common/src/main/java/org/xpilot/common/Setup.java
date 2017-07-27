@@ -102,23 +102,23 @@ public static final int SETUP_RIGHT_GRAV = 123;
 public static final int SETUP_LEFT_GRAV = 124;
 public static final int SETUP_ASTEROID_CONCENTRATOR = 125;
 
-public static final int BLUE_UP = 0x01;
-public static final int BLUE_RIGHT = 0x02;
-public static final int BLUE_DOWN = 0x04;
-public static final int BLUE_LEFT = 0x08;
-public static final int BLUE_OPEN = 0x10;	/* diagonal botleft . rightup */
-public static final int BLUE_CLOSED = 0x20;	/* diagonal topleft . rightdown */
-public static final int BLUE_FUEL = 0x30;	/* when filled block is fuelstation */
-public static final int BLUE_BELOW = 0x40;	/* when triangle is below diagonal */
-public static final int BLUE_BIT = 0x80;	/* set when drawn with blue lines */
+public static final byte BLUE_UP = 0x01;
+public static final byte BLUE_RIGHT = 0x02;
+public static final byte BLUE_DOWN = 0x04;
+public static final byte BLUE_LEFT = 0x08;
+public static final byte BLUE_OPEN = 0x10;	/* diagonal botleft . rightup */
+public static final byte BLUE_CLOSED = 0x20;	/* diagonal topleft . rightdown */
+public static final byte BLUE_FUEL = 0x30;	/* when filled block is fuelstation */
+public static final byte BLUE_BELOW = 0x40;	/* when triangle is below diagonal */
+public static final byte BLUE_BIT = (byte) 0x80b;	/* set when drawn with blue lines */
 
-public static final int DECOR_LEFT = 0x01;
-public static final int DECOR_RIGHT = 0x02;
-public static final int DECOR_DOWN = 0x04;
-public static final int DECOR_UP = 0x08;
-public static final int DECOR_OPEN = 0x10;
-public static final int DECOR_CLOSED = 0x20;
-public static final int DECOR_BELOW = 0x40;
+public static final byte DECOR_LEFT = 0x01;
+public static final byte DECOR_RIGHT = 0x02;
+public static final byte DECOR_DOWN = 0x04;
+public static final byte DECOR_UP = 0x08;
+public static final byte DECOR_OPEN = 0x10;
+public static final byte DECOR_CLOSED = 0x20;
+public static final byte DECOR_BELOW = 0x40;
 
 /*
  * Structure defining the server configuration, including the map layout.
@@ -144,7 +144,7 @@ public static   String		data_url;//[MSG_LEN];
 						   allow >80 chars */
      	// todo this allocation is obviously incorrect,should be Setup.x * Setup.y
         // could be a byte []
- public static   int[]	map_data = new int[4];		/* compressed map data */
+ public static   byte[]	map_data = new byte[4];		/* compressed map data */
     /* plus more mapdata here (HACK) */
 
 /*
