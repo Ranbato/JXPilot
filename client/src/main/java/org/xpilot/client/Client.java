@@ -1058,18 +1058,18 @@ void Map_blue(int startx, int starty, int width, int height)
 		newtype = BLUE_BIT | BLUE_OPEN;
 		if (x == 0
 		    ? (!Setup.mode.get( WRAP_PLAY) ||
-			!(blue[Setup.map_data[(Setup.x - 1) * Setup.y + y]]
-			    & BLUE_RIGHT))
-		    : !(blue[Setup.map_data[(x - 1) * Setup.y + y]]
-			& BLUE_RIGHT))
+			(blue[Setup.map_data[(Setup.x - 1) * Setup.y + y]]
+			    & BLUE_RIGHT) == 0)
+		    : (blue[Setup.map_data[(x - 1) * Setup.y + y]]
+			& BLUE_RIGHT)==0)
 		    newtype |= BLUE_LEFT;
 		if (!outline
 		    || ((y == Setup.y - 1)
 			? (!Setup.mode.get( WRAP_PLAY)
-			   || !(blue[Setup.map_data[x * Setup.y]]
-				& BLUE_DOWN))
-			: !(blue[Setup.map_data[x * Setup.y + (y + 1)]]
-			    & BLUE_DOWN)))
+			   || (blue[Setup.map_data[x * Setup.y]]
+				& BLUE_DOWN)==0)
+			: (blue[Setup.map_data[x * Setup.y + (y + 1)]]
+			    & BLUE_DOWN)==0))
 		    newtype |= BLUE_UP;
 		break;
 
@@ -1078,18 +1078,18 @@ void Map_blue(int startx, int starty, int width, int height)
 		if (!outline
 		    || ((x == Setup.x - 1)
 			? (!Setup.mode.get( WRAP_PLAY)
-			   || !(blue[Setup.map_data[y]]
-				& BLUE_LEFT))
-			: !(blue[Setup.map_data[(x + 1) * Setup.y + y]]
-			    & BLUE_LEFT)))
+			   || (blue[Setup.map_data[y]]
+				& BLUE_LEFT)==0)
+			: (blue[Setup.map_data[(x + 1) * Setup.y + y]]
+			    & BLUE_LEFT)==0))
 		    newtype |= BLUE_RIGHT;
 		if (!outline
 		    || ((y == Setup.y - 1)
 			? (!Setup.mode.get( WRAP_PLAY)
-			   || !(blue[Setup.map_data[x * Setup.y]]
-				& BLUE_DOWN))
-			: !(blue[Setup.map_data[x * Setup.y + (y + 1)]]
-			    & BLUE_DOWN)))
+			   || (blue[Setup.map_data[x * Setup.y]]
+				& BLUE_DOWN)==0)
+			: (blue[Setup.map_data[x * Setup.y + (y + 1)]]
+			    & BLUE_DOWN)==0))
 		    newtype |= BLUE_UP;
 		break;
 
@@ -1097,17 +1097,17 @@ void Map_blue(int startx, int starty, int width, int height)
 		newtype = BLUE_BIT | BLUE_BELOW | BLUE_CLOSED;
 		if ((x == 0)
 		    ? (!Setup.mode.get( WRAP_PLAY) ||
-			!(blue[Setup.map_data[(Setup.x - 1) * Setup.y + y]]
-			    & BLUE_RIGHT))
-		    : !(blue[Setup.map_data[(x - 1) * Setup.y + y]]
-			& BLUE_RIGHT))
+			(blue[Setup.map_data[(Setup.x - 1) * Setup.y + y]]
+			    & BLUE_RIGHT)==0)
+		    : (blue[Setup.map_data[(x - 1) * Setup.y + y]]
+			& BLUE_RIGHT)==0)
 		    newtype |= BLUE_LEFT;
 		if ((y == 0)
 		    ? (!Setup.mode.get( WRAP_PLAY) ||
-			!(blue[Setup.map_data[x * Setup.y + Setup.y - 1]]
-			    & BLUE_UP))
-		    : !(blue[Setup.map_data[x * Setup.y + (y - 1)]]
-			& BLUE_UP))
+			(blue[Setup.map_data[x * Setup.y + Setup.y - 1]]
+			    & BLUE_UP)==0)
+		    : (blue[Setup.map_data[x * Setup.y + (y - 1)]]
+			& BLUE_UP)==0)
 		    newtype |= BLUE_DOWN;
 		break;
 
@@ -1116,17 +1116,17 @@ void Map_blue(int startx, int starty, int width, int height)
 		if (!outline
 		    || ((x == Setup.x - 1)
 			? (!Setup.mode.get( WRAP_PLAY)
-			   || !(blue[Setup.map_data[y]]
-				& BLUE_LEFT))
-			: !(blue[Setup.map_data[(x + 1) * Setup.y + y]]
-			    & BLUE_LEFT)))
+			   || (blue[Setup.map_data[y]]
+				& BLUE_LEFT)==0)
+			: (blue[Setup.map_data[(x + 1) * Setup.y + y]]
+			    & BLUE_LEFT)==0))
 		    newtype |= BLUE_RIGHT;
 		if ((y == 0)
 		    ? (!Setup.mode.get( WRAP_PLAY) ||
-			!(blue[Setup.map_data[x * Setup.y + Setup.y - 1]]
-			    & BLUE_UP))
-		    : !(blue[Setup.map_data[x * Setup.y + (y - 1)]]
-			& BLUE_UP))
+			(blue[Setup.map_data[x * Setup.y + Setup.y - 1]]
+			    & BLUE_UP)==0)
+		    : (blue[Setup.map_data[x * Setup.y + (y - 1)]]
+			& BLUE_UP)==0)
 		    newtype |= BLUE_DOWN;
 		break;
 
