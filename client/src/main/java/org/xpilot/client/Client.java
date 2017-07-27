@@ -31,11 +31,10 @@ import org.xpilot.common.ShipShape;
 
 
 import java.awt.*;
+import java.util.ArrayList;
 import java.util.List;
 
-import static org.xpilot.common.Const.MSG_LEN;
-import static org.xpilot.common.Const.TARGET_DAMAGE;
-import static org.xpilot.common.Const.TEAM_NOT_SET;
+import static org.xpilot.common.Const.*;
 import static org.xpilot.common.Item.NUM_ITEMS;
 import static org.xpilot.common.Rules.WRAP_PLAY;
 import static org.xpilot.common.Setup.*;
@@ -181,10 +180,10 @@ public static final class PolygonStyle {
 }
 
 public static final class XPPolygon{
-    Point  *points;		/* points[0] is absolute, rest are relative */
+    Point []points;		/* points[0] is absolute, rest are relative */
     int num_points;		/* number of points */
     Rectangle bounds;		/* bounding box for the polygon */
-    int *edge_styles;		/* optional array of indexes to edge_styles */
+    int []edge_styles;		/* optional array of indexes to edge_styles */
     int style;			/* index to polygon_styles array */
 }
 
@@ -364,7 +363,7 @@ public static final class Message{
 
 ClientData	clData = new ClientData();
 
-char	*geometry;
+//char	*geometry;
 XPArgs xpArgs;
 ConnectParam connectParam;
 
@@ -461,12 +460,12 @@ int     charsPerSecond;         /* Message output speed (configurable) */
 double	hud_move_fact;		/* scale the hud-movement (speed) */
 double	ptr_move_fact;		/* scale the speed pointer length */
 Instruments	instruments;		/* Instruments on screen */
-char	mods[MAX_CHARS];	/* Current modifiers in effect */
+	String mods;	/* Current modifiers in effect */
 int	packet_size;		/* Current frame update packet size */
 int	packet_loss;		/* lost packets per second */
 int	packet_drop;		/* dropped packets per second */
 int	packet_lag;		/* approximate lag in frames */
-char	*packet_measure;	/* packet measurement in a second */
+int [] packet_measure;	/* packet measurement in a second */
 long	packet_loop;		/* start of measurement */
 
 boolean	showUserName = false;	/* Show user name instead of nick name */
@@ -475,7 +474,7 @@ int	version;	/* Version of the server */
 boolean	toggle_shield;		/* Are shields toggled by a press? */
 boolean	shields = true;		/* When shields are considered up */
 boolean	auto_shield = true;	/* shield drops for fire */
-char	modBankStr[NUM_MODBANKS][MAX_CHARS]; /* modifier banks */
+String[]	modBankStr = new String[NUM_MODBANKS]; /* modifier banks */
 
 int	maxFPS;			/* Max FPS player wants from server */
 int	oldMaxFPS = 0;
@@ -494,7 +493,7 @@ int	clientPortEnd = 0;	/* Last one (these are for firewalls) */
 byte	lose_item;		/* index for dropping owned item */
 int	lose_item_active;	/* one of the lose keys is pressed */
 
-static double       teamscores[MAX_TEAMS];
+static double[] teamscores = new double[MAX_TEAMS];
 List<CannonTime> cannons = null;
 static List<Target> targets = null;
 static int          num_targets = 0;
@@ -509,7 +508,7 @@ int                 num_edge_styles = 0;
 List<PolygonStyle> polygon_styles = null;
 int                 num_polygon_styles = 0;
 
-ScoreObject      score_objects[MAX_SCORE_OBJECTS];
+ScoreObject  []    score_objects = new ScoreObject[MAX_SCORE_OBJECTS];
 int                 score_object = 0;
 List<Other> Others = null;
 int                 num_others = 0, max_others = 0;
@@ -545,12 +544,13 @@ List<VFuel> vfuel_ptr;
 int                 num_vfuel, max_vfuel;
 List<VBase> vbase_ptr;
 int                 num_vbase, max_vbase;
-List<Debris> debris_ptr[DEBRIS_TYPES];
-int                 num_debris[DEBRIS_TYPES],
-                    max_debris[DEBRIS_TYPES];
-List<Debris> fastshot_ptr[List<DEBRIS_TYPES>  2];
-int                 num_fastshot[List<DEBRIS_TYPES>  2],
-                    max_fastshot[List<DEBRIS_TYPES>  2];
+List<List<Debris>> debris_ptr = new ArrayList<>(DEBRIS_TYPES);
+int    []             num_debris = new int[DEBRIS_TYPES];
+    int    []                   max_debris = new int[DEBRIS_TYPES];
+    List<List<Debris>> fastshot_ptr =new ArrayList<>(DEBRIS_TYPES*2);
+int      []           num_fastshot = new int[DEBRIS_TYPES*  2];
+    int      []           max_fastshot = new int[DEBRIS_TYPES*  2];
+
 List<VDecor> vdecor_ptr;
 int                 num_vdecor, max_vdecor;
 List<Wreckage> wreckage_ptr;
@@ -593,6 +593,7 @@ double Fuel_by_pos(int x, int y)
     return fuelp.fuel;
 }
 
+/** Unused
 int Target_by_index(int ind, int *xp, int *yp, int *dead_time, double *damage)
 {
     if (ind < 0 || ind >= num_targets)
@@ -603,8 +604,9 @@ int Target_by_index(int ind, int *xp, int *yp, int *dead_time, double *damage)
     *damage = targets[ind].damage;
     return 0;
 }
+*/
 
-int Target_alive(int x, int y, double *damage)
+Target Target_alive(int x, int y)
 {
     int 		i, lo, hi, pos;
 
@@ -613,17 +615,16 @@ int Target_alive(int x, int y, double *damage)
     pos = x * Setup.y + y;
     while (lo < hi) {
 	i = (lo + hi) >> 1;
-	if (pos > targets[i].pos)
+	if (pos > targets.get(i).pos)
 	    lo = i + 1;
 	else
 	    hi = i;
     }
-    if (lo == hi && pos == targets[lo].pos) {
-	*damage = targets[lo].damage;
-	return targets[lo].dead_time;
+    if (lo == hi && pos == targets.get(lo).pos) {
+	return targets.get(lo);
     }
     logger.warn("No targets at ({},{})", x, y);
-    return -1;
+    return null;
 }
 
 int Handle_fuel(int ind, double fuel)
@@ -656,14 +657,14 @@ public CannonTime Cannon_by_pos(int x, int y)
     return null;
 }
 
-int Cannon_dead_time_by_pos(int x, int y, int *dot)
+CannonTime Cannon_dead_time_by_pos(int x, int y)
 {
     CannonTime	cannonp;
 
-    if ((cannonp = Cannon_by_pos(x, y)) == null)
-	return -1;
-    *dot = cannonp.dot;
-    return cannonp.dead_time;
+    if ((cannonp = Cannon_by_pos(x, y)) == null) {
+        return null;
+    }
+    return cannonp;
 }
 
 int Handle_cannon(int ind, int dead_time)
@@ -684,16 +685,18 @@ int Handle_target(int num, int dead_time, double damage)
     }
     if (dead_time == 0
 	&& (damage <= 0.0 || damage > TARGET_DAMAGE))
-	logger.warn("BUG target {}, dead {}, damage %f", num, dead_time, damage);
+	logger.warn("BUG target {}, dead {}, damage {}", num, dead_time, damage);
 
     Target target = targets.get(num);
     if (target.dead_time > 0 && dead_time == 0) {
 	int pos = target.pos;
-	Radar_show_target(pos / Setup.y, pos % Setup.y);
+	// todo SDL not implemented
+//	Radar_show_target(pos / Setup.y, pos % Setup.y);
     }
     else if (target.dead_time == 0 && dead_time > 0) {
 	int pos = target.pos;
-	Radar_hide_target(pos / Setup.y, pos % Setup.y);
+        // todo SDL not implemented
+//	Radar_hide_target(pos / Setup.y, pos % Setup.y);
     }
 
     target.dead_time = (short)dead_time;
@@ -722,15 +725,10 @@ public Homebase Homebase_by_pos(int x, int y)
     return null;
 }
 
-int Base_info_by_pos(int x, int y, int *idp, int *teamp)
+    Homebase Base_info_by_pos(int x, int y)
 {
-    Homebase	basep;
+    return Homebase_by_pos(x, y);
 
-    if ((basep = Homebase_by_pos(x, y)) == null)
-	return -1;
-    *idp = basep.id;
-    *teamp = basep.team;
-    return 0;
 }
 
 int Handle_base(int id, int ind)
@@ -750,17 +748,18 @@ int Handle_base(int id, int ind)
     return 0;
 }
 
-int Check_pos_by_index(int ind, int *xp, int *yp)
+Point Check_pos_by_index(int ind)
 {
+    Point p = new Point();
     if (ind < 0 || ind >= checks.size()) {
 	logger.warn("Bad checkpoint index ({})", ind);
-	*xp = 0;
-	*yp = 0;
-	return -1;
+	p.x = 0;
+	p.y = 0;
+   }else {
+        p.x = checks.get(ind).pos / Setup.y;
+        p.y = checks.get(ind).pos % Setup.y;
     }
-    *xp = checks.get(ind).pos / Setup.y;
-    *yp = checks.get(ind).pos % Setup.y;
-    return 0;
+    return p;
 }
 
 int Check_index_by_pos(int x, int y)
@@ -779,20 +778,20 @@ int Check_index_by_pos(int x, int y)
 /*
  * Convert a 'space' map block into a dot.
  */
-static void Map_make_dot( String data)
+static void Map_make_dot( int[] data, int index)
 {
-    if (*data == SETUP_SPACE)
-	*data = SETUP_SPACE_DOT;
-    else if (*data == SETUP_DECOR_FILLED)
-	*data = SETUP_DECOR_DOT_FILLED;
-    else if (*data == SETUP_DECOR_RU)
-	*data = SETUP_DECOR_DOT_RU;
-    else if (*data == SETUP_DECOR_RD)
-	*data = SETUP_DECOR_DOT_RD;
-    else if (*data == SETUP_DECOR_LU)
-	*data = SETUP_DECOR_DOT_LU;
-    else if (*data == SETUP_DECOR_LD)
-	*data = SETUP_DECOR_DOT_LD;
+    if (data[index] == SETUP_SPACE)
+        data[index] = SETUP_SPACE_DOT;
+    else if (data[index] == SETUP_DECOR_FILLED)
+    data[index] = SETUP_DECOR_DOT_FILLED;
+    else if (data[index] == SETUP_DECOR_RU)
+    data[index] = SETUP_DECOR_DOT_RU;
+    else if (data[index] == SETUP_DECOR_RD)
+    data[index] = SETUP_DECOR_DOT_RD;
+    else if (data[index] == SETUP_DECOR_LU)
+    data[index] = SETUP_DECOR_DOT_LU;
+    else if (data[index] == SETUP_DECOR_LD)
+    data[index] = SETUP_DECOR_DOT_LD;
 }
 
 /*
@@ -857,11 +856,11 @@ void Map_dots()
 	if (Setup.mode.get( WRAP_PLAY)) {
 	    for (x = 0; x < Setup.x; x++) {
 		if (dot[Setup.map_data[x * Setup.y]]!=0)
-		    Map_make_dot(&Setup.map_data[x * Setup.y]);
+		    Map_make_dot(Setup.map_data,(x * Setup.y));
 	    }
 	    for (y = 0; y < Setup.y; y++) {
 		if (dot[Setup.map_data[y]]!= 0)
-		    Map_make_dot(&Setup.map_data[y]);
+		    Map_make_dot(Setup.map_data,y);
 	    }
 	    start = backgroundPointDist;
 	} else
@@ -871,7 +870,7 @@ void Map_dots()
 	    for (x = start; x < Setup.x; x += backgroundPointDist) {
 		for (y = start; y < Setup.y; y += backgroundPointDist) {
 		    if (dot[Setup.map_data[x * Setup.y + y]]!= 0)
-			Map_make_dot(&Setup.map_data[x * Setup.y + y]);
+			Map_make_dot(Setup.map_data,x * Setup.y + y);
 		}
 	    }
 	}
@@ -953,7 +952,7 @@ void Map_blue(int startx, int starty, int width, int height)
 			map_index,
 			type,
 			newtype;
-    unsigned char	blue[256];
+     char	[]blue;
     boolean		outline = false;
 
     if (instruments.outlineWorld ||
@@ -963,7 +962,7 @@ void Map_blue(int startx, int starty, int width, int height)
     /*
      * Optimize the map for blue.
      */
-    memset(blue, 0, sizeof blue);
+    blue = new char[256];
     blue[SETUP_FILLED] = BLUE_LEFT | BLUE_UP | BLUE_RIGHT | BLUE_DOWN;
     blue[SETUP_FILLED_NO_DRAW] = blue[SETUP_FILLED];
     blue[SETUP_FUEL] = blue[SETUP_FILLED];
@@ -991,7 +990,7 @@ void Map_blue(int startx, int starty, int width, int height)
     blue[BLUE_BIT|BLUE_CLOSED|BLUE_BELOW|BLUE_DOWN] =
     blue[BLUE_BIT|BLUE_CLOSED|BLUE_BELOW|BLUE_LEFT|BLUE_DOWN] =
 	blue[SETUP_REC_LD];
-    for (i = BLUE_BIT; i < (int)(sizeof blue); i++) {
+    for (i = BLUE_BIT; i < blue.length; i++) {
 	if ((i & BLUE_FUEL) == BLUE_FUEL
 	    || (i & (BLUE_OPEN|BLUE_CLOSED)) == 0)
 	    blue[i] = blue[SETUP_FILLED];
@@ -1025,33 +1024,33 @@ void Map_blue(int startx, int starty, int width, int height)
 		}
 		if ((x == 0)
 		    ? (!Setup.mode.get( WRAP_PLAY) ||
-			!(blue[Setup.map_data[(Setup.x - 1) * Setup.y + y]]
-			    & BLUE_RIGHT))
-		    : !(blue[Setup.map_data[(x - 1) * Setup.y + y]]
-			& BLUE_RIGHT))
+			(blue[Setup.map_data[(Setup.x - 1) * Setup.y + y]]
+			    & BLUE_RIGHT) == 0)
+		    : (blue[Setup.map_data[(x - 1) * Setup.y + y]]
+			& BLUE_RIGHT) == 0)
 		    newtype |= BLUE_LEFT;
 		if ((y == 0)
 		    ? (!Setup.mode.get( WRAP_PLAY) ||
-			!(blue[Setup.map_data[x * Setup.y + Setup.y - 1]]
-			    & BLUE_UP))
-		    : !(blue[Setup.map_data[x * Setup.y + (y - 1)]]
-			& BLUE_UP))
+			(blue[Setup.map_data[x * Setup.y + Setup.y - 1]]
+			    & BLUE_UP)==0)
+		    : (blue[Setup.map_data[x * Setup.y + (y - 1)]]
+			& BLUE_UP)==0)
 		    newtype |= BLUE_DOWN;
 		if (!outline
 		    || ((x == Setup.x - 1)
 			? (!Setup.mode.get( WRAP_PLAY)
-			   || !(blue[Setup.map_data[y]]
-				& BLUE_LEFT))
-			: !(blue[Setup.map_data[(x + 1) * Setup.y + y]]
-			    & BLUE_LEFT)))
+			   || (blue[Setup.map_data[y]]
+				& BLUE_LEFT)==0)
+			: (blue[Setup.map_data[(x + 1) * Setup.y + y]]
+			    & BLUE_LEFT)==0))
 		    newtype |= BLUE_RIGHT;
 		if (!outline
 		    || ((y == Setup.y - 1)
 			? (!Setup.mode.get( WRAP_PLAY)
-			   || !(blue[Setup.map_data[x * Setup.y]]
-				& BLUE_DOWN))
-			: !(blue[Setup.map_data[x * Setup.y + (y + 1)]]
-			    & BLUE_DOWN)))
+			   || (blue[Setup.map_data[x * Setup.y]]
+				& BLUE_DOWN)==0)
+			: (blue[Setup.map_data[x * Setup.y + (y + 1)]]
+			    & BLUE_DOWN)==0))
 		    newtype |= BLUE_UP;
 		break;
 
@@ -1542,14 +1541,14 @@ static int Map_cleanup()
 }
 
 
-Homebase *Homebase_by_id(int id)
+Homebase Homebase_by_id(int id)
 {
     int i;
 
     if (id != -1) {
 	for (i = 0; i < bases.size(); i++) {
-	    if (bases[i].id == id)
-		return &bases[i];
+	    if (bases.get(i).id == id)
+		return bases.get(i);
 	}
     }
     return null;

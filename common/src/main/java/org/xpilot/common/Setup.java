@@ -142,7 +142,9 @@ public static   String		data_url;//[MSG_LEN];
 						   can load additional data
 						   like bitmaps; MSG_LEN to
 						   allow >80 chars */
- public static   char[]	map_data = new char[4];		/* compressed map data */
+     	// todo this allocation is obviously incorrect,should be Setup.x * Setup.y
+        // could be a byte []
+ public static   int[]	map_data = new int[4];		/* compressed map data */
     /* plus more mapdata here (HACK) */
 
 /*

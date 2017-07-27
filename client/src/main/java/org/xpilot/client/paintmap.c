@@ -53,10 +53,11 @@ void Paint_vfuel()
 void Paint_vbase()
 {
     int	i, id, team;
+    Homebase base;
     if (num_vbase > 0) {
 	for (i = 0; i < num_vbase; i++) {
-	    Base_info_by_pos(vbase_ptr[i].xi, vbase_ptr[i].yi, &id, &team);
-	    Gui_paint_base(vbase_ptr[i].x, vbase_ptr[i].y, id, team,
+	    base = Base_info_by_pos(vbase_ptr[i].xi, vbase_ptr[i].yi);
+	    Gui_paint_base(vbase_ptr[i].x, vbase_ptr[i].y, base,
 			   vbase_ptr[i].type);
 	}
 	RELEASE(vbase_ptr, num_vbase, max_vbase);
@@ -400,11 +401,12 @@ void Paint_world()
 		case SETUP_CANNON_DOWN:
 		case SETUP_CANNON_RIGHT:
 		case SETUP_CANNON_LEFT:
-		    if (Cannon_dead_time_by_pos(xi, yi, &dot) <= 0) {
+		    CannonTime ct = Cannon_dead_time_by_pos(xi, yi);
+		    if (ct == null) {
 			Handle_vcannon(x, y, type);
 			break;
 		    }
-		    if (dot == 0) {
+		    if (ct.dot == 0) {
 			break;
 		    }
 		    /*FALLTHROUGH*/
@@ -446,15 +448,16 @@ void Paint_world()
 		case SETUP_TARGET+9:
 		    {
 			int team, own;
-			double damage;
+			Target target = Target_alive(xi, yi);
 
-			if (Target_alive(xi, yi, &damage) != 0)
+
+			if (target.dead_time) != 0)
 			    break;
 
 			team = type - SETUP_TARGET;
 			own = (eyeTeam == team);
 
-			Gui_paint_setup_target(x, y, team, damage, own);
+			Gui_paint_setup_target(x, y, team, target.damage, own);
 
 		    }
 		    break;

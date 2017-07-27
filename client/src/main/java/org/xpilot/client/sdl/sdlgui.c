@@ -430,10 +430,9 @@ public static final int FUEL_BORDER = 3;
 		     fuelColorRGBA);
 }
 
-void Gui_paint_base(int x, int y, int id, int team, int type)
+void Gui_paint_base(int x, int y, Homebase base, int type)
 {
-    Uint32 color;
-    Homebase *base = null;
+    int color;
     Other *other;
     bool do_basewarning = false;
 
@@ -456,7 +455,7 @@ void Gui_paint_base(int x, int y, int id, int team, int type)
         return;
     }
 
-    if (!(other = Other_by_id(id))) return;
+    if ((other = Other_by_id(base.id))==null) return;
 
     if (baseNameColorRGBA) {
 	if (!(color = Life_color(other)))
@@ -467,7 +466,7 @@ void Gui_paint_base(int x, int y, int id, int team, int type)
     x = x + BLOCK_SZ / 2;
     y = y + BLOCK_SZ / 2;
 
-    base = Homebase_by_id(id);
+    base = Homebase_by_id(inbase.id);
     if (base != null) {
 	/*
 	 * Hacks to support Mara's base warning on new servers and

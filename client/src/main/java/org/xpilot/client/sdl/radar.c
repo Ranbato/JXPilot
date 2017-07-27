@@ -123,7 +123,6 @@ static void Radar_paint_block(GLWidget *radar, SDL_Surface *s, int xi, int yi, c
  */
 static void Radar_paint_world_blocks(GLWidget *radar, SDL_Surface *s)
 {
-    double damage;
     int i, xi, yi, type, color;
     color_t bcolor[256]; /* color of a block indexed by block type */
 
@@ -162,7 +161,7 @@ static void Radar_paint_world_blocks(GLWidget *radar, SDL_Surface *s)
 
             if (type >= SETUP_TARGET
                 && type < SETUP_TARGET + 10
-                && !Target_alive(xi, yi, &damage))
+                && Target_alive(xi, yi).dead_time == 0)
                 type = SETUP_SPACE;
 
             color = bcolor[type];
@@ -300,9 +299,9 @@ static void Radar_paint_checkpoint(GLWidget *radar)
     int x, y;
     if (Setup.mode.get( TIMING)) {
 	if (oldServer) {
-	    Check_pos_by_index(nextCheckPoint, &x, &y);
-	    x = x * BLOCK_SZ + BLOCK_SZ/2;
-	    y = y * BLOCK_SZ + BLOCK_SZ/2;
+	    Point p = Check_pos_by_index(nextCheckPoint);
+	    x = p.x * BLOCK_SZ + BLOCK_SZ/2;
+	    y = p.y * BLOCK_SZ + BLOCK_SZ/2;
 	} else {
 	    Rectangle b = checks[nextCheckPoint].bounds;
 	    x = b.x + b.w/2;
