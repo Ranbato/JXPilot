@@ -156,7 +156,7 @@ public	XPPicture Picture_init ( String filename, int count)
 
 
 
-    /*logger.error("Can't find PPM file \"{}\"", filename);*/
+    /*logger.logger.error("Can't find PPM file \"{}\"", filename);*/
     return(file);
 }
 
@@ -176,7 +176,7 @@ public	XPPicture Picture_init ( String filename, int count)
 
 
     if ((path = Picture_find_path(filename)) == null) {
-	logger.error("Cannot find picture file \"{}\"", filename);
+	logger.logger.error("Cannot find picture file \"{}\"", filename);
 	return false;
     }
 
@@ -224,7 +224,7 @@ public	XPPicture Picture_init ( String filename, int count)
 
 
     } catch (FileNotFoundException e) {
-        logger.error("Cannot open \"{}\"", path);
+        logger.logger.error("Cannot open \"{}\"", path);
     } catch (IOException e) {
         e.printStackTrace();
     }

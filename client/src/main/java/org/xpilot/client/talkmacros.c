@@ -122,7 +122,7 @@ static String Talk_macro_get_field(String buf, int wanted_field)
     }
     len = (size_t) (end_ptr - start_ptr);
     if ((field_ptr = XMALLOC(char, len + 1)) == null) {
-	error("Can't allocate memory for talk macro");
+	logger.error("Can't allocate memory for talk macro");
 	return null;
     }
     strlcpy(field_ptr, start_ptr, len + 1);
@@ -195,12 +195,12 @@ static int Talk_macro_parse_mesg(String outbuf, String inbuf, long pos,
 			break;
 		    /* parse field 1 */
 		    if ((tmpptr = Talk_macro_get_field(inbuf, 1)) == null) {
-			error("Talk_macro_get_field (1) error!");
+			logger.error("Talk_macro_get_field (1) error!");
 			break;
 		    }
 		    if ((tmpptr1
 			 = XMALLOC(char, MSG_PARSED_FIELD_LEN)) == null) {
-			error("Can't allocate memory for talk macro.");
+			logger.error("Can't allocate memory for talk macro.");
 			free(tmpptr);	/* successful malloc from before */
 			break;
 		    }
@@ -209,12 +209,12 @@ static int Talk_macro_parse_mesg(String outbuf, String inbuf, long pos,
 		    free(tmpptr);
 		    /* parse field 2 */
 		    if ((tmpptr = Talk_macro_get_field(inbuf, 2)) == null) {
-			error("Talk_macro_get_field (2) error!");
+			logger.error("Talk_macro_get_field (2) error!");
 			break;
 		    }
 		    if ((tmpptr2
 			 = XMALLOC(char, MSG_PARSED_FIELD_LEN)) == null) {
-			error("Can't allocate memory for talk macro.");
+			logger.error("Can't allocate memory for talk macro.");
 			free(tmpptr);	/* successful malloc from before */
 			break;
 		    }
@@ -225,7 +225,7 @@ static int Talk_macro_parse_mesg(String outbuf, String inbuf, long pos,
 			/* True */
 			if ((tmpptr3 = Talk_macro_get_field(inbuf, 3))
 			    == null) {
-			    error("Talk_macro_get_field (3) error!");
+			    logger.error("Talk_macro_get_field (3) error!");
 			    free(tmpptr1);
 			    free(tmpptr2);
 			    break;
@@ -236,7 +236,7 @@ static int Talk_macro_parse_mesg(String outbuf, String inbuf, long pos,
 			/* False */
 			if ((tmpptr3 = Talk_macro_get_field(inbuf, 4))
 			    == null) {
-			    error("Talk_macro_get_field (4) error!");
+			    logger.error("Talk_macro_get_field (4) error!");
 			    free(tmpptr1);
 			    free(tmpptr2);
 			    break;
@@ -253,13 +253,13 @@ static int Talk_macro_parse_mesg(String outbuf, String inbuf, long pos,
 		    if (n_fields != 1 || nextpos == null)
 			break;
 		    if ((tmpptr = Talk_macro_get_field(inbuf, 1)) == null) {
-			error("Talk_macro_get_field error!");
+			logger.error("Talk_macro_get_field error!");
 			break;
 		    }
 		    inbuf = nextpos;
 		    if ((filename
 			 = XMALLOC(char, TALK_FAST_MSG_FNLEN)) == null) {
-			error("Can't allocate memory for talk macro.");
+			logger.error("Can't allocate memory for talk macro.");
 			break;
 		    }
 
@@ -267,7 +267,7 @@ static int Talk_macro_parse_mesg(String outbuf, String inbuf, long pos,
 					  TALK_FAST_MSG_FNLEN);
 		    free(tmpptr);
 		    if ((fp = fopen(filename, "r")) == null) {
-			error("Couldn't open file {}", tmpptr);
+			logger.error("Couldn't open file {}", tmpptr);
 			free(filename);
 			break;
 		    }
@@ -302,7 +302,7 @@ static int Talk_macro_parse_mesg(String outbuf, String inbuf, long pos,
 		    if ((tmpptr = Talk_macro_get_field
 			 (inbuf, (int)(randomMT() % n_fields + 1)))
 			== null) {
-			error("Talk_macro_get_field error (random)");
+			logger.error("Talk_macro_get_field error (random)");
 			break;
 		    }
 		    inbuf = nextpos;

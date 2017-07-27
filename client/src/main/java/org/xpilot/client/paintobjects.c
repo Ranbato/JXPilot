@@ -575,7 +575,7 @@ int Init_wreckage()
     point_size = sizeof(Point2D) * RES;
     total_size = point_size * NUM_WRECKAGE_POINTS * NUM_WRECKAGE_SHAPES;
     if ((dynmem = (String ) malloc(total_size)) == null) {
-	error("Not enough memory for wreckage shapes");
+	logger.error("Not enough memory for wreckage shapes");
 	return -1;
     }
 

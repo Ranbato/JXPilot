@@ -148,7 +148,7 @@ public class TextInterface{
 //    if (sock_readable(&ibuf.sock)) {
 //	Sockbuf_clear(ibuf);
 //	if ((len = sock_read(&ibuf.sock, ibuf.buf, ibuf.size)) == -1) {
-//	    error("Can't read reply message from {}/{}",
+//	    logger.error("Can't read reply message from {}/{}",
 //		  conpar.server_addr, conpar.server_port);
 //	    exit(1);
 //	}
@@ -288,26 +288,26 @@ public class TextInterface{
 //	    }
 //	    if ((success = create_dgram_addr_socket(
 //		&ibuf.sock, localhost, 0)) == SOCK_IS_ERROR) {
-//		error("Could not create localhost socket");
+//		logger.error("Could not create localhost socket");
 //		exit(1);
 //	    }
 //	    if (sock_connect(&ibuf.sock, localhost, conpar.server_port)
 //		== SOCK_IS_ERROR) {
-//		error("Can't connect to local server {} on port {}\n",
+//		logger.error("Can't connect to local server {} on port {}\n",
 //		      localhost, conpar.server_port);
 //		return false;
 //	    }
 //	} else {
 //	    if ((success = create_dgram_socket(&ibuf.sock, 0))
 //		== SOCK_IS_ERROR) {
-//		error("Could not create socket");
+//		logger.error("Could not create socket");
 //		exit(1);
 //	    }
 //	    if (sock_connect(
 //		&ibuf.sock, conpar.server_addr, conpar.server_port)
 //		== SOCK_IS_ERROR
 //		&& !dgram_one_socket) {
-//		error("Can't connect to server {} on port {}\n",
+//		logger.error("Can't connect to server {} on port {}\n",
 //		      conpar.server_addr, conpar.server_port);
 //		return false;
 //	    }
@@ -483,7 +483,7 @@ public class TextInterface{
 //		    break;
 //	    }
 //	    if (sock_write(&ibuf.sock, ibuf.buf, ibuf.len) != ibuf.len) {
-//		error("Couldn't send request to server.");
+//		logger.error("Couldn't send request to server.");
 //		exit(1);
 //	    }
 //	}
@@ -583,7 +583,7 @@ public class TextInterface{
 //				      conpar.host_name, conpar.team);
 //			if (sock_write(&ibuf.sock, ibuf.buf, ibuf.len)
 //			    != ibuf.len) {
-//			    error("Couldn't send request to server.");
+//			    logger.error("Couldn't send request to server.");
 //			    exit(1);
 //			}
 //			time(&qsent);
@@ -701,7 +701,7 @@ public class TextInterface{
 //
 //    if (Sockbuf_init(&ibuf, null, CLIENT_RECV_SIZE,
 //		     SOCKBUF_READ | SOCKBUF_WRITE | SOCKBUF_DGRAM) == -1) {
-//	error("No memory for info buffer");
+//	logger.error("No memory for info buffer");
 //	exit(1);
 //    }
 //    result = Process_commands(&ibuf,
@@ -738,12 +738,12 @@ public class TextInterface{
 //
 //
 //    if ((status = create_dgram_socket(&sock, 0)) == SOCK_IS_ERROR) {
-//	error("Could not create connection socket");
+//	logger.error("Could not create connection socket");
 //	exit(1);
 //    }
 //    if (Sockbuf_init(&sbuf, &sock, CLIENT_RECV_SIZE,
 //		     SOCKBUF_READ | SOCKBUF_WRITE | SOCKBUF_DGRAM) == -1) {
-//	error("No memory for contact buffer");
+//	logger.error("No memory for contact buffer");
 //	exit(1);
 //    }
 //    if (!count) {
@@ -757,7 +757,7 @@ public class TextInterface{
 //	    assert(sbuf.len >= 0);
 //	    if (Query_all(&sbuf.sock, conpar.contact_port,
 //			  sbuf.buf, (size_t)sbuf.len) == -1) {
-//		error("Couldn't send contact requests");
+//		logger.error("Couldn't send contact requests");
 //		exit(1);
 //	    }
 //	    if (retries == 0) {
@@ -822,7 +822,7 @@ public class TextInterface{
 //					    servers[i]) );
 //			break;
 //		    }
-//		    error("Can't contact {} on port {}",
+//		    logger.error("Can't contact {} on port {}",
 //			  servers[i], conpar.contact_port);
 //		}
 //		if (retries) {

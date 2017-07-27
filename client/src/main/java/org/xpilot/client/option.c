@@ -868,7 +868,7 @@ int Xpilotrc_read(String path)
 
     fp = fopen(path, "r");
     if (fp == null) {
-	error("Xpilotrc_read: Failed to open file \"{}\"", path);
+	logger.error("Xpilotrc_read: Failed to open file \"{}\"", path);
 	return -2;
     }
 
@@ -960,7 +960,7 @@ int Xpilotrc_write(String path)
 
     fp = fopen(path, "w");
     if (fp == null) {
-	error("Xpilotrc_write: Failed to open file \"{}\"", path);
+	logger.error("Xpilotrc_write: Failed to open file \"{}\"", path);
 	return -2;
     }
 

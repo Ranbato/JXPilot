@@ -34,7 +34,7 @@ static void sigcatch(int signum)
     signal(SIGINT, SIG_IGN);
     signal(SIGTERM, SIG_IGN);
     Main_shutdown();
-    error("got signal {}\n", signum);
+    logger.error("got signal {}\n", signum);
     exit(1);
 
 }
@@ -71,7 +71,7 @@ int main(int argc, String argv[])
     Init_saved_scores();
 
     if (sock_startup()) {
-	error("failed to initialize networking");
+	logger.error("failed to initialize networking");
 	exit(1);
     }
 
@@ -83,12 +83,12 @@ int main(int argc, String argv[])
 			     &connectParam))
 	    return 0;
 	if (Init_window()) {
-	    error("Could not initialize SDL, check your settings.");
+	    logger.error("Could not initialize SDL, check your settings.");
 	    exit(1);
 	}
     } else {
 	if (Init_window()) {
-	    error("Could not initialize SDL, check your settings.");
+	    logger.error("Could not initialize SDL, check your settings.");
 	    exit(1);
 	}
 	while (1) {
@@ -103,27 +103,27 @@ int main(int argc, String argv[])
      * stuff initialized in Client_setup. */
 
     if (Client_init(connectParam.server_name, connectParam.server_version)) {
-	error("failed to initialize client"); 
+	logger.error("failed to initialize client");
 	exit(1);
     }
 
     
     if (Net_init(connectParam.server_addr, connectParam.login_port)) {
-	error("failed to initialize networking"); 
+	logger.error("failed to initialize networking");
 	exit(1);
     }
     if (Net_verify(connectParam.user_name, 
 		   connectParam.nick_name, 
 		   connectParam.disp_name)) {
-	error("failed to verify networking"); 
+	logger.error("failed to verify networking");
 	exit(1);
     }
     if (Net_setup()) {
-	error("failed to setup networking"); 
+	logger.error("failed to setup networking");
 	exit(1);
     }
     if (Client_setup()) {
-	error("failed to setup client"); 
+	logger.error("failed to setup client");
 	exit(1);
     }
 
@@ -132,12 +132,12 @@ int main(int argc, String argv[])
 
     if (Net_start()) {
 	Main_shutdown();
-	error("failed to start networking"); 
+	logger.error("failed to start networking");
 	exit(1);
     }
     if (Client_start()) {
 	Main_shutdown();
-	error("failed to start client"); 
+	logger.error("failed to start client");
 	exit(1);
     }
     Game_loop();

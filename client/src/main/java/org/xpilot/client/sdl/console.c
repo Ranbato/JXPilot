@@ -48,13 +48,13 @@ int Console_init()
     cr.y = (draw_height - cr.h) / 2;
 
     if (sdl_window_init(&console_window, cr.x, cr.y, cr.w, cr.h)) {
-	error("failed to init console window");
+	logger.error("failed to init console window");
 	return -1;
     }
     
     console = CON_Init(CONF_FONTDIR "ConsoleFont.bmp", console_window.surface, 100, cr);
     if (console == null) {
-	error("failed to init SDL_console");
+	logger.error("failed to init SDL_console");
 	sdl_window_destroy(&console_window);
 	return -1;
     }

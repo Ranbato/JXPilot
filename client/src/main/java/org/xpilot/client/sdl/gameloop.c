@@ -30,7 +30,7 @@ void Game_loop()
     SDL_Event evt;
 
     if ((netfd = Net_fd()) == -1) {
-        error("Bad net fd");
+        logger.error("Bad net fd");
         return;
     }
 
@@ -50,7 +50,7 @@ void Game_loop()
 	if (n == -1) {
 	    if (errno == EINTR)
 		continue;
-	    error("Select failed");
+	    logger.error("Select failed");
 	    return;
         }
 	if (n > 0) {

@@ -62,7 +62,7 @@ static int Image_init(image_t *img)
 	
     img.data = XCALLOC(unsigned int, img.data_width * img.data_height);
     if (img.data == null) {
-        error("Failed to allocate memory for: {} size {}x{}",
+        logger.error("Failed to allocate memory for: {} size {}x{}",
               img.filename, img.data_width, img.data_height);
 	img.state = IMG_STATE_ERROR;
 	return -1;

@@ -76,15 +76,15 @@ int Init_playing_windows()
     Init_spark_colors();
     */
     if ( !AppendGLWidgetList(&MainWidget,Init_MainWidget(&gamefont)) ) {
-	error("widget initialization failed");
+	logger.error("widget initialization failed");
 	return -1;
     }
     if (Console_init()) {
-	error("console initialization failed");
+	logger.error("console initialization failed");
 	return -1;
     }
     if (Gui_init()) {
-	error("gui initialization failed");
+	logger.error("gui initialization failed");
 	return -1;
     }
 
@@ -122,7 +122,7 @@ int Init_window()
     bool gf_exists = true,df_exists = true,gf_init = false, mf_init = false;
     
     if (TTF_Init()) {
-    	error("SDL_ttf initialization failed: {}", SDL_GetError());
+    	logger.error("SDL_ttf initialization failed: {}", SDL_GetError());
     	return -1;
     }
     logger.warn("SDL_ttf initialized.\n");
@@ -130,7 +130,7 @@ int Init_window()
     Conf_print();
 
     if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_NOPARACHUTE) < 0) {
-        error("failed to initialize SDL: {}", SDL_GetError());
+        logger.error("failed to initialize SDL: {}", SDL_GetError());
         return -1;
     }
 
@@ -173,7 +173,7 @@ int Init_window()
 			 draw_height,
 			 draw_depth,
 			 videoFlags )) == null) {
-      error("Could not find a valid GLX visual for your display");
+      logger.error("Could not find a valid GLX visual for your display");
 	  return -1;
     }
 
@@ -199,18 +199,18 @@ int Init_window()
     
     /* this prevents a freetype crash if you pass non existant fonts */
     if (!file_exists(gamefontname)) {
-    	error("cannot find your game font '{}'.\n" \
+    	logger.error("cannot find your game font '{}'.\n" \
             "Please check that it exists!",gamefontname);
     	xpprintf("Reverting to defaultfont '{}'\n",defaultfontname);
     	gf_exists = false;
     }
     if (!file_exists(defaultfontname)) {
-    	error("cannot find the default font! '{}'" ,defaultfontname);
+    	logger.error("cannot find the default font! '{}'" ,defaultfontname);
 	df_exists = false;
     }
     
     if (!gf_exists && !df_exists) {
-    	error("Failed to find any font files!\n" \
+    	logger.error("Failed to find any font files!\n" \
 	    	"Probably you forgot to run 'make install',use '-TTFont <font.ttf>' argument" \
 		" until you do");
 	return -1;
@@ -218,39 +218,39 @@ int Init_window()
       
     if (gf_exists) {
     	if (fontinit(&gamefont,gamefontname,gameFontSize)) {
-    	    error("Font initialization failed with {}", gamefontname);
+    	    logger.error("Font initialization failed with {}", gamefontname);
 	} else gf_init = true;
     }
     if (!gf_init && df_exists) {
     	if (fontinit(&gamefont,defaultfontname,gameFontSize)) {
-    	    error("Default font initialization failed with {}", defaultfontname);
+    	    logger.error("Default font initialization failed with {}", defaultfontname);
     	} else gf_init = true;
     }
     
     if (!gf_init) {
-    	error("Failed to initialize any game font! (quitting)");
+    	logger.error("Failed to initialize any game font! (quitting)");
 	return -1;
     }
     
     if (gf_exists) {
     	if (fontinit(&mapfont,gamefontname,mapFontSize)) {
-    	    error("Font initialization failed with {}", gamefontname);
+    	    logger.error("Font initialization failed with {}", gamefontname);
 	} else mf_init = true;
     }
     if (!mf_init && df_exists) {
     	if (fontinit(&mapfont,defaultfontname,mapFontSize)) {
-    	    error("Default font initialization failed with {}", defaultfontname);
+    	    logger.error("Default font initialization failed with {}", defaultfontname);
     	} else mf_init = true;
     }
 
     if (!mf_init) {
-    	error("Failed to initialize any map font! (quitting)");
+    	logger.error("Failed to initialize any map font! (quitting)");
 	return -1;
     }
 
     /* Set up the clipboard */
     if ( init_scrap() < 0 ) {
-    	error("Couldn't init clipboard: {}\n");
+    	logger.error("Couldn't init clipboard: {}\n");
     }
 
     return 0;

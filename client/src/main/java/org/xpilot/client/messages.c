@@ -661,13 +661,13 @@ int Alloc_msgs()
 
     x = XMALLOC(Message, 2 * MAX_MSGS);
     if (x == null) {
-	error("No memory for messages");
+	logger.error("No memory for messages");
 	return -1;
     }
 
     x2 = XMALLOC(Message, 2 * MAX_MSGS);
     if (x2 == null) {
-	error("No memory for history messages");
+	logger.error("No memory for history messages");
 	free(x);
 	return -1;
     }
@@ -710,7 +710,7 @@ int Alloc_history()
     /* maxLinesInHistory is a runtime constant */
     hist_ptr = XMALLOC(char, (size_t)maxLinesInHistory * MAX_CHARS);
     if (hist_ptr == null) {
-	error("No memory for history");
+	logger.error("No memory for history");
 	return -1;
     }
     HistoryBlock = hist_ptr;

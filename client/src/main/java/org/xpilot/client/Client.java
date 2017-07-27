@@ -1164,7 +1164,7 @@ static int get_32bit(char **ptr)
     return res + get_ushort(ptr);
 }
 
-static void parse_styles(char **callptr)
+ void parse_styles(char **callptr)
 {
     int i, num_bmaps;
     String ptr;
@@ -1176,13 +1176,13 @@ static void parse_styles(char **callptr)
 
     polygon_styles = XMALLOC(PolygonStyle, Math.max(1, num_polygon_styles));
     if (polygon_styles == null) {
-	error("no memory for polygon styles");
+	logger.error("no memory for polygon styles");
 	exit(1);
     }
 
     edge_styles = XMALLOC(EdgeStyle, Math.max(1, num_edge_styles));
     if (edge_styles == null) {
-	error("no memory for edge styles");
+	logger.error("no memory for edge styles");
 	exit(1);
     }
 
@@ -1224,14 +1224,15 @@ static void parse_styles(char **callptr)
     *callptr = ptr;
 }
 
-static int init_polymap()
+ int init_polymap()
 {
     int i, j, startx, starty, ecount, edgechange, current_estyle;
     int dx, dy, cx, cy, pc;
-    int *styles;
-    XPPolygon *poly;
-    Point  *points, min, max;
-    String ptr, *edgeptr;
+    int []styles;
+    XPPolygon poly;
+    List<Point>  points;
+    Point min, max;
+    int ptr, edgeptr;
 
     oldServer = 0;
     ptr = (String )Setup.map_data;
@@ -1241,7 +1242,7 @@ static int init_polymap()
     num_polygons = get_ushort(&ptr);
     polygons = XMALLOC(XPPolygon, num_polygons);
     if (polygons == null) {
-	error("no memory for polygons");
+	logger.error("no memory for polygons");
 	exit(1);
     }
 
@@ -1260,12 +1261,12 @@ static int init_polymap()
 	ptr += ecount * 2;
 	pc = get_ushort(&ptr);
 	if ((points = XMALLOC(Point , pc)) == null) {
-	    error("no memory for points");
+	    logger.error("no memory for points");
 	    exit(1);
 	}
 	if (ecount) {
 	    if ((styles = XMALLOC(int, pc)) == null) {
-		error("no memory for special edges");
+		logger.error("no memory for special edges");
 		exit(1);
 	    }
 	} else
@@ -1320,7 +1321,7 @@ static int init_polymap()
     bases.size() = *ptr++ & 0xff;
     bases = XMALLOC(Homebase, bases.size());
     if (bases == null) {
-	error("No memory for Map bases ({})", bases.size());
+	logger.error("No memory for Map bases ({})", bases.size());
 	exit(1);
     }
     for (i = 0; i < bases.size(); i++) {
@@ -1350,7 +1351,7 @@ static int init_polymap()
     if (fuels.size() != 0) {
 	fuels = XMALLOC(Fuelstation, fuels.size());
 	if (fuels == null) {
-	    error("No memory for Map fuels ({})", fuels.size());
+	    logger.error("No memory for Map fuels ({})", fuels.size());
 	    exit(1);
 	}
     }
@@ -1368,7 +1369,7 @@ static int init_polymap()
 
 	checks = XMALLOC(Checkpoint, checks.size());
 	if (checks == null) {
-	    error("No memory for checkpoints ({})", checks.size());
+	    logger.error("No memory for checkpoints ({})", checks.size());
 	    exit(1);
 	}
     }
@@ -1435,7 +1436,7 @@ static int init_blockmap()
     if (bases.size() != 0) {
 	bases = XMALLOC(Homebase, bases.size());
 	if (bases == null) {
-	    error("No memory for Map bases ({})", bases.size());
+	    logger.error("No memory for Map bases ({})", bases.size());
 	    return -1;
 	}
 	bases.size() = 0;
@@ -1443,7 +1444,7 @@ static int init_blockmap()
     if (fuels.size() != 0) {
 	fuels = XMALLOC(Fuelstation, fuels.size());
 	if (fuels == null) {
-	    error("No memory for Map fuels ({})", fuels.size());
+	    logger.error("No memory for Map fuels ({})", fuels.size());
 	    return -1;
 	}
 	fuels.size() = 0;
@@ -1451,7 +1452,7 @@ static int init_blockmap()
     if (num_targets != 0) {
 	targets = XMALLOC(Target, num_targets);
 	if (targets == null) {
-	    error("No memory for Map targets ({})", num_targets);
+	    logger.error("No memory for Map targets ({})", num_targets);
 	    return -1;
 	}
 	num_targets = 0;
@@ -1459,7 +1460,7 @@ static int init_blockmap()
     if (cannons.size() != 0) {
 	cannons = XMALLOC(CannonTime, cannons.size());
 	if (cannons == null) {
-	    error("No memory for Map cannons ({})", cannons.size());
+	    logger.error("No memory for Map cannons ({})", cannons.size());
 	    return -1;
 	}
 	cannons.size() = 0;
@@ -1467,7 +1468,7 @@ static int init_blockmap()
     if (checks.size() != 0) {
 	checks = XMALLOC(Checkpoint, checks.size());
 	if (checks == null) {
-	    error("No memory for Map checks ({})", checks.size());
+	    logger.error("No memory for Map checks ({})", checks.size());
 	    return -1;
 	}
 	checks.size() = 0;
@@ -2187,7 +2188,7 @@ int Handle_item(int x, int y, int type)
 	    ptr_ = (Debris *)realloc(ptr_, _n * sizeof(*ptr_));	\
 	}							\
 	if (ptr_ == null) {					\
-	    error("No memory for debris");			\
+	    logger.error("No memory for debris");			\
 	    num_ = max_ = 0;					\
 	    return -1;						\
 	}							\

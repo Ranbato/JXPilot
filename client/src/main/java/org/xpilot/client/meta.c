@@ -89,7 +89,7 @@ int Welcome_sort_server_list()
     server_info_t *sip_new;
 
     if (!new_list) {
-        error("Not enough memory\n");
+        logger.error("Not enough memory\n");
 	return -1;
     }
     while ((vp = List_pop_front(old_list)) != null) {
@@ -127,7 +127,7 @@ int Welcome_sort_server_list()
 		break;
 	}
 	if (!List_insert(new_list, it, sip_old)) {
-	    error("Not enough memory\n");
+	    logger.error("Not enough memory\n");
 	    Delete_server_info(sip_old);
 	}
     }
@@ -171,7 +171,7 @@ int Add_server_info(server_info_t * sip)
     if (!server_list) {
 	server_list = List_new();
 	if (!server_list) {
-	    error("Not enough memory\n");
+	    logger.error("Not enough memory\n");
 	    return -1;
 	}
     }
@@ -199,7 +199,7 @@ int Add_server_info(server_info_t * sip)
 	break;
     }
     if (!List_insert(server_list, it, sip)) {
-        error("Not enough memory\n");
+        logger.error("Not enough memory\n");
 	return -1;
     }
 
@@ -253,7 +253,7 @@ void Add_meta_line(String meta_line)
     server_info_t *sip;
 
     if (!text) {
-        error("Not enough memory\n");
+        logger.error("Not enough memory\n");
 	return;
     }
 
@@ -275,7 +275,7 @@ void Add_meta_line(String meta_line)
     }
 
     if ((sip = (server_info_t *) malloc(sizeof(server_info_t))) == null) {
-        error("Not enough memory\n");
+        logger.error("Not enough memory\n");
 	free(text);
 	return;
     }
@@ -340,7 +340,7 @@ void Meta_connect(int *connections_ptr, int *maxfd_ptr)
 						      metas[i].addr,
 						      META_PROG_PORT);
 	if (status == SOCK_IS_ERROR) {
-	    error("{}\n", metas[i].addr);
+	    logger.error("{}\n", metas[i].addr);
 	} else {
 	    connections++;
 	    if (metas[i].sock.fd > max)

@@ -129,7 +129,7 @@ static int Query_fudged(sock_t *sock, int port, String msg, size_t msglen)
 
     gethostname(host_name, sizeof(host_name));
     if ((h = gethostbyname(host_name)) == null) {
-	error("gethostbyname");
+	logger.error("gethostbyname");
 	return -1;
     }
     if (h.h_addrtype != AF_INET || h.h_length != 4) {
@@ -190,7 +190,7 @@ int Query_all(sock_t *sock, int port, String msg, size_t msglen)
      * Broadcasting on a socket must be explicitly enabled.
      */
     if (sock_set_broadcast(sock, 1) == -1) {
-	error("set broadcast");
+	logger.error("set broadcast");
 	return (-1);
     }
 
@@ -198,7 +198,7 @@ int Query_all(sock_t *sock, int port, String msg, size_t msglen)
      * Create an unbound datagram socket.  Only used for ioctls.
      */
     if ((fd = socket(AF_INET, SOCK_DGRAM, 0)) == -1) {
-	error("socket");
+	logger.error("socket");
 	return (-1);
     }
 
@@ -209,7 +209,7 @@ int Query_all(sock_t *sock, int port, String msg, size_t msglen)
     ifconf.ifc_buf = (caddr_t)ifbuf;
     memset((void *)ifbuf, 0, sizeof(ifbuf));
     if (ioctl(fd, SIOCGIFCONF, (String )&ifconf) == -1) {
-	error("ioctl SIOCGIFCONF");
+	logger.error("ioctl SIOCGIFCONF");
 	close(fd);
 	return Query_fudged(sock, port, msg, msglen);
     }
@@ -248,7 +248,7 @@ int Query_all(sock_t *sock, int port, String msg, size_t msglen)
 	 */
 	ifreq = *ifreqp;
 	if (ioctl(fd, SIOCGIFFLAGS, (String )&ifreq) == -1) {
-	    error("ioctl SIOCGIFFLAGS");
+	    logger.error("ioctl SIOCGIFFLAGS");
 	    continue;
 	}
 	ifflags = ifreq.ifr_flags;
@@ -274,7 +274,7 @@ int Query_all(sock_t *sock, int port, String msg, size_t msglen)
 	    D( printf("\tpoint-to-point interface\n") );
 	    ifreq = *ifreqp;
 	    if (ioctl(fd, SIOCGIFDSTADDR, (String )&ifreq) == -1) {
-		error("ioctl SIOCGIFDSTADDR");
+		logger.error("ioctl SIOCGIFDSTADDR");
 		continue;
 	    }
 	    addr = *(struct sockaddr_in *)&ifreq.ifr_addr;
@@ -283,7 +283,7 @@ int Query_all(sock_t *sock, int port, String msg, size_t msglen)
 	    D( printf("\tbroadcast interface\n") );
 	    ifreq = *ifreqp;
 	    if (ioctl(fd, SIOCGIFBRDADDR, (String )&ifreq) == -1) {
-		error("ioctl SIOCGIFBRDADDR");
+		logger.error("ioctl SIOCGIFBRDADDR");
 		continue;
 	    }
 	    addr = *(struct sockaddr_in *)&ifreq.ifr_addr;
@@ -318,7 +318,7 @@ int Query_all(sock_t *sock, int port, String msg, size_t msglen)
 	    /*
 	     * Failure.
 	     */
-	    error("sendto {}/{} failed", inet_ntoa(addr.sin_addr), port);
+	    logger.error("sendto {}/{} failed", inet_ntoa(addr.sin_addr), port);
 
 	    if ((ifflags & (IFF_LOOPBACK|IFF_POINTOPOINT|IFF_BROADCAST))
 		!= IFF_BROADCAST)
@@ -338,7 +338,7 @@ int Query_all(sock_t *sock, int port, String msg, size_t msglen)
 	 */
 	ifreq = *ifreqp;
 	if (ioctl(fd, SIOCGIFNETMASK, (String )&ifreq) == -1) {
-	    error("ioctl SIOCGIFNETMASK");
+	    logger.error("ioctl SIOCGIFNETMASK");
 	    continue;
 	}
 	mask = *(struct sockaddr_in *)&ifreq.ifr_addr;
@@ -374,7 +374,7 @@ int Query_all(sock_t *sock, int port, String msg, size_t msglen)
 	    D(printf("\tsendto {}/{}\n", inet_ntoa(addr.sin_addr), port));
 	    count++;
 	} else
-	    error("sendto {}/{} failed", inet_ntoa(addr.sin_addr), port);
+	    logger.error("sendto {}/{} failed", inet_ntoa(addr.sin_addr), port);
     }
 
     close(fd);

@@ -95,7 +95,7 @@ boolean Mapdata_setup(String urlstr) {
 
             String home = System.getenv("user.home");
             if (home == null) {
-                logger.error("couldn't access any dir in {} and HOME is unset", path);
+                logger.logger.error("couldn't access any dir in {} and HOME is unset", path);
                 return rv;
             }
 
@@ -103,7 +103,7 @@ boolean Mapdata_setup(String urlstr) {
 
             // todo add Permissions?
             if (!dir.mkdir()) {
-                logger.error("failed to create directory {}", dir);
+                logger.logger.error("failed to create directory {}", dir);
                 return rv;
             }
         }
@@ -112,7 +112,7 @@ boolean Mapdata_setup(String urlstr) {
         path = new File(dir, name);
 
         if (!name.contains(".")) {
-            logger.error("no extension in file name {}.", name);
+            logger.logger.error("no extension in file name {}.", name);
             return rv;
         }
 
@@ -167,7 +167,7 @@ static boolean Mapdata_extract(File name)
 
     int ext = name.getPath().lastIndexOf('.');
     if (ext == -1) {
-        logger.error("no extension in file name {}.", name);
+        logger.logger.error("no extension in file name {}.", name);
         return false;
     }
     // create directory to hold file contents
@@ -175,7 +175,7 @@ static boolean Mapdata_extract(File name)
 
     // todo add Permissions?
     if(!dir.mkdir())  {
-        logger.error("failed to create directory {}", dir);
+        logger.logger.error("failed to create directory {}", dir);
         return false;
     }
 
@@ -188,7 +188,7 @@ static boolean Mapdata_extract(File name)
         if(header.matches("XPD \\d+")) {
             count = Integer.parseInt(header.substring(4));
         }else {
-            logger.error("invalid header in {}", name);
+            logger.logger.error("invalid header in {}", name);
 
             return false;
         }
@@ -207,7 +207,7 @@ static boolean Mapdata_extract(File name)
             while (size > 0) {
                 retval = in.read(buf, 0, Math.min(COPY_BUF_SIZE, size));
                 if (retval == -1) {
-                    logger.error("error when reading {}", name);
+                    logger.logger.error("error when reading {}", name);
                     return false;
                 }
                 rlen = retval;
@@ -215,14 +215,14 @@ static boolean Mapdata_extract(File name)
                     out.write(buf, 0, rlen);
                 } catch (IOException e) {
 
-                    logger.error("failed to write to {}", fname);
+                    logger.logger.error("failed to write to {}", fname);
                     return false;
                 }
 
                 size -= rlen;
             }
         } catch (IOException e) {
-            logger.error("failed to open {} for writing", fname.getPath(), e);
+            logger.logger.error("failed to open {} for writing", fname.getPath(), e);
             return false;
         }
 
@@ -230,7 +230,7 @@ static boolean Mapdata_extract(File name)
 
     } catch (IOException e)
     {
-        logger.error("failed to open {} for reading", name.toString());
+        logger.logger.error("failed to open {} for reading", name.toString());
         return false;
     }
 
@@ -263,7 +263,7 @@ static boolean Mapdata_download(URL url, File filePath) {
 
 
     } catch (IOException ex) {
-        logger.error("failed to get map textures data", ex);
+        logger.logger.error("failed to get map textures data", ex);
         return false;
     }
 

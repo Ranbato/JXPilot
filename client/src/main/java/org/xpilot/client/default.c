@@ -227,7 +227,7 @@ static void tryToSetShipShape()
 
     fp = fopen(shipShapeFile, "r");
     if (!fp) {
-	error("Can't open shipShapeFile \"{}\".", shipShapeFile);
+	logger.error("Can't open shipShapeFile \"{}\".", shipShapeFile);
 	return;
     }
 

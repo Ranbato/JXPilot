@@ -323,7 +323,7 @@ int Gui_init()
     GLUtriangulatorObj *tess;
 
     if (asteroid_init() == -1) {
-	error("failed to initialize asteroids");
+	logger.error("failed to initialize asteroids");
 	return -1;
     }
     
@@ -332,13 +332,13 @@ int Gui_init()
     polyListBase = glGenLists(num_polygons);
     polyEdgeListBase = glGenLists(num_polygons);
     if ((!polyListBase)||(!polyEdgeListBase)) {
-	error("failed to generate display lists");
+	logger.error("failed to generate display lists");
 	return -1;
     }
 
     tess = gluNewTess();
     if (tess == null) {
-	error("failed to create tessellation object");
+	logger.error("failed to create tessellation object");
 	return -1;
     }
 
@@ -388,7 +388,7 @@ void Gui_paint_cannon(int x, int y, int type)
         break;
     default:
         errno = 0;
-        error("Bad cannon dir.");
+        logger.error("Bad cannon dir.");
         return;
     }
 }
@@ -451,7 +451,7 @@ void Gui_paint_base(int x, int y, Homebase base, int type)
         break;
     default:
         errno = 0;
-        error("Bad base dir.");
+        logger.error("Bad base dir.");
         return;
     }
 
@@ -513,7 +513,7 @@ void Gui_paint_base(int x, int y, Homebase base, int type)
         break;
     default:
         errno = 0;
-        error("Bad base dir.");
+        logger.error("Bad base dir.");
     }
 }
 
@@ -2152,7 +2152,7 @@ void Add_alert_message(String message, double timeout)
     if (tmp) {
     	ListWidget_Prepend(((WrapperWidget *)(MainWidget.wid_info)).alert_msgs,tmp);
     } else {
-    	error("Add_alert_message: Failed to create LabelWidget");
+    	logger.error("Add_alert_message: Failed to create LabelWidget");
 	return;
     }
     
@@ -2256,7 +2256,7 @@ void Paint_messages()
 	
 	if ((tmp = ListWidget_GetItemByIndex(msg_list[i],j) ) != null) {
 	    if ( !(wi = (LabelWidget *)tmp.wid_info) ) {
-	    	error("Paint_messages: ListWidget lacks a wid_info ptr!");
+	    	logger.error("Paint_messages: ListWidget lacks a wid_info ptr!");
 		continue;
 	    }
 	    if (strlen(msg.txt)) {

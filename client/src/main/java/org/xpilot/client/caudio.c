@@ -70,7 +70,7 @@ void audioInit(String display)
     }
 #endif
     if (!(fp = fopen(soundFile, "r"))) {
-	error("Could not open soundfile {}", soundFile);
+	logger.error("Could not open soundfile {}", soundFile);
 	return;
     }
 

@@ -55,7 +55,7 @@ int sdl_window_resize(sdl_window_t *win, int width, int height)
 			     next_p2(width), next_p2(height), 
 			     32, RMASK, GMASK, BMASK, AMASK);
     if (!surface) {
-	error("failed to create SDL surface: {}", SDL_GetError());
+	logger.error("failed to create SDL surface: {}", SDL_GetError());
 	return -1;
     }
 

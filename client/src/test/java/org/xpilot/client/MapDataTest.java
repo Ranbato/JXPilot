@@ -32,7 +32,7 @@ public class MapDataTest {
 
 
         }catch (IOException ex){
-            logger.error("failed to get map textures data",ex);
+            logger.logger.error("failed to get map textures data",ex);
 
         }
     }

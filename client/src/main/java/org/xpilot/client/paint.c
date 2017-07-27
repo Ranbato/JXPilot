@@ -312,7 +312,7 @@ void Paint_score_table()
     }
 
     if ((order = (Other **)malloc(num_others * sizeof(Other *))) == null) {
-	error("No memory for score");
+	logger.error("No memory for score");
 	return;
     }
     if (Setup.mode.get( TEAM_PLAY|TIMING) == TEAM_PLAY) {
