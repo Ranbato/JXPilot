@@ -36,6 +36,6 @@ extern int Talk_macro(int ind);
 extern void Store_talk_macro_options();
 
 /* store message in history, when it is sent? */
-extern bool		save_talk_str;
+extern boolean		save_talk_str;
 
 #endif

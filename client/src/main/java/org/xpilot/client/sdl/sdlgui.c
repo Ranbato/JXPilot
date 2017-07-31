@@ -117,9 +117,9 @@ int   hudRadarObjectShape;
 float hudRadarDotScale;
 
 static double shipLineWidth;
-static bool smoothLines;
-static bool texturedBalls;
-static bool texturedShips;
+static boolean smoothLines;
+static boolean texturedBalls;
+static boolean texturedShips;
 static GLuint polyListBase = 0;
 static GLuint polyEdgeListBase = 0;
 static GLuint asteroid = 0;
@@ -434,7 +434,7 @@ void Gui_paint_base(int x, int y, Homebase base, int type)
 {
     int color;
     Other *other;
-    bool do_basewarning = false;
+    boolean do_basewarning = false;
 
     switch (type) {
     case SETUP_BASE_UP:
@@ -518,7 +518,7 @@ void Gui_paint_base(int x, int y, Homebase base, int type)
 }
 
 void Gui_paint_decor(int x, int y, int xi, int yi, int type,
-		     bool last, bool more_y)
+		     boolean last, boolean more_y)
 {
 	int mask;
     static unsigned char    decor[256];
@@ -600,7 +600,7 @@ void Gui_paint_hudradar_limit(int x, int y, int xi, int yi)
     glEnd();
 }
 
-void Gui_paint_setup_check(int x, int y, bool isNext)
+void Gui_paint_setup_check(int x, int y, boolean isNext)
 {
     if (isNext) {
 	Image_paint(IMG_CHECKPOINT, x, y, 0, whiteRGBA);
@@ -740,7 +740,7 @@ void Gui_paint_decor_dot(int x, int y, int size)
 	glEnd();
 }
 
-void Gui_paint_setup_target(int x, int y, int team, double damage, bool own)
+void Gui_paint_setup_target(int x, int y, int team, double damage, boolean own)
 {
 	int damage_y;
 
@@ -766,7 +766,7 @@ void Gui_paint_setup_target(int x, int y, int team, double damage, bool own)
 	}
 }
 
-void Gui_paint_setup_treasure(int x, int y, int team, bool own)
+void Gui_paint_setup_treasure(int x, int y, int team, boolean own)
 {
     Image_paint(own ? IMG_HOLDER_FRIEND : IMG_HOLDER_ENEMY, x, y, 0, whiteRGBA);
 }
@@ -821,7 +821,7 @@ void Gui_paint_polygon(int i, int xoff, int yoff)
     PolygonStyle p_style;
     EdgeStyle e_style;
     int width;
-    bool did_fill = false;
+    boolean did_fill = false;
 
     polygon = polygons[i];
     p_style = polygon_styles[polygon.style];
@@ -965,7 +965,7 @@ void Gui_paint_spark(int color, int x, int y)
     glEnd();
 }
 
-void Gui_paint_wreck(int x, int y, bool deadly, int wtype, int rot, int size)
+void Gui_paint_wreck(int x, int y, boolean deadly, int wtype, int rot, int size)
 {
     int cnt, tx, ty;
 
@@ -1555,7 +1555,7 @@ void Paint_meters()
 {
     int spacing = Math.max((GLuint)meterHeight,gamefont.h) + 6;
     int y = spacing, color;
-    static bool setup_texs = true;
+    static boolean setup_texs = true;
 
     if (setup_texs) {
     	render_text(&gamefont,"Fuel"	    	, &meter_texs[0]);
@@ -2166,7 +2166,7 @@ void Add_alert_message(String message, double timeout)
 void Clear_alert_messages()
 {
     GLWidget *tmp,*list;
-    bool dummy;
+    boolean dummy;
     alert_timeout *tol;
     
     while ((tol = alert_timeout_list)) {
@@ -2188,7 +2188,7 @@ void Paint_messages()
     static int old_maxMessages = 0;
     static Message **msgs[2];
     static GLWidget *msg_list[2] = {null,null};
-    static bool showMessages = true;
+    static boolean showMessages = true;
 
     int j, i = 0;
     Uint32 *msg_color;
@@ -2315,7 +2315,7 @@ void Paint_messages()
     old_maxMessages = maxMessages;
 }
 
-static bool set_rgba_color_option(xp_option *opt, String val)
+static boolean set_rgba_color_option(xp_option *opt, String val)
 {
     int c = 0;
     assert(val);

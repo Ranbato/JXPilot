@@ -65,7 +65,7 @@ void Pointer_control_newbie_message()
     Add_newbie_message(msg);
 }
 
-void Pointer_control_set_state(bool on)
+void Pointer_control_set_state(boolean on)
 {
     if (clData.pointerControl == on)
 	return;
@@ -75,7 +75,7 @@ void Pointer_control_set_state(bool on)
 	Pointer_control_newbie_message();
 }
 
-void Talk_set_state(bool on)
+void Talk_set_state(boolean on)
 {
     if (clData.talking == on)
 	return;
@@ -140,7 +140,7 @@ int Key_update()
     return Send_keyboard(keyv);
 }
 
-static bool Key_check_talk_macro(keys_t key)
+static boolean Key_check_talk_macro(keys_t key)
 {
     if (key >= KEY_MSG_1 && key < KEY_MSG_1 + TALK_FAST_NR_OF_MSGS)
 	Talk_macro((int)(key - KEY_MSG_1));
@@ -148,21 +148,21 @@ static bool Key_check_talk_macro(keys_t key)
 }
 
 
-static bool Key_press_id_mode()
+static boolean Key_press_id_mode()
 {
     showUserName = showUserName ? false : true;
     scoresChanged = true;
     return false;	/* server doesn't need to know */
 }
 
-static bool Key_press_autoshield_hack()
+static boolean Key_press_autoshield_hack()
 {
     if (auto_shield && keyv.get(KEY_SHIELD))
 	keyv.clear(KEY_SHIELD);
     return false;
 }
 
-static bool Key_press_shield(keys_t key)
+static boolean Key_press_shield(keys_t key)
 {
     if (toggle_shield) {
 	shields = !shields;
@@ -177,13 +177,13 @@ static bool Key_press_shield(keys_t key)
     return false;
 }
 
-static bool Key_press_fuel()
+static boolean Key_press_fuel()
 {
     fuelTime = FUEL_NOTIFY_TIME;
     return false;
 }
 
-static bool Key_press_swap_settings()
+static boolean Key_press_swap_settings()
 {
     double tmp;
 #define SWAP(a, b) (tmp = (a), (a) = (b), (b) = tmp)
@@ -197,7 +197,7 @@ static bool Key_press_swap_settings()
     return true;
 }
 
-static bool Key_press_swap_scalefactor()
+static boolean Key_press_swap_scalefactor()
 {
     double a = clData.altScaleFactor;
 
@@ -207,7 +207,7 @@ static bool Key_press_swap_scalefactor()
     return false;
 }
 
-static bool Key_press_increase_power()
+static boolean Key_press_increase_power()
 {
     power = power * 1.10;
     power = Math.min(power, MAX_PLAYER_POWER);
@@ -219,7 +219,7 @@ static bool Key_press_increase_power()
 
 }
 
-static bool Key_press_decrease_power()
+static boolean Key_press_decrease_power()
 {
     power = power / 1.10;
     power = Math.max(power, MIN_PLAYER_POWER);
@@ -230,7 +230,7 @@ static bool Key_press_decrease_power()
     return false;	/* server doesn't see these keypresses anymore */
 }
 
-static bool Key_press_increase_turnspeed()
+static boolean Key_press_increase_turnspeed()
 {
     turnspeed = turnspeed * 1.05;
     turnspeed = Math.min(turnspeed, MAX_PLAYER_TURNSPEED);
@@ -241,7 +241,7 @@ static bool Key_press_increase_turnspeed()
     return false;	/* server doesn't see these keypresses anymore */
 }
 
-static bool Key_press_decrease_turnspeed()
+static boolean Key_press_decrease_turnspeed()
 {
     turnspeed = turnspeed / 1.05;
     turnspeed = Math.max(turnspeed, MIN_PLAYER_TURNSPEED);
@@ -252,7 +252,7 @@ static bool Key_press_decrease_turnspeed()
     return false;	/* server doesn't see these keypresses anymore */
 }
 
-static bool Key_press_talk()
+static boolean Key_press_talk()
 {
     int i;
 
@@ -268,43 +268,43 @@ static bool Key_press_talk()
     return false;	/* server doesn't need to know */
 }
 
-static bool Key_press_show_items()
+static boolean Key_press_show_items()
 {
     instruments.showItems = !instruments.showItems;
     return false;	/* server doesn't need to know */
 }
 
-static bool Key_press_show_messages()
+static boolean Key_press_show_messages()
 {
     instruments.showMessages = !instruments.showMessages;
     return false;	/* server doesn't need to know */
 }
 
-static bool Key_press_pointer_control()
+static boolean Key_press_pointer_control()
 {
     Pointer_control_set_state(!clData.pointerControl);
     return false;	/* server doesn't need to know */
 }
 
-static bool Key_press_toggle_fullscreen()
+static boolean Key_press_toggle_fullscreen()
 {
     Toggle_fullscreen();
     return false;	/* server doesn't need to know */
 }
 
-static bool Key_press_toggle_radar_score()
+static boolean Key_press_toggle_radar_score()
 {
     Toggle_radar_and_scorelist();
     return false;	/* server doesn't need to know */
 }
 
-static bool Key_press_toggle_record()
+static boolean Key_press_toggle_record()
 {
     Record_toggle();
     return false;	/* server doesn't need to know */
 }
 
-static bool Key_press_toggle_sound()
+static boolean Key_press_toggle_sound()
 {
 #ifdef SOUND
     sound = !sound;
@@ -312,13 +312,13 @@ static bool Key_press_toggle_sound()
     return false;	/* server doesn't need to know */
 }
 
-static bool Key_press_msgs_stdout()
+static boolean Key_press_msgs_stdout()
 {
     Print_messages_to_stdout();
     return false;	/* server doesn't need to know */
 }
 
-static bool Key_press_select_lose_item()
+static boolean Key_press_select_lose_item()
 {
     if (lose_item_active == 1)
 	lose_item_active = 2;
@@ -327,7 +327,7 @@ static bool Key_press_select_lose_item()
     return true;
 }
 
-static bool Key_press_yes()
+static boolean Key_press_yes()
 {
     /* Handled in other code */
     assert(!clData.quitMode);
@@ -335,12 +335,12 @@ static bool Key_press_yes()
     return false;	/* server doesn't need to know */
 }
 
-static bool Key_press_no()
+static boolean Key_press_no()
 {
     return false;	/* server doesn't need to know */
 }
 
-static bool Key_press_exit()
+static boolean Key_press_exit()
 {
     int i;
 
@@ -371,7 +371,7 @@ static int Key_get_count(keys_t key)
    return keyv_new[key];
 }
 
-static bool Key_inc_count(keys_t key)
+static boolean Key_inc_count(keys_t key)
 {
     if (key >= NUM_KEYS)
 	return false;
@@ -384,7 +384,7 @@ static bool Key_inc_count(keys_t key)
     return false;
 }
 
-static bool Key_dec_count(keys_t key)
+static boolean Key_dec_count(keys_t key)
 {
     if (key >= NUM_KEYS)
 	return false;
@@ -400,7 +400,7 @@ static bool Key_dec_count(keys_t key)
 void Key_clear_counts()
 {
     int i;
-    bool change = false;
+    boolean change = false;
 
     for (i = 0; i < NUM_KEYS; i++) {
     	if (keyv_new[i] > 0) {
@@ -417,7 +417,7 @@ void Key_clear_counts()
 /* Remember which key we used to exit quit mode. */
 static keys_t quit_mode_exit_key = KEY_DUMMY;
 
-static bool Quit_mode_key_press(keys_t key)
+static boolean Quit_mode_key_press(keys_t key)
 {
     if (key == KEY_YES)
 	Client_exit(0);
@@ -431,9 +431,9 @@ static bool Quit_mode_key_press(keys_t key)
     return false;
 }
 
-bool Key_press(keys_t key)
+boolean Key_press(keys_t key)
 {
-    bool countchange;
+    boolean countchange;
     int keycount, i;
 
     if (clData.quitMode)
@@ -564,9 +564,9 @@ bool Key_press(keys_t key)
     return true;
 }
 
-bool Key_release(keys_t key)
+boolean Key_release(keys_t key)
 {
-    bool countchange;
+    boolean countchange;
     int keycount;
 
     /*
@@ -675,12 +675,12 @@ void Reset_shields()
     }
 }
 
-void Set_auto_shield(bool on)
+void Set_auto_shield(boolean on)
 {
     auto_shield = on;
 }
 
-void Set_toggle_shield(bool on)
+void Set_toggle_shield(boolean on)
 {
     toggle_shield = on;
     if (toggle_shield) {
@@ -698,7 +698,7 @@ void Set_toggle_shield(bool on)
 void Pointer_button_pressed(int button)
 {
     int i, b_index = button - 1;
-    bool key_change = false;
+    boolean key_change = false;
 
     if (button < 1 || button > MAX_POINTER_BUTTONS)
 	return;
@@ -713,7 +713,7 @@ void Pointer_button_pressed(int button)
 void Pointer_button_released(int button)
 {
     int i, b_index = button - 1;
-    bool key_change = false;
+    boolean key_change = false;
 
     if (button < 1 || button > MAX_POINTER_BUTTONS)
 	return;
@@ -728,7 +728,7 @@ void Pointer_button_released(int button)
 
 void Keyboard_button_pressed(xp_keysym_t ks)
 {
-    bool change = false;
+    boolean change = false;
     keys_t key;
 
 #if 0
@@ -750,7 +750,7 @@ void Keyboard_button_pressed(xp_keysym_t ks)
 }
 void Keyboard_button_released(xp_keysym_t ks)
 {
-    bool change = false;
+    boolean change = false;
     keys_t key;
 
     for (key = Generic_lookup_key(ks, true);
@@ -785,7 +785,7 @@ static void Bind_key_to_pointer_button(keys_t key, int ind)
 
 
 
-static bool setPointerButtonBinding(xp_option *opt, String value)
+static boolean setPointerButtonBinding(xp_option *opt, String value)
 {
     int ind = pointer_button_index_by_option(opt);
     String ptr, *valcpy;

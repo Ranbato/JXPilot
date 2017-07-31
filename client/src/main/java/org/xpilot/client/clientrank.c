@@ -36,7 +36,7 @@ static int oldest_cache = 0;
 static int timesort[MAX_SCORES];
 static double kd[MAX_SCORES];
 static int kdsort[MAX_SCORES];
-static bool client_Scoring = false;
+static boolean client_Scoring = false;
 
 static void swapd(double *d1, double *d2)
 {

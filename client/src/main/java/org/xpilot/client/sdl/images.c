@@ -307,7 +307,7 @@ void Images_cleanup()
 }
 
 
-int Bitmap_add(String filename, int count, bool scalable)
+int Bitmap_add(String filename, int count, boolean scalable)
 {
     image_t img;
 

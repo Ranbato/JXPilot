@@ -63,7 +63,7 @@ public class TextInterface{
 //}
 //
 //
-//static int Get_contact_message(sockbuf_t *sbuf,
+//static int Get_contact_message(SocketBuf *sbuf,
 //			       String contact_server,
 //			       ConnectParam *conpar)
 //{
@@ -138,7 +138,7 @@ public class TextInterface{
 //
 //
 //
-//static int Get_reply_message(sockbuf_t *ibuf,
+//static int Get_reply_message(SocketBuf *ibuf,
 //			     ConnectParam *conpar)
 //{
 //    int			len;
@@ -208,7 +208,7 @@ public class TextInterface{
 // * server (connected to server), or false if the player wants to have a
 // * look at the next server.
 // */
-//static bool Process_commands(sockbuf_t *ibuf,
+//static boolean Process_commands(SocketBuf *ibuf,
 //			     int auto_connect, int list_servers,
 //			     int auto_shutdown, String shutdown_reason,
 //			     ConnectParam *conpar)
@@ -216,7 +216,7 @@ public class TextInterface{
 //    int i, len, retries, delay, success, cmd_credentials = 0, max_replies;
 //    char c, status, reply_to, linebuf[MAX_LINE];
 //    unsigned short port, qpos;
-//    bool has_credentials = false, privileged_cmd;
+//    boolean has_credentials = false, privileged_cmd;
 //    long key = 0;
 //    time_t qsent = 0;
 //    static char localhost[] = "127.0.0.1";
@@ -696,7 +696,7 @@ public class TextInterface{
 //		      int auto_shutdown, String shutdown_reason,
 //		      ConnectParam *conpar)
 //{
-//    sockbuf_t		ibuf;			/* info buffer */
+//    SocketBuf		ibuf;			/* info buffer */
 //    int			result;
 //
 //    if (Sockbuf_init(&ibuf, null, CLIENT_RECV_SIZE,
@@ -733,8 +733,8 @@ public class TextInterface{
 //    sock_t		sock;
 //    int			retries;
 //    int			contacted;
-//    bool		compat_mode = false;
-//    sockbuf_t		sbuf;			/* contact buffer */
+//    boolean		compat_mode = false;
+//    SocketBuf		sbuf;			/* contact buffer */
 //
 //
 //    if ((status = create_dgram_socket(&sock, 0)) == SOCK_IS_ERROR) {

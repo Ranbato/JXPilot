@@ -71,7 +71,7 @@ typedef struct _MetaRowWidget {
     Uint32          bg;
     MetaTableWidget *table;
     server_info_t   *sip;
-    bool            is_selected;
+    boolean            is_selected;
 } MetaRowWidget;
 
 typedef struct {
@@ -589,7 +589,7 @@ static void Button_MetaRowWidget(Uint8 button, Uint8 state, Uint16 x,
 
 static GLWidget *Init_MetaRowWidget(server_info_t *sip, 
 				    MetaTableWidget *table, 
-				    bool is_selected,
+				    boolean is_selected,
 				    unsigned int bg)
 {
     GLWidget *tmp, *col;
@@ -758,7 +758,7 @@ static GLWidget *Init_MetaTableWidget(GLWidget *meta, list_t servers)
     list_iter_t iter;
     server_info_t *sip;
     MetaTableWidget *info;
-    bool bg = true;
+    boolean bg = true;
 
     if (!(tmp = Init_EmptyBaseGLWidget())) {
         logger.error("Widget init failed");
@@ -924,7 +924,7 @@ static GLWidget *Init_MetaWidget(list_t servers)
     return tmp;
 }
 
-static bool join_server(ConnectParam *conpar, server_info_t *sip)
+static boolean join_server(ConnectParam *conpar, server_info_t *sip)
 {
     String server_addr_ptr = conpar.server_addr;
     strlcpy(conpar.server_name, sip.hostname,

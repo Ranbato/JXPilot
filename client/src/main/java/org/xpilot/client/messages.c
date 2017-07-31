@@ -37,10 +37,10 @@ int			maxLinesInHistory;
 int	maxMessages;		/* Max. number of messages to display */
 int	messagesToStdout;	/* Send messages to standard output */
 
-static bool ball_shout = false;
-static bool need_cover = false;
+static boolean ball_shout = false;
+static boolean need_cover = false;
 
-bool roundend = false;
+boolean roundend = false;
 static int killratio_kills = 0;
 static int killratio_deaths = 0;
 static int killratio_totalkills = 0;
@@ -49,7 +49,7 @@ static int ballstats_cashes = 0;
 static int ballstats_replaces = 0;
 static int ballstats_teamcashes = 0;
 static int ballstats_lostballs = 0;
-bool played_this_round = false;
+boolean played_this_round = false;
 static int rounds_played = 0;
 
 static Message	*MsgBlock = null;
@@ -98,7 +98,7 @@ typedef struct {
 } msgnames_t;
 
 /* recursive descent parser for messages */
-static bool Msg_match_fmt(String msg, String fmt, msgnames_t *mn)
+static boolean Msg_match_fmt(String msg, String fmt, msgnames_t *mn)
 {
     String fp;
     int i;
@@ -179,7 +179,7 @@ static bool Msg_match_fmt(String msg, String fmt, msgnames_t *mn)
     return false;
 }
 
-static bool Want_scan()
+static boolean Want_scan()
 {
     int i;
     Other *other;
@@ -209,7 +209,7 @@ static bool Want_scan()
  * A total reset is most often done when a new match is starting.
  * If we see a total reset message we clear the statistics.
  */
-static bool Msg_scan_for_total_reset(String message)
+static boolean Msg_scan_for_total_reset(String message)
 {
     static char total_reset[] = "Total reset";
 
@@ -230,7 +230,7 @@ static bool Msg_scan_for_total_reset(String message)
     return false;
 }
 
-static bool Msg_scan_for_replace_treasure(String message)
+static boolean Msg_scan_for_replace_treasure(String message)
 {
     msgnames_t mn;
 
@@ -266,7 +266,7 @@ static bool Msg_scan_for_replace_treasure(String message)
     return false;
 }
 
-static bool Msg_scan_for_ball_destruction(String message)
+static boolean Msg_scan_for_ball_destruction(String message)
 {
     msgnames_t mn;
 
@@ -318,7 +318,7 @@ static void Msg_scan_death(int id)
     }
 }
 
-static bool Msg_is_game_msg(String message)
+static boolean Msg_is_game_msg(String message)
 {
     if (message[strlen(message) - 1] == ']' || strncmp(message, " <", 2) == 0)
 	return false;
@@ -329,9 +329,9 @@ static void Msg_scan_game_msg(String message)
 {
     msgnames_t mn;
     String killer = null, *victim = null, *victim2 = null;
-    bool i_am_killer = false;
-    bool i_am_victim = false;
-    bool i_am_victim2 = false;
+    boolean i_am_killer = false;
+    boolean i_am_victim = false;
+    boolean i_am_victim2 = false;
     Other *other = null;
 
     DP(printf("MESSAGE: \"{}\"\n", message));
@@ -531,7 +531,7 @@ static void Msg_scan_game_msg(String message)
  * Checks if the message is in angle brackets, that is,
  * starts with " < " and ends with ">"
  */
-static bool Msg_is_in_angle_brackets(String message)
+static boolean Msg_is_in_angle_brackets(String message)
 {
     if (strncmp(message, " < ", 3))
 	return false;
@@ -613,7 +613,7 @@ static MsgBms Msg_do_bms(String message)
  * In 'bracket' we will store info about where the
  * player name starts so the bms does can ignore that.
  */
-static bool Msg_is_from_our_team(String message, String *msg2)
+static boolean Msg_is_from_our_team(String message, String *msg2)
 {
     Other *other;
     static char buf[MAX_CHARS + 8];
@@ -741,7 +741,7 @@ static void Bms_clear(MsgBms type)
 	    TalkMsg[i].bmsinfo = BmsNone;
 }
 
-bool Bms_test_state(MsgBms bms)
+boolean Bms_test_state(MsgBms bms)
 {
     switch (bms) {
     case BmsBall:
@@ -801,9 +801,9 @@ void Add_message(String message)
     Message *msg, **msg_set;
     MsgBms bmsinfo = BmsNone;
     String msg2;
-    bool is_game_msg = false;
-    bool is_drawn_talk_message	= false; /* not pending */
-    bool scrolling = false; /* really moving */
+    boolean is_game_msg = false;
+    boolean is_drawn_talk_message	= false; /* not pending */
+    boolean scrolling = false; /* really moving */
 
     is_game_msg = Msg_is_game_msg(message);
     if (!is_game_msg) {

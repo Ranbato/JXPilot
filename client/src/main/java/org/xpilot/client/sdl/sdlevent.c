@@ -30,7 +30,7 @@
 #include "../xhacks.h"
 
 /* TODO: remove these from client.h and put them in *event.h */
-bool            initialPointerControl = false;
+boolean            initialPointerControl = false;
 
 static int	mouseMovement;	/* horizontal mouse movement. */
 
@@ -39,7 +39,7 @@ GLWidget *hovertarget = null;
 
 int Process_event(SDL_Event *evt);
 
-void Platform_specific_pointer_control_set_state(bool on)
+void Platform_specific_pointer_control_set_state(boolean on)
 {
     assert(clData.pointerControl != on);
 
@@ -63,7 +63,7 @@ void Platform_specific_pointer_control_set_state(bool on)
 #endif
 }
 
-void Platform_specific_talk_set_state(bool on)
+void Platform_specific_talk_set_state(boolean on)
 {
     assert(clData.talking != on);
     if (on)

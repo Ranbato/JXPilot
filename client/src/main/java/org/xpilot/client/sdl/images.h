@@ -43,8 +43,8 @@ typedef struct {
     GLuint          name;         /* OpenGL texture "name" */
     char            *filename;    /* the name of the image file */
     int             num_frames;   /* the number of frames */
-    bool            rotate;       /* should this image be rotated */
-    bool            scale;        /* should this image be scaled to fill data */
+    boolean            rotate;       /* should this image be rotated */
+    boolean            scale;        /* should this image be scaled to fill data */
     image_state_e   state;        /* the state of the image */
     int             width;        /* width of the whole image */
     int             height;       /* height of the whole image */

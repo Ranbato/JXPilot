@@ -31,7 +31,7 @@
 Point 	world;
 Point 	realWorld;
 
-bool	players_exposed;
+boolean	players_exposed;
 short	ext_view_width;		/* Width of extended visible area */
 short	ext_view_height;	/* Height of extended visible area */
 int	active_view_width;	/* Width of active map area displayed. */
@@ -266,7 +266,7 @@ static int Team_score_table(int entrynum, int teamnum,
 {
     Other *other;
     int i, j;
-    bool drawn = false;
+    boolean drawn = false;
 
     for (i = 0; i < num_others; i++) {
 	other = order[i];

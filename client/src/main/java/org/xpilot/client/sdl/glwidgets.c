@@ -152,7 +152,7 @@ static void hover_optionWidget( int over, Uint16 x , Uint16 y , void *data )
     String help;
     static char line[256];
     int start = 0, end = 0;
-    bool eternalLoop = true;
+    boolean eternalLoop = true;
     static Uint32 bgColor = 0x0000ff88;
     
     if (over) {
@@ -279,7 +279,7 @@ GLWidget *Init_OptionWidget( xp_option *opt, Uint32 *fgcolor, Uint32 *bgcolor )
     return null;
 }
 
-bool AppendGLWidgetList( GLWidget **list, GLWidget *item )
+boolean AppendGLWidgetList( GLWidget **list, GLWidget *item )
 {
     GLWidget **curr;
 
@@ -333,7 +333,7 @@ void PrependGLWidgetList( GLWidget **list, GLWidget *item )
     *list = item;
 }
 
-bool DelGLWidgetListItem( GLWidget **list, GLWidget *widget )
+boolean DelGLWidgetListItem( GLWidget **list, GLWidget *widget )
 {
     GLWidget **curr;
 
@@ -734,7 +734,7 @@ static void Paint_SlideWidget( GLWidget *widget )
     glEnd();
 }
 
-GLWidget *Init_SlideWidget( bool locked,
+GLWidget *Init_SlideWidget( boolean locked,
     	     void (*motion)( Sint16 xrel, Sint16 yrel, Uint16 x, Uint16 y, void *data ), void *motiondata,
 	     void (*release)(void *releasedata),void *releasedata )
 {
@@ -933,7 +933,7 @@ void ScrollbarWidget_SetSlideSize( GLWidget *widget, GLfloat size )
     SetBounds_ScrollbarWidget(widget,&(widget.bounds));
 }
 
-GLWidget *Init_ScrollbarWidget( bool locked, GLfloat pos, GLfloat size, ScrollWidget_dir_t dir,
+GLWidget *Init_ScrollbarWidget( boolean locked, GLfloat pos, GLfloat size, ScrollWidget_dir_t dir,
     	    	    	    	void (*poschange)( GLfloat pos , void *poschangedata),
 				void *poschangedata )
 {
@@ -1013,7 +1013,7 @@ static void Close_LabelWidget( GLWidget *widget )
     free_string_texture(&(((LabelWidget *)widget.wid_info).tex));
 }
 
-bool LabelWidget_SetColor( GLWidget *widget , Uint32 *fgcolor, Uint32 *bgcolor )
+boolean LabelWidget_SetColor( GLWidget *widget , Uint32 *fgcolor, Uint32 *bgcolor )
 {
     LabelWidget *wi;
     
@@ -1193,8 +1193,8 @@ static void Paint_LabeledRadiobuttonWidget( GLWidget *widget )
 }
 
 GLWidget *Init_LabeledRadiobuttonWidget( string_tex_t *ontex, string_tex_t *offtex,
-    	    	    	    	    	void (*action)(bool state, void *actiondata),
-					void *actiondata, bool start_state )
+    	    	    	    	    	void (*action)(boolean state, void *actiondata),
+					void *actiondata, boolean start_state )
 {
     GLWidget	    	    	*tmp;
     LabeledRadiobuttonWidget	*wid_info;
@@ -1238,7 +1238,7 @@ GLWidget *Init_LabeledRadiobuttonWidget( string_tex_t *ontex, string_tex_t *offt
 /* Begin:  BoolChooserWidget */
 /*****************************/
 static void Paint_BoolChooserWidget( GLWidget *widget );
-static void BoolChooserWidget_SetValue( bool state, void *data );
+static void BoolChooserWidget_SetValue( boolean state, void *data );
 static void Close_BoolChooserWidget ( GLWidget *widget );
 static void SetBounds_BoolChooserWidget( GLWidget *widget, SDL_Rect *b );
 
@@ -1301,7 +1301,7 @@ static void SetBounds_BoolChooserWidget( GLWidget *widget, SDL_Rect *b )
     SetBounds_GLWidget(tmp,&b2);
 }
 
-static void BoolChooserWidget_SetValue( bool state, void *data )
+static void BoolChooserWidget_SetValue( boolean state, void *data )
 {
     GLWidget *wid;
     BoolChooserWidget *wi;
@@ -1358,7 +1358,7 @@ static void Paint_BoolChooserWidget( GLWidget *widget )
     }
 }
 
-GLWidget *Init_BoolChooserWidget( String name, bool *value, Uint32 *fgcolor, Uint32 *bgcolor,
+GLWidget *Init_BoolChooserWidget( String name, boolean *value, Uint32 *fgcolor, Uint32 *bgcolor,
     	    	    	    	 void (*callback)(void *tmp, String value), void *data )
 {
     GLWidget *tmp;
@@ -2446,7 +2446,7 @@ GLWidget *Init_ColorModWidget( Uint32 *value, Uint32 *fgcolor, Uint32 *bgcolor,
 static void SetBounds_ListWidget( GLWidget *widget, SDL_Rect *b );
 static void Paint_ListWidget( GLWidget *widget );
 
-bool ListWidget_Append( GLWidget *list, GLWidget *item )
+boolean ListWidget_Append( GLWidget *list, GLWidget *item )
 {
     GLWidget *curr1, **curr2;
     ListWidget *wid_info;
@@ -2497,7 +2497,7 @@ bool ListWidget_Append( GLWidget *list, GLWidget *item )
     return true;
 }
 
-bool ListWidget_Prepend( GLWidget *list, GLWidget *item )
+boolean ListWidget_Prepend( GLWidget *list, GLWidget *item )
 {
     GLWidget *curr1, *curr2, **entry_pt, *first;
     ListWidget *wid_info;
@@ -2552,7 +2552,7 @@ bool ListWidget_Prepend( GLWidget *list, GLWidget *item )
     return true;
 }
 
-bool ListWidget_Insert( GLWidget *list, GLWidget *target, GLWidget *item )
+boolean ListWidget_Insert( GLWidget *list, GLWidget *target, GLWidget *item )
 {
     GLWidget **curr, *curr1, *curr2;
     ListWidget *wid_info;
@@ -2614,7 +2614,7 @@ bool ListWidget_Insert( GLWidget *list, GLWidget *target, GLWidget *item )
     return true;
 }
 
-bool ListWidget_Remove( GLWidget *list, GLWidget *item )
+boolean ListWidget_Remove( GLWidget *list, GLWidget *item )
 {
     GLWidget **curr;
     ListWidget *wid_info;
@@ -2662,7 +2662,7 @@ bool ListWidget_Remove( GLWidget *list, GLWidget *item )
     return true;
 }
 
-bool ListWidget_SetScrollorder( GLWidget *list, bool order )
+boolean ListWidget_SetScrollorder( GLWidget *list, boolean order )
 {
     /*GLWidget **curr;*/
     ListWidget *wid_info;
@@ -2885,7 +2885,7 @@ static void SetBounds_ListWidget( GLWidget *widget, SDL_Rect *b )
 
 GLWidget *Init_ListWidget( Uint16 x, Uint16 y, Uint32 *bg1, Uint32 *bg2, Uint32 *highlight_color
     	    	    	    ,ListWidget_ver_dir_t v_dir, ListWidget_hor_dir_t h_dir
-			    ,ListWidget_direction direction, bool reverse_scroll )
+			    ,ListWidget_direction direction, boolean reverse_scroll )
 {
     GLWidget *tmp;
     ListWidget *wid_info;
@@ -3190,7 +3190,7 @@ static void SetBounds_MainWidget( GLWidget *widget, SDL_Rect *b );
 static void button_MainWidget( Uint8 button, Uint8 state , Uint16 x , Uint16 y, void *data );
 static void Close_MainWidget( GLWidget *widget );
 
-void MainWidget_ShowMenu( GLWidget *widget, bool show )
+void MainWidget_ShowMenu( GLWidget *widget, boolean show )
 {
     WrapperWidget *wid_info;
     
@@ -3225,7 +3225,7 @@ static void SetBounds_MainWidget( GLWidget *widget, SDL_Rect *b )
     SDL_Rect bs = {0,0,0,0},*bw;
     GLWidget *subs[5];
     int i,diff;
-    bool change;
+    boolean change;
     
     if (!widget) return;
     if (!b) return;
@@ -3512,7 +3512,7 @@ static void ConfMenuWidget_Pause( void *data )
 {
     GLWidget *widget;
     ConfMenuWidget *wid_info;
-    bool change;
+    boolean change;
     
     if (!(widget = (GLWidget *)data)) {
 	logger.error("ConfMenuWidget_Pause: widget missing!");
@@ -3565,7 +3565,7 @@ static void ConfMenuWidget_Join( void *data )
     }
     
     if ((Setup.mode & TEAM_PLAY) == 0) {
-    	bool change = false;
+    	boolean change = false;
 	change |= Key_press(KEY_PAUSE);
 	if (change) Net_key_change();
 	change = false;
@@ -3574,7 +3574,7 @@ static void ConfMenuWidget_Join( void *data )
     } else {
     	int i, t;
     	char tstr[12];
-    	bool has_base[MAX_TEAMS];
+    	boolean has_base[MAX_TEAMS];
 	GLWidget *tmp;
 	
 	if (wid_info.join_list) {

@@ -556,7 +556,7 @@ void Radar_show_target(int x, int y) {}
 
 void Radar_hide_target(int x, int y) {}
 
-static bool Set_geometry(xp_option *opt, String s)
+static boolean Set_geometry(xp_option *opt, String s)
 {
     int x = 0, y = 0, w = 0, h = 0;
 

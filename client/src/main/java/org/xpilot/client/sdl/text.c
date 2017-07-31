@@ -65,7 +65,7 @@ enum rendertype rendertype;
 void pushScreenCoordinateMatrix();
 void pop_projection_matrix();
 int next_p2 ( int a );
-void print(font_data *ft_font, int color, int XALIGN, int YALIGN, int x, int y, int length, String text, bool onHUD);
+void print(font_data *ft_font, int color, int XALIGN, int YALIGN, int x, int y, int length, String text, boolean onHUD);
 int FTinit(font_data *font, String  fontname, int ptsize);
 
 int next_p2 ( int a )
@@ -344,7 +344,7 @@ fontbounds printsize(font_data *ft_font, String fmt, ...)
     return nprintsize(ft_font, BUFSIZE, "{}", text);
 }
 
-bool render_text(font_data *ft_font, String text, string_tex_t *string_tex)
+boolean render_text(font_data *ft_font, String text, string_tex_t *string_tex)
 {
     SDL_Color white = { 0xFF, 0xFF, 0xFF, 0x00 };
     SDL_Color *forecol;
@@ -422,19 +422,19 @@ bool render_text(font_data *ft_font, String text, string_tex_t *string_tex)
     return true;
 }
 
-bool draw_text(font_data *ft_font, int color, int XALIGN, int YALIGN, int x, int y, String text, bool savetex, string_tex_t *string_tex, bool onHUD)
+boolean draw_text(font_data *ft_font, int color, int XALIGN, int YALIGN, int x, int y, String text, boolean savetex, string_tex_t *string_tex, boolean onHUD)
 {
     return draw_text_fraq(ft_font, color, XALIGN, YALIGN, x, y, text, 0.0f, 1.0f, 0.0f, 1.0f, savetex, string_tex, onHUD);
 }
 
-bool draw_text_fraq(font_data *ft_font, int color, int XALIGN, int YALIGN, int x, int y, String text
+boolean draw_text_fraq(font_data *ft_font, int color, int XALIGN, int YALIGN, int x, int y, String text
     	    	    , float xstart
     	    	    , float xstop
     	    	    , float ystart
     	    	    , float ystop
-		    , bool savetex, string_tex_t *string_tex, bool onHUD)
+		    , boolean savetex, string_tex_t *string_tex, boolean onHUD)
 {
-    bool remove_tex = false;    	
+    boolean remove_tex = false;
     if (!(ft_font)) return false;
     if (!(ft_font.ttffont)) return false;
         
@@ -453,7 +453,7 @@ bool draw_text_fraq(font_data *ft_font, int color, int XALIGN, int YALIGN, int x
     return true;
 }
 
-void disp_text(string_tex_t *string_tex, int color, int XALIGN, int YALIGN, int x, int y, bool onHUD)
+void disp_text(string_tex_t *string_tex, int color, int XALIGN, int YALIGN, int x, int y, boolean onHUD)
 {
     disp_text_fraq(string_tex, color, XALIGN, YALIGN, x, y, 0.0f, 1.0f, 0.0f, 1.0f, onHUD);
 }
@@ -463,7 +463,7 @@ void disp_text_fraq(string_tex_t *string_tex, int color, int XALIGN, int YALIGN,
     	    	    , float xstop
     	    	    , float ystart
     	    	    , float ystop
-    	    	    , bool onHUD)
+    	    	    , boolean onHUD)
 {
     int i,num,xpos;
     
@@ -525,7 +525,7 @@ void free_string_texture(string_tex_t *string_tex)
     }
 }
 
-void print(font_data *ft_font, int color, int XALIGN, int YALIGN, int x, int y, int length, String text, bool onHUD)
+void print(font_data *ft_font, int color, int XALIGN, int YALIGN, int x, int y, int length, String text, boolean onHUD)
 {
     int i=0,j,textlength;
     fontbounds returnval,dummy;

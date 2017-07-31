@@ -381,7 +381,7 @@ static inline int index_by_option(xp_option *opt)
     return atoi(Option_get_name(opt) + strlen("msg")) - 1;
 }
 
-static bool Set_talk_macro(xp_option *opt, String value)
+static boolean Set_talk_macro(xp_option *opt, String value)
 {
     int i = index_by_option(opt);
 

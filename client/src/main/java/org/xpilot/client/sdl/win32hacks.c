@@ -28,7 +28,7 @@ HWND notifyWnd;
 /* these are not used by the SDL client */
 /* but they are referred by the common windows code */
 int ThreadedDraw;
-BOOL drawPending;
+boolean drawPending;
 int RadarDivisor;
 struct {
 	HANDLE eventNotDrawing;

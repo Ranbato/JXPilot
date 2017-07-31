@@ -46,7 +46,7 @@ String Program_name()
 
 int main(int argc, String argv[])
 {
-    bool auto_shutdown = false;
+    boolean auto_shutdown = false;
     int result;
 
     init_error(argv[0]);

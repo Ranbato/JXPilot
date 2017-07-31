@@ -1,3 +1,4 @@
+package org.xpilot.client;
 /*
  * XPilot NG, a multiplayer space war game.
  *
@@ -25,54 +26,86 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#include "xpclient.h"
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.xpilot.client.net.packet.XPilotAbstractObject;
+import org.xpilot.common.Net;
+import org.xpilot.common.Setup;
 
-public static final int TALK_RETRY = 2; public static final int MAX_MAP_ACK_LEN = 500; public static final int KEYBOARD_STORE = 20;
+import static org.xpilot.common.Packet.*;
+
+public class NetClient{
+
+
+ static Logger logger = LoggerFactory.getLogger(NetClient.class);
+
+public static final int MIN_RECEIVE_WINDOW_SIZE = 1;
+public static final int MAX_RECEIVE_WINDOW_SIZE = 4;
+public static final int MAX_SUPPORTED_FPS = 255;
+static public class Display {
+    int view_width;
+    int view_height;
+    int spark_rand;
+    int num_spark_colors;
+}
+
+static public class PointerMove{
+    int movement;
+    double turnspeed;
+    int id;
+}
+
+public static final int MAX_POINTER_MOVES = 128;
+
+
+
+
+public static final int TALK_RETRY = 2;
+ public static final int MAX_MAP_ACK_LEN = 500;
+ public static final int KEYBOARD_STORE = 20;
 /*
  * Type definitions.
  */
-typedef struct {
+public static class FrameBuf {
     long		loops;
-    sockbuf_t		sbuf;
-} frame_buf_t;
+    Net.SocketBuf sbuf;
+}
 
 /*
  * Exported variables.
  */
-setup_t			*Setup = null;
-display_t               server_display;
+Setup			Setup = null;
+Display               server_display;
 int			receive_window_size = 3;
 long			last_loops;
-bool                    packetMeasurement;
-pointer_move_t		pointer_moves[MAX_POINTER_MOVES];
+boolean                    packetMeasurement;
+PointerMove	[]	pointer_moves = new PointerMove[MAX_POINTER_MOVES];
 int			pointer_move_next;
 long			last_keyboard_ack;
-bool			dirPrediction;
-#ifdef _WINDOWS
-int			received_self = FALSE;
-#endif
+boolean			dirPrediction;
+
 /*
  * Local variables.
  */
-static sockbuf_t	rbuf,
+static Net.SocketBuf rbuf,
 			cbuf,
 			wbuf;
-static frame_buf_t	*Frames;
-static int		(*receive_tbl[256])(void),
-			(*reliable_tbl[256])(void);
+static FrameBuf	Frames;
+XPilotAbstractObject[]		receive_tbl=new XPilotAbstractObject[256];
+    XPilotAbstractObject[]	reliable_tbl=new XPilotAbstractObject[256];
 static int		keyboard_delta;
-static unsigned		magic;
-static time_t           last_send_anything;
+static long		magic;
+static long           last_send_anything;
 static long		last_keyboard_change,
 			last_keyboard_update,
 			reliable_offset,
 			talk_pending,
 			talk_sequence_num,
 			talk_last_send;
-static long		keyboard_change[KEYBOARD_STORE],
-			keyboard_update[KEYBOARD_STORE],
-			keyboard_acktime[KEYBOARD_STORE];
-static char		talk_str[MAX_CHARS];
+static long	[]	keyboard_change = new long[KEYBOARD_STORE];
+    static long	[]			keyboard_update = new long[KEYBOARD_STORE];
+    static long	[]			keyboard_acktime = new long[KEYBOARD_STORE];
+String		talk_str;
 
 
 
@@ -83,7 +116,7 @@ static char		talk_str[MAX_CHARS];
  * The other one is for the reliable data stream, which is
  * received as part of the unreliable data packets.
  */
-static void Receive_init()
+ void Receive_init()
 {
     int i;
 
@@ -231,10 +264,10 @@ int Net_setup()
 		done = 0,
 		retries;
     size_t	size;
-    long	todo = sizeof(setup_t);
+    long	todo = sizeof(Setup);
     char	*ptr;
 
-    if ((Setup = (setup_t *) malloc(sizeof(setup_t))) == null) {
+    if ((Setup = (Setup *) malloc(sizeof(Setup))) == null) {
 	logger.error("No memory for setup data");
 	return -1;
     }
@@ -290,10 +323,10 @@ int Net_setup()
 		    logger.warn("Unknown map order type ({})", Setup.map_order);
 		    return -1;
 		}
-		size = sizeof(setup_t) + Setup.map_data_len;
+		size = sizeof(Setup) + Setup.map_data_len;
 		if (oldServer)
-		    size = sizeof(setup_t) + Setup.x * Setup.y;
-		if ((Setup = (setup_t *) realloc(ptr, size)) == null) {
+		    size = sizeof(Setup) + Setup.x * Setup.y;
+		if ((Setup = (Setup *) realloc(ptr, size)) == null) {
 		    logger.error("No memory for setup and map");
 		    return -1;
 		}
@@ -510,8 +543,8 @@ int Net_init(String server, int port)
     if (sock_set_receive_buffer_size(&sock, CLIENT_RECV_SIZE + 256) == -1)
 	logger.error("Can't set receive buffer size to {}", CLIENT_RECV_SIZE + 256);
 
-    size = receive_window_size * sizeof(frame_buf_t);
-    if ((Frames = (frame_buf_t *) malloc(size)) == null) {
+    size = receive_window_size * sizeof(FrameBuf);
+    if ((Frames = (FrameBuf *) malloc(size)) == null) {
 	logger.error("No memory (%u)", size);
 	return -1;
     }
@@ -1006,7 +1039,7 @@ static void Net_lag_measurement(long key_ack)
  * we retry to read a packet once more.
  * It's a non-blocking read.
  */
-static int Net_read(frame_buf_t *frame)
+static int Net_read(FrameBuf *frame)
 {
     int		n;
     long	loop;
@@ -1070,7 +1103,7 @@ int Net_input()
 {
     int		i, j, n;
     int		num_buffered_packets;
-    frame_buf_t	*frame,
+    FrameBuf	*frame,
 		*last_frame,
 		*oldest_frame = &Frames[0],
 		tmpframe;
@@ -1510,9 +1543,6 @@ int Receive_self()
 		currentTank, (double)sFuelSum, (double)sFuelMax, rbuf.len,
 		(int)sStat);
 
-#ifdef _WINDOWS
-    received_self = TRUE;
-#endif
     return 1;
 }
 
@@ -2412,7 +2442,7 @@ int Send_turnresistance_s(double turnres_s)
 int Receive_quit()
 {
     unsigned char	pkt;
-    sockbuf_t		*sbuf;
+    SocketBuf		*sbuf;
     char		reason[MAX_CHARS];
 
     if (rbuf.ptr < rbuf.buf + rbuf.len)

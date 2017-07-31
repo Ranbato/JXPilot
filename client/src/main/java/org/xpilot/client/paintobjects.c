@@ -40,7 +40,7 @@ static int wreckageRawShapes[NUM_WRECKAGE_SHAPES][NUM_WRECKAGE_POINTS][2] = {
 Point2D *wreckageShapes[NUM_WRECKAGE_SHAPES][NUM_WRECKAGE_POINTS];
 
 
-bool	markingLights;
+boolean	markingLights;
 
 
 
@@ -197,7 +197,7 @@ static void Paint_wreckages()
 {
     int		i, x, y;
     int		wtype, size, rot;
-    bool	deadly;
+    boolean	deadly;
 
     if ( num_wreckage > 0 ) {
 

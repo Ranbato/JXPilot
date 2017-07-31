@@ -151,7 +151,7 @@ static void Version()
     exit(0);
 }
 
-bool Set_noarg_option(xp_option *opt, bool value, xp_option_origin_t origin)
+boolean Set_noarg_option(xp_option *opt, boolean value, xp_option_origin_t origin)
 {
     assert(opt);
     assert(opt.type == xp_noarg_option);
@@ -164,9 +164,9 @@ bool Set_noarg_option(xp_option *opt, bool value, xp_option_origin_t origin)
 }
 
 
-bool Set_bool_option(xp_option *opt, bool value, xp_option_origin_t origin)
+boolean Set_bool_option(xp_option *opt, boolean value, xp_option_origin_t origin)
 {
-    bool retval = true;
+    boolean retval = true;
 
     assert(opt);
     assert(opt.type == xp_bool_option);
@@ -183,9 +183,9 @@ bool Set_bool_option(xp_option *opt, bool value, xp_option_origin_t origin)
     return retval;
 }
 
-bool Set_int_option(xp_option *opt, int value, xp_option_origin_t origin)
+boolean Set_int_option(xp_option *opt, int value, xp_option_origin_t origin)
 {
-    bool retval = true;
+    boolean retval = true;
 
     assert(opt);
     assert(opt.type == xp_int_option);
@@ -228,10 +228,10 @@ bool Set_int_option(xp_option *opt, int value, xp_option_origin_t origin)
     return retval;
 }
 
-bool Set_double_option(xp_option *opt, double value,
+boolean Set_double_option(xp_option *opt, double value,
 		       xp_option_origin_t origin)
 {
-    bool retval = true;
+    boolean retval = true;
 
     assert(opt);
     assert(opt.type == xp_double_option);
@@ -274,10 +274,10 @@ bool Set_double_option(xp_option *opt, double value,
     return retval;
 }
 
-bool Set_string_option(xp_option *opt, String value,
+boolean Set_string_option(xp_option *opt, String value,
 		       xp_option_origin_t origin)
 {
-    bool retval = true;
+    boolean retval = true;
 
     assert(opt);
     assert(opt.type == xp_string_option);
@@ -313,7 +313,7 @@ int max_keydefs = 0;
  * should call some handler. The function should be called until it returns
  * KEY_DUMMY.
  */
-keys_t Generic_lookup_key(xp_keysym_t ks, bool reset)
+keys_t Generic_lookup_key(xp_keysym_t ks, boolean reset)
 {
     keys_t ret = KEY_DUMMY;
     static int i = 0;
@@ -398,10 +398,10 @@ static void Remove_key_from_keydefs(keys_t key)
     }
 }
 
-static bool Set_key_option(xp_option *opt, String value,
+static boolean Set_key_option(xp_option *opt, String value,
 			   xp_option_origin_t origin)
 {
-    /*bool retval = true;*/
+    /*boolean retval = true;*/
     String str, *valcpy;
 
     assert(opt);
@@ -451,7 +451,7 @@ static bool Set_key_option(xp_option *opt, String value,
     return true;
 }
 
-static bool is_legal_value(xp_option_type_t type, String value)
+static boolean is_legal_value(xp_option_type_t type, String value)
 {
     if (type == xp_noarg_option || type == xp_bool_option) {
 	if (ON(value) || OFF(value))
@@ -476,7 +476,7 @@ static bool is_legal_value(xp_option_type_t type, String value)
 }
 
 
-bool Set_option(String name, String value, xp_option_origin_t origin)
+boolean Set_option(String name, String value, xp_option_origin_t origin)
 {
     xp_option *opt;
 
@@ -846,7 +846,7 @@ static void Parse_xpilotrc_line(String line)
     XFREE(lcpy);
 }
 
-static inline bool is_noarg_option(String name)
+static inline boolean is_noarg_option(String name)
 {
     xp_option *opt = Find_option(name);
 
@@ -899,7 +899,7 @@ int Xpilotrc_read(String path)
 public static final int TABSIZE = 8; static void Xpilotrc_create_line(String buf, size_t size,
 				 xp_option *opt,
 				 String comment,
-				 bool comment_whole_line)
+				 boolean comment_whole_line)
 {
     int len, numtabs, i;
 
@@ -970,7 +970,7 @@ int Xpilotrc_write(String path)
 	xp_option_origin_t origin;
 	xpilotrc_line_t t;
 	int j;
-	bool was_in_xpilotrc = false;
+	boolean was_in_xpilotrc = false;
 
 	memset(&t, 0, sizeof(xpilotrc_line_t));
 
@@ -1005,7 +1005,7 @@ int Xpilotrc_write(String path)
 	 */
 	if (origin == xp_option_origin_default) {
 	    char buf[4096];
-	    bool found = false;
+	    boolean found = false;
 
 	    Xpilotrc_create_line(buf, sizeof(buf), opt, null, true);
 
@@ -1083,7 +1083,7 @@ void Parse_options(int *argcp, char **argvp)
 		for (i = 0; i < num_remaining_args; i++)
 		    argvp[arg_ind + i] = argvp[arg_ind + i + 1];
 	    } else {
-		bool ok = false;
+		boolean ok = false;
 
 		if (num_remaining_args >= 2) {
 		    ok = Set_option(arg, argvp[arg_ind + 1],

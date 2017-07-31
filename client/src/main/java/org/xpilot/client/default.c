@@ -29,7 +29,7 @@
 
 static double	hudScale;	/* Scale for HUD drawing */
 
-static bool Set_nickName(xp_option *opt, String value)
+static boolean Set_nickName(xp_option *opt, String value)
 {
     UNUSED_PARAM(opt);
     assert(value);
@@ -63,7 +63,7 @@ static bool Set_nickName(xp_option *opt, String value)
     return true;
 }
 
-static bool Set_userName(xp_option *opt, String value)
+static boolean Set_userName(xp_option *opt, String value)
 {
     String cp = getenv("XPILOTUSER");
 
@@ -96,7 +96,7 @@ static bool Set_userName(xp_option *opt, String value)
     return true;
 }
 
-static bool Set_hostName(xp_option *opt, String value)
+static boolean Set_hostName(xp_option *opt, String value)
 {
     String cp = getenv("XPILOTHOST");
 
@@ -145,7 +145,7 @@ static String Get_hostName(xp_option *opt)
     return connectParam.host_name;
 }
 
-static bool Set_team(xp_option *opt, int value)
+static boolean Set_team(xp_option *opt, int value)
 {
     UNUSED_PARAM(opt);
     if (value >= 0 && value < MAX_TEAMS)
@@ -156,7 +156,7 @@ static bool Set_team(xp_option *opt, int value)
     return true;
 }
 
-static bool Set_texturePath(xp_option *opt, String value)
+static boolean Set_texturePath(xp_option *opt, String value)
 {
     UNUSED_PARAM(opt);
     XFREE(texturePath);
@@ -187,7 +187,7 @@ static String shipShapeFile = null;
  */
 static void tryToSetShipShape()
 {
-    bool is_shape = false, valid;
+    boolean is_shape = false, valid;
     FILE *fp;
     String ptr, *str, line[1024], *ss_candidate = null;
 
@@ -272,7 +272,7 @@ static void tryToSetShipShape()
 /*
  * Shipshape options.
  */
-static bool Set_shipShape(xp_option *opt, String value)
+static boolean Set_shipShape(xp_option *opt, String value)
 {
     UNUSED_PARAM(opt);
     XFREE(shipShapeSetting);
@@ -288,7 +288,7 @@ static String Get_shipShape(xp_option *opt)
     return shipShapeSetting;
 }
 
-static bool Set_shipShapeFile(xp_option *opt, String value)
+static boolean Set_shipShapeFile(xp_option *opt, String value)
 {
     UNUSED_PARAM(opt);
     XFREE(shipShapeFile);
@@ -304,7 +304,7 @@ static String Get_shipShapeFile(xp_option *opt)
     return shipShapeFile;
 }
 
-static bool Set_power(xp_option *opt, double val)
+static boolean Set_power(xp_option *opt, double val)
 {
     UNUSED_PARAM(opt);
     Send_power(val);
@@ -312,7 +312,7 @@ static bool Set_power(xp_option *opt, double val)
     controlTime = CONTROL_TIME;
     return true;
 }
-static bool Set_turnSpeed(xp_option *opt, double val)
+static boolean Set_turnSpeed(xp_option *opt, double val)
 {
     UNUSED_PARAM(opt);
     Send_turnspeed(val);
@@ -320,7 +320,7 @@ static bool Set_turnSpeed(xp_option *opt, double val)
     controlTime = CONTROL_TIME;
     return true;
 }
-static bool Set_turnResistance(xp_option *opt, double val)
+static boolean Set_turnResistance(xp_option *opt, double val)
 {
     UNUSED_PARAM(opt);
     Send_turnresistance(val);
@@ -328,7 +328,7 @@ static bool Set_turnResistance(xp_option *opt, double val)
     return true;
 }
 
-static bool Set_altPower(xp_option *opt, double val)
+static boolean Set_altPower(xp_option *opt, double val)
 {
     UNUSED_PARAM(opt);
     Send_power_s(val);
@@ -336,7 +336,7 @@ static bool Set_altPower(xp_option *opt, double val)
     controlTime = CONTROL_TIME;
     return true;
 }
-static bool Set_altTurnSpeed(xp_option *opt, double val)
+static boolean Set_altTurnSpeed(xp_option *opt, double val)
 {
     UNUSED_PARAM(opt);
     Send_turnspeed_s(val);
@@ -344,7 +344,7 @@ static bool Set_altTurnSpeed(xp_option *opt, double val)
     controlTime = CONTROL_TIME;
     return true;
 }
-static bool Set_altTurnResistance(xp_option *opt, double val)
+static boolean Set_altTurnResistance(xp_option *opt, double val)
 {
     UNUSED_PARAM(opt);
     Send_turnresistance_s(val);
@@ -352,21 +352,21 @@ static bool Set_altTurnResistance(xp_option *opt, double val)
     return true;
 }
 
-static bool Set_autoShield(xp_option *opt, bool val)
+static boolean Set_autoShield(xp_option *opt, boolean val)
 {
     UNUSED_PARAM(opt);
     Set_auto_shield(val);
     return true;
 }
 
-static bool Set_toggleShield(xp_option *opt, bool val)
+static boolean Set_toggleShield(xp_option *opt, boolean val)
 {
     UNUSED_PARAM(opt);
     Set_toggle_shield(val);
     return true;
 }
 
-static bool Set_maxFPS(xp_option *opt, int val)
+static boolean Set_maxFPS(xp_option *opt, int val)
 {
     UNUSED_PARAM(opt);
     maxFPS = val;
@@ -374,7 +374,7 @@ static bool Set_maxFPS(xp_option *opt, int val)
     return true;
 }
 
-static bool Set_maxMouseTurnsPS(xp_option *opt, int val)
+static boolean Set_maxMouseTurnsPS(xp_option *opt, int val)
 {
     UNUSED_PARAM(opt);
     maxMouseTurnsPS = val;
@@ -387,7 +387,7 @@ static bool Set_maxMouseTurnsPS(xp_option *opt, int val)
     return true;
 }
 
-static bool Set_sparkProb(xp_option *opt, double val)
+static boolean Set_sparkProb(xp_option *opt, double val)
 {
     UNUSED_PARAM(opt);
     sparkProb = val;
@@ -396,7 +396,7 @@ static bool Set_sparkProb(xp_option *opt, double val)
     return true;
 }
 
-static bool Set_hudScale(xp_option *opt, double value)
+static boolean Set_hudScale(xp_option *opt, double value)
 {
     UNUSED_PARAM(opt);
     hudScale = value;
@@ -404,7 +404,7 @@ static bool Set_hudScale(xp_option *opt, double value)
     return true;
 }
 
-static bool Set_backgroundPointDist(xp_option *opt, int val)
+static boolean Set_backgroundPointDist(xp_option *opt, int val)
 {
     UNUSED_PARAM(opt);
     backgroundPointDist = val;
@@ -413,7 +413,7 @@ static bool Set_backgroundPointDist(xp_option *opt, int val)
     return true;
 }
 
-static bool Set_backgroundPointSize(xp_option *opt, int val)
+static boolean Set_backgroundPointSize(xp_option *opt, int val)
 {
     UNUSED_PARAM(opt);
     backgroundPointSize = val;
@@ -422,7 +422,7 @@ static bool Set_backgroundPointSize(xp_option *opt, int val)
     return true;
 }
 
-static bool Set_slidingRadar(xp_option *opt, bool val)
+static boolean Set_slidingRadar(xp_option *opt, boolean val)
 {
     UNUSED_PARAM(opt);
     instruments.slidingRadar = val;
@@ -430,7 +430,7 @@ static bool Set_slidingRadar(xp_option *opt, bool val)
     return true;
 }
 
-static bool Set_outlineWorld(xp_option *opt, bool val)
+static boolean Set_outlineWorld(xp_option *opt, boolean val)
 {
     UNUSED_PARAM(opt);
     instruments.outlineWorld = val;
@@ -442,7 +442,7 @@ static bool Set_outlineWorld(xp_option *opt, bool val)
     return true;
 }
 
-static bool Set_filledWorld(xp_option *opt, bool val)
+static boolean Set_filledWorld(xp_option *opt, boolean val)
 {
     UNUSED_PARAM(opt);
     instruments.filledWorld = val;
@@ -454,7 +454,7 @@ static bool Set_filledWorld(xp_option *opt, bool val)
     return true;
 }
 
-static bool Set_texturedWalls(xp_option *opt, bool val)
+static boolean Set_texturedWalls(xp_option *opt, boolean val)
 {
     UNUSED_PARAM(opt);
     instruments.texturedWalls = val;
@@ -469,7 +469,7 @@ static bool Set_texturedWalls(xp_option *opt, bool val)
     return true;
 }
 
-static bool Set_showDecor(xp_option *opt, bool val)
+static boolean Set_showDecor(xp_option *opt, boolean val)
 {
     UNUSED_PARAM(opt);
     instruments.showDecor = val;
@@ -481,7 +481,7 @@ static bool Set_showDecor(xp_option *opt, bool val)
     return true;
 }
 
-static bool Set_dirPrediction(xp_option *opt, bool val)
+static boolean Set_dirPrediction(xp_option *opt, boolean val)
 {
     UNUSED_PARAM(opt);
     if (val) {
@@ -503,7 +503,7 @@ static bool Set_dirPrediction(xp_option *opt, bool val)
 int protocolVersion = POLYGON_VERSION;
 static char protocolVersionStr[32];
 
-static bool Set_protocolVersion(xp_option *opt, String value)
+static boolean Set_protocolVersion(xp_option *opt, String value)
 {
     if (sscanf(value, "%x", &protocolVersion) <= 0)
 	return false;

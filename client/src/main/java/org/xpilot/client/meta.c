@@ -384,7 +384,7 @@ void Ping_servers()
     struct timeval start, end, timeout;
     list_iter_t it, that;
     server_info_t *it_sip;
-    sockbuf_t sbuf, rbuf;
+    SocketBuf sbuf, rbuf;
     int ms;
     String reply_ip;
     int reply_port;

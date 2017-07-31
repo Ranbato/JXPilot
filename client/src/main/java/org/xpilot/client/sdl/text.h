@@ -96,21 +96,21 @@ void mapnprint(font_data *ft_font, int color, int XALIGN, int YALIGN, int x, int
 void HUDprint(font_data *ft_font, int color, int XALIGN, int YALIGN, int x, int y, String fmt, ...);
 void mapprint(font_data *ft_font, int color, int XALIGN, int YALIGN, int x, int y, String fmt,...);
 
-bool draw_text(font_data *ft_font, int color, int XALIGN, int YALIGN, int x, int y, String text, bool savetex, string_tex_t *string_tex, bool onHUD);
-bool draw_text_fraq(font_data *ft_font, int color, int XALIGN, int YALIGN, int x, int y, String text
+boolean draw_text(font_data *ft_font, int color, int XALIGN, int YALIGN, int x, int y, String text, boolean savetex, string_tex_t *string_tex, boolean onHUD);
+boolean draw_text_fraq(font_data *ft_font, int color, int XALIGN, int YALIGN, int x, int y, String text
     	    	    , float xstart
     	    	    , float xstop
     	    	    , float ystart
     	    	    , float ystop
-		    , bool savetex, string_tex_t *string_tex, bool onHUD);
-bool render_text(font_data *ft_font, String text, string_tex_t *string_tex);
-void disp_text(string_tex_t *string_tex, int color, int XALIGN, int YALIGN, int x, int y, bool onHUD);
+		    , boolean savetex, string_tex_t *string_tex, boolean onHUD);
+boolean render_text(font_data *ft_font, String text, string_tex_t *string_tex);
+void disp_text(string_tex_t *string_tex, int color, int XALIGN, int YALIGN, int x, int y, boolean onHUD);
 void disp_text_fraq(string_tex_t *string_tex, int color, int XALIGN, int YALIGN, int x, int y
     	    	    , float xstart
     	    	    , float xstop
     	    	    , float ystart
     	    	    , float ystop
-		    , bool onHUD);
+		    , boolean onHUD);
 void free_string_texture(string_tex_t *string_tex);
 
 extern font_data gamefont;

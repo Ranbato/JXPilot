@@ -33,8 +33,8 @@
 #define	MAX_RANDOM_SOUNDS	6
 
 /* options */
-static bool	audioEnabled = false;
-bool	sound;
+static boolean	audioEnabled = false;
+boolean	sound;
 char 	soundFile[PATH_MAX];	/* audio mappings */
 int 	maxVolume;		/* maximum volume (in percent) */
 /* options end */
@@ -45,7 +45,7 @@ static struct {
     int		nsounds;
 } table[MAX_SOUNDS];
 
-static bool audioIsEnabled()
+static boolean audioIsEnabled()
 {
     if (!audioEnabled)
 	return false;

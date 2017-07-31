@@ -53,7 +53,7 @@ int mapFontSize;
 String gamefontname;
 
 /* ugly kps hack */
-static bool file_exists(String path)
+static boolean file_exists(String path)
 { 
   FILE *fp;
 
@@ -91,7 +91,7 @@ int Init_playing_windows()
     return 0;
 }
 
-static bool find_size(int *w, int *h)
+static boolean find_size(int *w, int *h)
 {
     SDL_Rect **modes, *m;
     int i, d, best_i, best_d;
@@ -119,7 +119,7 @@ int Init_window()
 {
     int value;
     char defaultfontname[] = CONF_FONTDIR "FreeSansBoldOblique.ttf";
-    bool gf_exists = true,df_exists = true,gf_init = false, mf_init = false;
+    boolean gf_exists = true,df_exists = true,gf_init = false, mf_init = false;
     
     if (TTF_Init()) {
     	logger.error("SDL_ttf initialization failed: {}", SDL_GetError());
@@ -307,7 +307,7 @@ void Platform_specific_cleanup()
     SDL_Quit();
 }
 
-static bool Set_geometry(xp_option *opt, String s)
+static boolean Set_geometry(xp_option *opt, String s)
 {
     int w = 0, h = 0;
 
@@ -333,7 +333,7 @@ static const String  Get_geometry(xp_option *opt)
     return buf;
 }
 
-static bool Set_fontName(xp_option *opt, String value)
+static boolean Set_fontName(xp_option *opt, String value)
 {
     UNUSED_PARAM(opt);
     XFREE(gamefontname);

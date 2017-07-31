@@ -67,7 +67,7 @@ void Paint_vbase()
 void Paint_vdecor()
 {
     int	i;
-    bool last, more_y;
+    boolean last, more_y;
     
     if (num_vdecor > 0) {
 	for (i = 0; i < num_vdecor; i++) {
@@ -474,7 +474,7 @@ void Paint_world()
 		case SETUP_TREASURE+9:
 		    {
 			int	team;
-			bool	own;
+			boolean	own;
 
 			team = type - SETUP_TREASURE;
 			own = (eyeTeam == team);

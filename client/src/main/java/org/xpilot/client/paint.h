@@ -69,7 +69,7 @@ extern int	active_view_width;	/* Width of active map area displayed. */
 extern int	active_view_height;	/* Height of active map area displayed. */
 extern int	ext_view_x_offset;	/* Offset of ext_view_width */
 extern int	ext_view_y_offset;	/* Offset of ext_view_height */
-extern bool	markingLights;		/* Marking lights on ships */
+extern boolean	markingLights;		/* Marking lights on ships */
 
 extern int	num_spark_colors;
 
@@ -77,7 +77,7 @@ extern long	loops;
 extern long	loopsSlow;
 extern double	timePerFrame;
 
-extern bool	players_exposed;
+extern boolean	players_exposed;
 
 static inline float WINSCALE_f(float x)
 {
@@ -91,7 +91,7 @@ static inline double WINSCALE_d(double x)
 
 static inline int WINSCALE(int x)
 {
-    bool negative = false;
+    boolean negative = false;
     int y, t = x;
     float f = (float)0.0;
 
@@ -143,7 +143,7 @@ void Paint_vdecor();
 void Paint_objects();
 void Paint_world();
 void Paint_score_table();
-void Paint_score_entry(int entry_num, Other *other, bool is_team);
+void Paint_score_entry(int entry_num, Other *other, boolean is_team);
 void Paint_score_start();
 void Paint_score_objects();
 void Paint_meters();

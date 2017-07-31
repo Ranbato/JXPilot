@@ -74,15 +74,15 @@ public enum xp_option_origin_t {
 //#define XP_NOARG_OPTION_DUMMY \
 //	null
 //
-//    bool *noarg_ptr;
+//    boolean *noarg_ptr;
 //
-//    /* bool option stuff */
+//    /* boolean option stuff */
 //
 //#define XP_BOOL_OPTION_DUMMY \
 //	false, null, null
 //
-//    bool bool_defval;
-//    bool *bool_ptr;
+//    boolean bool_defval;
+//    boolean *bool_ptr;
 //    xp_bool_option_setfunc_t bool_setfunc;
 //
 //    /* integer option stuff */
@@ -310,7 +310,7 @@ public enum xp_option_origin_t {
 //typedef int xp_keysym_t;
 ///* no const because of mfc client */
 //extern xp_keysym_t String_to_xp_keysym(/*const*/ String str);
-//extern keys_t Generic_lookup_key(xp_keysym_t ks, bool reset);
+//extern keys_t Generic_lookup_key(xp_keysym_t ks, boolean reset);
 //
 //typedef struct {
 //    xp_keysym_t	keysym;

@@ -49,7 +49,7 @@ static TTF_Font     *scoreListFont;
 static String scoreListFontName = CONF_FONTDIR "VeraMoBd.ttf";
 static sdl_window_t scoreListWin;
 static SDL_Rect     scoreEntryRect; /* Bounds for the last painted score entry */
-static bool         scoreListMoving;
+static boolean         scoreListMoving;
 
 int paintSetupMode;
 
@@ -174,7 +174,7 @@ GLWidget *Init_ScorelistWidget()
     return tmp;
 }
 
-bool Set_scaleFactor(xp_option *opt, double val)
+boolean Set_scaleFactor(xp_option *opt, double val)
 {
     clData.scaleFactor = val;
     clData.scale = 1.0 / val;
@@ -182,7 +182,7 @@ bool Set_scaleFactor(xp_option *opt, double val)
     return true;
 }
 
-bool Set_altScaleFactor(xp_option *opt, double val)
+boolean Set_altScaleFactor(xp_option *opt, double val)
 {
     clData.altScaleFactor = val;
     return true;
@@ -375,7 +375,7 @@ void Paint_score_start()
     SDL_FreeSurface(header);
 }
 
-void Paint_score_entry(int entry_num, Other *other, bool is_team)
+void Paint_score_entry(int entry_num, Other *other, boolean is_team)
 {
     static char		raceStr[8], teamStr[4], lifeStr[8], label[MSG_LEN];
     static int		lineSpacing = -1, firstLine;
@@ -401,7 +401,7 @@ void Paint_score_entry(int entry_num, Other *other, bool is_team)
 	 * Enable workaround and print a warning.
 	 */
 	if (lineSpacing == 1) {
-	    static bool warned = false;
+	    static boolean warned = false;
 	    if (!warned) {
 		logger.warn("Enabling workaround for bug in SDL_ttf 1.2.");
 		logger.warn("SDL_ttf 2.0 or newer should not have this problem.");
