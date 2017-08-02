@@ -15,7 +15,7 @@ public final class QuitAbstractObject extends XPilotAbstractObject {
 	@Override
 	public void readPacket(ByteBuffer in) throws ReliableReadException {
 		pkt_type = in.get();
-		if((reason = in.getString()) == null) throw QUIT_READ_EXCEPTION;
+		if((reason = in.asCharBuffer().toString()) == null) throw QUIT_READ_EXCEPTION;
 	}
 	
 	@Override

@@ -1,15 +1,23 @@
 package org.xpilot.client.net.packet;
 
 import java.nio.ByteBuffer;
-import net.sf.jxpilot.game.LaserHolder;
 
 /**
  * Holds data from a Laser packet.
  * @author Vlad Firoiu
  */
-public final class LaserPacket extends LaserHolder implements XPilotPacket {
+public final class LaserPacket implements XPilotPacket {
 
 	private byte pkt_type;
+	protected byte color;
+	protected short x, y, len;
+	protected byte dir;
+
+	public byte getColor(){return color;}
+	public short getX(){return x;}
+	public short getY(){return y;}
+	public short getLen(){return len;}
+	public byte getDir(){return dir;}
 	
 	@Override
 	public byte getPacketType() {return pkt_type;}

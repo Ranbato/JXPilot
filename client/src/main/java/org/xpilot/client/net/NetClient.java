@@ -1907,10 +1907,10 @@ public class NetClient {
 		public int getArg2(){return arg2;}
 		
 		protected void readPacket(ByteBuffer in) {
-			pkt_type = in.getByte();
-			type = in.getByte();
-			arg1 = in.getUnsignedShort();
-			arg2 = in.getUnsignedShort();
+			pkt_type = in.get();
+			type = in.get();
+			arg1 = Short.toUnsignedInt(in.getShort());
+			arg2 = Short.toUnsignedInt(in.getShort());
 		}
 		
 		@Override

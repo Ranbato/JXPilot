@@ -1,9 +1,6 @@
 package org.xpilot.client.net.packet;
 
 import java.nio.ByteBuffer;
-import net.sf.jxpilot.game.RadarHolder;
-import net.sf.jxpilot.util.Factory;
-import net.sf.jxpilot.util.HolderList;
 
 /**
  * Holds data from a Fast Radar packet.
@@ -15,32 +12,19 @@ public final class FastRadarAbstractObject extends XPilotAbstractObject {
 	 * Unsigned byte.
 	 */
 	private short num;
-	private RadarHolder radarHolder = new RadarHolder();
-	private HolderList<RadarHolder> radarHolders = new HolderList<RadarHolder>(
-			new Factory<RadarHolder>() {
-				public RadarHolder newInstance(){return new RadarHolder();}
-			});
-	
+
 	public short getNum(){return num;}
-	public HolderList<RadarHolder> getRadarHolders(){return radarHolders;}
-	
-	/**
-	 * Clears all {@code RadarHolders} in this {@code FastRadarAbstractObject}.
-	 * This should be used before reading a new Fast Radar packet.
-	 */
-	public void clear() {
-		radarHolders.clear();
-	}
-	
+
+
 	@Override
 	public void readPacket(ByteBuffer in) throws PacketReadException {
 		pkt_type = in.get();
-		num = in.getUnsignedByte();
+		num = (short)Byte.toUnsignedInt(in.get());
 		short x, y, size;
 
 		for (short i =0;i<num;i++) {
-			x = in.getUnsignedByte();
-			y= in.getUnsignedByte();
+			x = (short)Byte.toUnsignedInt(in.get());
+			y= (short)Byte.toUnsignedInt(in.get());
 
 			byte b = in.get();
 
@@ -51,7 +35,6 @@ public final class FastRadarAbstractObject extends XPilotAbstractObject {
 				size |= 0x80;
 			}
 
-			radarHolders.add(radarHolder.setRadar(x, y, size));
 		}
 	}
 

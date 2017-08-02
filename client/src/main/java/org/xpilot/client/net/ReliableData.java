@@ -197,7 +197,7 @@ public class ReliableData extends XPilotPacketAdaptor {
 
 	@Override
 	public void readPacket(ByteBuffer in) throws PacketReadException {
-		pkt_type = in.getByte();
+		pkt_type = in.get();
 		len = in.getShort();
 		rel = in.getInt();
 		rel_loops = in.getInt();

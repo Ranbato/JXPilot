@@ -26,9 +26,9 @@ public class ScoreObjectPacket extends ScoreObjectHolder implements XPilotPacket
 		pkt_type = in.get();
 		//float score = (float)(in.getInt()/100.0);
 		score = in.getShort();
-		x  = in.getUnsignedShort();
-		y = in.getUnsignedShort();
-		if((message = in.getString()) == null) throw SCORE_OBJECT_READ_EXCEPTION;
+		x  = Short.toUnsignedInt(in.getShort());
+		y = Short.toUnsignedInt(in.getShort());
+		if((message = in.asCharBuffer().toString()) == null) throw SCORE_OBJECT_READ_EXCEPTION;
 	}
 
 	@Override

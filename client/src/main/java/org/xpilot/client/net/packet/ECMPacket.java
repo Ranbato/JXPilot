@@ -1,14 +1,18 @@
 package org.xpilot.client.net.packet;
 
 import java.nio.ByteBuffer;
-import net.sf.jxpilot.game.ECMHolder;
 
 /**
  * Holds data from an ECM packet.
  * @author Vlad Firoiu
  */
-public final class ECMPacket extends ECMHolder implements XPilotPacket {
+public final class ECMPacket implements XPilotPacket {
 	private byte pkt_type;
+	protected short x, y, size;
+
+	public short getX(){return x;}
+	public short getY(){return y;}
+	public short getSize(){return size;}
 	@Override
 	public byte getPacketType() {return pkt_type;}
 

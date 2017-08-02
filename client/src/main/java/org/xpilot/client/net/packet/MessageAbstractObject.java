@@ -16,7 +16,7 @@ public final class MessageAbstractObject extends XPilotAbstractObject {
 	public void readPacket(ByteBuffer in) throws ReliableReadException {
 		//int pos = in.position();
 		pkt_type = in.get();
-		message = in.getString();
+		message = in.asCharBuffer().toString();
 		if(message == null) throw MESSAGE_READ_EXCEPTION;
 	}
 	

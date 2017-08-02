@@ -1,14 +1,21 @@
 package org.xpilot.client.net.packet;
 
 import java.nio.ByteBuffer;
-import net.sf.jxpilot.game.MineHolder;
 
 /**
  * Holds data from a Mine packet.
  * @author Vlad Firoiu
  */
-public final class MinePacket extends MineHolder implements XPilotPacket {
+public final class MinePacket  implements XPilotPacket {
 	private byte pkt_type;
+	/**
+	 * Assumed that no player has this id.
+	 */
+	public static final int EXPIRED_MINE_ID = 4096;
+
+	protected short x,y,id;
+	protected byte team_mine;
+
 	@Override
 	public byte getPacketType() {return pkt_type;}
 	

@@ -19,8 +19,8 @@ public final class DebrisPacket implements XPilotPacket {
 	
 	@Override
 	public void readPacket(ByteBuffer in) throws PacketReadException {
-		pkt_type = in.getUnsignedByte();
-		num = in.getUnsignedByte();
+		pkt_type = (short)Byte.toUnsignedInt(in.get());
+		num = (short)Byte.toUnsignedInt(in.get());
 	}
 	
 	@Override

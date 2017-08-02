@@ -1,15 +1,16 @@
 package org.xpilot.client.net.packet;
 
 import java.nio.ByteBuffer;
-import net.sf.jxpilot.game.ConnectorHolder;
 
 /**
  * Holds data from a Connector packet.
  * @author Vlad Firoiu
  */
-public final class ConnectorPacket extends ConnectorHolder implements XPilotPacket {
+public final class ConnectorPacket implements XPilotPacket {
 
 	private byte pkt_type;
+	protected short x0,y0,x1,y1;
+	protected byte tractor;
 	
 	@Override
 	public byte getPacketType() {return pkt_type;}
@@ -17,11 +18,11 @@ public final class ConnectorPacket extends ConnectorHolder implements XPilotPack
 	@Override
 	public void readPacket(ByteBuffer in) throws PacketReadException {
 		pkt_type = in.get();
-		super.x0 = in.getShort();
-		super.y0 = in.getShort();
-		super.x1 = in.getShort();
-		super.y1 = in.getShort();
-		super.tractor = in.get();
+		x0 = in.getShort();
+		y0 = in.getShort();
+		x1 = in.getShort();
+		y1 = in.getShort();
+		tractor = in.get();
 	}
 	@Override
 	public String toString() {

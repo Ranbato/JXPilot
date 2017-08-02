@@ -19,7 +19,7 @@ public final class RadarPacket extends RadarHolder implements XPilotPacket {
 		pkt_type = in.get();
 		x = in.getShort();
 		y = in.getShort();
-		size= in.getUnsignedByte();
+		size= Byte.toUnsignedInt(in.get());
 		
 		//x = (int)((double)(x * 256) / Setup->width + 0.5);
 		//y = (int)((double)(y * RadarHeight) / Setup->height + 0.5);

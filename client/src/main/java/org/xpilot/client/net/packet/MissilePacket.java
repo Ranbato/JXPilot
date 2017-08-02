@@ -1,14 +1,15 @@
 package org.xpilot.client.net.packet;
 
 import java.nio.ByteBuffer;
-import net.sf.jxpilot.game.MissileHolder;
 
 /**
  * Holds data from a Missile packet.
  * @author Vlad Firoiu
  */
-public class MissilePacket extends MissileHolder implements XPilotPacket {
+public class MissilePacket implements XPilotPacket {
 	private byte pkt_type;
+	protected short x,y;
+	protected short len, dir;
 	@Override
 	public byte getPacketType() {return pkt_type;}
 
@@ -17,8 +18,8 @@ public class MissilePacket extends MissileHolder implements XPilotPacket {
 		pkt_type = in.get();
 		x = in.getShort();
 		y = in.getShort();
-		len = in.getUnsignedByte();
-		dir = in.getUnsignedByte();
+		len = (short)Byte.toUnsignedInt(in.get());
+		dir = (short)Byte.toUnsignedInt(in.get());
 	}
 
 	@Override

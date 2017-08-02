@@ -1,7 +1,6 @@
 package org.xpilot.client.net.packet;
 
 import java.nio.ByteBuffer;
-import net.sf.jxpilot.game.CannonHolder;
 
 /**
  * Holds data from a Cannon packet.
@@ -13,8 +12,8 @@ public final class CannonPacket extends XPilotAbstractObject {
 	@Override
 	public void readPacket(ByteBuffer in) throws PacketReadException {
 		pkt_type = in.get();
-		num = in.getUnsignedShort();
-		dead_time = in.getUnsignedShort();
+		num = Short.toUnsignedInt(in.getShort());
+		dead_time = Short.toUnsignedInt(in.getShort());
 	}
 
 	@Override

@@ -1,14 +1,15 @@
 package org.xpilot.client.net.packet;
 
+import org.xpilot.common.ShipShape;
+
 import java.nio.ByteBuffer;
-import net.sf.jxpilot.game.PlayerHolder;
-import net.sf.jxpilot.game.ShipShape;
+
 
 /**
  * Represents data from a Player packet.
  * @author Vlad Firoiu
  */
-public class PlayerPacket extends PlayerHolder implements XPilotPacket {
+public class PlayerPacket implements XPilotPacket {
 	
 	public static final int LENGTH = 1 + 2 + 1 + 1;
 	
@@ -18,27 +19,39 @@ public class PlayerPacket extends PlayerHolder implements XPilotPacket {
 	protected final ReliableReadException PLAYER_READ_EXCEPTION = new ReliableReadException("Player");
 	
 	protected byte pkt_type;
-	
+	protected short id;
+	protected byte my_team, my_char;
+	protected String name, real, host;
+	protected ShipShape ship_shape;
+
+	public short getId(){return id;}
+	public byte getTeam(){return my_team;}
+	public byte getChar(){return my_char;}
+	public String getName(){return name;}
+	public String getReal(){return real;}
+	public String getHost(){return host;}
+	public ShipShape getShipShape(){return ship_shape;}
 	public byte getPacketType() {return pkt_type;}
 
 	@Override
 	public void readPacket(ByteBuffer in) throws ReliableReadException {
-		if(in.length() < LENGTH) throw PLAYER_READ_EXCEPTION;
+		if(in.remaining() < LENGTH) throw PLAYER_READ_EXCEPTION;
 		
 		pkt_type = in.get();
 		id = in.getShort();
 		my_team = in.get();
 		my_char = in.get();
 		
-		if((name = in.getString()) == null) throw PLAYER_READ_EXCEPTION;
-		if((real = in.getString()) == null) throw PLAYER_READ_EXCEPTION;
-		if((host = in.getString()) == null) throw PLAYER_READ_EXCEPTION;
+		if((name = in.asCharBuffer().toString()) == null) throw PLAYER_READ_EXCEPTION;
+		if((real = in.asCharBuffer().toString()) == null) throw PLAYER_READ_EXCEPTION;
+		if((host = in.asCharBuffer().toString()) == null) throw PLAYER_READ_EXCEPTION;
 		
-		String s1 = in.getString();
+		String s1 = in.asCharBuffer().toString();
 		if(s1 == null) throw PLAYER_READ_EXCEPTION;
-		String s2 = in.getString();
+		String s2 = in.asCharBuffer().toString();
 		if(s2 == null) throw PLAYER_READ_EXCEPTION;
-		ship_shape = ShipShape.parseShip(s1, s2);
+		// todo verify we can just concatenate these
+		ship_shape = new ShipShape(s1 + s2);
 	}
 	
 	@Override

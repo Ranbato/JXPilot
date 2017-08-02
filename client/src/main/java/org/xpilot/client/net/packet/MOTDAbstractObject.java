@@ -25,12 +25,12 @@ public final class MOTDAbstractObject extends XPilotAbstractObject {
 	
 	@Override
 	public void readPacket(ByteBuffer in) throws ReliableReadException {
-		if(in.length()<=LENGTH) throw this.MOTD_READ_EXCEPTION;
+		if(in.remaining()<=LENGTH) throw this.MOTD_READ_EXCEPTION;
 		pkt_type = in.get();
 		offset = in.getInt();
 		length = in.getShort();
 		size = in.getInt();
-		if((motd = in.getString()) == null) throw this.MOTD_READ_EXCEPTION;
+		if((motd = in.asCharBuffer().toString()) == null) throw this.MOTD_READ_EXCEPTION;
 	}
 
 	@Override

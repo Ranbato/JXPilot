@@ -24,7 +24,7 @@ public final class ScoreAbstractObject extends XPilotAbstractObject {
 
 	@Override
 	public void readPacket(ByteBuffer in) throws ReliableReadException {
-		if(in.length()<LENGTH) throw SCORE_READ_EXCEPTION;
+		if(in.remaining()<LENGTH) throw SCORE_READ_EXCEPTION;
 		pkt_type = in.get();
 		id = in.getShort();
 		score = in.getShort();

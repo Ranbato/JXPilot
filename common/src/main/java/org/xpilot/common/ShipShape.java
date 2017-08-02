@@ -52,6 +52,10 @@ public class ShipShape {
     ArrayList<Click> cashed_pts = new ArrayList<>(MAX_SHIP_PTS);
     int cashed_dir;
 
+    public ShipShape(String shapeString) {
+        this.do_parse_shape(shapeString);
+    }
+
     public void drawShip(JPanel panel, int dir) {
 
         Path2D shape = new Path2D.Float();
@@ -80,6 +84,8 @@ public class ShipShape {
         graphics2D.setColor(Color.BLACK);
         graphics2D.draw(shape);
     }
+
+
 
     static class SShape extends Shape {
 
@@ -1442,7 +1448,7 @@ public class ShipShape {
      * Returns 0 if ships is not valid, 1 if valid.
      */
     boolean Validate_shape_str(String str) {
-        ShipShape ship = new ShipShape();
+        ShipShape ship = new ShipShape(str);
 
         verboseShapeParsing = true;
         shapeLimits = true;

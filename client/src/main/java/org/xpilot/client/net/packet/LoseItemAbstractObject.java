@@ -16,7 +16,7 @@ public final class LoseItemAbstractObject extends XPilotAbstractObject {
 	@Override
 	public void readPacket(ByteBuffer in) throws PacketReadException {
 		pkt_type = in.get();
-		lose_item = in.getUnsignedByte();
+		lose_item = (short)Byte.toUnsignedInt(in.get());
 	}
 	
 	@Override

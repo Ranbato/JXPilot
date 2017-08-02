@@ -18,7 +18,7 @@ public class FastShotAbstractObject extends XPilotAbstractObject {
 	public void readPacket(ByteBuffer in) {
 		pkt_type = in.get();
 		type = in.get();
-		num = in.getUnsignedByte();
+		num = (short)Byte.toUnsignedInt(in.get());
 	}
 	
 	@Override

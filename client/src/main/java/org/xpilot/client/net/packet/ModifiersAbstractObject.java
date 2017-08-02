@@ -15,7 +15,7 @@ public final class ModifiersAbstractObject extends XPilotAbstractObject {
 	@Override
 	public void readPacket(ByteBuffer in) throws PacketReadException {
 		pkt_type = in.get();
-		if((modifiers = in.getString()) == null) throw MODIFIERS_READ_EXCEPTION;
+		if((modifiers = in.asCharBuffer().toString()) == null) throw MODIFIERS_READ_EXCEPTION;
 	}
 
 	@Override
