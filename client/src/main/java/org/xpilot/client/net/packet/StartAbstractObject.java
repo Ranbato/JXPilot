@@ -21,7 +21,7 @@ public final class StartAbstractObject extends XPilotAbstractObject {
 	
 	@Override
 	public void readPacket(ByteBuffer in) throws ReliableReadException {
-		if(in.length() < LENGTH) throw START_READ_EXCEPTION;
+		if(in.remaining() < LENGTH) throw START_READ_EXCEPTION;
 		pkt_type = in.get();
 		loops = in.getInt();
 		key_ack = in.getInt();

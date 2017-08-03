@@ -1,13 +1,12 @@
 package org.xpilot.client.net.packet;
 
 import java.nio.ByteBuffer;
-import net.sf.jxpilot.game.ScoreObjectHolder;
 
 /**
  * Holds data from a Score Object packet.
  * @author Vlad Firoiu
  */
-public class ScoreObjectPacket extends ScoreObjectHolder implements XPilotPacket {
+public class ScoreObjectPacket  implements XPilotPacket {
 	/**
 	 * The minimum number of bytes in a Score Object packet.
 	 */
@@ -15,13 +14,20 @@ public class ScoreObjectPacket extends ScoreObjectHolder implements XPilotPacket
 	
 	private final ReliableReadException SCORE_OBJECT_READ_EXCEPTION = new ReliableReadException("Score Object");
 	private byte pkt_type;
-	
+	protected short score;
+	/**
+	 * Unsigned shorts.
+	 */
+	protected int x,y;
+	protected String message;
+
+
 	@Override
 	public byte getPacketType() {return pkt_type;}
 
 	@Override
 	public void readPacket(ByteBuffer in) throws ReliableReadException {
-		if (in.length()<LENGTH) throw SCORE_OBJECT_READ_EXCEPTION;
+		if (in.remaining()<LENGTH) throw SCORE_OBJECT_READ_EXCEPTION;
 		
 		pkt_type = in.get();
 		//float score = (float)(in.getInt()/100.0);

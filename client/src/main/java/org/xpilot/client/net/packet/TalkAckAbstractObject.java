@@ -20,7 +20,7 @@ public final class TalkAckAbstractObject extends XPilotAbstractObject {
 	
 	@Override
 	public void readPacket(ByteBuffer in) throws ReliableReadException {
-		if(in.length()<LENGTH) throw TALK_ACK_READ_EXCEPTION;
+		if(in.remaining()<LENGTH) throw TALK_ACK_READ_EXCEPTION;
 		pkt_type = in.get();
 		talk_ack = in.getInt();
 	}

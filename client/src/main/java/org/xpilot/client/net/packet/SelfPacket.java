@@ -1,13 +1,12 @@
 package org.xpilot.client.net.packet;
 
 import java.nio.ByteBuffer;
-import net.sf.jxpilot.game.SelfHolder;
 
 /**
  * Holds data from a Self packet.
  * @author Vlad Firoiu
  */
-public final class SelfPacket extends SelfHolder implements XPilotPacket {
+public final class SelfPacket implements XPilotPacket {
 	
 	/**
 	 * The number of bytes in a self packet.
@@ -17,13 +16,24 @@ public final class SelfPacket extends SelfHolder implements XPilotPacket {
 	private final PacketReadException SELF_READ_EXCEPTION = new PacketReadException();
 	
 	private byte pkt_type;
-	
+
+	protected short x, y, vx, vy;
+	protected byte heading, power, turnspeed, turnresistance;
+	protected short lockId, lockDist;
+	protected byte lockDir;
+	protected byte nextCheckPoint;
+	protected byte currentTank;
+	protected short fuelSum, fuelMax,
+			ext_view_width, ext_view_height;
+	protected byte debris_colors, stat, autopilot_light;
+
+
 	@Override
 	public byte getPacketType() {return pkt_type;}
 	
 	@Override
 	public void readPacket(ByteBuffer in) throws PacketReadException {
-		if(in.length()<LENGTH) throw SELF_READ_EXCEPTION;//should not happen
+		if(in.remaining()<LENGTH) throw SELF_READ_EXCEPTION;//should not happen
 		
 		pkt_type = in.get();
 		x = in.getShort();

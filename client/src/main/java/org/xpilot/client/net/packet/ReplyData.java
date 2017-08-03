@@ -33,7 +33,7 @@ public class ReplyData extends XPilotAbstractObject {
 
 	@Override
 	public void readPacket(ByteBuffer in) throws ReliableReadException {
-		if(in.length()<LENGTH) throw REPLY_DATA_EXCEPTION;
+		if(in.remaining()<LENGTH) throw REPLY_DATA_EXCEPTION;
 		setData(in.get(), in.get(), in.get());
 	}
 	

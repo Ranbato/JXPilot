@@ -1,14 +1,20 @@
 package org.xpilot.client.net.packet;
 
 import java.nio.ByteBuffer;
-import net.sf.jxpilot.game.SeekHolder;
 
 /**
  * Holds data from a Seek packet.
  * @author Vlad Firoiu
  */
-public final class SeekPacket extends SeekHolder implements XPilotPacket {
+public final class SeekPacket implements XPilotPacket {
 	private byte pkt_type;
+
+	protected short programmer_id, robot_id, sought_id;
+
+	public short getProgrammerId(){return this.programmer_id;}
+	public short getRobotId(){return this.robot_id;}
+	public short getSoughtId(){return this.sought_id;}
+
 	@Override
 	public byte getPacketType() {return pkt_type;}
 	

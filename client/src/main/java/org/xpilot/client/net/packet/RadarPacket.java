@@ -1,14 +1,22 @@
 package org.xpilot.client.net.packet;
 
 import java.nio.ByteBuffer;
-import net.sf.jxpilot.game.RadarHolder;
 
 /**
  * Holds data from a Radar packet.
  * @author Vlad Firiou
  */
-public final class RadarPacket extends RadarHolder implements XPilotPacket {
+public final class RadarPacket  implements XPilotPacket {
 	private byte pkt_type;
+
+	/**
+	 * Location of detection.
+	 */
+	protected short x, y;
+	/**
+	 * Distance from us.
+	 */
+	protected short size;
 	public byte getPacketType(){return pkt_type;}
 	
 	/**
@@ -19,7 +27,7 @@ public final class RadarPacket extends RadarHolder implements XPilotPacket {
 		pkt_type = in.get();
 		x = in.getShort();
 		y = in.getShort();
-		size= Byte.toUnsignedInt(in.get());
+		size= (short)Byte.toUnsignedInt(in.get());
 		
 		//x = (int)((double)(x * 256) / Setup->width + 0.5);
 		//y = (int)((double)(y * RadarHeight) / Setup->height + 0.5);

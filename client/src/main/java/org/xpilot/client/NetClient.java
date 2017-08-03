@@ -140,7 +140,7 @@ String		talk_str;
     receive_tbl[PKT_ECM]	= new ECMPacket();
     receive_tbl[PKT_TRANS]	= new TransAbstractObject();
     receive_tbl[PKT_PAUSED]	= new PausedAbstractObject();
-    receive_tbl[PKT_APPEARING]	= Receive_appearing;
+    receive_tbl[PKT_APPEARING]	= new AppearingAbstractObject();
     receive_tbl[PKT_ITEM]	= new ItemAbstractObject();
     receive_tbl[PKT_MINE]	= new MinePacket();
     receive_tbl[PKT_BALL]	= new Ball();

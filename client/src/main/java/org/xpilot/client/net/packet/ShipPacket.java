@@ -1,13 +1,12 @@
 package org.xpilot.client.net.packet;
 
 import java.nio.ByteBuffer;
-import net.sf.jxpilot.game.ShipHolder;
 
 /**
  * Holds data from a Ship packet.
  * @author Vlad Firoiu
  */
-public final class ShipPacket extends ShipHolder implements XPilotPacket {
+public final class ShipPacket implements XPilotPacket {
 	
 	//bit masks
 	private static final byte
@@ -18,7 +17,10 @@ public final class ShipPacket extends ShipHolder implements XPilotPacket {
 	DEFLECTOR_FLAG = 1 << 4;
 	
 	private byte pkt_type, flags;
-	
+	protected short x, y, id, heading;
+	protected boolean shield, cloak, emergency_shield, phased, deflector;
+
+
 	@Override
 	public byte getPacketType() {return pkt_type;}
 	public byte getFlags(){return flags;}

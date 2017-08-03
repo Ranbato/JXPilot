@@ -10,6 +10,7 @@ import net.sf.jxpilot.map.BlockMapSetup;
 import net.sf.jxpilot.util.BitVector;
 import net.sf.jxpilot.util.HolderList;
 import net.sf.jxpilot.util.Utilities;
+import org.xpilot.common.ShipShape;
 
 import javax.swing.*;
 import java.io.IOException;

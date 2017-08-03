@@ -1,14 +1,19 @@
 package org.xpilot.client.net.packet;
 
 import java.nio.ByteBuffer;
-import net.sf.jxpilot.game.RefuelHolder;
 
 /**
  * Holds data from a Refuel packet.
  * @author Vlad Firoiu
  */
-public final class RefuelPacket extends RefuelHolder implements XPilotPacket {
+public final class RefuelPacket implements XPilotPacket {
 	private byte pkt_type;
+	protected short x0, y0, x1, y1;
+
+	public short getX0(){return x0;}
+	public short getY0(){return y0;}
+	public short getX1(){return x1;}
+	public short getY1(){return y1;}
 	@Override
 	public byte getPacketType() {return pkt_type;}
 

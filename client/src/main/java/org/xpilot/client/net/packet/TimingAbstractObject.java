@@ -25,7 +25,7 @@ public final class TimingAbstractObject extends XPilotAbstractObject {
 	
 	@Override
 	public void readPacket(ByteBuffer in) throws ReliableReadException {
-		if(in.length()<LENGTH) throw TIMING_READ_EXCEPTION;
+		if(in.remaining()<LENGTH) throw TIMING_READ_EXCEPTION;
 		pkt_type = in.get();
 		id = in.getShort();
 		timing = in.getShort();
