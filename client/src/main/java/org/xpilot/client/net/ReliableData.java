@@ -1,12 +1,15 @@
 package org.xpilot.client.net;
 
-import java.nio.ByteBuffer;
-import net.sf.jxpilot.net.packet.PacketReadException;
-import net.sf.jxpilot.net.packet.XPilotPacketAdaptor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.xpilot.client.net.packet.PacketReadException;
+import org.xpilot.client.net.packet.XPilotAbstractObject;
 
-import static net.sf.jxpilot.JXPilot.PRINT_RELIABLE;
-import static net.sf.jxpilot.net.ReliableDataError.*;
-import static net.sf.jxpilot.net.packet.Packet.PKT_RELIABLE;
+import java.nio.ByteBuffer;
+
+import static org.xpilot.client.net.ReliableDataError.*;
+import static org.xpilot.common.Packet.PKT_RELIABLE;
+
 
 /**
  * Class to hold reliable data packets.
@@ -15,7 +18,9 @@ import static net.sf.jxpilot.net.packet.Packet.PKT_RELIABLE;
  * 
  * @author Vlad Firoiu
  */
-public class ReliableData extends XPilotPacketAdaptor {
+public class ReliableData extends XPilotAbstractObject {
+
+    Logger logger = LoggerFactory.getLogger(ReliableData.class);
 	public static final int LENGTH = 1+2+4+4;
 
 	private int offset = 0;
@@ -104,7 +109,9 @@ public class ReliableData extends XPilotPacketAdaptor {
 	 */
 	
 	public ReliableDataError readReliableData(ByteBuffer in, NetClient client) throws PacketReadException {
-		if (in.length()<LENGTH) return BAD_PACKET;
+		if (in.remaining()<LENGTH) {
+			return BAD_PACKET;
+		}
 		
 		readPacket(in);
 		
@@ -112,7 +119,7 @@ public class ReliableData extends XPilotPacketAdaptor {
 			//in.position(in.position()-1);
 			return NOT_RELIABLE_DATA;
 		}
-		if (len > in.length()) {
+		if (len > in.remaining()) {
 			
 			in.clear();
 			System.out.println("Not all reliable data in packet");
@@ -125,7 +132,7 @@ public class ReliableData extends XPilotPacketAdaptor {
 			 * For now we drop this packet.
 			 * We could have kept it until the missing packet(s) arrived.
 			 */
-			in.advanceReader(len);
+			in.position(in.position()+len);
 			//System.out.println("Packet out of order");
 			client.sendAck(ack.setAck(this));
 			return OUT_OF_ORDER;
@@ -135,10 +142,11 @@ public class ReliableData extends XPilotPacketAdaptor {
 			 * Duplicate data.  Probably an ack got lost.
 			 * Send an ack for our current stream position.
 			 */
-			
-			in.advanceReader(len);
+
+			in.position(in.position()+len);
 			client.sendAck(ack.setAck(this));
-			if(PRINT_RELIABLE) System.out.println("Duplicate Data");
+
+			logger.debug("Duplicate data");
 			return DUPLICATE_DATA;
 		}
 		
@@ -148,11 +156,11 @@ public class ReliableData extends XPilotPacketAdaptor {
 		 */
 		if (rel < offset) {
 			len -= (short)(offset - rel);
-			in.advanceReader(offset - rel);
+			in.position(in.position()+(offset - rel));
 			rel = offset;
 		}
-		
-		if (PRINT_RELIABLE) System.out.println(this);
+
+        logger.debug("Reliable {}",this);
 		
 		offset += len;
 		client.sendAck(ack.setAck(this));
@@ -164,8 +172,9 @@ public class ReliableData extends XPilotPacketAdaptor {
 		ReliableDataError error = readReliableData(in, client);
 
 		if (error == NO_ERROR) {
-			reliableBuf.putBytes(in, len);
-			in.advanceReader(len);
+			reliableBuf = in.slice();
+            reliableBuf.limit(len);
+            in.position(in.position()+len);
 		}
 
 		return error;

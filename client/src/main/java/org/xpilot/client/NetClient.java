@@ -34,6 +34,9 @@ import org.xpilot.common.Setup;
 
 import static org.xpilot.common.Const.DEBRIS_TYPES;
 import static org.xpilot.common.Packet.*;
+import static org.xpilot.common.Setup.SETUP_COMPRESSED;
+import static org.xpilot.common.Setup.SETUP_MAP_ORDER_XY;
+import static org.xpilot.common.Setup.SETUP_MAP_UNCOMPRESSED;
 
 public class NetClient{
 
@@ -198,11 +201,11 @@ String		talk_str;
  * Because we uncompress the map backwards to save on
  * memory usage there is some complexity involved.
  */
-static int Uncompress_map()
+ int Uncompress_map()
 {
-    byte	*cmp,		/* compressed map pointer */
-		*ump,		/* uncompressed map pointer */
-		*p;		/* temporary search pointer */
+    int	cmp,		/* compressed map pointer */
+		ump,		/* uncompressed map pointer */
+		p;		/* temporary search pointer */
     int		i,
 		count;
 
@@ -212,42 +215,43 @@ static int Uncompress_map()
     }
 
     /* Point to last compressed map byte */
-    cmp = Setup.map_data + Setup.map_data_len - 1;
+    cmp = Setup.map_data.length - 1;
 
     /* Point to last uncompressed map byte */
-    ump = Setup.map_data + Setup.x * Setup.y - 1;
+    ump =  Setup.x * Setup.y - 1;
 
-    while (cmp >= Setup.map_data) {
-	for (p = cmp; p > Setup.map_data; p--) {
-	    if ((p[-1] & SETUP_COMPRESSED) == 0)
+    while (cmp >= 0) {
+	for (p = cmp; p > 0; p--) {
+	    if ((Setup.map_data[p-1] & SETUP_COMPRESSED) == 0)
 		break;
 	}
 	if (p == cmp) {
-	    *ump-- = *cmp--;
+        Setup.map_data[ump--] = Setup.map_data[cmp--];
+
 	    continue;
 	}
 	if ((cmp - p) % 2 == 0)
-	    *ump-- = *cmp--;
+        Setup.map_data[ump--] = Setup.map_data[cmp--];
 	while (p < cmp) {
-	    count = *cmp--;
+	    count = Setup.map_data[cmp--];
 	    if (count < 2) {
 		logger.warn("Map compress count error {}", count);
 		return -1;
 	    }
-	    *cmp &= ~SETUP_COMPRESSED;
+        Setup.map_data[cmp] &= ~SETUP_COMPRESSED;
 	    for (i = 0; i < count; i++)
-		*ump-- = *cmp;
+            Setup.map_data[ump--] = Setup.map_data[cmp];
 	    cmp--;
 	    if (ump < cmp) {
 		logger.warn("Map uncompression error ({},{})",
-		     cmp - Setup.map_data, ump - Setup.map_data);
+		     cmp, ump);
 		return -1;
 	    }
 	}
     }
     if (ump != cmp) {
 	logger.warn("map uncompress error ({},{})",
-	     cmp - Setup.map_data, ump - Setup.map_data);
+	     cmp, ump);
 	return -1;
     }
     Setup.map_order = SETUP_MAP_UNCOMPRESSED;
@@ -264,7 +268,7 @@ int Net_setup()
 		len,
 		done = 0,
 		retries;
-    size_t	size;
+    int	size;
     long	todo = sizeof(Setup);
     char	*ptr;
 
