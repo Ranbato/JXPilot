@@ -1,6 +1,13 @@
 group 'org.xpilot'
 version '1.0-SNAPSHOT'
 
+plugins {
+//    id 'application'
+}
+
+
 dependencies {
     compile project(':common')
+    apt     'com.google.dagger:dagger-compiler:2.11'
+    compile 'com.google.dagger:dagger:2.11'
 }
