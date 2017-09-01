@@ -389,7 +389,7 @@ int RadarHeight = 0;
 int RadarWidth = 256;	/* radar width at the server */
 boolean     UpdateRadar = false;   /* radar update because of polystyle changes? */
 
-int     oldServer;
+public static boolean     oldServer;
 Point 	selfPos;
 Point 	selfVel;
 short	heading;

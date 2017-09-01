@@ -30,9 +30,14 @@ package org.xpilot.common;
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.BitSet;
 
 public class Setup{
+    
+    private static final Logger logger = LoggerFactory.getLogger(Setup.class);
 
 /*
  * Definitions to tell the client how the server has been setup.
@@ -124,27 +129,27 @@ public static final byte DECOR_BELOW = 0x40;
  * Structure defining the server configuration, including the map layout.
  */
 
-public static   long		setup_size;		/* size including map data */
-public static   long		map_data_len;		/* num. compressed map bytes */
-public static BitSet mode = new BitSet(32);			/* playing mode */
-public static   short		lives;			/* max. number of lives */
-public static   short		x;			/* OLD width in blocks */
-public static   short		y;			/* OLD height in blocks */
-public static   short		width;			/* width in pixels */
-public static   short		height;			/* height in pixels */
-public static   short		frames_per_second;	/* FPS */
-public static   short		map_order;		/* OLD row or col major */
-public static   short		unused1;		/* padding */
-public static   String		name;//[MAX_CHARS];	/* name of map */
-public static   String		author;//[MAX_CHARS];	/* name of author of map */
-public static   String		data_url;//[MSG_LEN];
+public    long		setup_size;		/* size including map data */
+public    int		map_data_len;		/* num. compressed map bytes */
+public  BitSet mode = new BitSet(32);			/* playing mode */
+public    short		lives;			/* max. number of lives */
+public    short		x;			/* OLD width in blocks */
+public    short		y;			/* OLD height in blocks */
+public    short		width;			/* width in pixels */
+public    short		height;			/* height in pixels */
+public    short		frames_per_second;	/* FPS */
+public    short		map_order;		/* OLD row or col major */
+public    short		unused1;		/* padding */
+public    String		name;//[MAX_CHARS];	/* name of map */
+public    String		author;//[MAX_CHARS];	/* name of author of map */
+public    String		data_url;//[MSG_LEN];
      	/* location where client
 						   can load additional data
 						   like bitmaps; MSG_LEN to
 						   allow >80 chars */
      	// todo this allocation is obviously incorrect,should be Setup.x * Setup.y
         // could be a byte []
- public static   byte[]	map_data = new byte[4];		/* compressed map data */
+ public   byte[]	map_data ;		/* compressed map data */
     /* plus more mapdata here (HACK) */
 
 /*
@@ -157,4 +162,75 @@ TODO FPS setup for client and server
 # endif
 # define FPS		(Setup.frames_per_second)
 */
+
+
+    /*
+     * Uncompress the map which is compressed using a simple
+     * Run-Length-Encoding algorithm.
+     * The map object type is encoded in the lower seven bits
+     * of a byte.
+     * If the high bit of a byte is set then the next byte
+     * means the number of contiguous map data bytes that
+     * have the same type.  Otherwise only one map byte
+     * has this type.
+     * Because we uncompress the map backwards to save on
+     * memory usage there is some complexity involved.
+     */
+    public int Uncompress_map()
+    {
+        int	cmp,		/* compressed map pointer */
+                ump,		/* uncompressed map pointer */
+                p;		/* temporary search pointer */
+        int		i,
+                count;
+
+        if (map_order != SETUP_MAP_ORDER_XY) {
+            logger.warn("Unknown map ordering in setup ({})", map_order);
+            return -1;
+        }
+
+    /* Point to last compressed map byte */
+        cmp = map_data.length - 1;
+
+    /* Point to last uncompressed map byte */
+        ump =  x * y - 1;
+
+        while (cmp >= 0) {
+            for (p = cmp; p > 0; p--) {
+                if ((map_data[p-1] & SETUP_COMPRESSED) == 0)
+                    break;
+            }
+            if (p == cmp) {
+                map_data[ump--] = map_data[cmp--];
+
+                continue;
+            }
+            if ((cmp - p) % 2 == 0)
+                map_data[ump--] = map_data[cmp--];
+            while (p < cmp) {
+                count = map_data[cmp--];
+                if (count < 2) {
+                    logger.warn("Map compress count error {}", count);
+                    return -1;
+                }
+                map_data[cmp] &= ~SETUP_COMPRESSED;
+                for (i = 0; i < count; i++)
+                    map_data[ump--] = map_data[cmp];
+                cmp--;
+                if (ump < cmp) {
+                    logger.warn("Map uncompression error ({},{})",
+                            cmp, ump);
+                    return -1;
+                }
+            }
+        }
+        if (ump != cmp) {
+            logger.warn("map uncompress error ({},{})",
+                    cmp, ump);
+            return -1;
+        }
+        map_order = SETUP_MAP_UNCOMPRESSED;
+        return 0;
+    }
+
 }

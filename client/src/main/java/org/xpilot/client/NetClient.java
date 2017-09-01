@@ -32,6 +32,8 @@ import org.xpilot.client.net.packet.*;
 import org.xpilot.common.Net;
 import org.xpilot.common.Setup;
 
+import javax.inject.Inject;
+
 import static org.xpilot.common.Const.DEBRIS_TYPES;
 import static org.xpilot.common.Packet.*;
 import static org.xpilot.common.Setup.SETUP_COMPRESSED;
@@ -78,6 +80,7 @@ public static class FrameBuf {
 /*
  * Exported variables.
  */
+@Inject
 Setup			Setup = null;
 Display               server_display;
 int			receive_window_size = 3;
@@ -168,15 +171,16 @@ String		talk_str;
     receive_tbl[PKT_WRECKAGE]	= new WreckageAbstractObject();
     receive_tbl[PKT_ASTEROID]	= new Asteroid();
     receive_tbl[PKT_WORMHOLE]	= new WormholeAbstractObject();
-    receive_tbl[PKT_POLYSTYLE]	= Receive_polystyle;
-    for (i = 0; i < DEBRIS_TYPES; i++)
-	receive_tbl[PKT_DEBRIS + i] = new DebrisPacket();
+    receive_tbl[PKT_POLYSTYLE]	= new PolyStylePacket();
+    for (i = 0; i < DEBRIS_TYPES; i++) {
+        receive_tbl[PKT_DEBRIS + i] = new DebrisPacket();
+    }
 
     reliable_tbl[PKT_MOTD]	= new MOTDAbstractObject();
     reliable_tbl[PKT_MESSAGE]	= new MessageAbstractObject();
     reliable_tbl[PKT_TEAM_SCORE] = new TeamScoreAbstractObject();
     reliable_tbl[PKT_PLAYER]	= new PlayerPacket();
-    reliable_tbl[PKT_TEAM]	= Receive_team;
+    reliable_tbl[PKT_TEAM]	= new TeamPacket();
     reliable_tbl[PKT_SCORE]	= new ScoreAbstractObject();
     reliable_tbl[PKT_TIMING]	= new TimingAbstractObject();
     reliable_tbl[PKT_LEAVE]	= new LeaveAbstractObject();
@@ -184,78 +188,9 @@ String		talk_str;
     reliable_tbl[PKT_SEEK]	= new SeekPacket();
     reliable_tbl[PKT_BASE]	= new Base();
     reliable_tbl[PKT_QUIT]	= new QuitAbstractObject();
-    reliable_tbl[PKT_STRING]	= Receive_string;
+//    reliable_tbl[PKT_STRING]	= Receive_string;
     reliable_tbl[PKT_SCORE_OBJECT] = new ScoreObjectPacket();
     reliable_tbl[PKT_TALK_ACK]	= new TalkAckAbstractObject();
-}
-
-/*
- * Uncompress the map which is compressed using a simple
- * Run-Length-Encoding algorithm.
- * The map object type is encoded in the lower seven bits
- * of a byte.
- * If the high bit of a byte is set then the next byte
- * means the number of contiguous map data bytes that
- * have the same type.  Otherwise only one map byte
- * has this type.
- * Because we uncompress the map backwards to save on
- * memory usage there is some complexity involved.
- */
- int Uncompress_map()
-{
-    int	cmp,		/* compressed map pointer */
-		ump,		/* uncompressed map pointer */
-		p;		/* temporary search pointer */
-    int		i,
-		count;
-
-    if (Setup.map_order != SETUP_MAP_ORDER_XY) {
-	logger.warn("Unknown map ordering in setup ({})", Setup.map_order);
-	return -1;
-    }
-
-    /* Point to last compressed map byte */
-    cmp = Setup.map_data.length - 1;
-
-    /* Point to last uncompressed map byte */
-    ump =  Setup.x * Setup.y - 1;
-
-    while (cmp >= 0) {
-	for (p = cmp; p > 0; p--) {
-	    if ((Setup.map_data[p-1] & SETUP_COMPRESSED) == 0)
-		break;
-	}
-	if (p == cmp) {
-        Setup.map_data[ump--] = Setup.map_data[cmp--];
-
-	    continue;
-	}
-	if ((cmp - p) % 2 == 0)
-        Setup.map_data[ump--] = Setup.map_data[cmp--];
-	while (p < cmp) {
-	    count = Setup.map_data[cmp--];
-	    if (count < 2) {
-		logger.warn("Map compress count error {}", count);
-		return -1;
-	    }
-        Setup.map_data[cmp] &= ~SETUP_COMPRESSED;
-	    for (i = 0; i < count; i++)
-            Setup.map_data[ump--] = Setup.map_data[cmp];
-	    cmp--;
-	    if (ump < cmp) {
-		logger.warn("Map uncompression error ({},{})",
-		     cmp, ump);
-		return -1;
-	    }
-	}
-    }
-    if (ump != cmp) {
-	logger.warn("map uncompress error ({},{})",
-	     cmp, ump);
-	return -1;
-    }
-    Setup.map_order = SETUP_MAP_UNCOMPRESSED;
-    return 0;
 }
 
 /*
@@ -264,138 +199,54 @@ String		talk_str;
  */
 int Net_setup()
 {
-    int		n,
-		len,
-		done = 0,
-		retries;
-    int	size;
-    long	todo = sizeof(Setup);
-    char	*ptr;
-
-    if ((Setup = (Setup *) malloc(sizeof(Setup))) == null) {
-	logger.error("No memory for setup data");
-	return -1;
+    //SetupPacket
+    //@todo incorporate this retry logic
+    if (todo > 0) {
+        if (rbuf.ptr != rbuf.buf)
+            Sockbuf_advance(&rbuf, rbuf.ptr - rbuf.buf);
+        if (rbuf.len > 0) {
+            if (rbuf.ptr[0] != PKT_RELIABLE) {
+                if (rbuf.ptr[0] == PKT_QUIT) {
+                    logger.warn("Server closed connection");
+                    return -1;
+                } else {
+                    logger.warn("Not a reliable packet ({}) in setup",
+                            rbuf.ptr[0]);
+                    return -1;
+                }
+            }
+            if (Receive_reliable() == -1)
+                return -1;
+            if (Sockbuf_flush(&wbuf) == -1)
+            return -1;
+        }
+        if (cbuf.ptr != cbuf.buf)
+            Sockbuf_advance(&cbuf, cbuf.ptr - cbuf.buf);
+        if (cbuf.len > 0)
+            continue;
+        for (retries = 0;; retries++) {
+            if (retries >= 10) {
+                logger.warn("Can't read setup after {} retries "
+                        "(todo={}, left={})",
+                        retries, todo, cbuf.len - (cbuf.ptr - cbuf.buf));
+                return -1;
+            }
+            sock_set_timeout(&rbuf.sock, 2, 0);
+            while (sock_readable(&rbuf.sock) > 0) {
+                Sockbuf_clear(&rbuf);
+                if (Sockbuf_read(&rbuf) == -1) {
+                    logger.error("Can't read all setup data");
+                    return -1;
+                }
+                if (rbuf.len > 0)
+                    break;
+                sock_set_timeout(&rbuf.sock, 0, 0);
+            }
+            if (rbuf.len > 0)
+                break;
+        }
     }
-    ptr = (String ) Setup;
-    while (todo > 0) {
-	if (cbuf.ptr != cbuf.buf)
-	    Sockbuf_advance(&cbuf, cbuf.ptr - cbuf.buf);
-	len = cbuf.len;
-	if (len > todo)
-	    len = todo;
-	if (len > 0) {
-	    if (done == 0) {
-		if (oldServer) {
-		    n = Packet_scanf(&cbuf,
-				     "%ld" "%ld%hd" "%hd%hd" "%hd%hd" "{}{}",
-				     &Setup.map_data_len,
-				     &Setup.mode, &Setup.lives,
-				     &Setup.x, &Setup.y,
-				     &Setup.frames_per_second,
-				     &Setup.map_order, Setup.name,
-				     Setup.author);
-		    Setup.width = Setup.x * BLOCK_SZ;
-		    Setup.height = Setup.y * BLOCK_SZ;
-		} else {
-		    n = Packet_scanf(&cbuf,
-				     "%ld" "%ld%hd" "%hd%hd" "%hd{}" "{}{}",
-				     &Setup.map_data_len,
-				     &Setup.mode, &Setup.lives,
-				     &Setup.width, &Setup.height,
-				     &Setup.frames_per_second,
-				     Setup.name, Setup.author,
-				     Setup.data_url);
-		}
-		if (n <= 0) {
-		    logger.warn("Can't read setup info from reliable data buffer");
-		    return -1;
-		}
-
-		/*
-		 * Do some consistency checks on the server setup structure.
-		 */
-		if (Setup.map_data_len <= 0
-		    || Setup.width <= 0
-		    || Setup.height <= 0
-		    || (oldServer && Setup.map_data_len >
-			Setup.x * Setup.y)) {
-		    logger.warn("Got bad map specs from server ({},{},{})",
-			 Setup.map_data_len, Setup.width, Setup.height);
-		    return -1;
-		}
-		if (oldServer && Setup.map_order != SETUP_MAP_ORDER_XY
-		    && Setup.map_order != SETUP_MAP_UNCOMPRESSED) {
-		    logger.warn("Unknown map order type ({})", Setup.map_order);
-		    return -1;
-		}
-		size = sizeof(Setup) + Setup.map_data_len;
-		if (oldServer)
-		    size = sizeof(Setup) + Setup.x * Setup.y;
-		if ((Setup = (Setup *) realloc(ptr, size)) == null) {
-		    logger.error("No memory for setup and map");
-		    return -1;
-		}
-		ptr = (String ) Setup;
-		done = (String ) &Setup.map_data[0] - ptr;
-		todo = Setup.map_data_len;
-	    } else {
-		assert(len > 0);
-		memcpy(&ptr[done], cbuf.ptr, (size_t)len);
-		Sockbuf_advance(&cbuf, len + cbuf.ptr - cbuf.buf);
-		done += len;
-		todo -= len;
-	    }
-	}
-	if (todo > 0) {
-	    if (rbuf.ptr != rbuf.buf)
-		Sockbuf_advance(&rbuf, rbuf.ptr - rbuf.buf);
-	    if (rbuf.len > 0) {
-		if (rbuf.ptr[0] != PKT_RELIABLE) {
-		    if (rbuf.ptr[0] == PKT_QUIT) {
-			logger.warn("Server closed connection");
-			return -1;
-		    } else {
-			logger.warn("Not a reliable packet ({}) in setup",
-			     rbuf.ptr[0]);
-			return -1;
-		    }
-		}
-		if (Receive_reliable() == -1)
-		    return -1;
-		if (Sockbuf_flush(&wbuf) == -1)
-		    return -1;
-	    }
-	    if (cbuf.ptr != cbuf.buf)
-		Sockbuf_advance(&cbuf, cbuf.ptr - cbuf.buf);
-	    if (cbuf.len > 0)
-		continue;
-	    for (retries = 0;; retries++) {
-		if (retries >= 10) {
-		    logger.warn("Can't read setup after {} retries "
-			 "(todo={}, left={})",
-			 retries, todo, cbuf.len - (cbuf.ptr - cbuf.buf));
-		    return -1;
-		}
-		sock_set_timeout(&rbuf.sock, 2, 0);
-		while (sock_readable(&rbuf.sock) > 0) {
-		    Sockbuf_clear(&rbuf);
-		    if (Sockbuf_read(&rbuf) == -1) {
-			logger.error("Can't read all setup data");
-			return -1;
-		    }
-		    if (rbuf.len > 0)
-			break;
-		    sock_set_timeout(&rbuf.sock, 0, 0);
-		}
-		if (rbuf.len > 0)
-		    break;
-	    }
-	}
-    }
-    if (oldServer && Setup.map_order != SETUP_MAP_UNCOMPRESSED) {
-	if (Uncompress_map() == -1) return -1;
-    }
-
+}
     return 0;
 }
 

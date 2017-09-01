@@ -25,6 +25,8 @@ import static net.sf.jxpilot.JXPilot.PRINT_PACKETS;
 import static net.sf.jxpilot.net.Ack.putAck;
 import static net.sf.jxpilot.net.packet.Packet.*;
 import static net.sf.jxpilot.net.packet.ReplyData.readReplyData;
+import static org.xpilot.client.net.packet.Packet_old.ENTER_GAME_pack;
+import static org.xpilot.client.net.packet.Packet_old.PKT_KEYBOARD;
 
 public class NetClient {
 	//private final Random rnd = new Random();

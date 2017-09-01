@@ -34,7 +34,7 @@ public static final int PATH_MAX = 1023;
 
 public static final int RES = 128;
 
-public static final int BLOCK_SZ = 35;
+public static final short BLOCK_SZ = 35;
 
 public static final int TABLE_SIZE = RES;
 

@@ -1,9 +1,14 @@
+
+// Add plugin https://plugins.gradle.org/plugin/net.ltgt.apt
+plugins {
+    id "net.ltgt.apt" version "0.10"
+}
 group 'org.xpilot'
 version '1.0-SNAPSHOT'
 
-plugins {
-//    id 'application'
-}
+//plugins {
+////    id 'application'
+//}
 
 
 dependencies {

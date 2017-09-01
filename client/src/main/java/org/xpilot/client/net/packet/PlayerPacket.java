@@ -9,7 +9,7 @@ import java.nio.ByteBuffer;
  * Represents data from a Player packet.
  * @author Vlad Firoiu
  */
-public class PlayerPacket implements XPilotPacket {
+public class PlayerPacket extends XPilotAbstractObject {
 	
 	public static final int LENGTH = 1 + 2 + 1 + 1;
 	
@@ -19,12 +19,10 @@ public class PlayerPacket implements XPilotPacket {
 	protected final ReliableReadException PLAYER_READ_EXCEPTION = new ReliableReadException("Player");
 	
 	protected byte pkt_type;
-	protected short id;
 	protected byte my_team, my_char;
 	protected String name, real, host;
 	protected ShipShape ship_shape;
 
-	public short getId(){return id;}
 	public byte getTeam(){return my_team;}
 	public byte getChar(){return my_char;}
 	public String getName(){return name;}
@@ -38,7 +36,7 @@ public class PlayerPacket implements XPilotPacket {
 		if(in.remaining() < LENGTH) throw PLAYER_READ_EXCEPTION;
 		
 		pkt_type = in.get();
-		id = in.getShort();
+		id = Short.toUnsignedInt(in.getShort());
 		my_team = in.get();
 		my_char = in.get();
 		
