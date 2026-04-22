@@ -1,0 +1,48 @@
+# -----------------------------------------------------------------------
+# KXPilot — Kotlin Multiplatform XPilot port
+# -----------------------------------------------------------------------
+
+# Gradle build outputs
+build/
+**/build/
+
+# Gradle caches and daemon state
+.gradle/
+**/.gradle/
+
+# Gradle wrapper jar is intentionally committed; ignore everything else
+!gradle/wrapper/gradle-wrapper.jar
+!gradle/wrapper/gradle-wrapper.properties
+
+# IntelliJ IDEA / Android Studio
+.idea/
+*.iml
+*.ipr
+*.iws
+
+# Local machine-specific Gradle overrides
+local.properties
+gradle-local.properties
+
+# macOS
+.DS_Store
+**/.DS_Store
+
+# Kotlin incremental compilation caches
+**/.kotlin/
+
+# Node / wasmJs/JS build artifacts
+**/node_modules/
+**/package-lock.json
+**/yarn.lock
+
+# Android generated files
+**/google-services.json
+
+# Test reports (generated; not source)
+**/build/reports/
+
+# Sensitive / environment
+*.env
+*.keystore
+keystore.properties
