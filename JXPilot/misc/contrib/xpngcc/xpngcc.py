@@ -17,7 +17,6 @@ import config
 import options
 import ircui
 import xputil
-import serverui
 
 nick = None
 def get_nick():
@@ -80,12 +79,12 @@ class MenuPanel(wx.Panel):
 		s.Add(wx.StaticBitmap(
 			p, -1,
 			wx.Bitmap(os.path.join(config.png_path, "swgrid.png"),
-			wx.BITMAP_TYPE_ANY)), 0, 0, 0)
+                      wx.BITMAP_TYPE_ANY)), 0, 0, 0)
 		s.Add((0,0), 0, 0, 0)
 		s.Add(wx.StaticBitmap(
 			p, -1,
 			wx.Bitmap(os.path.join(config.png_path, "segrid.png"),
-			wx.BITMAP_TYPE_ANY)), 0, 0, 0)
+                      wx.BITMAP_TYPE_ANY)), 0, 0, 0)
 		s.AddGrowableCol(1);
 		p.SetSizer(s)
 		return p
@@ -158,8 +157,8 @@ class MainMenu(MenuPanel):
 		MenuPanel.__init__(self, parent, b)
 	def onInternet(self, evt):
 		meta = metaui.Panel(self.frame,
-							config.meta,
-							xputil.Client(self, config.client))
+                            config.meta,
+                            xputil.Client(self, config.client))
 		self.show(meta)
 		meta.RefreshList()
 	def onTools(self, evt):
@@ -173,8 +172,8 @@ class MainMenu(MenuPanel):
 				config.server,
 				config.mapdir))
 	def onChat(self, evt):
-		self.show(ircui.IrcPanel(self.frame, config.irc_server, get_nick(), 
-								 config.irc_channel))
+		self.show(ircui.IrcPanel(self.frame, config.irc_server, get_nick(),
+                                 config.irc_channel))
 	def onWindowed(self, evt):
 		# FIXME: assert self.frame.fullscreen=True
 		# FIXME: remove "Windowed" button & replace with "Fullscreen"
@@ -217,12 +216,12 @@ class MainFrame(wx.Frame):
 		s = wx.FlexGridSizer(1, 5)
 		s.Add(wx.StaticBitmap(
 			p, -1,
-			wx.Bitmap(os.path.join(config.png_path, "nwgrid.png"),wx.BITMAP_TYPE_ANY)),
+			wx.Bitmap(os.path.join(config.png_path, "nwgrid.png"), wx.BITMAP_TYPE_ANY)),
 			0, 0, 0)
 		s.Add((0,0), 0, 0, 0)
 		s.Add(wx.StaticBitmap(
 			p, -1,
-			wx.Bitmap(os.path.join(config.png_path, "logo.png"),wx.BITMAP_TYPE_ANY)),
+			wx.Bitmap(os.path.join(config.png_path, "logo.png"), wx.BITMAP_TYPE_ANY)),
 			0, wx.ALIGN_CENTER_VERTICAL|wx.ALL, 1)
 		s.Add((0,0), 0, 0, 0)
 		s.Add(wx.StaticBitmap(

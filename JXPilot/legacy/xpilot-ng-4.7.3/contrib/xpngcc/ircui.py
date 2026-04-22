@@ -83,8 +83,8 @@ class WorkerThread(threading.Thread):
 		self.namreply = ''
 		self.ui.append(msg)
 	def on_privmsg(self, c, evt):
-		msg = "%s->%s: %s" % (irclib.nm_to_n(evt.source()), 
-							  evt.target(), evt.arguments()[0])
+		msg = "%s->%s: %s" % (irclib.nm_to_n(evt.source()),
+                              evt.target(), evt.arguments()[0])
 		self.ui.append(msg)
 	def on_pubmsg(self, c, evt):
 		msg = "%s: %s" % (irclib.nm_to_n(evt.source()), evt.arguments()[0])
