@@ -46,6 +46,8 @@ import org.lambertland.kxpilot.ui.components.GameButtonDanger
 import org.lambertland.kxpilot.ui.stateholder.DashboardDialog
 import org.lambertland.kxpilot.ui.stateholder.ServerDashboardStateHolder
 import org.lambertland.kxpilot.ui.theme.KXPilotColors
+import org.lambertland.kxpilot.ui.util.formatUptime
+import org.lambertland.kxpilot.ui.util.roundOne
 
 // ---------------------------------------------------------------------------
 // Screen entry point
@@ -277,19 +279,18 @@ private fun ConfigForm(state: ServerDashboardStateHolder) {
 @Composable
 private fun MetricsTiles(state: ServerDashboardStateHolder) {
     val m = state.metrics
-    val uptimeSec = m.uptimeMs / 1000L
-    val h = uptimeSec / 3600
-    val min = (uptimeSec % 3600) / 60
-    val sec = uptimeSec % 60
-    val uptimeStr = "${h.pad2()}:${min.pad2()}:${sec.pad2()}"
-    val tickStr = "${m.tickRateActual.roundOne()} / ${m.tickRateTarget} Hz"
+    val uptimeStr = remember(m.uptimeMs) { formatUptime(m.uptimeMs) }
+    val tickStr =
+        remember(m.tickRateActual, m.tickRateTarget) {
+            "${m.tickRateActual.roundOne()} / ${m.tickRateTarget} Hz"
+        }
 
     MetricTile("Uptime", uptimeStr)
     MetricTile("Tick rate", tickStr)
     MetricTile("Players", m.playerCount.toString())
     MetricTile("BW in", "${m.bandwidthInBps} B/s")
     MetricTile("BW out", "${m.bandwidthOutBps} B/s")
-    val cpuStr = if (m.cpuPercent < 0) "—" else "${m.cpuPercent.roundOne()}%"
+    val cpuStr = remember(m.cpuPercent) { if (m.cpuPercent < 0) "—" else "${m.cpuPercent.roundOne()}%" }
     val heapStr = if (m.heapUsedMb < 0) "—" else "${m.heapUsedMb} MB"
     MetricTile("CPU / Heap", "$cpuStr  $heapStr")
 }
@@ -413,11 +414,7 @@ private fun EventLog(events: List<ServerEvent>) {
                         ServerEventLevel.WARN -> KXPilotColors.Accent
                         ServerEventLevel.ERROR -> KXPilotColors.Danger
                     }
-                val uptimeSec = evt.uptimeMs / 1000L
-                val eh = uptimeSec / 3600
-                val em = (uptimeSec % 3600) / 60
-                val es = uptimeSec % 60
-                val ts = "${eh.pad2()}:${em.pad2()}:${es.pad2()}"
+                val ts = formatUptime(evt.uptimeMs)
                 Text(
                     "[$ts] ${evt.message}",
                     style = TextStyle(color = color, fontSize = 10.sp, fontFamily = FontFamily.Monospace),
@@ -692,16 +689,5 @@ private fun SmallDangerButton(
 }
 
 // ---------------------------------------------------------------------------
-// Private formatting helpers (commonMain-safe, no String.format / JVM API)
+// Private formatting helpers — REMOVED; now in ui.util.UiFormatting
 // ---------------------------------------------------------------------------
-
-/** Zero-pad a Long to 2 digits. */
-private fun Long.pad2(): String = if (this < 10) "0$this" else toString()
-
-/** Format a Double with one decimal place using pure Kotlin arithmetic. */
-private fun Double.roundOne(): String {
-    val rounded = kotlin.math.round(this * 10.0) / 10.0
-    val intPart = rounded.toLong()
-    val fracPart = kotlin.math.abs(kotlin.math.round((rounded - intPart) * 10.0)).toInt()
-    return "$intPart.$fracPart"
-}

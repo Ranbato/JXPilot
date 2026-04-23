@@ -5,10 +5,14 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
 import androidx.compose.ui.window.rememberWindowState
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
 import org.lambertland.kxpilot.config.AppConfig
 import org.lambertland.kxpilot.model.deserializeBindings
 import org.lambertland.kxpilot.resources.ShipShapeDef
 import org.lambertland.kxpilot.resources.parseShipShapes
+import org.lambertland.kxpilot.server.ServerController
 import org.lambertland.kxpilot.ui.App
 import org.lambertland.kxpilot.ui.Navigator
 import java.io.File
@@ -40,6 +44,12 @@ fun main() =
                 keysFile.takeIf { it.exists() }?.readText() ?: "",
             )
 
+        // Application-lifetime scope — survives navigation and composition changes.
+        // SupervisorJob ensures a child coroutine failure (e.g. a bad packet) does
+        // not tear down the whole server.
+        val appScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
+        val serverController = ServerController(appScope)
+
         Window(
             onCloseRequest = ::exitApplication,
             title = "KXPilot",
@@ -48,6 +58,7 @@ fun main() =
             App(
                 navigator = navigator,
                 config = config,
+                serverController = serverController,
                 onSaveConfig = { text -> rcFile.writeText(text) },
                 onSaveBindings = { text -> keysFile.writeText(text) },
                 availableShips = allShapes,

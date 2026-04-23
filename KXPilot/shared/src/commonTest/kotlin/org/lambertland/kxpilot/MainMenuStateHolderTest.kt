@@ -1,9 +1,21 @@
 package org.lambertland.kxpilot
 
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.test.StandardTestDispatcher
+import kotlinx.coroutines.test.TestCoroutineScheduler
+import kotlinx.coroutines.test.UnconfinedTestDispatcher
+import kotlinx.coroutines.test.advanceUntilIdle
+import kotlinx.coroutines.test.runTest
+import org.lambertland.kxpilot.config.AppConfig
+import org.lambertland.kxpilot.config.XpOptionRegistry
 import org.lambertland.kxpilot.model.ServerBrowserState
+import org.lambertland.kxpilot.model.ServerInfo
 import org.lambertland.kxpilot.server.ServerConfig
 import org.lambertland.kxpilot.server.ServerController
 import org.lambertland.kxpilot.ui.Screen
+import org.lambertland.kxpilot.ui.screens.MainMenuNavEvent
 import org.lambertland.kxpilot.ui.screens.MainMenuStateHolder
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -16,11 +28,12 @@ import kotlin.test.assertTrue
 // ---------------------------------------------------------------------------
 // MainMenuStateHolderTest
 // ---------------------------------------------------------------------------
-// Covers state transitions, validation logic, and navigation calls for
-// MainMenuStateHolder.  No Compose runtime required — all observable state
-// is plain Kotlin (mutableStateOf delegates are read directly).
+// Tests use kotlinx-coroutines-test so that fetchInternet (which launches a
+// coroutine) can be driven to completion with advanceUntilIdle().
+// All other methods are synchronous and do not require test dispatchers.
 // ---------------------------------------------------------------------------
 
+@OptIn(ExperimentalCoroutinesApi::class)
 class MainMenuStateHolderTest {
     /**
      * Creates a holder backed by [StandardTestDispatcher] so that launched
@@ -46,14 +59,14 @@ class MainMenuStateHolderTest {
 
     @Test
     fun scanLocal_transitionsToConnectLocalState() {
-        val (holder, _) = makeHolder()
+        val holder = makeHolder()
         holder.scanLocal()
         assertIs<ServerBrowserState.ConnectLocal>(holder.browserState)
     }
 
     @Test
     fun scanLocal_stubLeavesScanning_false() {
-        val (holder, _) = makeHolder()
+        val holder = makeHolder()
         holder.scanLocal()
         val bs = holder.browserState as ServerBrowserState.ConnectLocal
         assertFalse(bs.scanning, "scanLocal() should settle with scanning=false")
@@ -67,53 +80,32 @@ class MainMenuStateHolderTest {
         assertNull(bs.localServer, "scanLocal() with stopped server should produce no localServer")
     }
 
-    @Test
-    fun scanLocal_doesNotPassThroughScanningState() {
-        // Regression: previous implementation set scanning=true then immediately
-        // scanning=false in the same call.  The Scanning frame was never rendered.
-        // Verify the state is ConnectLocal, never Scanning, at the end of the call.
-        val (holder, _) = makeHolder()
-        holder.scanLocal()
-        assertIs<ServerBrowserState.ConnectLocal>(holder.browserState)
-    }
-
     // -----------------------------------------------------------------------
     // directHost / directPort state
     // -----------------------------------------------------------------------
 
     @Test
     fun directHost_initiallyEmpty() {
-        val (holder, _) = makeHolder()
-        assertEquals("", holder.directHost)
+        assertEquals("", makeHolder().directHost)
     }
 
     @Test
     fun directPort_initiallyDefaultPort() {
-        val (holder, _) = makeHolder()
-        assertEquals(ServerConfig.DEFAULT_PORT.toString(), holder.directPort)
+        assertEquals(ServerConfig.DEFAULT_PORT.toString(), makeHolder().directPort)
     }
 
     @Test
     fun directHost_canBeUpdatedDirectly() {
-        val (holder, _) = makeHolder()
+        val holder = makeHolder()
         holder.directHost = "192.168.1.5"
         assertEquals("192.168.1.5", holder.directHost)
     }
 
     @Test
     fun directPort_canBeUpdatedDirectly() {
-        val (holder, _) = makeHolder()
+        val holder = makeHolder()
         holder.directPort = "9999"
         assertEquals("9999", holder.directPort)
-    }
-
-    @Test
-    fun directHost_updateDoesNotDependOnBrowserState() {
-        // directHost lives in the state holder — updates work in any browser state.
-        val (holder, _) = makeHolder()
-        // browserState starts as Idle, not ConnectLocal
-        holder.directHost = "myserver.local"
-        assertEquals("myserver.local", holder.directHost)
     }
 
     // -----------------------------------------------------------------------
@@ -122,49 +114,49 @@ class MainMenuStateHolderTest {
 
     @Test
     fun directPortInt_parsesValidPort() {
-        val (holder, _) = makeHolder()
+        val holder = makeHolder()
         holder.directPort = "15345"
         assertEquals(15345, holder.directPortInt)
     }
 
     @Test
     fun directPortInt_nullForNonNumeric() {
-        val (holder, _) = makeHolder()
+        val holder = makeHolder()
         holder.directPort = "abc"
         assertNull(holder.directPortInt)
     }
 
     @Test
     fun directPortInt_nullForPortZero() {
-        val (holder, _) = makeHolder()
+        val holder = makeHolder()
         holder.directPort = "0"
         assertNull(holder.directPortInt, "Port 0 is out of valid range 1..65535")
     }
 
     @Test
     fun directPortInt_nullForPortAbove65535() {
-        val (holder, _) = makeHolder()
+        val holder = makeHolder()
         holder.directPort = "65536"
         assertNull(holder.directPortInt, "Port 65536 is out of valid range 1..65535")
     }
 
     @Test
     fun directPortInt_validForPort1() {
-        val (holder, _) = makeHolder()
+        val holder = makeHolder()
         holder.directPort = "1"
         assertEquals(1, holder.directPortInt)
     }
 
     @Test
     fun directPortInt_validForPort65535() {
-        val (holder, _) = makeHolder()
+        val holder = makeHolder()
         holder.directPort = "65535"
         assertEquals(65535, holder.directPortInt)
     }
 
     @Test
     fun directPortInt_nullForEmptyString() {
-        val (holder, _) = makeHolder()
+        val holder = makeHolder()
         holder.directPort = ""
         assertNull(holder.directPortInt)
     }
@@ -175,7 +167,7 @@ class MainMenuStateHolderTest {
 
     @Test
     fun canConnectDirect_falseWhenHostEmpty() {
-        val (holder, _) = makeHolder()
+        val holder = makeHolder()
         holder.directHost = ""
         holder.directPort = "15345"
         assertFalse(holder.canConnectDirect)
@@ -183,7 +175,7 @@ class MainMenuStateHolderTest {
 
     @Test
     fun canConnectDirect_falseWhenPortInvalid() {
-        val (holder, _) = makeHolder()
+        val holder = makeHolder()
         holder.directHost = "myserver"
         holder.directPort = "notaport"
         assertFalse(holder.canConnectDirect)
@@ -191,7 +183,7 @@ class MainMenuStateHolderTest {
 
     @Test
     fun canConnectDirect_falseWhenPortOutOfRange() {
-        val (holder, _) = makeHolder()
+        val holder = makeHolder()
         holder.directHost = "myserver"
         holder.directPort = "99999"
         assertFalse(holder.canConnectDirect)
@@ -199,7 +191,7 @@ class MainMenuStateHolderTest {
 
     @Test
     fun canConnectDirect_trueWhenHostAndPortValid() {
-        val (holder, _) = makeHolder()
+        val holder = makeHolder()
         holder.directHost = "myserver.local"
         holder.directPort = "15345"
         assertTrue(holder.canConnectDirect)
@@ -207,7 +199,7 @@ class MainMenuStateHolderTest {
 
     @Test
     fun canConnectDirect_trueForBoundaryPort1() {
-        val (holder, _) = makeHolder()
+        val holder = makeHolder()
         holder.directHost = "host"
         holder.directPort = "1"
         assertTrue(holder.canConnectDirect)
@@ -215,7 +207,7 @@ class MainMenuStateHolderTest {
 
     @Test
     fun canConnectDirect_trueForBoundaryPort65535() {
-        val (holder, _) = makeHolder()
+        val holder = makeHolder()
         holder.directHost = "host"
         holder.directPort = "65535"
         assertTrue(holder.canConnectDirect)
@@ -223,59 +215,88 @@ class MainMenuStateHolderTest {
 
     @Test
     fun canConnectDirect_falseForBlankHost() {
-        val (holder, _) = makeHolder()
+        val holder = makeHolder()
         holder.directHost = "   "
         holder.directPort = "15345"
         assertFalse(holder.canConnectDirect, "Whitespace-only host should be rejected")
     }
 
     // -----------------------------------------------------------------------
-    // join — navigation
+    // join — emits navigation event instead of calling Navigator directly
     // -----------------------------------------------------------------------
 
     @Test
-    fun join_pushesInGameScreen() {
-        val (holder, nav) = makeHolder()
+    fun join_emitsNavigationEvent() {
+        val holder = makeHolder()
         holder.join("myserver.local", 15345)
-        assertIs<Screen.InGame>(nav.current.value)
+        assertNotNull(holder.navigationEvent)
     }
 
     @Test
-    fun join_pushesCorrctHost() {
-        val (holder, nav) = makeHolder()
+    fun join_emitsPushEvent() {
+        val holder = makeHolder()
         holder.join("myserver.local", 15345)
-        val screen = nav.current.value as Screen.InGame
+        assertIs<MainMenuNavEvent.Push>(holder.navigationEvent)
+    }
+
+    @Test
+    fun join_pushesInGameScreen() {
+        val holder = makeHolder()
+        holder.join("myserver.local", 15345)
+        val event = holder.navigationEvent as MainMenuNavEvent.Push
+        assertIs<Screen.InGame>(event.screen)
+    }
+
+    @Test
+    fun join_pushesCorrectHost() {
+        val holder = makeHolder()
+        holder.join("myserver.local", 15345)
+        val screen = (holder.navigationEvent as MainMenuNavEvent.Push).screen as Screen.InGame
         assertEquals("myserver.local", screen.serverHost)
     }
 
     @Test
     fun join_pushesCorrectPort() {
-        val (holder, nav) = makeHolder()
+        val holder = makeHolder()
         holder.join("myserver.local", 9999)
-        val screen = nav.current.value as Screen.InGame
+        val screen = (holder.navigationEvent as MainMenuNavEvent.Push).screen as Screen.InGame
         assertEquals(9999, screen.serverPort)
     }
 
     @Test
     fun join_defaultPortMatchesServerConfigDefaultPort() {
-        val (holder, nav) = makeHolder()
+        val holder = makeHolder()
         holder.join("host")
-        val screen = nav.current.value as Screen.InGame
+        val screen = (holder.navigationEvent as MainMenuNavEvent.Push).screen as Screen.InGame
         assertEquals(ServerConfig.DEFAULT_PORT, screen.serverPort)
     }
 
     // -----------------------------------------------------------------------
-    // Screen.InGame default port
+    // quit — emits Pop event
     // -----------------------------------------------------------------------
 
     @Test
-    fun screenInGame_defaultPortMatchesServerConfigDefaultPort() {
-        val screen = Screen.InGame("host")
-        assertEquals(ServerConfig.DEFAULT_PORT, screen.serverPort)
+    fun quit_emitsPopEvent() {
+        val holder = makeHolder()
+        holder.quit()
+        assertIs<MainMenuNavEvent.Pop>(holder.navigationEvent)
     }
 
     // -----------------------------------------------------------------------
-    // fetchInternet
+    // consumeNavigationEvent
+    // -----------------------------------------------------------------------
+
+    @Test
+    fun consumeNavigationEvent_clearsEvent() {
+        val holder = makeHolder()
+        holder.join("host", 1234)
+        assertNotNull(holder.navigationEvent)
+        holder.consumeNavigationEvent()
+        assertNull(holder.navigationEvent)
+    }
+
+    // -----------------------------------------------------------------------
+    // navigateTo
     // -----------------------------------------------------------------------
 
     @Test

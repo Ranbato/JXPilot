@@ -6,6 +6,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
@@ -15,6 +16,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
@@ -26,10 +28,12 @@ import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.withFrameMillis
 import androidx.compose.ui.Alignment
@@ -40,11 +44,16 @@ import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.rotate
 import androidx.compose.ui.graphics.drawscope.translate
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
+import org.lambertland.kxpilot.AppInfo
+import org.lambertland.kxpilot.config.AppConfig
 import org.lambertland.kxpilot.config.LocalAppConfig
 import org.lambertland.kxpilot.config.XpOptionRegistry
 import org.lambertland.kxpilot.model.ServerBrowserState
@@ -57,27 +66,118 @@ import org.lambertland.kxpilot.server.ServerController
 import org.lambertland.kxpilot.server.ServerMetrics
 import org.lambertland.kxpilot.server.ServerState
 import org.lambertland.kxpilot.ui.LocalNavigator
-import org.lambertland.kxpilot.ui.Navigator
+import org.lambertland.kxpilot.ui.LocalServerController
 import org.lambertland.kxpilot.ui.Screen
 import org.lambertland.kxpilot.ui.components.GameButton
 import org.lambertland.kxpilot.ui.components.GameButtonDanger
 import org.lambertland.kxpilot.ui.theme.KXPilotColors
+import org.lambertland.kxpilot.ui.util.formatUptime
+import org.lambertland.kxpilot.ui.util.roundOne
+
+// ---------------------------------------------------------------------------
+// Navigation events
+// ---------------------------------------------------------------------------
+
+/**
+ * Navigation intents emitted by [MainMenuStateHolder].
+ *
+ * The composable observes [MainMenuStateHolder.navigationEvent] and calls
+ * the appropriate [Navigator] method.  The state holder itself never holds
+ * a [Navigator] reference, which avoids the stale-capture problem that arises
+ * from injecting a composition-local value into a `remember {}`-d object.
+ */
+sealed class MainMenuNavEvent {
+    data class Push(
+        val screen: Screen,
+    ) : MainMenuNavEvent()
+
+    data object Pop : MainMenuNavEvent()
+}
 
 // ---------------------------------------------------------------------------
 // State holder
 // ---------------------------------------------------------------------------
 
+/**
+ * UI-facing state holder for [MainMenuScreen].
+ *
+ * **No Navigator injection** — navigation intents are emitted via [navigationEvent]
+ * and handled by the composable.  This avoids the stale-capture bug that occurs
+ * when a composition-local is injected at construction time via `remember {}`.
+ *
+ * **No writes during composition** — config sync is performed via [syncConfig],
+ * which must be called from a [LaunchedEffect], not directly in the composable body.
+ *
+ * **Async fetchInternet** — call [fetchInternet] from a coroutine scope so the
+ * [ServerBrowserState.Scanning] state is actually observable before results arrive.
+ *
+ * @param scope  Coroutine scope for async operations (fetchInternet, scanLocal).
+ *               Supply [rememberCoroutineScope] in the composable.
+ */
 class MainMenuStateHolder(
     private val scope: CoroutineScope,
     private val serverController: ServerController,
 ) {
+    // -----------------------------------------------------------------------
+    // Navigation
+    // -----------------------------------------------------------------------
+
+    var navigationEvent by mutableStateOf<MainMenuNavEvent?>(null)
+        private set
+
+    /** Called by the composable after it has handled and acted on a navigation event. */
+    fun consumeNavigationEvent() {
+        navigationEvent = null
+    }
+
+    fun navigateTo(screen: Screen) {
+        navigationEvent = MainMenuNavEvent.Push(screen)
+    }
+
+    fun quit() {
+        navigationEvent = MainMenuNavEvent.Pop
+    }
+
+    fun join(
+        host: String,
+        port: Int = ServerConfig.DEFAULT_PORT,
+    ) {
+        navigateTo(Screen.InGame(serverHost = host, serverPort = port))
+    }
+
+    // -----------------------------------------------------------------------
+    // Config fields (synced from AppConfig via syncConfig, not during composition)
+    // -----------------------------------------------------------------------
+
     var playerName by mutableStateOf("Player")
     var shipName by mutableStateOf("")
+
+    /**
+     * Sync config values into this holder.  Must be called from a [LaunchedEffect],
+     * never directly in the composable body, to avoid writing during composition.
+     */
+    fun syncConfig(config: AppConfig) {
+        playerName = config.get(XpOptionRegistry.nickName)
+        shipName = config.get(XpOptionRegistry.shipName)
+    }
+
+    // -----------------------------------------------------------------------
+    // Server browser state
+    // -----------------------------------------------------------------------
+
     var tab by mutableStateOf(ServerTab.LOCAL)
     var browserState by mutableStateOf<ServerBrowserState>(ServerBrowserState.Idle)
 
-    // Direct-connect input state — lives here, not in ConnectLocal, because these
-    // are text-field UI state not domain state.  They survive tab switches.
+    /**
+     * The last successfully loaded internet server list.  Retained so BACK from
+     * the detail panel restores the real list instead of a hardcoded stub.
+     */
+    private var lastLoadedServers: List<ServerInfo> = emptyList()
+
+    // -----------------------------------------------------------------------
+    // Direct-connect input state (UI state — not domain state)
+    // -----------------------------------------------------------------------
+
     var directHost by mutableStateOf("")
     var directPort by mutableStateOf(ServerConfig.DEFAULT_PORT.toString())
 
@@ -88,6 +188,10 @@ class MainMenuStateHolder(
     /** True when the direct-connect form has a valid host and a valid port. */
     val canConnectDirect: Boolean
         get() = directHost.isNotBlank() && directPortInt != null
+
+    // -----------------------------------------------------------------------
+    // Actions
+    // -----------------------------------------------------------------------
 
     fun scanLocal() {
         val running = serverController.state.value as? ServerState.Running
@@ -115,6 +219,11 @@ class MainMenuStateHolder(
         browserState = ServerBrowserState.ConnectLocal(localServer = localServer, scanning = false)
     }
 
+    /**
+     * Fetch the internet server list.  Transitions through [ServerBrowserState.Scanning]
+     * before setting [ServerBrowserState.Loaded], so the UI can show a progress indicator
+     * during the async fetch.  Must be called from a coroutine context.
+     */
     fun fetchInternet() {
         scope.launch {
             browserState = ServerBrowserState.Scanning
@@ -131,15 +240,14 @@ class MainMenuStateHolder(
         browserState = ServerBrowserState.Detail(s, s.players)
     }
 
-    fun join(
-        host: String,
-        port: Int = ServerConfig.DEFAULT_PORT,
-    ) {
-        navigator.push(Screen.InGame(serverHost = host, serverPort = port))
-    }
-
-    fun quit() {
-        navigator.pop()
+    /** Navigate back from a [ServerBrowserState.Detail] to the last loaded list. */
+    fun backFromDetail() {
+        browserState =
+            if (lastLoadedServers.isNotEmpty()) {
+                ServerBrowserState.Loaded(lastLoadedServers)
+            } else {
+                ServerBrowserState.Idle
+            }
     }
 }
 
@@ -175,163 +283,253 @@ fun MainMenuScreen(
                 state.consumeNavigationEvent()
             }
 
-    // Sync state holder ↔ AppConfig on first composition
-    state.playerName = config.get(XpOptionRegistry.nickName)
-    state.shipName = config.get(XpOptionRegistry.shipName)
+            null -> {
+                Unit
+            }
+        }
+    }
 
-    Row(
-        modifier =
-            Modifier
-                .fillMaxSize()
-                .background(KXPilotColors.Background),
-    ) {
-        // ---- Left sidebar: title + player name + ship picker + nav buttons ----
-        Column(
-            modifier =
-                Modifier
-                    .width(180.dp)
-                    .fillMaxHeight()
-                    .background(KXPilotColors.SurfaceVariant)
-                    .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
+    // Observe server state for button colour and metrics overlay.
+    val serverState by serverController.state.collectAsState()
+    val isServerRunning = serverState is ServerState.Running
+    val serverMetrics: ServerMetrics? = (serverState as? ServerState.Running)?.metrics
+
+    Box(modifier = Modifier.fillMaxSize()) {
+        Row(
+            modifier = Modifier.fillMaxSize().background(KXPilotColors.Background),
         ) {
-            Text(
-                "KXPilot",
-                style =
-                    TextStyle(
-                        color = KXPilotColors.AccentBright,
-                        fontSize = 22.sp,
-                        fontWeight = FontWeight.Bold,
-                        fontFamily = FontFamily.Monospace,
-                    ),
-            )
-            Text(
-                "v0.1-alpha",
-                style =
-                    TextStyle(
-                        color = KXPilotColors.OnSurfaceDim,
-                        fontSize = 10.sp,
-                        fontFamily = FontFamily.Monospace,
-                    ),
-            )
-
-            Spacer(Modifier.height(8.dp))
-
-            Text(
-                "Player name:",
-                style = TextStyle(color = KXPilotColors.OnSurfaceDim, fontSize = 11.sp, fontFamily = FontFamily.Monospace),
-            )
-            BasicTextField(
-                value = state.playerName,
-                onValueChange = { v ->
-                    state.playerName = v
-                    config.set(XpOptionRegistry.nickName, v)
-                    onSaveConfig(config.toRcText())
-                },
-                singleLine = true,
-                textStyle =
-                    TextStyle(
-                        color = KXPilotColors.OnSurface,
-                        fontSize = 13.sp,
-                        fontFamily = FontFamily.Monospace,
-                    ),
-                cursorBrush = SolidColor(KXPilotColors.Accent),
+            // ---- Left sidebar: title + player name + ship picker + nav buttons ----
+            Column(
                 modifier =
                     Modifier
-                        .fillMaxWidth()
-                        .background(KXPilotColors.Surface)
-                        .border(1.dp, KXPilotColors.Accent)
-                        .padding(horizontal = 8.dp, vertical = 6.dp),
-            )
-
-            if (availableShips.isNotEmpty()) {
-                Spacer(Modifier.height(4.dp))
+                        .width(180.dp)
+                        .fillMaxHeight()
+                        .background(KXPilotColors.SurfaceVariant)
+                        .padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
                 Text(
-                    "Ship:",
+                    "KXPilot",
+                    style =
+                        TextStyle(
+                            color = KXPilotColors.AccentBright,
+                            fontSize = 22.sp,
+                            fontWeight = FontWeight.Bold,
+                            fontFamily = FontFamily.Monospace,
+                        ),
+                )
+                Text(
+                    AppInfo.VERSION_LABEL,
+                    style =
+                        TextStyle(
+                            color = KXPilotColors.OnSurfaceDim,
+                            fontSize = 10.sp,
+                            fontFamily = FontFamily.Monospace,
+                        ),
+                )
+
+                Spacer(Modifier.height(8.dp))
+
+                Text(
+                    "Player name:",
                     style = TextStyle(color = KXPilotColors.OnSurfaceDim, fontSize = 11.sp, fontFamily = FontFamily.Monospace),
                 )
-                ShipPicker(
-                    ships = availableShips,
-                    selected = state.shipName,
-                    onSelect = { name ->
-                        state.shipName = name
-                        config.set(XpOptionRegistry.shipName, name)
+                BasicTextField(
+                    value = state.playerName,
+                    onValueChange = { v ->
+                        state.playerName = v
+                        config.set(XpOptionRegistry.nickName, v)
                         onSaveConfig(config.toRcText())
                     },
+                    singleLine = true,
+                    textStyle =
+                        TextStyle(
+                            color = KXPilotColors.OnSurface,
+                            fontSize = 13.sp,
+                            fontFamily = FontFamily.Monospace,
+                        ),
+                    cursorBrush = SolidColor(KXPilotColors.Accent),
+                    modifier =
+                        Modifier
+                            .fillMaxWidth()
+                            .background(KXPilotColors.Surface)
+                            .border(1.dp, KXPilotColors.Accent)
+                            .padding(horizontal = 8.dp, vertical = 6.dp),
                 )
-            }
 
-            Spacer(Modifier.height(12.dp))
-
-            // Tab selection — LOCAL / INTERNET
-            TabButton("LOCAL", state.tab == ServerTab.LOCAL) {
-                state.tab = ServerTab.LOCAL
-                state.scanLocal()
-            }
-            TabButton("INTERNET", state.tab == ServerTab.INTERNET) {
-                state.tab = ServerTab.INTERNET
-                state.fetchInternet()
-            }
-
-            Spacer(Modifier.weight(1f))
-
-            // Navigation buttons
-            GameButton("ABOUT", onClick = { navigator.push(Screen.About) }, modifier = Modifier.fillMaxWidth())
-            GameButton("KEYS", onClick = { navigator.push(Screen.KeyBindings) }, modifier = Modifier.fillMaxWidth())
-            GameButton("CONFIG", onClick = { navigator.push(Screen.Config) }, modifier = Modifier.fillMaxWidth())
-            GameButton("SERVER", onClick = { navigator.push(Screen.ServerDashboard) }, modifier = Modifier.fillMaxWidth())
-            Spacer(Modifier.height(4.dp))
-            GameButtonDanger("QUIT", onClick = { state.quit() }, modifier = Modifier.fillMaxWidth())
-        }
-
-        // ---- Right panel: server list or detail ----
-        Column(
-            modifier =
-                Modifier
-                    .weight(1f)
-                    .fillMaxHeight()
-                    .background(KXPilotColors.Background),
-        ) {
-            when (val bs = state.browserState) {
-                ServerBrowserState.Idle -> {
-                    IdlePanel(state.tab) {
-                        if (state.tab == ServerTab.LOCAL) state.scanLocal() else state.fetchInternet()
-                    }
-                }
-
-                ServerBrowserState.Scanning -> {
-                    ScanningPanel()
-                }
-
-                is ServerBrowserState.Loaded -> {
-                    ServerListPanel(bs.servers, state)
-                }
-
-                is ServerBrowserState.Detail -> {
-                    ServerDetailPanel(bs, state)
-                }
-
-                is ServerBrowserState.Error -> {
-                    ErrorPanel(bs.message)
-                }
-
-                is ServerBrowserState.ConnectLocal -> {
-                    ConnectLocalPanel(
-                        connectState = bs,
-                        directHost = state.directHost,
-                        directPort = state.directPort,
-                        canConnect = state.canConnectDirect,
-                        onHostChange = { state.directHost = it },
-                        onPortChange = { state.directPort = it },
-                        onConnect = {
-                            state.join(state.directHost.trim(), state.directPortInt ?: ServerConfig.DEFAULT_PORT)
+                if (availableShips.isNotEmpty()) {
+                    Spacer(Modifier.height(4.dp))
+                    Text(
+                        "Ship:",
+                        style = TextStyle(color = KXPilotColors.OnSurfaceDim, fontSize = 11.sp, fontFamily = FontFamily.Monospace),
+                    )
+                    ShipPicker(
+                        ships = availableShips,
+                        selected = state.shipName,
+                        onSelect = { name ->
+                            state.shipName = name
+                            config.set(XpOptionRegistry.shipName, name)
+                            onSaveConfig(config.toRcText())
                         },
-                        onConnectLocal = { s -> state.join(s.host, s.port) },
-                        onScanAgain = { state.scanLocal() },
                     )
                 }
+
+                Spacer(Modifier.height(12.dp))
+
+                TabButton("LOCAL", state.tab == ServerTab.LOCAL) {
+                    state.tab = ServerTab.LOCAL
+                    state.scanLocal()
+                }
+                TabButton("INTERNET", state.tab == ServerTab.INTERNET) {
+                    state.tab = ServerTab.INTERNET
+                    state.fetchInternet()
+                }
+
+                Spacer(Modifier.weight(1f))
+
+                GameButton("ABOUT", onClick = { state.navigateTo(Screen.About) }, modifier = Modifier.fillMaxWidth())
+                GameButton("KEYS", onClick = { state.navigateTo(Screen.KeyBindings) }, modifier = Modifier.fillMaxWidth())
+                GameButton("CONFIG", onClick = { state.navigateTo(Screen.Config) }, modifier = Modifier.fillMaxWidth())
+                // SERVER button: green when a server is running.
+                GameButton(
+                    "SERVER",
+                    onClick = { state.navigateTo(Screen.ServerDashboard) },
+                    modifier = Modifier.fillMaxWidth(),
+                    color = if (isServerRunning) KXPilotColors.Success else KXPilotColors.Accent,
+                )
+                Spacer(Modifier.height(4.dp))
+                GameButtonDanger("QUIT", onClick = { state.quit() }, modifier = Modifier.fillMaxWidth())
+            }
+
+            // ---- Right panel: server browser ----
+            Column(
+                modifier = Modifier.weight(1f).fillMaxHeight().background(KXPilotColors.Background),
+            ) {
+                when (val bs = state.browserState) {
+                    ServerBrowserState.Idle -> {
+                        IdlePanel(state.tab) {
+                            if (state.tab == ServerTab.LOCAL) state.scanLocal() else state.fetchInternet()
+                        }
+                    }
+
+                    ServerBrowserState.Scanning -> {
+                        ScanningPanel()
+                    }
+
+                    is ServerBrowserState.Loaded -> {
+                        ServerListPanel(
+                            servers = bs.servers,
+                            onSelectServer = { state.selectServer(it) },
+                        )
+                    }
+
+                    is ServerBrowserState.Detail -> {
+                        ServerDetailPanel(
+                            detail = bs,
+                            onJoin = { s -> state.join(s.host, s.port) },
+                            onBack = { state.backFromDetail() },
+                        )
+                    }
+
+                    is ServerBrowserState.Error -> {
+                        ErrorPanel(bs.message)
+                    }
+
+                    is ServerBrowserState.ConnectLocal -> {
+                        ConnectLocalPanel(
+                            connectState = bs,
+                            directHost = state.directHost,
+                            directPort = state.directPort,
+                            canConnect = state.canConnectDirect,
+                            onHostChange = { state.directHost = it },
+                            onPortChange = { state.directPort = it },
+                            onConnect = {
+                                state.join(state.directHost.trim(), state.directPortInt ?: ServerConfig.DEFAULT_PORT)
+                            },
+                            onConnectLocal = { s -> state.join(s.host, s.port) },
+                            onScanAgain = { state.scanLocal() },
+                        )
+                    }
+                }
             }
         }
+
+        // ---- Metrics overlay: bottom-right corner, only when server is running ----
+        if (serverMetrics != null) {
+            ServerMetricsOverlay(
+                metrics = serverMetrics,
+                modifier = Modifier.align(Alignment.BottomEnd).padding(12.dp),
+            )
+        }
+    }
+}
+
+// ---------------------------------------------------------------------------
+// Server metrics overlay (bottom-right, visible when server is running)
+// ---------------------------------------------------------------------------
+
+/**
+ * Compact read-only metrics panel shown in the bottom-right corner of the main
+ * menu whenever an embedded server is active.
+ */
+@Composable
+private fun ServerMetricsOverlay(
+    metrics: ServerMetrics,
+    modifier: Modifier = Modifier,
+) {
+    // Memoize string formatting — metrics update at most once per second so this
+    // avoids needless String allocations on unrelated recompositions.
+    val uptimeStr = remember(metrics.uptimeMs) { formatUptime(metrics.uptimeMs) }
+    val tickStr =
+        remember(metrics.tickRateActual, metrics.tickRateTarget) {
+            "${metrics.tickRateActual.roundOne()} / ${metrics.tickRateTarget} Hz"
+        }
+    val cpuStr =
+        remember(metrics.cpuPercent) {
+            if (metrics.cpuPercent < 0) "—" else "${metrics.cpuPercent.roundOne()}%"
+        }
+
+    Column(
+        modifier =
+            modifier
+                .background(KXPilotColors.Background.copy(alpha = 0.85f))
+                .border(1.dp, KXPilotColors.Success)
+                .padding(horizontal = 10.dp, vertical = 6.dp),
+        verticalArrangement = Arrangement.spacedBy(2.dp),
+    ) {
+        Text(
+            "● SERVER RUNNING",
+            style =
+                TextStyle(
+                    color = KXPilotColors.Success,
+                    fontSize = 9.sp,
+                    fontWeight = FontWeight.Bold,
+                    fontFamily = FontFamily.Monospace,
+                ),
+        )
+        OverlayRow("Uptime", uptimeStr)
+        OverlayRow("Tick", tickStr)
+        OverlayRow("Players", metrics.playerCount.toString())
+        OverlayRow("CPU", cpuStr)
+    }
+}
+
+@Composable
+private fun OverlayRow(
+    label: String,
+    value: String,
+) {
+    Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+        // Fixed-width label column; avoids String.padEnd() allocations on every recomposition.
+        Text(
+            label,
+            style = TextStyle(color = KXPilotColors.OnSurfaceDim, fontSize = 9.sp, fontFamily = FontFamily.Monospace),
+            modifier = Modifier.width(48.dp),
+        )
+        Text(
+            value,
+            style = TextStyle(color = KXPilotColors.OnSurface, fontSize = 9.sp, fontFamily = FontFamily.Monospace),
+        )
     }
 }
 
@@ -340,8 +538,7 @@ fun MainMenuScreen(
 // ---------------------------------------------------------------------------
 
 // Note: IdlePanel and ScanningPanel are only reachable from the INTERNET tab.
-// The LOCAL tab transitions directly to ConnectLocal via scanLocal(), so it
-// never passes through Idle or Scanning states.
+// The LOCAL tab transitions directly to ConnectLocal via scanLocal().
 
 @Composable
 private fun IdlePanel(
@@ -379,10 +576,6 @@ private fun ErrorPanel(message: String) {
 /**
  * Panel shown when the LOCAL tab is active.
  *
- * Provides two ways to connect:
- *  1. Local server — shows a detected local instance or a "None found" message with a re-scan button.
- *  2. Direct connect — free-form host/port entry.
- *
  * All mutable state is owned by the caller; this composable only reads and
  * fires callbacks, making it independently testable and previewable.
  */
@@ -402,7 +595,6 @@ private fun ConnectLocalPanel(
         modifier = Modifier.fillMaxSize().padding(20.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
-        // ---- Section: Local server ----
         Text(
             "LOCAL SERVER",
             style =
@@ -416,10 +608,7 @@ private fun ConnectLocalPanel(
         Box(Modifier.fillMaxWidth().height(1.dp).background(KXPilotColors.Accent))
 
         if (connectState.scanning) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(12.dp),
-            ) {
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 CircularProgressIndicator(
                     color = KXPilotColors.Accent,
                     modifier = Modifier.width(18.dp).height(18.dp),
@@ -450,10 +639,7 @@ private fun ConnectLocalPanel(
                 GameButton("CONNECT", onClick = { onConnectLocal(s) })
             }
         } else {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(12.dp),
-            ) {
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 Text(
                     "No local server found.",
                     style = TextStyle(color = KXPilotColors.OnSurfaceDim, fontSize = 12.sp, fontFamily = FontFamily.Monospace),
@@ -464,7 +650,6 @@ private fun ConnectLocalPanel(
 
         Spacer(Modifier.height(8.dp))
 
-        // ---- Section: Direct connect ----
         Text(
             "CONNECT DIRECTLY",
             style =
@@ -495,10 +680,7 @@ private fun ConnectLocalPanel(
                     .padding(horizontal = 8.dp, vertical = 6.dp),
         )
 
-        Text(
-            "Port:",
-            style = TextStyle(color = KXPilotColors.OnSurfaceDim, fontSize = 11.sp, fontFamily = FontFamily.Monospace),
-        )
+        Text("Port:", style = TextStyle(color = KXPilotColors.OnSurfaceDim, fontSize = 11.sp, fontFamily = FontFamily.Monospace))
         BasicTextField(
             value = directPort,
             onValueChange = onPortChange,
@@ -517,19 +699,18 @@ private fun ConnectLocalPanel(
     }
 }
 
+/**
+ * Server list panel.  Takes a targeted [onSelectServer] callback instead of the
+ * full state holder to limit coupling.
+ */
 @Composable
 private fun ServerListPanel(
     servers: List<ServerInfo>,
-    state: MainMenuStateHolder,
+    onSelectServer: (ServerInfo) -> Unit,
 ) {
     Column(modifier = Modifier.fillMaxSize()) {
-        // Column headers (sticky via wrapping in a non-lazy Column outside LazyColumn)
         Row(
-            modifier =
-                Modifier
-                    .fillMaxWidth()
-                    .background(KXPilotColors.SurfaceVariant)
-                    .padding(horizontal = 12.dp, vertical = 6.dp),
+            modifier = Modifier.fillMaxWidth().background(KXPilotColors.SurfaceVariant).padding(horizontal = 12.dp, vertical = 6.dp),
         ) {
             ColHeader("Pl", Modifier.width(40.dp))
             ColHeader("FPS", Modifier.width(40.dp))
@@ -539,17 +720,23 @@ private fun ServerListPanel(
             ColHeader("Status", Modifier.width(70.dp))
         }
         LazyColumn(modifier = Modifier.fillMaxSize()) {
-            items(servers, key = { "${it.host}:${it.port}" }) { server ->
-                ServerRow(server, onClick = { state.selectServer(server) })
+            // Use a stable typed key: host + port uniquely identify a server entry.
+            items(servers, key = { it.host to it.port }) { server ->
+                ServerRow(server, onClick = { onSelectServer(server) })
             }
         }
     }
 }
 
+/**
+ * Server detail panel.  Takes [onJoin] and [onBack] callbacks; restoring the
+ * previous list is the caller's responsibility via [onBack].
+ */
 @Composable
 private fun ServerDetailPanel(
     detail: ServerBrowserState.Detail,
-    state: MainMenuStateHolder,
+    onJoin: (ServerInfo) -> Unit,
+    onBack: () -> Unit,
 ) {
     val s = detail.server
     Column(
@@ -582,10 +769,8 @@ private fun ServerDetailPanel(
         }
         Spacer(Modifier.weight(1f))
         Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-            GameButton("JOIN THIS SERVER", onClick = { state.join(s.host, s.port) })
-            GameButton("BACK", onClick = {
-                state.browserState = ServerBrowserState.Loaded(STUB_INTERNET_SERVERS)
-            })
+            GameButton("JOIN THIS SERVER", onClick = { onJoin(s) })
+            GameButton("BACK", onClick = onBack)
         }
     }
 }
@@ -688,18 +873,10 @@ private fun RowScope.CellText(
 // Ship picker (autocomplete dropdown with hull preview)
 // ---------------------------------------------------------------------------
 
-private const val PREVIEW_SIZE_DP = 28 // square canvas size for the hull thumbnail
-private const val HULL_EXTENT = 15f // XPilot local coords range ±15
-private const val ROTATION_PERIOD_MS = 15_000f // one full clockwise turn every 15 s
+private const val PREVIEW_SIZE_DP = 28
+private const val HULL_EXTENT = 15f
+private const val ROTATION_PERIOD_MS = 15_000f
 
-/**
- * Draws a ship hull polygon scaled to fit a square canvas, rotated by [angleDeg].
- * Coords are in XPilot local space (x right, y up, ±15); Y is flipped for screen space.
- * Falls back to a simple triangle when [shape] is null or has an empty hull.
- *
- * Rotation is applied around the canvas centre using [rotate] (positive = clockwise in
- * Compose screen space).
- */
 @Composable
 private fun ShipHullPreview(
     shape: ShipShapeDef?,
@@ -712,7 +889,6 @@ private fun ShipHullPreview(
         val cy = size.height / 2f
         val scale = (size.width / 2f) / (HULL_EXTENT + 2f)
 
-        // Build path in local coords (origin at centre)
         val hull = shape?.hull
         val path = Path()
         if (hull != null && hull.size >= 2) {
@@ -731,7 +907,6 @@ private fun ShipHullPreview(
             path.close()
         }
 
-        // Rotate around canvas centre, then translate to centre for drawing
         rotate(
             degrees = angleDeg,
             pivot =
@@ -745,26 +920,20 @@ private fun ShipHullPreview(
     }
 }
 
-/**
- * Autocomplete dropdown for ship selection with animated hull previews.
- *
- * - The collapsed field shows the currently selected ship's hull rotating clockwise.
- * - The dropdown rows each show the hull rotating at the same angle.
- * - All previews in this picker share one [animAngle] driven by [withFrameMillis], so
- *   they stay in sync and use only a single animation loop.
- * - One full revolution takes [ROTATION_PERIOD_MS] milliseconds (15 s).
- */
 @Composable
 private fun ShipPicker(
     ships: List<ShipShapeDef>,
     selected: String,
     onSelect: (String) -> Unit,
 ) {
-    var query by remember(selected) { mutableStateOf(selected) }
+    // query is NOT keyed on `selected` — keying on `selected` would reset in-progress
+    // user input whenever an external state change triggers a recomposition with a new
+    // `selected` value.  The field is uncontrolled: it initialises to `selected` once
+    // and the user owns it thereafter.
+    var query by remember { mutableStateOf(selected) }
     var expanded by remember { mutableStateOf(false) }
     var animAngle by remember { mutableFloatStateOf(0f) }
 
-    // Drive rotation: advance angle proportionally to elapsed wall time.
     LaunchedEffect(Unit) {
         var lastMs = 0L
         while (true) {
@@ -776,18 +945,12 @@ private fun ShipPicker(
     }
 
     val selectedShip = remember(selected, ships) { ships.firstOrNull { it.name == selected } }
-
     val filtered =
         remember(query, ships) {
-            if (query.isBlank()) {
-                ships
-            } else {
-                ships.filter { it.name.contains(query, ignoreCase = true) }
-            }
+            if (query.isBlank()) ships else ships.filter { it.name.contains(query, ignoreCase = true) }
         }
 
     Column(modifier = Modifier.fillMaxWidth()) {
-        // ---- Collapsed field: preview + text input ----
         Row(
             modifier =
                 Modifier
@@ -810,37 +973,26 @@ private fun ShipPicker(
                     expanded = true
                 },
                 singleLine = true,
-                textStyle =
-                    TextStyle(
-                        color = KXPilotColors.OnSurface,
-                        fontSize = 12.sp,
-                        fontFamily = FontFamily.Monospace,
-                    ),
+                textStyle = TextStyle(color = KXPilotColors.OnSurface, fontSize = 12.sp, fontFamily = FontFamily.Monospace),
                 cursorBrush = SolidColor(KXPilotColors.Accent),
-                modifier =
-                    Modifier
-                        .weight(1f)
-                        .padding(horizontal = 6.dp, vertical = 6.dp),
+                modifier = Modifier.weight(1f).padding(horizontal = 6.dp, vertical = 6.dp),
             )
         }
 
-        // ---- Drop-down list with rotating previews + scrollbar ----
         if (expanded && filtered.isNotEmpty()) {
             val scrollState = rememberScrollState()
-            // Thumb fraction: visible window / total content.
-            // Clamped so thumb is never smaller than 10% or larger than 100%.
             val thumbFraction =
                 if (scrollState.maxValue == 0) {
                     1f
                 } else {
-                    (1f - scrollState.maxValue.toFloat() / (scrollState.maxValue + scrollState.viewportSize.toFloat()))
+                    (scrollState.viewportSize.toFloat() / (scrollState.maxValue + scrollState.viewportSize).toFloat())
                         .coerceIn(0.1f, 1f)
                 }
             val thumbOffset =
                 if (scrollState.maxValue == 0) {
                     0f
                 } else {
-                    scrollState.value.toFloat() / scrollState.maxValue.toFloat()
+                    (scrollState.value.toFloat() / scrollState.maxValue.toFloat()) * (1f - thumbFraction)
                 }
 
             Row(
@@ -851,13 +1003,8 @@ private fun ShipPicker(
                         .background(KXPilotColors.Surface)
                         .border(1.dp, KXPilotColors.Accent),
             ) {
-                // Scrollable ship list
                 Column(
-                    modifier =
-                        Modifier
-                            .weight(1f)
-                            .fillMaxHeight()
-                            .verticalScroll(scrollState),
+                    modifier = Modifier.weight(1f).fillMaxHeight().verticalScroll(scrollState),
                 ) {
                     filtered.forEach { ship ->
                         val isSelected = ship.name == selected
@@ -893,24 +1040,21 @@ private fun ShipPicker(
                     }
                 }
 
-                // Scrollbar track + thumb (visible only when content overflows)
                 if (thumbFraction < 1f) {
-                    Column(
+                    BoxWithConstraints(
                         modifier = Modifier.width(6.dp).fillMaxHeight().background(KXPilotColors.SurfaceVariant),
                     ) {
-                        // Spacer above thumb proportional to scroll position
-                        val spaceAbove = (1f - thumbFraction) * thumbOffset
-                        Spacer(Modifier.fillMaxWidth().fillMaxHeight(spaceAbove))
-                        // Thumb
+                        val trackPx = constraints.maxHeight.toFloat()
+                        val thumbHeightPx = trackPx * thumbFraction
+                        val thumbTopPx = (trackPx - thumbHeightPx) * thumbOffset
+                        val density = LocalDensity.current
                         Box(
-                            modifier =
-                                Modifier
-                                    .fillMaxWidth()
-                                    .fillMaxHeight(thumbFraction)
-                                    .background(KXPilotColors.Accent),
+                            Modifier
+                                .width(6.dp)
+                                .height(with(density) { thumbHeightPx.toDp() })
+                                .offset(y = with(density) { thumbTopPx.toDp() })
+                                .background(KXPilotColors.Accent),
                         )
-                        // Spacer below thumb (remaining space)
-                        Spacer(Modifier.fillMaxWidth().weight(1f))
                     }
                 }
             }

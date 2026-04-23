@@ -24,6 +24,7 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import org.lambertland.kxpilot.AppInfo
 import org.lambertland.kxpilot.ui.LocalNavigator
 import org.lambertland.kxpilot.ui.components.GameButton
 import org.lambertland.kxpilot.ui.theme.KXPilotColors
@@ -50,17 +51,27 @@ fun AboutScreen() {
                     .padding(horizontal = 16.dp, vertical = 10.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            Text(
-                "About KXPilot",
-                style =
-                    TextStyle(
-                        color = KXPilotColors.AccentBright,
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.Bold,
-                        fontFamily = FontFamily.Monospace,
-                    ),
-                modifier = Modifier.weight(1f),
-            )
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    "About KXPilot",
+                    style =
+                        TextStyle(
+                            color = KXPilotColors.AccentBright,
+                            fontSize = 18.sp,
+                            fontWeight = FontWeight.Bold,
+                            fontFamily = FontFamily.Monospace,
+                        ),
+                )
+                Text(
+                    AppInfo.VERSION_LABEL,
+                    style =
+                        TextStyle(
+                            color = KXPilotColors.OnSurface,
+                            fontSize = 11.sp,
+                            fontFamily = FontFamily.Monospace,
+                        ),
+                )
+            }
             GameButton("CLOSE", onClick = { navigator.pop() })
         }
 
