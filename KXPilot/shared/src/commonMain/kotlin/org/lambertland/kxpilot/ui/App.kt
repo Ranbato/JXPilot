@@ -13,7 +13,7 @@ import org.lambertland.kxpilot.model.defaultBindings
 import org.lambertland.kxpilot.resources.ShipShapeDef
 import org.lambertland.kxpilot.ui.screens.AboutScreen
 import org.lambertland.kxpilot.ui.screens.ConfigScreen
-import org.lambertland.kxpilot.ui.screens.DemoGameScreen
+import org.lambertland.kxpilot.ui.screens.GameScreen
 import org.lambertland.kxpilot.ui.screens.KeyBindingsScreen
 import org.lambertland.kxpilot.ui.screens.MainMenuScreen
 import org.lambertland.kxpilot.ui.screens.MotdScreen
@@ -88,10 +88,9 @@ fun App(
             }
 
             is Screen.InGame -> {
-                val s = currentScreen as Screen.InGame
-                DemoGameScreen(
-                    serverHost = s.serverHost,
-                    serverPort = s.serverPort,
+                GameScreen(
+                    serverHost = screen.serverHost,
+                    serverPort = screen.serverPort,
                 )
             }
 

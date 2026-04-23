@@ -2,6 +2,9 @@ package org.lambertland.kxpilot.server
 
 import org.lambertland.kxpilot.common.GameConst
 import org.lambertland.kxpilot.common.Key
+import org.lambertland.kxpilot.resources.parseXPilotMap
+import org.lambertland.kxpilot.resources.toWorld
+import org.lambertland.kxpilot.server.ObjectPools
 
 // ---------------------------------------------------------------------------
 // ServerGameWorld
@@ -11,7 +14,7 @@ import org.lambertland.kxpilot.common.Key
 // for the duration of a running server.  One instance per server run; discarded
 // and re-created on restart or map change.
 //
-// The Map is either built from a .xp file (via XpMapParser, deferred to M6)
+// The Map is either built from a .xp file (via parseXPilotMap / toWorld)
 // or from a built-in default "open field" world used when no map is configured.
 //
 // Responsibilities:
@@ -33,7 +36,10 @@ private const val DEFAULT_WORLD_ROWS = 60
 internal object PlayerDefaults {
     const val POWER: Double = 35.0
     const val TURNSPEED: Double = 30.0
-    const val TURNRESISTANCE: Double = 0.12
+
+    // C server sets turnresistance = 0.2 for human players (server/update.c:261).
+    // The previous value 0.12 is the robot default (server/robot.c:743) — wrong for humans.
+    const val TURNRESISTANCE: Double = 0.2
 
     /** Starting fuel (same as C `MAX_PLAYER_FUEL * 0.5`). */
     const val START_FUEL: Double = GameConst.MAX_PLAYER_FUEL * 0.5
@@ -61,13 +67,38 @@ class ServerGameWorld(
     private val _players: MutableMap<Int, Player> = mutableMapOf()
     val players: Map<Int, Player> get() = _players
 
+    /** Object pools for shots and other game objects. */
+    val pools: ObjectPools = ObjectPools()
+
     /** Monotonically increasing frame counter. */
     var frameLoop: Long = 0L
         private set
 
     init {
-        // Build default open-field world (no .xp file support until M6)
-        world.initGrid(DEFAULT_WORLD_COLS, DEFAULT_WORLD_ROWS)
+        // Load the map from config.mapPath if provided and readable;
+        // fall back to a default open-field world otherwise.
+        val loaded: Boolean =
+            if (config.mapPath != null) {
+                val text = readFileTextOrNull(config.mapPath)
+                if (text != null) {
+                    try {
+                        val xpMap = parseXPilotMap(text)
+                        val loadedWorld = xpMap.toWorld()
+                        // Copy all geometry from the parsed world into `world`
+                        world.copyFrom(loadedWorld)
+                        true
+                    } catch (_: Exception) {
+                        false
+                    }
+                } else {
+                    false
+                }
+            } else {
+                false
+            }
+        if (!loaded) {
+            world.initGrid(DEFAULT_WORLD_COLS, DEFAULT_WORLD_ROWS)
+        }
         world.name = config.serverName
     }
 
@@ -98,10 +129,8 @@ class ServerGameWorld(
 
         initPlayerPhysics(pl)
 
-        // Spawn position: first base, otherwise world centre
-        val base =
-            world.bases.firstOrNull { b -> b.team == team || team == 0 }
-                ?: world.bases.firstOrNull()
+        // Spawn position: first base for this team, otherwise world centre
+        val base = world.findSpawnBase(team)
         if (base != null) {
             pl.pos = base.pos
             pl.setFloatDir(dirToRadians(base.dir))
@@ -114,6 +143,7 @@ class ServerGameWorld(
             pl.setFloatDir(0.0)
         }
         pl.dir = radToDir(pl.floatDir)
+        pl.lastSafePos = pl.pos // initialise to spawn position (never ClPos(0,0) landmine)
 
         _players[sessionId] = pl
         return pl
@@ -153,6 +183,7 @@ class ServerGameWorld(
         pl.pos = spawnPos
         pl.setFloatDir(spawnDir)
         pl.dir = radToDir(spawnDir)
+        pl.lastSafePos = spawnPos // initialise to spawn position (never ClPos(0,0) landmine)
         pl.plState = PlayerState.ALIVE
     }
 

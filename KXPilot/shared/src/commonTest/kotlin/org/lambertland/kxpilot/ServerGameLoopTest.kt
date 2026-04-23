@@ -89,6 +89,7 @@ class ServerGameLoopTest {
             controller.start(testConfig)
             runCurrent()
             controller.stop()
+            runCurrent()
             assertIs<ServerState.Stopped>(controller.state.value)
         }
 

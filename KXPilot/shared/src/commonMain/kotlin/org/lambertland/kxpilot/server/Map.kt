@@ -98,7 +98,24 @@ class Fuel(
     val connMask: UInt,
     var lastChange: Long,
     val team: Int,
-)
+) {
+    /**
+     * Withdraw up to [amount] fuel from this depot.
+     *
+     * Enforces non-negative results and returns the actual amount transferred,
+     * which may be less than [amount] if the depot does not have enough fuel.
+     * Callers must not mutate [fuel] directly (#18).
+     *
+     * @param amount Requested withdrawal (must be ≥ 0).
+     * @return Actual amount withdrawn (0.0 … [amount]).
+     */
+    fun withdraw(amount: Double): Double {
+        require(amount >= 0.0) { "Fuel.withdraw: amount must be >= 0, was $amount" }
+        val actual = minOf(amount, fuel)
+        fuel -= actual
+        return actual
+    }
+}
 
 /** A gravity source.  Maps to C `grav_t`. */
 data class Grav(
@@ -418,6 +435,19 @@ class World {
     fun wrapXClick(cx: Int): Int = ((cx % cwidth) + cwidth) % cwidth
 
     fun wrapYClick(cy: Int): Int = ((cy % cheight) + cheight) % cheight
+
+    /**
+     * Find the best spawn base for a player on [team].
+     *
+     * Returns the first base whose team matches [team], or any base if [team] is 0
+     * (no team), or null if there are no bases in the world.
+     *
+     * This is the single authoritative spawn-base-selection rule used by both
+     * [ServerGameWorld.spawnPlayer] and [ServerPhysics.tickRecovery].
+     */
+    fun findSpawnBase(team: Int): Base? =
+        bases.firstOrNull { b -> b.team == team || team == 0 }
+            ?: bases.firstOrNull()
 }
 
 // ---------------------------------------------------------------------------
@@ -522,4 +552,67 @@ fun World.nearestFuel(
         }
     }
     return best
+}
+
+/**
+ * Copy all geometry and entity data from [src] into this [World].
+ *
+ * Used by [ServerGameWorld] to replace the default empty world with a
+ * parsed map loaded from a `.xp` / `.xp2` file.  The caller is responsible
+ * for setting [World.name] and [World.author] afterwards (they come from
+ * [ServerConfig] and may differ from the map file).
+ *
+ * All mutable lists are cleared and repopulated from [src].  The [block]
+ * and [gravity] arrays are replaced (not deep-copied) — this is safe because
+ * [src] is discarded after the call.
+ */
+fun World.copyFrom(src: World) {
+    x = src.x
+    y = src.y
+    bwidthFloor = src.bwidthFloor
+    bheightFloor = src.bheightFloor
+    width = src.width
+    height = src.height
+    cwidth = src.cwidth
+    cheight = src.cheight
+    diagonal = src.diagonal
+    hypotenuse = src.hypotenuse
+    block = src.block
+    gravity = src.gravity
+    rules = src.rules
+    name = src.name
+    author = src.author
+    dataUrl = src.dataUrl
+    haveOptions = src.haveOptions
+    for (i in items.indices) items[i] = src.items[i]
+    asteroids = src.asteroids
+    for (i in teams.indices) teams[i] = src.teams[i]
+    numTeamBases = src.numTeamBases
+
+    asteroidConcs.clear()
+    asteroidConcs.addAll(src.asteroidConcs)
+    bases.clear()
+    bases.addAll(src.bases)
+    cannons.clear()
+    cannons.addAll(src.cannons)
+    ecms.clear()
+    ecms.addAll(src.ecms)
+    fuels.clear()
+    fuels.addAll(src.fuels)
+    frictionAreas.clear()
+    frictionAreas.addAll(src.frictionAreas)
+    gravs.clear()
+    gravs.addAll(src.gravs)
+    itemConcs.clear()
+    itemConcs.addAll(src.itemConcs)
+    targets.clear()
+    targets.addAll(src.targets)
+    transporters.clear()
+    transporters.addAll(src.transporters)
+    treasures.clear()
+    treasures.addAll(src.treasures)
+    wormholes.clear()
+    wormholes.addAll(src.wormholes)
+    checks.clear()
+    checks.addAll(src.checks)
 }

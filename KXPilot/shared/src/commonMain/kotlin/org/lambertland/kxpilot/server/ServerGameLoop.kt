@@ -38,7 +38,8 @@ internal class ServerGameLoop(
     private val config: ServerConfig,
     private val onMetrics: (ServerMetrics) -> Unit,
     private val onTimeoutScan: suspend (nowMs: Long) -> Unit,
-    private val onTick: () -> Unit = {},
+    /** Called every tick to run physics and broadcast the game frame. May suspend. */
+    private val onTick: suspend () -> Unit = {},
 ) {
     /**
      * Run the loop until [scope] is cancelled.
@@ -103,5 +104,5 @@ internal suspend fun runGameLoop(
     scope: CoroutineScope,
     onMetrics: (ServerMetrics) -> Unit,
     onTimeoutScan: suspend (nowMs: Long) -> Unit,
-    onTick: () -> Unit = {},
+    onTick: suspend () -> Unit = {},
 ) = ServerGameLoop(config, onMetrics, onTimeoutScan, onTick).run(scope)

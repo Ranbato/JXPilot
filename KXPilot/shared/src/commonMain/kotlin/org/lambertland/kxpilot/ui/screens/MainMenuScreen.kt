@@ -47,12 +47,15 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import org.lambertland.kxpilot.config.LocalAppConfig
 import org.lambertland.kxpilot.config.XpOptionRegistry
-import org.lambertland.kxpilot.model.STUB_INTERNET_SERVERS
 import org.lambertland.kxpilot.model.ServerBrowserState
 import org.lambertland.kxpilot.model.ServerInfo
 import org.lambertland.kxpilot.model.ServerTab
+import org.lambertland.kxpilot.net.fetchMetaserverList
 import org.lambertland.kxpilot.resources.ShipShapeDef
 import org.lambertland.kxpilot.server.ServerConfig
+import org.lambertland.kxpilot.server.ServerController
+import org.lambertland.kxpilot.server.ServerMetrics
+import org.lambertland.kxpilot.server.ServerState
 import org.lambertland.kxpilot.ui.LocalNavigator
 import org.lambertland.kxpilot.ui.Navigator
 import org.lambertland.kxpilot.ui.Screen
@@ -65,7 +68,8 @@ import org.lambertland.kxpilot.ui.theme.KXPilotColors
 // ---------------------------------------------------------------------------
 
 class MainMenuStateHolder(
-    private val navigator: Navigator,
+    private val scope: CoroutineScope,
+    private val serverController: ServerController,
 ) {
     var playerName by mutableStateOf("Player")
     var shipName by mutableStateOf("")
@@ -86,18 +90,45 @@ class MainMenuStateHolder(
         get() = directHost.isNotBlank() && directPortInt != null
 
     fun scanLocal() {
-        // TODO: replace stub with real UDP broadcast on DEFAULT_PORT; update localServer on reply.
-        browserState = ServerBrowserState.ConnectLocal(localServer = null, scanning = false)
+        val running = serverController.state.value as? ServerState.Running
+        val localServer =
+            if (running != null) {
+                ServerInfo(
+                    host = "127.0.0.1",
+                    port = running.config.port,
+                    mapName =
+                        running.config.mapPath
+                            ?.substringAfterLast('/')
+                            ?.removeSuffix(".xp") ?: "default",
+                    playerCount = running.players.size,
+                    queueCount = 0,
+                    maxPlayers = running.config.maxPlayers,
+                    fps = running.config.targetFps,
+                    version = AppInfo.VERSION_STRING,
+                    pingMs = 0,
+                    status = "running",
+                    players = running.players.map { it.name },
+                )
+            } else {
+                null
+            }
+        browserState = ServerBrowserState.ConnectLocal(localServer = localServer, scanning = false)
     }
 
     fun fetchInternet() {
-        browserState = ServerBrowserState.Scanning
-        // Stub — real HTTP metaserver fetch replaces this
-        browserState = ServerBrowserState.Loaded(STUB_INTERNET_SERVERS)
+        scope.launch {
+            browserState = ServerBrowserState.Scanning
+            // N1: delegates to fetchMetaserverList() expect/actual.
+            // On desktop this returns STUB_INTERNET_SERVERS until ktor-client is wired in.
+            // Replace the desktop actual with a real HTTP GET to AppInfo.METASERVER_URL.
+            val servers = fetchMetaserverList()
+            lastLoadedServers = servers
+            browserState = ServerBrowserState.Loaded(servers)
+        }
     }
 
     fun selectServer(s: ServerInfo) {
-        browserState = ServerBrowserState.Detail(s, listOf("Alice", "Bob", "Charlie"))
+        browserState = ServerBrowserState.Detail(s, s.players)
     }
 
     fun join(
@@ -123,7 +154,26 @@ fun MainMenuScreen(
 ) {
     val navigator = LocalNavigator.current
     val config = LocalAppConfig.current
-    val state = remember { MainMenuStateHolder(navigator) }
+    val serverController = LocalServerController.current
+    val scope = rememberCoroutineScope()
+    val state = remember(scope) { MainMenuStateHolder(scope, serverController) }
+
+    // Sync config → state exactly once per config change, not on every recomposition.
+    LaunchedEffect(config) { state.syncConfig(config) }
+
+    // Handle navigation events emitted by the state holder.
+    val navEvent = state.navigationEvent
+    LaunchedEffect(navEvent) {
+        when (navEvent) {
+            is MainMenuNavEvent.Push -> {
+                navigator.push(navEvent.screen)
+                state.consumeNavigationEvent()
+            }
+
+            is MainMenuNavEvent.Pop -> {
+                navigator.pop()
+                state.consumeNavigationEvent()
+            }
 
     // Sync state holder ↔ AppConfig on first composition
     state.playerName = config.get(XpOptionRegistry.nickName)

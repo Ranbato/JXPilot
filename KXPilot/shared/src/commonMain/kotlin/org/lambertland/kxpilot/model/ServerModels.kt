@@ -15,6 +15,7 @@ data class ServerInfo(
     val version: String,
     val pingMs: Int?, // null = not yet measured
     val status: String,
+    val players: List<String> = emptyList(), // player names; populated from local scan or ReportStatus reply
 )
 
 sealed class ServerBrowserState {

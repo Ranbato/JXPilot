@@ -5,6 +5,7 @@ import org.lambertland.kxpilot.net.ClientSession
 import org.lambertland.kxpilot.net.ConnState
 import org.lambertland.kxpilot.net.PacketEncoder
 import org.lambertland.kxpilot.net.UdpChannel
+import org.lambertland.kxpilot.server.Modifier
 
 // ---------------------------------------------------------------------------
 // FrameBroadcast
@@ -78,9 +79,11 @@ object FrameBroadcast {
                 port,
             )
 
-            // PKT_SELF — only for the owning player
+            // PKT_SELF — for ALIVE, KILLED, and APPEARING players.
+            // KILLED/APPEARING players need PKT_SELF so the client can display
+            // the respawn countdown; the status byte encodes the dead/respawn state.
             val pl = gameWorld.playerForSession(session.id)
-            if (pl != null && pl.isAlive()) {
+            if (pl != null && (pl.isAlive() || pl.isKilled() || pl.isAppearing())) {
                 val posX = pl.pos.cx.toPixel()
                 val posY = pl.pos.cy.toPixel()
                 val velX = pl.vel.x.toInt()
@@ -98,6 +101,26 @@ object FrameBroadcast {
                         fuelSum = pl.fuel.sum.toInt(),
                         fuelMax = pl.fuel.max.toInt(),
                         status = pl.objStatus.toInt() and 0xFF,
+                    ),
+                    addr,
+                    port,
+                )
+                // PKT_SELF_ITEMS — item counts (I21)
+                transport.send(PacketEncoder.selfItems(pl.item), addr, port)
+                // PKT_MODIFIERS — active modifier bank (I21)
+                val mods = pl.modbank[0]
+                transport.send(
+                    PacketEncoder.modifiers(
+                        mini = mods.get(Modifier.Mini),
+                        nuclear = mods.get(Modifier.Nuclear),
+                        cluster = mods.get(Modifier.Cluster),
+                        implosion = mods.get(Modifier.Implosion),
+                        velocity = mods.get(Modifier.Velocity),
+                        spread = mods.get(Modifier.Spread),
+                        front = 0, // no Front modifier in current Modifier enum
+                        laser = mods.get(Modifier.Laser),
+                        target = 0, // no Target modifier in current Modifier enum
+                        itempf = 0,
                     ),
                     addr,
                     port,

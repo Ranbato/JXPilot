@@ -138,7 +138,7 @@ object CannonConst {
  */
 class Cannon(
     val pos: ClPos,
-    val dir: Int,
+    var dir: Int,
     val connMask: UInt,
     var lastChange: Long = 0L,
     /** Mutable item counts per type.  Content is mutated during play; the array itself is fixed. */
@@ -158,4 +158,12 @@ class Cannon(
     var smartness: Short = 0,
     var shotSpeed: Float = 0f,
     val initialItemInventory: IntArray = IntArray(Item.NUM_ITEMS),
+    /**
+     * Ticks remaining before this cannon can fire again.
+     *
+     * Defaults to [GameConst.SHOT_SPEED_FACTOR] so cannons do not all fire
+     * simultaneously on the first game tick.  The C server randomises the
+     * initial delay; using a full cooldown is a safe conservative default.
+     */
+    var fireTimer: Double = GameConst.SHOT_SPEED_FACTOR,
 )

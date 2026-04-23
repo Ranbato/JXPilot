@@ -63,6 +63,8 @@ import org.lambertland.kxpilot.resources.ShipShapeDef
 import org.lambertland.kxpilot.resources.XPilotMap
 import org.lambertland.kxpilot.resources.parseShipShapes
 import org.lambertland.kxpilot.resources.parseXPilotMap
+import org.lambertland.kxpilot.resources.readResourceText
+import org.lambertland.kxpilot.server.currentTimeMs
 import org.lambertland.kxpilot.ui.components.MessageLog
 import org.lambertland.kxpilot.ui.components.RadarMinimap
 import org.lambertland.kxpilot.ui.components.ScoreOverlay
@@ -150,7 +152,7 @@ private data class HudSnapshot(
 )
 
 // ---------------------------------------------------------------------------
-// Colours (game-domain only — lives in desktopMain, not commonMain)
+// Colours (game-domain only)
 // ---------------------------------------------------------------------------
 private val COL_BACKGROUND = Color(0xFF000000)
 private val COL_ENEMY_SHIP = Color(0xFFFFFFFF)
@@ -181,29 +183,29 @@ private val TEAM_COLORS =
 
 private fun loadShipShapes(): List<ShipShapeDef> =
     try {
-        val stream = object {}.javaClass.getResourceAsStream("/data/shipshapes.json")
-        if (stream != null) {
-            parseShipShapes(stream.bufferedReader().readText())
+        val text = readResourceText("/data/shipshapes.json")
+        if (text != null) {
+            parseShipShapes(text)
         } else {
-            System.err.println("KXPilot: resource /data/shipshapes.json not found on classpath")
+            println("KXPilot: resource /data/shipshapes.json not found")
             emptyList()
         }
     } catch (e: Exception) {
-        System.err.println("KXPilot: failed to load ship shapes: ${e::class.simpleName}: ${e.message}")
+        println("KXPilot: failed to load ship shapes: ${e::class.simpleName}: ${e.message}")
         emptyList()
     }
 
 private fun loadMap(resourcePath: String): XPilotMap? =
     try {
-        val stream = object {}.javaClass.getResourceAsStream(resourcePath)
-        if (stream != null) {
-            parseXPilotMap(stream.bufferedReader().readText())
+        val text = readResourceText(resourcePath)
+        if (text != null) {
+            parseXPilotMap(text)
         } else {
-            System.err.println("KXPilot: map resource $resourcePath not found")
+            println("KXPilot: map resource $resourcePath not found")
             null
         }
     } catch (e: Exception) {
-        System.err.println("KXPilot: failed to load map $resourcePath: ${e::class.simpleName}: ${e.message}")
+        println("KXPilot: failed to load map $resourcePath: ${e::class.simpleName}: ${e.message}")
         null
     }
 
@@ -234,7 +236,7 @@ fun InGameScreen() {
     val inGameState =
         remember(playerName) {
             InGameStateHolder().also { s ->
-                val now = System.currentTimeMillis()
+                val now = currentTimeMs()
                 s.appendMessage("[Server] Game starts in 10 seconds", MessageColor.NORMAL, now)
                 s.appendMessage("[Server] Welcome to KXPilot Demo!", MessageColor.SAFE, now - 2_000L)
                 s.players =
@@ -263,11 +265,11 @@ fun InGameScreen() {
     val textMeasurer = rememberTextMeasurer()
 
     // nowMs updated every 100ms (not every frame) to throttle MessageLog recomposition
-    var nowMs by remember { mutableLongStateOf(System.currentTimeMillis()) }
+    var nowMs by remember { mutableLongStateOf(currentTimeMs()) }
     LaunchedEffect(Unit) {
         while (isActive) {
             delay(100L)
-            nowMs = System.currentTimeMillis()
+            nowMs = currentTimeMs()
         }
     }
 
@@ -286,7 +288,11 @@ fun InGameScreen() {
             Camera(worldW = engine.world.width.toFloat(), worldH = engine.world.height.toFloat())
         }
 
-    remember(engine) {
+    // R9: side-effects must not live inside `remember` — they run on every
+    // recomposition that has a new `engine` key, causing a recomposition loop.
+    // LaunchedEffect(engine) runs exactly once per unique engine instance on the
+    // composition thread, which is the correct place for one-shot initialisation.
+    LaunchedEffect(engine) {
         engine.spawnAtBase(0)
         gameState = buildNpcShipsFromBases(engine, allShapes)
         shipPathCache.clear()
@@ -379,11 +385,14 @@ fun InGameScreen() {
                 }.focusRequester(focusRequester)
                 .focusable()
                 .onKeyEvent { event ->
+                    // R12: build the key map once per event and reuse the result in
+                    // both the KeyDown UI-action block and the engine key dispatch below.
+                    val keyMap = keyBindings.buildKeyMap()
                     if (event.type == KeyEventType.KeyDown) {
                         if (inGameState.talkState.isVisible) {
                             when (event.key) {
                                 ComposeKey.Enter -> {
-                                    inGameState.submitTalk(System.currentTimeMillis())
+                                    inGameState.submitTalk(currentTimeMs())
                                     return@onKeyEvent true
                                 }
 
@@ -408,7 +417,7 @@ fun InGameScreen() {
                             }
                         }
                         // Dispatch to all actions bound to this key
-                        val actions = keyBindings.buildKeyMap()[event.key] ?: emptyList()
+                        val actions = keyMap[event.key] ?: emptyList()
                         for (action in actions) {
                             when (action) {
                                 GameAction.SCOREBOARD -> {
@@ -421,6 +430,7 @@ fun InGameScreen() {
 
                                 GameAction.RESPAWN -> {
                                     engine.spawnAtBase()
+                                    return@onKeyEvent true // R13: consume event; RESPAWN has no engine key
                                 }
 
                                 else -> {}
@@ -428,7 +438,7 @@ fun InGameScreen() {
                         }
                     }
                     // Engine game keys — press/release for all matching actions
-                    val actions = keyBindings.buildKeyMap()[event.key] ?: emptyList()
+                    val actions = keyMap[event.key] ?: emptyList()
                     var consumed = false
                     for (action in actions) {
                         val kxpKey = gameActionToKey(action) ?: continue
@@ -443,7 +453,10 @@ fun InGameScreen() {
     ) {
         Canvas(modifier = Modifier.fillMaxSize()) {
             val gs = gameState
-            val gsShips = gs.ships // direct list access — no allocation
+            // R10: take an immutable snapshot of the NPC list so the Canvas draw
+            // phase reads a stable collection even if the game loop modifies ships
+            // concurrently on the next frame.
+            val gsShips = gs.ships.toList()
 
             if (demoMap != null) drawMapTiles(demoMap, camera)
 
@@ -479,7 +492,7 @@ fun InGameScreen() {
                         .toFloat()
                 if (camera.isVisible(px, py)) {
                     val sc = camera.worldToScreen(px, py)
-                    val angleDeg = (-Math.toDegrees(m.headingRad)).toFloat()
+                    val angleDeg = (-m.headingRad * (180.0 / kotlin.math.PI)).toFloat()
                     translate(sc.x, sc.y) {
                         rotate(degrees = angleDeg, pivot = Offset.Zero) {
                             val mPath =
@@ -524,13 +537,6 @@ fun InGameScreen() {
             }
 
             // Balls: filled circle in team colour + connector line when attached.
-            // No toList() copy needed — rendering runs on the same coroutine/thread
-            // as the game loop (both inside the same LaunchedEffect/withFrameMillis
-            // block), so there is no concurrent modification risk.
-            // Ball is rendered in the colour of the team that last touched it
-            // (touchTeam), not the home tile's team (homeTeam), so it visually
-            // communicates possession.  Neutral balls (touchTeam == -1) fall back
-            // to TEAM_COLORS[0] (white).
             for (ball in engine.balls) {
                 val bpx =
                     ball.pos.cx
@@ -620,8 +626,9 @@ fun InGameScreen() {
             }
         }
 
-        // Top-right (overlay): scoreboard overlay (shown on TAB)
-        Box(modifier = Modifier.align(Alignment.TopEnd).padding(12.dp)) {
+        // Top-left: scoreboard overlay (shown on TAB).
+        // R17: was incorrectly placed at TopEnd, overlapping the minimap.
+        Box(modifier = Modifier.align(Alignment.TopStart).padding(12.dp)) {
             ScoreOverlay(players = inGameState.players, visible = inGameState.showScoreboard)
         }
 
@@ -629,6 +636,9 @@ fun InGameScreen() {
         Box(modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 80.dp)) {
             TalkOverlay(state = inGameState.talkState)
         }
+
+        // Platform-specific input overlay (empty on desktop/web, touch controls on Android)
+        PlatformControls(keys = keys)
     }
 }
 
@@ -675,12 +685,14 @@ private const val HUD_FUEL_GAUGE_SIZE =
     2f * (MIN_HUD_SIZE - HUD_OFFSET - FUEL_GAUGE_OFFSET) // 128f
 private const val METER_WIDTH = 60f
 private const val METER_HEIGHT = 10f
-private const val MAX_PLAYER_POWER = 55f // GameConst.MAX_PLAYER_POWER
-private const val MAX_PLAYER_TURNSPEED = 64f // GameConst.MAX_PLAYER_TURNSPEED (heading-units/tick)
+
+// R16: use GameConst canonical values instead of local copies that could drift.
+private val MAX_PLAYER_POWER = GameConst.MAX_PLAYER_POWER.toFloat()
+private val MAX_PLAYER_TURNSPEED = GameConst.MAX_PLAYER_TURNSPEED.toFloat()
 private const val MAX_SPEED_PX_TICK = 30f // practical cap for the speed meter bar
 
 /** Pre-allocated spike angles for mine rendering — avoids per-frame `listOf` allocation. */
-private val MINE_SPIKE_ANGLES = doubleArrayOf(0.0, Math.PI / 2.0, Math.PI, 3.0 * Math.PI / 2.0)
+private val MINE_SPIKE_ANGLES = doubleArrayOf(0.0, kotlin.math.PI / 2.0, kotlin.math.PI, 3.0 * kotlin.math.PI / 2.0)
 
 private fun DrawScope.drawHud(
     hud: HudSnapshot,
@@ -695,14 +707,10 @@ private fun DrawScope.drawHud(
 
     // -------------------------------------------------------------------
     // Speed vector pointer — line from center toward velocity direction.
-    // Factor 5 makes a ~1px/tick speed produce a 5px line; matches
-    // painthud.c ptr_move_fact (we use a fixed 5.0).
-    // Only drawn when moving.
     // -------------------------------------------------------------------
     val velX = hud.stats.velX
     val velY = hud.stats.velY
     if (velX != 0f || velY != 0f) {
-        // C draws: center → (cx - fact*vx, cy + fact*vy).  Y-up ⟹ negate vy on screen.
         val ptrFact = 5f
         drawLine(
             color = COL_HUD,
@@ -715,13 +723,6 @@ private fun DrawScope.drawHud(
 
     // -------------------------------------------------------------------
     // HUD frame — open-corner cross (4 dashed lines, painthud.c style).
-    //
-    // painthud.c:
-    //   H-lines: y = hud_pos_y ± (hudSize - HUD_OFFSET), x = ±hudSize (full width)
-    //   V-lines: x = hud_pos_x ± (hudSize - HUD_OFFSET), y = ±hudSize (full height)
-    //
-    // This creates four lines that stop short of the corners by HUD_OFFSET,
-    // producing an open-corner bracket/crosshair shape.
     // -------------------------------------------------------------------
     val dashEffect = PathEffect.dashPathEffect(floatArrayOf(4f, 4f), 0f)
     val inset = hudHalf - off // 70px — where the lines terminate at corners
@@ -761,8 +762,6 @@ private fun DrawScope.drawHud(
 
     // -------------------------------------------------------------------
     // Fuel gauge — vertical bar just inside the right vertical line.
-    // gaugeX = cx + hudSize - HUD_OFFSET + FUEL_GAUGE_OFFSET (painthud.c line 753)
-    //        = cx + 90 - 20 + 6 = cx + 76
     // -------------------------------------------------------------------
     val gaugeX = cx + hudHalf - off + FUEL_GAUGE_OFFSET
     val gaugeY = cy - hudHalf + off - FUEL_GAUGE_OFFSET
@@ -799,9 +798,7 @@ private fun DrawScope.drawHud(
     }
 
     // -------------------------------------------------------------------
-    // Fuel number — bottom-right of HUD frame (painthud.c line 643)
-    // "hud_pos_x + hudSize - HUD_OFFSET + BORDER" = cx + inset + BORDER
-    // "hud_pos_y + hudSize - HUD_OFFSET + BORDER" = cy + inset + BORDER
+    // Fuel number — bottom-right of HUD frame
     // -------------------------------------------------------------------
     val fuelStr =
         hud.stats.fuel
@@ -813,7 +810,6 @@ private fun DrawScope.drawHud(
 
     // -------------------------------------------------------------------
     // Direction pointer — 15px segment r=85→100 in heading direction
-    // (painthud.c lines 562-569, dirPtrColor)
     // -------------------------------------------------------------------
     val headingRad = hud.stats.headingRad.toDouble()
     val hdx = cos(headingRad).toFloat()
@@ -826,8 +822,7 @@ private fun DrawScope.drawHud(
     )
 
     // -------------------------------------------------------------------
-    // Right-side meters: Power, Turnspeed, Speed (painthud.c Paint_meters)
-    // Drawn right-aligned, stacked at y=40/60/80.
+    // Right-side meters: Power, Turnspeed, Speed
     // -------------------------------------------------------------------
     val meterX = size.width - METER_WIDTH - 10f
     drawHudMeter(
@@ -861,8 +856,6 @@ private fun DrawScope.drawHud(
 
     // -------------------------------------------------------------------
     // Modifier string — bottom-left corner of HUD frame
-    // painthud.c line 717: x = hud_pos_x - hudSize + HUD_OFFSET - BORDER - textWidth
-    //                       y = hud_pos_y + hudSize - HUD_OFFSET + BORDER
     // -------------------------------------------------------------------
     if (hud.stats.modifiers.isNotEmpty()) {
         val modMeasured =
@@ -882,9 +875,6 @@ private fun DrawScope.drawHud(
 
     // -------------------------------------------------------------------
     // Time-left countdown — top-left corner of HUD frame
-    // painthud.c line 704: "MM:SS" drawn at
-    //   x = hud_pos_x - hudSize + HUD_OFFSET - BORDER - textWidth
-    //   y = hud_pos_y - hudSize + HUD_OFFSET - BORDER (above top H-line)
     // -------------------------------------------------------------------
     if (hud.view.timeLeftSec >= 0) {
         val mins = hud.view.timeLeftSec / 60
@@ -902,10 +892,7 @@ private fun DrawScope.drawHud(
     }
 
     // -------------------------------------------------------------------
-    // Lock indicator:
-    //   - Dot orbiting HUD at r=54 in lock direction
-    //   - Target name above top-left corner (painthud.c line 294)
-    //   - Distance in blocks at top-right corner (painthud.c line 312)
+    // Lock indicator
     // -------------------------------------------------------------------
     if (!hud.lock.dirRad.isNaN()) {
         val lockOrbitR = MIN_HUD_SIZE * 0.6f // 54px
@@ -932,7 +919,6 @@ private fun DrawScope.drawHud(
         }
 
         // Target name — centered above top of HUD frame
-        // painthud.c: x = hud_pos_x - name_width/2,  y = hud_pos_y - hudSize + HUD_OFFSET - BORDER
         if (hud.lock.targetName.isNotEmpty()) {
             val nameMeasured =
                 textMeasurer.measure(
@@ -954,7 +940,6 @@ private fun DrawScope.drawHud(
         }
 
         // Distance in blocks — top-right corner of HUD frame
-        // painthud.c: x = hud_pos_x + hudSize - HUD_OFFSET + BORDER,  same y as name
         if (hud.lock.targetDistBlocks >= 0) {
             val distStr =
                 hud.lock.targetDistBlocks
@@ -977,14 +962,7 @@ private fun DrawScope.drawHud(
     }
 }
 
-/** Draws a single labeled horizontal meter bar at screen position (x, y).
- *
- * Mirrors `Paint_meter()` in painthud.c:
- * - Outline rectangle
- * - Filled bar proportional to [fraction]
- * - 5 vertical scale tick marks at 0/25/50/75/100% (±4/1/3/1/4 px tall)
- * - Label text to the left
- */
+/** Draws a single labeled horizontal meter bar at screen position (x, y). */
 private fun DrawScope.drawHudMeter(
     textMeasurer: TextMeasurer,
     x: Float,
@@ -1012,8 +990,7 @@ private fun DrawScope.drawHudMeter(
         )
     }
 
-    // Tick marks at 0%, 25%, 50%, 75%, 100% — painthud.c lines 101-105.
-    // Extension heights: 0/100% → ±4px, 50% → ±3px, 25/75% → ±1px.
+    // Tick marks at 0%, 25%, 50%, 75%, 100%
     val tickDefs = floatArrayOf(0f, 0.25f, 0.5f, 0.75f, 1.0f)
     val tickExts = floatArrayOf(4f, 1f, 3f, 1f, 4f)
     for (i in tickDefs.indices) {
@@ -1043,7 +1020,7 @@ private fun DrawScope.drawEnginePlayer(
     val py = engine.playerPixelY
     if (!camera.isVisible(px, py, margin = RenderConst.SHIP_RADIUS + 4f)) return
     val screenPos = camera.worldToScreen(px, py)
-    val angleDeg = (-Math.toDegrees(engine.player.floatDir)).toFloat()
+    val angleDeg = (-engine.player.floatDir * (180.0 / kotlin.math.PI)).toFloat()
     val alive = engine.player.isAlive()
     val shipColor = if (alive) Color(0xFF00FF88) else Color(0xFFFF4444)
     val label = if (alive) "$playerName (${px.toInt()},${py.toInt()})" else "KILLED — press R"
@@ -1158,7 +1135,6 @@ private fun buildShipPath(shapeDef: ShipShapeDef?): Path {
     }
 }
 
-// ---------------------------------------------------------------------------
 // ---------------------------------------------------------------------------
 // Map tile rendering
 // ---------------------------------------------------------------------------

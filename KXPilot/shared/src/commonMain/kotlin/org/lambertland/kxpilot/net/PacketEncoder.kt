@@ -148,9 +148,9 @@ object PacketEncoder {
     ): ByteArray {
         val w = XpWriter(7 + data.size)
         w.writeByte(PktType.RELIABLE)
-        w.writeShort(data.size)   // %hd len
-        w.writeInt(offset)        // %ld rel_off
-        w.writeInt(frameLoop)     // %ld main_loops
+        w.writeShort(data.size) // %hd len
+        w.writeInt(offset) // %ld rel_off
+        w.writeInt(frameLoop) // %ld main_loops
         w.writeBytes(data)
         return w.toByteArray()
     }
@@ -250,7 +250,7 @@ object PacketEncoder {
      * %hd %hd %c                      viewWidth, viewHeight, debrisColors
      * %c %c                           status, autopilotLight
      * ```
-     * Followed by PKT_SELF_ITEMS and PKT_MODIFIERS (omitted until M6).
+     * Followed by PKT_SELF_ITEMS and PKT_MODIFIERS (both emitted every frame).
      *
      * @param posX         Ship X position in pixels.
      * @param posY         Ship Y position in pixels.
@@ -344,6 +344,152 @@ object PacketEncoder {
         w.writeShort(lives)
         w.writeByte(myChar.code)
         w.writeByte(allChar.code)
+        return w.toByteArray()
+    }
+
+    /**
+     * PKT_PLAYER packet — announces a new player to all clients.
+     *
+     * Wire format:
+     * ```
+     * byte   : PKT_PLAYER (14)
+     * int16  : id
+     * int16  : team
+     * byte   : myChar
+     * string : nick (NUL-terminated, max XP_MAX_CHARS)
+     * ```
+     *
+     * Sent to every PLAYING session when a new player joins, so existing
+     * clients know to render the new ship.
+     *
+     * @param id     The new player's session id.
+     * @param team   Team number (0 = free-for-all).
+     * @param myChar Player's char token.
+     * @param nick   Player's nick name.
+     */
+    fun player(
+        id: Int,
+        team: Int,
+        myChar: Char = ' ',
+        nick: String,
+    ): ByteArray {
+        val w = XpWriter(6 + nick.length)
+        w.writeByte(PktType.PLAYER)
+        w.writeShort(id)
+        w.writeShort(team)
+        w.writeByte(myChar.code)
+        w.writeString(nick, XP_MAX_CHARS)
+        return w.toByteArray()
+    }
+
+    /**
+     * PKT_SELF_ITEMS packet — item counts for the owning player.
+     *
+     * Wire format:
+     * ```
+     * byte      : PKT_SELF_ITEMS (11)
+     * byte[NUM] : item counts (one byte per item type, clamped to 0..255)
+     * ```
+     *
+     * NUM = [org.lambertland.kxpilot.common.Item.NUM_ITEMS].
+     * Sent immediately after PKT_SELF every frame.
+     *
+     * @param items Item count array (indexed by [org.lambertland.kxpilot.common.Item]).
+     */
+    fun selfItems(items: IntArray): ByteArray {
+        val w = XpWriter(1 + items.size)
+        w.writeByte(PktType.SELF_ITEMS)
+        for (count in items) w.writeByte(count.coerceIn(0, 255))
+        return w.toByteArray()
+    }
+
+    /**
+     * PKT_MODIFIERS packet — active modifier bank for the owning player.
+     *
+     * Wire format:
+     * ```
+     * byte : PKT_MODIFIERS (70)
+     * byte : mini (modifier bank mini-flags)
+     * byte : nuclear
+     * byte : cluster
+     * byte : implosion
+     * byte : velocity
+     * byte : spread
+     * byte : front
+     * byte : laser
+     * byte : target
+     * byte : itempf
+     * ```
+     *
+     * Values come from the active [org.lambertland.kxpilot.server.Modifiers] bank.
+     * Sent immediately after PKT_SELF_ITEMS every frame.
+     *
+     * @param mini        Mini modifier flag.
+     * @param nuclear     Nuclear modifier flag.
+     * @param cluster     Cluster modifier flag.
+     * @param implosion   Implosion modifier flag.
+     * @param velocity    Velocity modifier value.
+     * @param spread      Spread modifier value.
+     * @param front       Front modifier flag.
+     * @param laser       Laser modifier flag.
+     * @param target      Target modifier flag.
+     * @param itempf      Item modifier flag.
+     */
+    fun modifiers(
+        mini: Int = 0,
+        nuclear: Int = 0,
+        cluster: Int = 0,
+        implosion: Int = 0,
+        velocity: Int = 0,
+        spread: Int = 0,
+        front: Int = 0,
+        laser: Int = 0,
+        target: Int = 0,
+        itempf: Int = 0,
+    ): ByteArray {
+        val w = XpWriter(11)
+        w.writeByte(PktType.MODIFIERS)
+        w.writeByte(mini)
+        w.writeByte(nuclear)
+        w.writeByte(cluster)
+        w.writeByte(implosion)
+        w.writeByte(velocity)
+        w.writeByte(spread)
+        w.writeByte(front)
+        w.writeByte(laser)
+        w.writeByte(target)
+        w.writeByte(itempf)
+        return w.toByteArray()
+    }
+
+    // -----------------------------------------------------------------------
+    // (No private packet type constants — SELF_ITEMS and MODIFIERS are in PktType)
+    // -----------------------------------------------------------------------
+
+    /**
+     * PKT_MOTD packet — a chunk of the server's message-of-the-day.
+     *
+     * Wire format (from C `netserver.c Send_motd`):
+     * ```
+     * byte   : PKT_MOTD (0x1A = 26)
+     * int32  : totalLen  — total byte length of the full MOTD text (including NUL)
+     * int32  : offset    — byte offset of this chunk in the full text
+     * string : NUL-terminated chunk text
+     * ```
+     *
+     * @param offset  Byte offset of this chunk in the full MOTD text.
+     * @param text    The MOTD text (sent as a single chunk here).
+     */
+    fun motd(
+        offset: Int,
+        text: String,
+    ): ByteArray {
+        val totalLen = text.length + 1 // include NUL terminator
+        val w = XpWriter(9 + text.length + 1)
+        w.writeByte(PktType.MOTD)
+        w.writeInt(totalLen)
+        w.writeInt(offset)
+        w.writeString(text)
         return w.toByteArray()
     }
 }

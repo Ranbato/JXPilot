@@ -90,6 +90,40 @@ object GameConst {
     const val BALL_RADIUS: Int = 10
     const val MISSILE_LEN: Int = 15
 
+    // ------------------------------------------------------------------
+    // Shot physics (server/serverconst.h)
+    // ------------------------------------------------------------------
+
+    /**
+     * Default shot speed in pixels/tick (added to the firing player's velocity).
+     * From server/serverconst.h: `#define SHOT_SPEED 25`.
+     */
+    const val SHOT_SPEED: Double = 25.0
+
+    /**
+     * Default shot lifetime in ticks (30 fps × 3 s = 90).
+     * From server/serverconst.h: `#define SHOT_LIFE 90`.
+     */
+    const val SHOT_LIFE: Float = 90f
+
+    /**
+     * Collision detection radius for shots in pixels.
+     * From server/serverconst.h: `#define SHOT_RADIUS 2`.
+     */
+    const val SHOT_RADIUS: Double = 2.0
+
+    /**
+     * Maximum shots a player may have in flight simultaneously (base value).
+     * From server/serverconst.h: `#define NUM_SHOTS 5`.
+     */
+    const val NUM_SHOTS: Int = 5
+
+    /**
+     * Minimum ticks between consecutive shots at the base fire rate.
+     * From server/serverconst.h: `#define SHOT_SPEED_FACTOR 15` (ticks/shot).
+     */
+    const val SHOT_SPEED_FACTOR: Double = 15.0
+
     /**
      * Mass of a mine object.
      * From server/serverconst.h: `#define MINE_MASS 30.0`
@@ -278,8 +312,15 @@ object GameConst {
 // ---------------------------------------------------------------------------
 
 /**
- * Per-use fuel cost (negative = drain) for each weapon / device action.
- * Maps to `ED_*` constants in server/serverconst.h.
+ * Per-use fuel cost for each weapon / device action.
+ *
+ * **Sign convention (IMPORTANT):** all values are **negative** — they represent
+ * fuel *removed* from the tank.  Call sites add the constant directly:
+ *
+ *     pl.fuel.sum = (pl.fuel.sum + EnergyDrain.SHIELD).coerceAtLeast(0.0)
+ *
+ * Do **not** negate these values at the call site; doing so would accidentally
+ * refuel the player.  Maps to `ED_*` constants in server/serverconst.h.
  *
  * Note: [PL_CRASH] and [BALL_HIT] are option-dependent at runtime; the
  * values here are the default option values used at server startup.

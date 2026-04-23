@@ -11,6 +11,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import org.lambertland.kxpilot.AppInfo
 import org.lambertland.kxpilot.common.GameConst
 import org.lambertland.kxpilot.model.ServerEvent
 import org.lambertland.kxpilot.model.ServerEventLevel
@@ -108,8 +109,8 @@ class ServerController(
         /** Maximum number of [ServerEvent] entries retained in [ServerState.Running.events]. */
         const val MAX_EVENTS: Int = 200
 
-        /** Polygon-format server version (from pack.h). */
-        private const val SERVER_VERSION: Int = 0x4F15
+        /** Polygon-format server protocol version — see [AppInfo.PROTOCOL_VERSION]. */
+        private val SERVER_VERSION: Int = AppInfo.PROTOCOL_VERSION
     }
 
     private val _state: MutableStateFlow<ServerState> = MutableStateFlow(ServerState.Stopped)
@@ -125,6 +126,11 @@ class ServerController(
     private val sessionsMutex = Mutex()
     private val sessions: MutableMap<Int, ClientSession> = mutableMapOf()
 
+    // Secondary index: sessionId → ClientSession.  Maintained in parallel with
+    // [sessions] (keyed by loginPort) to allow O(1) lookups by id (#15).
+    // All mutations guarded by [sessionsMutex].
+    private val sessionById: MutableMap<Int, ClientSession> = mutableMapOf()
+
     // nextSessionId is only mutated inside sessionsMutex.withLock, so a plain Int is safe.
     private var nextSessionId: Int = 0
 
@@ -137,6 +143,10 @@ class ServerController(
 
     // Active game world.  Created when the server starts; null when stopped.
     private var gameWorld: ServerGameWorld? = null
+
+    // Pre-allocated map reused each tick for shot-cooldown counting (avoids per-tick allocation).
+    // Only ever accessed on the game-loop coroutine — no lock needed.
+    private val liveShotCounts: HashMap<Int, Int> = HashMap(64)
 
     // -----------------------------------------------------------------------
     // Lifecycle
@@ -151,6 +161,12 @@ class ServerController(
     fun start(config: ServerConfig) {
         val current = _state.value
         if (current is ServerState.Starting || current is ServerState.Running) return
+
+        // Guard against platforms where UDP server is unsupported (I22).
+        if (!isServerSupported()) {
+            _state.value = ServerState.Error("Embedded UDP server is not supported on this platform.")
+            return
+        }
 
         _state.value = ServerState.Starting
         loopJob =
@@ -194,11 +210,14 @@ class ServerController(
                     if (e is CancellationException) throw e
                     _state.value = ServerState.Error(e.message ?: "Unknown error")
                 } finally {
-                    closeAllPlayerTransports()
+                    closeAllPlayerTransports() // clears sessions, sessionById, playerTransports
                     transport.close()
                     contactTransport = null
                     gameWorld = null
-                    sessions.clear()
+                    // Transition to Stopped only if we're still Running (not Error).
+                    // Doing this here (not in stop()) guarantees all teardown is
+                    // complete before the state is observable as Stopped.
+                    _state.update { if (it is ServerState.Running) ServerState.Stopped else it }
                 }
             }
     }
@@ -206,14 +225,14 @@ class ServerController(
     /**
      * Stop the server gracefully.
      *
-     * Cancels the game-loop coroutine; all resource cleanup happens in the
-     * coroutine's `finally` block.  Transitions to [ServerState.Stopped].
+     * Cancels the game-loop coroutine; all resource cleanup and state transition
+     * to [ServerState.Stopped] happens in the coroutine's `finally` block, so
+     * resources are guaranteed torn down before the state is observable as Stopped.
      * Safe to call from any state.
      */
     fun stop() {
         loopJob?.cancel()
         loopJob = null
-        _state.value = ServerState.Stopped
     }
 
     // -----------------------------------------------------------------------
@@ -223,18 +242,35 @@ class ServerController(
     /**
      * Kick [playerId] from the server with an optional [reason] message.
      * No-op if the server is not [ServerState.Running] or the player is not found.
+     *
+     * Closes the player's transport socket, which interrupts their [runPlayerLoop]
+     * receive; the loop's `finally` block calls [removePlayerLocked] for proper
+     * cleanup.  The [ServerState.Running.players] list and event log are updated
+     * immediately for UI responsiveness.
      */
-    fun kickPlayer(
+    suspend fun kickPlayer(
         playerId: Int,
         reason: String = "",
     ) {
         val running = _state.value as? ServerState.Running ?: return
         val player = running.players.firstOrNull { it.id == playerId } ?: return
         val msg = if (reason.isBlank()) "Player '${player.name}' kicked." else "Player '${player.name}' kicked: $reason"
-        // Side effects outside the CAS loop
         sendLeaveToAll(playerId)
-        val session = sessions.values.firstOrNull { it.id == playerId }
-        if (session != null) removePlayerSync(session)
+        // Snapshot the session and transport under the mutex, then close outside the lock.
+        val transportToClose =
+            sessionsMutex.withLock {
+                val session = sessionById[playerId]
+                if (session != null) {
+                    session.state = ConnState.DRAIN
+                    playerTransports[session.loginPort]
+                } else {
+                    null
+                }
+            }
+        try {
+            transportToClose?.close()
+        } catch (_: Exception) {
+        }
         updateRunning { r ->
             r.copy(
                 players = r.players.filter { it.id != playerId },
@@ -269,25 +305,29 @@ class ServerController(
 
     /**
      * Broadcast [message] to all connected players.
+     * No-op if the server is not [ServerState.Running].
      */
-    fun sendMessageAll(message: String) {
+    suspend fun sendMessageAll(message: String) {
+        if (_state.value !is ServerState.Running) return
+        broadcastPacket(PacketEncoder.message(message))
         updateRunning { running ->
-            broadcastPacket(PacketEncoder.message(message))
             running.copy(events = appendEvent(running.events, ServerEventLevel.INFO, "[broadcast] $message", running.metrics.uptimeMs))
         }
     }
 
     /**
      * Send [message] to the player with [playerId] only.
+     * No-op if the server is not [ServerState.Running] or the player is not connected.
      */
-    fun sendMessageOne(
+    suspend fun sendMessageOne(
         playerId: Int,
         message: String,
     ) {
-        updateRunning { running ->
-            val name = running.players.firstOrNull { it.id == playerId }?.name ?: "unknown"
-            sendToPlayer(playerId, PacketEncoder.message(message))
-            running.copy(events = appendEvent(running.events, ServerEventLevel.INFO, "[msg → $name] $message", running.metrics.uptimeMs))
+        val running = _state.value as? ServerState.Running ?: return
+        val name = running.players.firstOrNull { it.id == playerId }?.name ?: return
+        sendToPlayer(playerId, PacketEncoder.message(message))
+        updateRunning { r ->
+            r.copy(events = appendEvent(r.events, ServerEventLevel.INFO, "[msg → $name] $message", r.metrics.uptimeMs))
         }
     }
 
@@ -302,7 +342,10 @@ class ServerController(
         val newConfig = current.config.copy(mapPath = mapPath)
         loopJob?.cancelAndJoin()
         loopJob = null
-        _state.value = ServerState.Stopped
+        // Do NOT set _state.value = Stopped here: the coroutine's finally block
+        // already transitions Running → Stopped once all teardown is complete.
+        // Setting it here would race with the finally block and could discard an
+        // Error state, or briefly expose Stopped before resources are released.
         start(newConfig)
     }
 
@@ -408,6 +451,7 @@ class ServerController(
                                 it.stateEnteredMs = currentTimeMs()
                             }
                         sessions[loginPort] = s
+                        sessionById[s.id] = s
                         playerTransports[loginPort] = loginTransport
                         s
                     }
@@ -443,13 +487,16 @@ class ServerController(
             }
 
             is XpContactRequest.ReportStatus -> {
-                // Minimal status reply
+                // N2/S2: reply includes server name and current player list.
+                val running = _state.value as? ServerState.Running
+                val playerNames = running?.players?.map { it.name } ?: emptyList()
+                val serverName = running?.config?.serverName ?: config.serverName
                 transport.send(
-                    XpContactEncoder.replyEnterGame(
-                        SERVER_VERSION,
-                        ContactPackType.REPLY,
-                        ContactStatus.SUCCESS,
-                        loginPort = 0,
+                    XpContactEncoder.replyStatus(
+                        serverVersion = SERVER_VERSION,
+                        serverName = serverName,
+                        playerCount = playerNames.size,
+                        playerNames = playerNames,
                     ),
                     datagram.srcAddr,
                     datagram.srcPort,
@@ -485,7 +532,7 @@ class ServerController(
         }
     }
 
-    private fun handlePlayerDatagram(
+    private suspend fun handlePlayerDatagram(
         session: ClientSession,
         datagram: UdpDatagram,
         transport: UdpChannel,
@@ -506,7 +553,7 @@ class ServerController(
             }
 
             is XpPacket.Ack -> {
-                session.handleAck(packet)
+                session.handleAck(packet, currentTimeMs())
             }
 
             is XpPacket.Play -> {
@@ -545,14 +592,21 @@ class ServerController(
             }
 
             is XpPacket.Quit -> {
-                removePlayerSync(session)
+                removePlayerLocked(session)
+            }
+
+            is XpPacket.MotdRequest -> {
+                // N3: send the server's welcome message as a single PKT_MOTD chunk.
+                val running = _state.value as? ServerState.Running
+                val motdText = running?.config?.welcomeMessage ?: ""
+                transport.send(PacketEncoder.motd(packet.offset, motdText), datagram.srcAddr, datagram.srcPort)
             }
 
             else -> { /* unknown / server-only — ignore */ }
         }
     }
 
-    private fun promoteToPlaying(
+    private suspend fun promoteToPlaying(
         session: ClientSession,
         addr: String,
         port: Int,
@@ -584,7 +638,31 @@ class ServerController(
                     ),
             )
         }
-        // Notify all clients of the new player (simple message for now; M5 adds SELF packets)
+        // Announce the new player to all existing clients (I11: PKT_PLAYER broadcast).
+        broadcastPacket(
+            PacketEncoder.player(
+                id = session.id,
+                team = session.team,
+                myChar = ' ',
+                nick = session.nick,
+            ),
+        )
+        // Also send each already-connected player to the new joiner so they know
+        // who else is in the game.  Re-read the player list under the current state
+        // so we include the newly added player in the announcements if needed.
+        val alreadyConnected = (_state.value as? ServerState.Running)?.players ?: emptyList()
+        for (existing in alreadyConnected) {
+            if (existing.id == session.id) continue
+            sendToPlayer(
+                session.id,
+                PacketEncoder.player(
+                    id = existing.id,
+                    team = existing.team,
+                    myChar = ' ',
+                    nick = existing.name,
+                ),
+            )
+        }
         broadcastPacket(PacketEncoder.message("${session.nick} joined the game."))
     }
 
@@ -597,45 +675,13 @@ class ServerController(
         session.state = ConnState.DRAIN
 
         val loginPort = session.loginPort
-        val t =
+        val removedTransport: UdpChannel? =
             sessionsMutex.withLock {
                 sessions.remove(loginPort)
+                sessionById.remove(session.id)
                 playerTransports.remove(loginPort)
             }
-        t?.close()
-
-        if (wasPlaying) {
-            gameWorld?.despawnPlayer(session.id)
-            sendLeaveToAll(session.id)
-            updateRunning { r ->
-                r.copy(
-                    players = r.players.filter { it.id != session.id },
-                    events =
-                        appendEvent(
-                            r.events,
-                            ServerEventLevel.INFO,
-                            "Player '${session.nick}' left (id=${session.id})",
-                            r.metrics.uptimeMs,
-                        ),
-                )
-            }
-        }
-    }
-
-    /**
-     * Non-suspend variant for call sites that cannot suspend (e.g. [kickPlayer],
-     * [handlePlayerDatagram]).  Does not hold the mutex; safe only when called
-     * from a context already serialised with respect to session mutations
-     * (e.g. inside an [updateRunning] block on the same coroutine).
-     */
-    private fun removePlayerSync(session: ClientSession) {
-        val wasPlaying = session.state == ConnState.PLAYING
-        session.state = ConnState.DRAIN
-
-        val loginPort = session.loginPort
-        sessions.remove(loginPort)
-        val t = playerTransports.remove(loginPort)
-        t?.close()
+        removedTransport?.close()
 
         if (wasPlaying) {
             gameWorld?.despawnPlayer(session.id)
@@ -685,33 +731,121 @@ class ServerController(
      * Called every game tick (from [runGameLoop]'s [onTick] callback).
      *
      * 1. Advances the frame counter.
-     * 2. Runs [ServerPhysics.tickPlayer] for every ALIVE player.
-     * 3. Handles wall-kill results via [ScoreSystem].
-     * 4. Broadcasts the frame to all PLAYING sessions via [FrameBroadcast].
+     * 2. Fires shots for players holding KEY_FIRE_SHOT.
+     * 3. Runs [ServerPhysics.tickPlayer] for every ALIVE player.
+     * 4. Handles wall-kill results via [ScoreSystem].
+     * 4b. Detects player-player ship collisions and awards kill credit.
+     * 4c. Ticks all live shots: movement, wall collision, ship collision.
+     * 4d. Awards kill credit for shot kills via [ScoreSystem].
+     * 4e. Advances the KILLED→APPEARING→ALIVE recovery state machine.
+     *     (Runs AFTER all kill-detection steps so KILLED is visible for one tick
+     *      regardless of kill source — wall, ship collision, or shot.)
+     * 5. Syncs per-player shot cooldowns.
+     * 6. Broadcasts the frame to all PLAYING sessions via [FrameBroadcast].
      */
-    private fun tickWorld(world: ServerGameWorld) {
+    private suspend fun tickWorld(world: ServerGameWorld) {
         world.advanceFrame()
 
-        // Physics
+        // 2. Shot firing — must happen before player physics so shotTime starts
+        //    decrementing from this tick rather than the next.
         for ((sessionId, pl) in world.players) {
+            ServerPhysics.tryFireShot(pl, world.pools, sessionId)
+        }
+
+        // 2b. Depot proximity — sets REFUEL bit before tickPlayer calls useItems
+        ServerPhysics.tickDepotProximity(world.players, world.world.fuels)
+
+        // 3 & 4. Player physics + wall kills
+        for ((_, pl) in world.players) {
             val result = ServerPhysics.tickPlayer(pl, world.world, world.frameLoop)
             if (result == WallHitResult.KILLED) {
                 pl.plState = PlayerState.KILLED
                 pl.recoveryCount = GameConst.RECOVERY_DELAY.toDouble()
-                ScoreSystem.environmentKill(pl)
+                // Use wallDeath to give credit to the last player who shoved
+                // the victim (I5).  lastWallAttacker is set by tickPlayerCollisions
+                // in the same tick or a prior tick.
+                val attackerSession = pl.physics.lastWallAttacker
+                val attacker = if (attackerSession != null) world.players[attackerSession] else null
+                ScoreSystem.wallDeath(pl, attacker)
+                pl.physics.lastWallAttacker = null
             }
         }
 
-        // Frame broadcast — take a snapshot to avoid races with runPlayerLoop coroutines
-        val sessionSnapshot: Map<Int, org.lambertland.kxpilot.net.ClientSession>
-        val transportSnapshot: Map<Int, org.lambertland.kxpilot.net.UdpChannel>
-        // Non-suspend context: use tryLock-free read of current maps (maps are only
-        // mutated under sessionsMutex, but reading a snapshot here is safe because
-        // HashMap iteration is thread-hostile; copy under lock is the correct fix).
-        // We use a best-effort copy here since tickWorld is called from a single
-        // coroutine. Full fix requires making tickWorld suspend; see #1 comment.
-        sessionSnapshot = sessions.toMap()
-        transportSnapshot = playerTransports.toMap()
+        // 4b. Player-player ship collisions
+        val shipCollisions = ServerPhysics.tickPlayerCollisions(world.players)
+        for (event in shipCollisions) {
+            val victim = world.players[event.victimSessionId]
+            val killer = world.players[event.killerSessionId]
+            if (victim != null && killer != null) {
+                ScoreSystem.playerKill(victim, killer)
+            } else if (victim != null) {
+                ScoreSystem.environmentKill(victim)
+            }
+        }
+
+        // 4c. Item pickup
+        ServerPhysics.tickItemPickup(world.players, world.pools, world.world)
+
+        // 4d. Cannon AI — dead-tick countdown + fire at players in range
+        ServerPhysics.tickCannons(world.world.cannons, world.players, world.pools)
+
+        // 4e. Shot movement + ship collision + kill credit
+        val shotKills = ServerPhysics.tickShots(world.pools, world.world, world.players)
+        for (kill in shotKills) {
+            val victim = world.players[kill.victimSessionId]
+            val killer = world.players[kill.killerSessionId]
+            if (victim != null && killer != null) {
+                ScoreSystem.playerKill(victim, killer)
+            } else if (victim != null) {
+                // killerSessionId < 0 (e.g. CANNON_SHOT_ID) → environment kill
+                ScoreSystem.environmentKill(victim)
+            }
+        }
+
+        // 4f. Recovery/respawn state machine (KILLED→APPEARING→ALIVE).
+        //     Runs LAST so every kill source (wall, ship, shot) has symmetric
+        //     one-tick visibility of KILLED before transitioning to APPEARING.
+        for ((_, pl) in world.players) {
+            ServerPhysics.tickRecovery(pl, world)
+        }
+
+        // 5. Shot cooldown — single O(S) pass to build id→count, then O(P) lookup
+        liveShotCounts.clear()
+        world.pools.shots.forEach { shot ->
+            val id = shot.id.toInt()
+            liveShotCounts[id] = (liveShotCounts[id] ?: 0) + 1
+        }
+        for ((sessionId, pl) in world.players) {
+            ServerPhysics.tickShotCooldown(pl, liveShotCounts[sessionId] ?: 0)
+        }
+
+        // 5b. Sync live Player.score and RTT back into ServerState.Running.players so
+        //     the UI score column and ping column reflect current values (I6, N4).
+        if (world.players.isNotEmpty()) {
+            updateRunning { r ->
+                r.copy(
+                    players =
+                        r.players.map { cp ->
+                            val pl = world.players[cp.id]
+                            val session = sessionById[cp.id]
+                            val newScore = if (pl != null && pl.score.toInt() != cp.score) pl.score.toInt() else cp.score
+                            val newPing = session?.rttMs() ?: cp.pingMs
+                            if (newScore != cp.score || newPing != cp.pingMs) {
+                                cp.copy(score = newScore, pingMs = newPing)
+                            } else {
+                                cp
+                            }
+                        },
+                )
+            }
+        }
+
+        // 6. Frame broadcast — take immutable snapshots under mutex to avoid
+        //    races with contact-loop or stop() mutating the live maps.
+        val (sessionSnapshot, transportSnapshot) =
+            sessionsMutex.withLock {
+                sessions.toMap() to playerTransports.toMap()
+            }
 
         val running = _state.value as? ServerState.Running ?: return
         FrameBroadcast.sendFrame(
@@ -720,6 +854,30 @@ class ServerController(
             playerTransports = transportSnapshot,
             connectedPlayers = running.players,
         )
+
+        // S1. Reliable retransmit — resend any un-acked reliable data that has timed out.
+        checkRetransmit(currentTimeMs(), sessionSnapshot, transportSnapshot, running)
+    }
+
+    /**
+     * Iterate all sessions and retransmit any un-acked reliable data whose
+     * retransmit timeout has elapsed.
+     */
+    private suspend fun checkRetransmit(
+        nowMs: Long,
+        sessionSnapshot: Map<Int, ClientSession>,
+        transportSnapshot: Map<Int, UdpChannel>,
+        running: ServerState.Running,
+    ) {
+        for ((loginPort, session) in sessionSnapshot) {
+            if (!session.shouldRetransmit(nowMs)) continue
+            val packet = session.buildReliablePacket() ?: continue
+            val transport = transportSnapshot[loginPort] ?: continue
+            val player = running.players.firstOrNull { it.id == session.id } ?: continue
+            val (addr, port) = player.parseHostPort() ?: continue
+            transport.send(packet, addr, port)
+            session.recordReliableSent(nowMs)
+        }
     }
 
     // -----------------------------------------------------------------------
@@ -727,7 +885,7 @@ class ServerController(
     // -----------------------------------------------------------------------
 
     /** Send [packet] to all PLAYING players. */
-    private fun broadcastPacket(packet: ByteArray) {
+    private suspend fun broadcastPacket(packet: ByteArray) {
         val running = _state.value as? ServerState.Running ?: return
         for (player in running.players) {
             sendToPlayer(player.id, packet)
@@ -735,12 +893,17 @@ class ServerController(
     }
 
     /** Send [packet] to the player identified by [playerId]. */
-    private fun sendToPlayer(
+    private suspend fun sendToPlayer(
         playerId: Int,
         packet: ByteArray,
     ) {
-        val session = sessions.values.firstOrNull { it.id == playerId } ?: return
-        val transport: UdpChannel = playerTransports[session.loginPort] ?: return
+        // Snapshot session + transport under mutex to avoid races with the
+        // contact-loop coroutine that modifies these maps.
+        val (session, transport) =
+            sessionsMutex.withLock {
+                val s = sessionById[playerId] ?: return
+                s to (playerTransports[s.loginPort] ?: return)
+            }
         val running = _state.value as? ServerState.Running ?: return
         val player = running.players.firstOrNull { it.id == playerId } ?: return
         val (addr, port) = player.parseHostPort() ?: return
@@ -748,7 +911,7 @@ class ServerController(
     }
 
     /** Send PKT_LEAVE to all connected players for [playerId]. */
-    private fun sendLeaveToAll(playerId: Int) {
+    private suspend fun sendLeaveToAll(playerId: Int) {
         broadcastPacket(PacketEncoder.leave(playerId))
     }
 
@@ -764,6 +927,11 @@ class ServerController(
             }
         }
         playerTransports.clear()
+        // Keep sessionById consistent with sessions (both cleared in finally, but
+        // clearing here ensures the index is never stale if closeAllPlayerTransports
+        // is called independently of the finally block in future).
+        sessions.clear()
+        sessionById.clear()
     }
 
     // -----------------------------------------------------------------------
@@ -782,8 +950,11 @@ class ServerController(
         message: String,
         uptimeMs: Long,
     ): List<ServerEvent> {
-        val next = events + ServerEvent(uptimeMs, level, message)
-        return if (next.size > MAX_EVENTS) next.drop(next.size - MAX_EVENTS) else next
+        // Trim to MAX_EVENTS-1 before appending so total never exceeds MAX_EVENTS.
+        // takeLast + plus is still O(N) on List, but avoids the double-allocation
+        // of `events + element` followed by `drop(k)`.
+        val trimmed = if (events.size >= MAX_EVENTS) events.takeLast(MAX_EVENTS - 1) else events
+        return trimmed + ServerEvent(uptimeMs, level, message)
     }
 }
 
