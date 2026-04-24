@@ -30,9 +30,10 @@ object NpcAiConst {
 
     /**
      * Distance at which an NPC transitions from CHASE to ATTACK and starts firing.
-     * C: robots fire when target is within Visibility_distance (~1000 px, robotdef.c:1071).
+     * C: robots fire when target is within ~500 px (robotdef.c:1071 uses half visibility).
+     * Deliberately less than DETECT_RANGE_PX so CHASE is a real intermediate state.
      */
-    const val ATTACK_RANGE_PX: Float = 1000f
+    const val ATTACK_RANGE_PX: Float = 500f
 
     /**
      * Ticks between NPC shots.
@@ -50,11 +51,12 @@ object NpcAiConst {
     const val TURN_ACC: Double = GameConst.MAX_PLAYER_TURNSPEED * EngineConst.TURN_RATE_RAD / EngineConst.HZ_RATIO
 
     /**
-     * Angular damping per tick — fraction of turnVel lost each tick (1.0 = instant stop).
+     * Angular damping keep-fraction per tick — fraction of turnVel *retained* each tick.
      * C autopilot: pl->turnresistance = 0.2 (update.c:261), meaning 80% of turnVel
      * is discarded per tick — snappy, responsive turns.
+     * Named TURN_KEEP_FRACTION to reflect its semantic: 0.2 = keep 20%.
      */
-    const val TURN_RESISTANCE: Double = 0.2
+    const val TURN_KEEP_FRACTION: Double = 0.2
 
     /** Patrol/idle drift speed (px/tick). */
     const val CRUISE_SPEED: Float = 0.8f
@@ -116,6 +118,16 @@ object NpcAiConst {
 // NPC AI — behavior states
 // ---------------------------------------------------------------------------
 
+/** Immutable snapshot of a potential target for one AI tick. */
+data class TargetSnapshot(
+    val id: Int,
+    val x: Float,
+    val y: Float,
+    val vx: Float,
+    val vy: Float,
+    val isAlive: Boolean,
+)
+
 /**
  * Behavior state for one NPC ship, matching a subset of the C robot modes:
  *   PATROL  ≈ RM_ROBOT_IDLE    — drifting, scanning for the player
@@ -161,6 +173,9 @@ class NpcAiState(
 
     /** Ticks remaining in the current EVADE burst. */
     var evadeTimer: Int = 0
+
+    /** Id of the target selected on the last tick (-1 if none). */
+    var targetId: Int = -1
 
     /** Slowly rotating patrol heading (radians). */
     var patrolAngleRad: Double = patrolAngleRad
@@ -298,6 +313,34 @@ class NpcAiManager(
      */
     fun getEvadeTimer(npcId: Int): Int? = states[npcId]?.evadeTimer
 
+    /** Returns the id of the target selected for [npcId] on the last tick, or -1 if none. */
+    fun getTargetId(npcId: Int): Int = states[npcId]?.targetId ?: -1
+
+    // -----------------------------------------------------------------------
+    // Helpers
+    // -----------------------------------------------------------------------
+
+    /**
+     * Toroidal signed delta from [fromX], [fromY] to [toX], [toY] in a world of
+     * [worldW] × [worldH].  Returns the shortest-path (dx, dy) pair.
+     */
+    private fun toroidalDelta(
+        fromX: Float,
+        fromY: Float,
+        toX: Float,
+        toY: Float,
+    ): Pair<Double, Double> {
+        var dx = (toX - fromX).toDouble()
+        var dy = (toY - fromY).toDouble()
+        val halfW = worldW / 2.0
+        val halfH = worldH / 2.0
+        if (dx > halfW) dx -= worldW
+        if (dx < -halfW) dx += worldW
+        if (dy > halfH) dy -= worldH
+        if (dy < -halfH) dy += worldH
+        return Pair(dx, dy)
+    }
+
     // -----------------------------------------------------------------------
     // Per-tick update
     // -----------------------------------------------------------------------
@@ -325,10 +368,18 @@ class NpcAiManager(
         playerAlive: Boolean,
         treasureGoals: List<TreasureGoal> = emptyList(),
     ): List<NpcWeaponEvent> {
+        // Build combined target pool: human player (id=1) + all live NPCs
+        val allTargets: List<TargetSnapshot> =
+            buildList {
+                add(TargetSnapshot(id = 1, x = playerX, y = playerY, vx = playerVx, vy = playerVy, isAlive = playerAlive))
+                for (npc in npcs) {
+                    if (npc.hp > 0f) add(TargetSnapshot(id = npc.id, x = npc.x, y = npc.y, vx = npc.vx, vy = npc.vy, isAlive = true))
+                }
+            }
         val events = mutableListOf<NpcWeaponEvent>()
         for (npc in npcs) {
             val state = states[npc.id] ?: continue
-            events += tickOne(state, npc, playerX, playerY, playerVx, playerVy, playerAlive, treasureGoals)
+            events += tickOne(state, npc, allTargets, treasureGoals)
         }
         return events
     }
@@ -340,22 +391,22 @@ class NpcAiManager(
     private fun tickOne(
         state: NpcAiState,
         npc: DemoShip,
-        playerX: Float,
-        playerY: Float,
-        playerVx: Float,
-        playerVy: Float,
-        playerAlive: Boolean,
+        allTargets: List<TargetSnapshot>,
         treasureGoals: List<TreasureGoal> = emptyList(),
     ): List<NpcWeaponEvent> {
-        // --- Toroidal delta to player ---
-        var dx = (playerX - npc.x).toDouble()
-        var dy = (playerY - npc.y).toDouble()
-        val halfW = worldW / 2.0
-        val halfH = worldH / 2.0
-        if (dx > halfW) dx -= worldW
-        if (dx < -halfW) dx += worldW
-        if (dy > halfH) dy -= worldH
-        if (dy < -halfH) dy += worldH
+        // Select nearest living target that is not self
+        val target: TargetSnapshot? =
+            allTargets
+                .filter { it.id != npc.id && it.isAlive }
+                .minByOrNull { t ->
+                    val (dx, dy) = toroidalDelta(npc.x, npc.y, t.x, t.y)
+                    dx * dx + dy * dy
+                }
+        val targetAlive = target != null
+        state.targetId = target?.id ?: -1
+
+        // --- Toroidal delta to chosen target ---
+        val (dx, dy) = if (target != null) toroidalDelta(npc.x, npc.y, target.x, target.y) else Pair(0.0, 0.0)
         val dist = hypot(dx, dy).toFloat()
 
         // --- Behavior transitions ---
@@ -367,12 +418,12 @@ class NpcAiManager(
             state.behavior =
                 when (state.behavior) {
                     NpcBehavior.PATROL -> {
-                        if (!playerAlive || dist > NpcAiConst.DETECT_RANGE_PX) NpcBehavior.PATROL else NpcBehavior.CHASE
+                        if (!targetAlive || dist > NpcAiConst.DETECT_RANGE_PX) NpcBehavior.PATROL else NpcBehavior.CHASE
                     }
 
                     NpcBehavior.CHASE -> {
                         when {
-                            !playerAlive || dist > NpcAiConst.DETECT_RANGE_PX -> NpcBehavior.PATROL
+                            !targetAlive || dist > NpcAiConst.DETECT_RANGE_PX -> NpcBehavior.PATROL
                             dist <= NpcAiConst.ATTACK_RANGE_PX -> NpcBehavior.ATTACK
                             else -> NpcBehavior.CHASE
                         }
@@ -380,7 +431,7 @@ class NpcAiManager(
 
                     NpcBehavior.ATTACK -> {
                         when {
-                            !playerAlive -> NpcBehavior.PATROL
+                            !targetAlive -> NpcBehavior.PATROL
                             dist > NpcAiConst.ATTACK_RANGE_PX -> NpcBehavior.CHASE
                             else -> NpcBehavior.ATTACK
                         }
@@ -396,7 +447,14 @@ class NpcAiManager(
         if (state.behavior == NpcBehavior.EVADE) {
             state.evadeTimer--
             if (state.evadeTimer <= 0) {
-                state.behavior = NpcBehavior.PATROL
+                // Only exit EVADE if HP has recovered above the threshold.
+                // If HP is still low we stay in EVADE (reset timer) to avoid the
+                // oscillation bug: EVADE→PATROL→EVADE every EVADE_DURATION_TICKS+1 ticks.
+                if (npc.hp > NpcAiConst.EVADE_HP_THRESHOLD) {
+                    state.behavior = NpcBehavior.PATROL
+                } else {
+                    state.evadeTimer = NpcAiConst.EVADE_DURATION_TICKS
+                }
             }
         }
 
@@ -408,14 +466,7 @@ class NpcAiManager(
                 val npcTeam = 1 // NPCs are always team 1 in the local engine
                 val goal = treasureGoals.firstOrNull { it.team != npcTeam }
                 if (goal != null) {
-                    var gdx = goal.x.toDouble() - npc.x.toDouble()
-                    var gdy = goal.y.toDouble() - npc.y.toDouble()
-                    val halfW = worldW / 2.0
-                    val halfH = worldH / 2.0
-                    if (gdx > halfW) gdx -= worldW
-                    if (gdx < -halfW) gdx += worldW
-                    if (gdy > halfH) gdy -= worldH
-                    if (gdy < -halfH) gdy += worldH
+                    val (gdx, gdy) = toroidalDelta(npc.x, npc.y, goal.x, goal.y)
                     Pair(atan2(gdy, gdx), NpcAiConst.CHASE_SPEED)
                 } else {
                     null
@@ -438,10 +489,10 @@ class NpcAiManager(
                     }
 
                     NpcBehavior.ATTACK -> {
-                        // Predictive aim: lead the player by AIM_LEAD_FACTOR * travel time
+                        // Predictive aim: lead the target by AIM_LEAD_FACTOR * travel time
                         val travelTicks = dist / NpcAiConst.NPC_SHOT_SPEED
-                        val leadX = dx + playerVx * travelTicks * NpcAiConst.AIM_LEAD_FACTOR
-                        val leadY = dy + playerVy * travelTicks * NpcAiConst.AIM_LEAD_FACTOR
+                        val leadX = dx + (target?.vx ?: 0f) * travelTicks * NpcAiConst.AIM_LEAD_FACTOR
+                        val leadY = dy + (target?.vy ?: 0f) * travelTicks * NpcAiConst.AIM_LEAD_FACTOR
                         Pair(atan2(leadY, leadX), NpcAiConst.ATTACK_SPEED)
                     }
 
@@ -457,12 +508,14 @@ class NpcAiManager(
         var angleDiff = desiredAngleRad - currentAngleRad
         while (angleDiff > PI) angleDiff -= 2.0 * PI
         while (angleDiff < -PI) angleDiff += 2.0 * PI
-        state.turnVelRad = (state.turnVelRad + angleDiff.sign * NpcAiConst.TURN_ACC) * NpcAiConst.TURN_RESISTANCE
+        // Correct integration order: accelerate first, then damp.
+        // This matches C update.c physics: turnvel += acc; turnvel *= (1 - resistance).
+        state.turnVelRad += angleDiff.sign * NpcAiConst.TURN_ACC
+        state.turnVelRad *= NpcAiConst.TURN_KEEP_FRACTION
         var newHeadingRad = currentAngleRad + state.turnVelRad
-        // Wrap heading to [0, 2π)
-        while (newHeadingRad < 0) newHeadingRad += 2.0 * PI
-        while (newHeadingRad >= 2.0 * PI) newHeadingRad -= 2.0 * PI
-        npc.heading = (newHeadingRad / (2.0 * PI) * 128.0).toFloat()
+        // Wrap heading to [0, 2π) — also guards against floating-point boundary values
+        newHeadingRad = ((newHeadingRad % (2.0 * PI)) + 2.0 * PI) % (2.0 * PI)
+        npc.heading = (newHeadingRad / (2.0 * PI) * 128.0).toFloat() % 128.0f
 
         // --- Write desired velocity (owned by AI; physics blends in DemoGameState.tick) ---
         // Do NOT write npc.vx/vy directly — that would discard tractor/pressor beam
@@ -483,7 +536,7 @@ class NpcAiManager(
         if (state.missileCooldown > 0) state.missileCooldown--
         if (state.mineDropCooldown > 0) state.mineDropCooldown--
 
-        val inAttack = playerAlive && state.behavior == NpcBehavior.ATTACK && dist <= NpcAiConst.ATTACK_RANGE_PX
+        val inAttack = targetAlive && state.behavior == NpcBehavior.ATTACK && dist <= NpcAiConst.ATTACK_RANGE_PX
         val weaponBase =
             NpcWeaponEvent.Shot( // reused as template for coordinates/heading
                 npcId = npc.id,

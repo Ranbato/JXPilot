@@ -8,6 +8,7 @@ import io.ktor.client.request.header
 import io.ktor.client.statement.bodyAsText
 import kotlinx.coroutines.CancellationException
 import org.lambertland.kxpilot.AppInfo
+import org.lambertland.kxpilot.AppLogger
 import org.lambertland.kxpilot.model.ServerInfo
 
 /**
@@ -54,6 +55,7 @@ actual suspend fun fetchMetaserverList(): List<ServerInfo> =
         parseMetaserverResponse(text)
     } catch (e: CancellationException) {
         throw e // R21: never swallow cancellation
-    } catch (_: Exception) {
+    } catch (e: Exception) {
+        AppLogger.log("Metaserver fetch failed: ${e.message}")
         emptyList()
     }

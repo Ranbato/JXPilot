@@ -37,9 +37,9 @@ class ServerDetailPlayersTest {
             )
         holder.selectServer(server)
         val detail = assertIs<ServerBrowserState.Detail>(holder.browserState)
-        assertEquals(2, detail.players.size)
-        assertTrue(detail.players.contains("Alice"))
-        assertTrue(detail.players.contains("Bob"))
+        assertEquals(2, detail.server.players.size)
+        assertTrue(detail.server.players.contains("Alice"))
+        assertTrue(detail.server.players.contains("Bob"))
     }
 
     @Test
@@ -60,6 +60,6 @@ class ServerDetailPlayersTest {
             )
         holder.selectServer(server)
         val detail = assertIs<ServerBrowserState.Detail>(holder.browserState)
-        assertTrue(detail.players.isEmpty())
+        assertTrue(detail.server.players.isEmpty())
     }
 }

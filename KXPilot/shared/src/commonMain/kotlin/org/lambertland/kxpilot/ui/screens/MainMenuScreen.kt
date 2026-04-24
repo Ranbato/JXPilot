@@ -58,6 +58,7 @@ import org.lambertland.kxpilot.config.LocalAppConfig
 import org.lambertland.kxpilot.config.XpOptionRegistry
 import org.lambertland.kxpilot.model.ServerBrowserState
 import org.lambertland.kxpilot.model.ServerInfo
+import org.lambertland.kxpilot.model.ServerSource
 import org.lambertland.kxpilot.model.ServerTab
 import org.lambertland.kxpilot.net.fetchMetaserverList
 import org.lambertland.kxpilot.resources.ShipShapeDef
@@ -194,50 +195,72 @@ class MainMenuStateHolder(
     // -----------------------------------------------------------------------
 
     fun scanLocal() {
-        val running = serverController.state.value as? ServerState.Running
-        val localServer =
-            if (running != null) {
-                ServerInfo(
-                    host = "127.0.0.1",
-                    port = running.config.port,
-                    mapName =
-                        running.config.mapPath
-                            ?.substringAfterLast('/')
-                            ?.removeSuffix(".xp") ?: "default",
-                    playerCount = running.players.size,
-                    queueCount = 0,
-                    maxPlayers = running.config.maxPlayers,
-                    fps = running.config.targetFps,
-                    version = AppInfo.VERSION_STRING,
-                    pingMs = 0,
-                    status = "running",
-                    players = running.players.map { it.name },
-                )
-            } else {
-                null
-            }
-        browserState = ServerBrowserState.ConnectLocal(localServer = localServer, scanning = false)
+        fetchAll()
     }
 
     /**
-     * Fetch the internet server list.  Transitions through [ServerBrowserState.Scanning]
-     * before setting [ServerBrowserState.Loaded], so the UI can show a progress indicator
-     * during the async fetch.  Must be called from a coroutine context.
+     * Fetch the internet server list.  Delegates to [fetchAll] so that both local
+     * and internet servers are returned in a single combined list.
      */
     fun fetchInternet() {
+        fetchAll()
+    }
+
+    /**
+     * Fetch both local and internet servers simultaneously and merge them into a
+     * single combined list.  Transitions through [ServerBrowserState.Scanning] so
+     * the UI can show a progress indicator during the async fetch.
+     */
+    fun fetchAll() {
         scope.launch {
             browserState = ServerBrowserState.Scanning
-            // N1: delegates to fetchMetaserverList() expect/actual.
-            // On desktop this returns STUB_INTERNET_SERVERS until ktor-client is wired in.
-            // Replace the desktop actual with a real HTTP GET to AppInfo.METASERVER_URL.
-            val servers = fetchMetaserverList()
-            lastLoadedServers = servers
-            browserState = ServerBrowserState.Loaded(servers)
+            // Local: check embedded server
+            val localList: List<ServerInfo> =
+                buildList {
+                    val running = serverController.state.value as? ServerState.Running
+                    if (running != null) {
+                        add(
+                            ServerInfo(
+                                host = "127.0.0.1",
+                                port = running.config.port,
+                                mapName =
+                                    running.config.mapPath
+                                        ?.substringAfterLast('/')
+                                        ?.removeSuffix(".xp") ?: "default",
+                                playerCount = running.players.size,
+                                queueCount = 0,
+                                maxPlayers = running.config.maxPlayers,
+                                fps = running.config.targetFps,
+                                version = AppInfo.VERSION_STRING,
+                                pingMs = 0,
+                                status = "running",
+                                players = running.players.map { it.name },
+                                source = ServerSource.LOCAL,
+                            ),
+                        )
+                    }
+                }
+            // Internet: fetch metaserver
+            val internetList: List<ServerInfo> =
+                try {
+                    fetchMetaserverList().map { it.copy(source = ServerSource.INTERNET) }
+                } catch (e: Exception) {
+                    if (e is kotlinx.coroutines.CancellationException) throw e
+                    emptyList()
+                }
+            val combined = localList + internetList
+            lastLoadedServers = combined
+            browserState =
+                if (combined.isEmpty()) {
+                    ServerBrowserState.Error("No servers found. Check your network connection.")
+                } else {
+                    ServerBrowserState.Loaded(combined)
+                }
         }
     }
 
     fun selectServer(s: ServerInfo) {
-        browserState = ServerBrowserState.Detail(s, s.players)
+        browserState = ServerBrowserState.Detail(s)
     }
 
     /** Navigate back from a [ServerBrowserState.Detail] to the last loaded list. */
@@ -293,6 +316,7 @@ fun MainMenuScreen(
     val serverState by serverController.state.collectAsState()
     val isServerRunning = serverState is ServerState.Running
     val serverMetrics: ServerMetrics? = (serverState as? ServerState.Running)?.metrics
+    var showQuitConfirm by remember { mutableStateOf(false) }
 
     Box(modifier = Modifier.fillMaxSize()) {
         Row(
@@ -378,11 +402,11 @@ fun MainMenuScreen(
 
                 TabButton("LOCAL", state.tab == ServerTab.LOCAL) {
                     state.tab = ServerTab.LOCAL
-                    state.scanLocal()
+                    state.fetchAll()
                 }
                 TabButton("INTERNET", state.tab == ServerTab.INTERNET) {
                     state.tab = ServerTab.INTERNET
-                    state.fetchInternet()
+                    state.fetchAll()
                 }
 
                 Spacer(Modifier.weight(1f))
@@ -398,7 +422,17 @@ fun MainMenuScreen(
                     color = if (isServerRunning) KXPilotColors.Success else KXPilotColors.Accent,
                 )
                 Spacer(Modifier.height(4.dp))
-                GameButtonDanger("QUIT", onClick = { state.quit() }, modifier = Modifier.fillMaxWidth())
+                GameButtonDanger(
+                    "QUIT",
+                    onClick = {
+                        if (isServerRunning) {
+                            showQuitConfirm = true
+                        } else {
+                            state.quit()
+                        }
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                )
             }
 
             // ---- Right panel: server browser ----
@@ -460,6 +494,51 @@ fun MainMenuScreen(
                 metrics = serverMetrics,
                 modifier = Modifier.align(Alignment.BottomEnd).padding(12.dp),
             )
+        }
+
+        // Quit confirmation overlay — shown when QUIT is pressed and server is running
+        if (showQuitConfirm) {
+            Box(
+                modifier =
+                    Modifier
+                        .fillMaxSize()
+                        .background(Color(0xAA000000)),
+                contentAlignment = Alignment.Center,
+            ) {
+                Column(
+                    modifier =
+                        Modifier
+                            .background(KXPilotColors.SurfaceVariant)
+                            .border(1.dp, KXPilotColors.Danger)
+                            .padding(24.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(16.dp),
+                ) {
+                    Text(
+                        "A server is running.",
+                        style =
+                            TextStyle(
+                                color = KXPilotColors.Danger,
+                                fontSize = 14.sp,
+                                fontWeight = FontWeight.Bold,
+                                fontFamily = FontFamily.Monospace,
+                            ),
+                    )
+                    Text(
+                        "Quit anyway?",
+                        style =
+                            TextStyle(
+                                color = KXPilotColors.OnSurface,
+                                fontSize = 13.sp,
+                                fontFamily = FontFamily.Monospace,
+                            ),
+                    )
+                    Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                        GameButtonDanger("QUIT", onClick = { state.quit() })
+                        GameButton("CANCEL", onClick = { showQuitConfirm = false })
+                    }
+                }
+            }
         }
     }
 }
@@ -712,6 +791,7 @@ private fun ServerListPanel(
         Row(
             modifier = Modifier.fillMaxWidth().background(KXPilotColors.SurfaceVariant).padding(horizontal = 12.dp, vertical = 6.dp),
         ) {
+            ColHeader("Src", Modifier.width(50.dp))
             ColHeader("Pl", Modifier.width(40.dp))
             ColHeader("FPS", Modifier.width(40.dp))
             ColHeader("Map", Modifier.weight(1f))
@@ -760,10 +840,10 @@ private fun ServerDetailPanel(
         DetailRow("Version", s.version)
         DetailRow("Ping", s.pingMs?.let { "${it}ms" } ?: "—")
         DetailRow("Status", s.status)
-        if (detail.players.isNotEmpty()) {
+        if (detail.server.players.isNotEmpty()) {
             Spacer(Modifier.height(8.dp))
             Text("Players:", style = TextStyle(color = KXPilotColors.OnSurfaceDim, fontSize = 11.sp, fontFamily = FontFamily.Monospace))
-            for (p in detail.players) {
+            for (p in detail.server.players) {
                 Text("  $p", style = TextStyle(color = KXPilotColors.OnSurface, fontSize = 12.sp, fontFamily = FontFamily.Monospace))
             }
         }
@@ -815,6 +895,17 @@ private fun ServerRow(
                 .padding(horizontal = 12.dp, vertical = 5.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
+        // Source badge
+        Text(
+            if (server.source == ServerSource.LOCAL) "LOCAL" else "NET",
+            style =
+                TextStyle(
+                    color = if (server.source == ServerSource.LOCAL) KXPilotColors.Success else KXPilotColors.Accent,
+                    fontSize = 10.sp,
+                    fontFamily = FontFamily.Monospace,
+                ),
+            modifier = Modifier.width(50.dp),
+        )
         CellText("${server.playerCount}/${server.maxPlayers}", Modifier.width(40.dp))
         CellText(server.fps.toString(), Modifier.width(40.dp))
         CellText(server.mapName, Modifier.weight(1f))

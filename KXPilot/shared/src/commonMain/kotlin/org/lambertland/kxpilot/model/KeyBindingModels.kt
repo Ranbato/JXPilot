@@ -30,6 +30,7 @@ enum class GameAction(
     LOCK_PREV("Lock previous target"),
     TRACTOR_BEAM("Tractor/pressor beam"),
     GRAB_BALL("Grab ball (connector)"),
+    EXIT_TO_MENU("Exit to main menu"),
 }
 
 /**
@@ -79,6 +80,7 @@ fun defaultBindings(): List<KeyBinding> =
         KeyBinding(GameAction.LOCK_PREV, listOf(ComposeKey.P)),
         KeyBinding(GameAction.TRACTOR_BEAM, listOf(ComposeKey.G)),
         KeyBinding(GameAction.GRAB_BALL, listOf(ComposeKey.F)),
+        KeyBinding(GameAction.EXIT_TO_MENU, listOf(ComposeKey.Escape)),
     )
 
 // ---------------------------------------------------------------------------

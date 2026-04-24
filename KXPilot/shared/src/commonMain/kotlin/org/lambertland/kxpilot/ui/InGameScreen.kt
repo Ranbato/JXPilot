@@ -4,6 +4,7 @@ import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.focusable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -51,6 +52,7 @@ import androidx.compose.ui.text.TextMeasurer
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.drawText
 import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -85,6 +87,7 @@ import org.lambertland.kxpilot.resources.parseShipShapes
 import org.lambertland.kxpilot.resources.parseXPilotMap
 import org.lambertland.kxpilot.resources.readResourceText
 import org.lambertland.kxpilot.server.currentTimeMs
+import org.lambertland.kxpilot.ui.LocalNavigator
 import org.lambertland.kxpilot.ui.components.GameButton
 import org.lambertland.kxpilot.ui.components.MessageLog
 import org.lambertland.kxpilot.ui.components.RadarMinimap
@@ -288,6 +291,8 @@ fun InGameScreen() {
     val shipPathCache = remember { HashMap<ShipShapeDef?, Path>() }
     val textMeasurer = rememberTextMeasurer()
     var showLog by remember { mutableStateOf(false) }
+    val navigator = LocalNavigator.current
+    var showExitConfirm by remember { mutableStateOf(false) }
 
     // nowMs updated every 100ms (not every frame) to throttle MessageLog recomposition
     var nowMs by remember { mutableLongStateOf(currentTimeMs()) }
@@ -437,66 +442,87 @@ fun InGameScreen() {
                 }.focusRequester(focusRequester)
                 .focusable()
                 .onKeyEvent { event ->
-                    // R12: build the key map once per event and reuse the result in
-                    // both the KeyDown UI-action block and the engine key dispatch below.
+                    // Build the key map once per event; reused for both UI and engine dispatch.
                     val keyMap = keyBindings.buildKeyMap()
-                    if (event.type == KeyEventType.KeyDown) {
-                        if (inGameState.talkState.isVisible) {
-                            when (event.key) {
-                                ComposeKey.Enter -> {
-                                    inGameState.submitTalk(currentTimeMs())
-                                    return@onKeyEvent true
-                                }
 
-                                ComposeKey.Escape -> {
-                                    inGameState.talkState.close()
-                                    return@onKeyEvent true
-                                }
+                    // --- Talk overlay intercepts all keys while visible ---
+                    if (event.type == KeyEventType.KeyDown && inGameState.talkState.isVisible) {
+                        when (event.key) {
+                            ComposeKey.Enter -> {
+                                inGameState.submitTalk(currentTimeMs())
+                                focusRequester.requestFocus()
+                                return@onKeyEvent true
+                            }
 
-                                ComposeKey.DirectionUp -> {
-                                    inGameState.talkState.browseHistory(1)
-                                    return@onKeyEvent true
-                                }
+                            ComposeKey.Escape -> {
+                                inGameState.talkState.close()
+                                focusRequester.requestFocus()
+                                return@onKeyEvent true
+                            }
 
-                                ComposeKey.DirectionDown -> {
-                                    inGameState.talkState.browseHistory(-1)
-                                    return@onKeyEvent true
-                                }
+                            ComposeKey.DirectionUp -> {
+                                inGameState.talkState.browseHistory(1)
+                                return@onKeyEvent true
+                            }
 
-                                else -> {
-                                    return@onKeyEvent false
-                                }
+                            ComposeKey.DirectionDown -> {
+                                inGameState.talkState.browseHistory(-1)
+                                return@onKeyEvent true
+                            }
+
+                            else -> {
+                                return@onKeyEvent false
                             }
                         }
-                        // Dispatch to all actions bound to this key
-                        val actions = keyMap[event.key] ?: emptyList()
-                        for (action in actions) {
+                    }
+
+                    // --- Single-pass dispatch: UI actions (KeyDown only) + engine key state ---
+                    // Each action in the list is handled exactly once regardless of whether
+                    // it maps to a UI action, an engine key, or both.
+                    val actions = keyMap[event.key] ?: emptyList()
+                    var consumed = false
+                    for (action in actions) {
+                        // UI actions — only on key-down
+                        if (event.type == KeyEventType.KeyDown) {
                             when (action) {
                                 GameAction.SCOREBOARD -> {
                                     inGameState.toggleScoreboard()
+                                    consumed = true
+                                    continue
                                 }
 
                                 GameAction.TALK -> {
                                     inGameState.openTalk()
+                                    consumed = true
+                                    continue
                                 }
 
                                 GameAction.RESPAWN -> {
                                     engine.spawnAtBase()
-                                    return@onKeyEvent true // R13: consume event; RESPAWN has no engine key
+                                    return@onKeyEvent true
                                 }
 
-                                else -> {}
+                                GameAction.EXIT_TO_MENU -> {
+                                    showExitConfirm = true
+                                    return@onKeyEvent true
+                                }
+
+                                else -> {} // fall through to engine key handling
                             }
                         }
-                    }
-                    // Engine game keys — press/release for all matching actions
-                    val actions = keyMap[event.key] ?: emptyList()
-                    var consumed = false
-                    for (action in actions) {
+
+                        // Engine key state (press on KeyDown, release on KeyUp)
                         val kxpKey = gameActionToKey(action) ?: continue
                         when (event.type) {
-                            KeyEventType.KeyDown -> keys.press(kxpKey)
-                            KeyEventType.KeyUp -> keys.release(kxpKey)
+                            KeyEventType.KeyDown -> {
+                                keys.press(kxpKey)
+                            }
+
+                            KeyEventType.KeyUp -> {
+                                keys.release(kxpKey)
+                            }
+
+                            else -> {}
                         }
                         consumed = true
                     }
@@ -511,6 +537,29 @@ fun InGameScreen() {
             val gsShips = gs.ships.toList()
 
             if (demoMap != null) drawMapTiles(demoMap, camera)
+
+            // World items: bonus items spawned on the map.
+            // Drawn before ships so ships render on top.
+            for (item in engine.worldItems.toList()) {
+                val px =
+                    item.pos.cx
+                        .toPixel()
+                        .toFloat()
+                val py =
+                    item.pos.cy
+                        .toPixel()
+                        .toFloat()
+                val iconSize = 16f
+                if (camera.isVisible(px, py, margin = iconSize)) {
+                    val sc = camera.worldToScreen(px, py)
+                    drawItemIcon(
+                        itemType = item.itemType,
+                        iconSize = iconSize,
+                        cx = sc.x,
+                        cy = sc.y,
+                    )
+                }
+            }
 
             for (s in gsShips) {
                 drawShip(s, camera, textMeasurer, allShapes.size, shipPathCache)
@@ -708,14 +757,57 @@ fun InGameScreen() {
             TalkOverlay(state = inGameState.talkState)
         }
 
-        // Bottom-left: LOG toggle button
-        Box(modifier = Modifier.align(Alignment.BottomStart).padding(12.dp)) {
+        // Bottom-left: LOG toggle button + MENU button
+        Row(modifier = Modifier.align(Alignment.BottomStart).padding(12.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             GameButton(label = if (showLog) "LOG ×" else "LOG", onClick = { showLog = !showLog })
+            GameButton(label = "MENU", onClick = { showExitConfirm = true })
         }
 
         // Log overlay (shown when showLog is true)
         if (showLog) {
-            LogOverlay(onClose = { showLog = false })
+            LogOverlay(onClose = {
+                showLog = false
+                focusRequester.requestFocus()
+            })
+        }
+
+        // Exit-to-menu confirmation dialog
+        if (showExitConfirm) {
+            Box(
+                modifier =
+                    Modifier
+                        .fillMaxSize()
+                        .background(Color(0xAA000000)),
+                contentAlignment = Alignment.Center,
+            ) {
+                Column(
+                    modifier =
+                        Modifier
+                            .background(KXPilotColors.SurfaceVariant)
+                            .border(1.dp, KXPilotColors.Accent)
+                            .padding(24.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(16.dp),
+                ) {
+                    Text(
+                        "Return to main menu?",
+                        style =
+                            TextStyle(
+                                color = KXPilotColors.OnSurface,
+                                fontSize = 14.sp,
+                                fontFamily = FontFamily.Monospace,
+                                fontWeight = FontWeight.Bold,
+                            ),
+                    )
+                    Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                        GameButton("YES", onClick = { navigator.pop() })
+                        GameButton("NO", onClick = {
+                            showExitConfirm = false
+                            focusRequester.requestFocus()
+                        })
+                    }
+                }
+            }
         }
 
         // Platform-specific input overlay (empty on desktop/web, touch controls on Android)
@@ -834,7 +926,7 @@ private fun gameActionToKey(action: GameAction): Key? =
         GameAction.LOCK_PREV -> Key.KEY_LOCK_PREV
         GameAction.TRACTOR_BEAM -> Key.KEY_TRACTOR_BEAM
         GameAction.GRAB_BALL -> Key.KEY_CONNECTOR
-        GameAction.RESPAWN, GameAction.TALK, GameAction.SCOREBOARD -> null
+        GameAction.RESPAWN, GameAction.TALK, GameAction.SCOREBOARD, GameAction.EXIT_TO_MENU -> null
     }
 
 // ---------------------------------------------------------------------------

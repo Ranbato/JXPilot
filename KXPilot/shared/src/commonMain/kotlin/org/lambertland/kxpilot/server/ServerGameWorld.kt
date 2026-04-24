@@ -197,7 +197,26 @@ class ServerGameWorld(
         pl.fuel.tank[0] = PlayerDefaults.START_FUEL
         pl.emptyMass = PlayerDefaults.EMPTY_MASS
         pl.mass = PlayerDefaults.EMPTY_MASS.toFloat()
-        pl.objStatus = (pl.objStatus.toInt() or ObjStatus.GRAVITY).toUShort()
+        // Clear all objStatus flags from a previous life (phasing, cloaking, etc.)
+        // then re-apply gravity.  Stale flags surviving a respawn can cause the
+        // player to start cloaked or phased without any item grant.
+        pl.objStatus = ObjStatus.GRAVITY.toUShort()
+        // Mirror C DEF_HAVE / DEF_USED (rules.c:52-54):
+        //   DEF_HAVE = HAS_SHIELD|HAS_COMPASS|HAS_REFUEL|HAS_REPAIR|HAS_CONNECTOR|HAS_SHOT|HAS_LASER
+        //   DEF_USED = HAS_SHIELD|HAS_COMPASS
+        // Full assignment is intentional — matches C Kill_player() which resets `have`
+        // to DEF_HAVE on each spawn.  Extra items picked up before death are not
+        // carried over (consistent with the C server's item-on-spawn semantics).
+        pl.have = (
+            PlayerAbility.SHIELD
+                or PlayerAbility.COMPASS
+                or PlayerAbility.REFUEL
+                or PlayerAbility.REPAIR
+                or PlayerAbility.CONNECTOR
+                or PlayerAbility.SHOT
+                or PlayerAbility.LASER
+        )
+        pl.used = (PlayerAbility.SHIELD or PlayerAbility.COMPASS)
     }
 
     /**
