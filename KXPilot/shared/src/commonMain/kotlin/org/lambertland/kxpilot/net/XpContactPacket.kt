@@ -217,4 +217,42 @@ object XpContactEncoder {
         w.writeShort(loginPort)
         return w.toByteArray()
     }
+
+    /**
+     * Encode the server's reply to a REPORT_STATUS request.
+     *
+     * Wire layout:
+     * ```
+     * uint32  magic         = VERSION2MAGIC(serverVersion)
+     * uint8   packType      = REPLY (0x10)
+     * uint8   status        = SUCCESS (0x00)
+     * uint16  loginPort     = 0 (not applicable for status replies)
+     * string  serverName    (NUL-terminated, max XP_MAX_CHARS)
+     * uint16  playerCount
+     * string* playerNames   (one NUL-terminated string per player)
+     * ```
+     *
+     * @param serverVersion  The server's protocol version.
+     * @param serverName     Human-readable server name.
+     * @param playerCount    Number of currently connected players.
+     * @param playerNames    List of connected player names.
+     */
+    fun replyStatus(
+        serverVersion: Int,
+        serverName: String,
+        playerCount: Int,
+        playerNames: List<String>,
+    ): ByteArray {
+        val w = XpWriter(8 + serverName.length + 1 + 2 + playerNames.sumOf { it.length + 1 })
+        w.writeInt(version2magic(serverVersion))
+        w.writeByte(ContactPackType.REPLY)
+        w.writeByte(ContactStatus.SUCCESS)
+        w.writeShort(0) // loginPort = 0 for status replies
+        w.writeString(serverName, XP_MAX_CHARS)
+        w.writeShort(playerCount)
+        for (name in playerNames) {
+            w.writeString(name, XP_MAX_CHARS)
+        }
+        return w.toByteArray()
+    }
 }

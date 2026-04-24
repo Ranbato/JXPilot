@@ -91,6 +91,7 @@ object ScoreSystem {
 
     private fun applyDeathPenalty(victim: Player) {
         victim.deaths++
+        victim.plDeathsSinceJoin++
         victim.score -= DEATH_PENALTY
         victim.updateScore = true
     }

@@ -39,10 +39,27 @@ object PktType {
     const val LEAVE: Int = 33
     const val MAGIC: Int = 41
 
+    // Player enter/join announcement (server → all clients)
+    // Wire value 0x0E = 14 — PKT_PLAYER in packet.h (used to announce a new ship to all)
+    const val PLAYER: Int = 14
+
+    // Game objects (server → client)
+
+    /** PKT_BALL — wire value 17 (0x11).  Sent every frame for each live ball. */
+    const val BALL: Int = 17
+
     // Misc
     const val SHUTDOWN: Int = 19
     const val FAILURE: Int = 101
     const val SUCCESS: Int = 102
+
+    // Per-frame player state (server → client)
+
+    /** PKT_SELF_ITEMS — wire value 11 (0x0B). */
+    const val SELF_ITEMS: Int = 11
+
+    /** PKT_MODIFIERS — wire value 70 (0x46). */
+    const val MODIFIERS: Int = 70
 }
 
 // ---------------------------------------------------------------------------

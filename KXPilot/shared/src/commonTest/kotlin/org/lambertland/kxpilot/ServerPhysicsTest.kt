@@ -4,8 +4,10 @@ import org.lambertland.kxpilot.common.ClPos
 import org.lambertland.kxpilot.common.ClickConst
 import org.lambertland.kxpilot.common.GameConst
 import org.lambertland.kxpilot.common.Key
+import org.lambertland.kxpilot.common.Vector
 import org.lambertland.kxpilot.server.CellType
 import org.lambertland.kxpilot.server.ObjStatus
+import org.lambertland.kxpilot.server.ObjectPools
 import org.lambertland.kxpilot.server.Player
 import org.lambertland.kxpilot.server.PlayerDefaults
 import org.lambertland.kxpilot.server.PlayerState
@@ -347,6 +349,58 @@ class ServerPhysicsTest {
 
         val actualBurn = 10000.0 - pl.fuel.sum
         assertEquals(expectedBurn, actualBurn, 1e-10, "Fuel burn should equal power * 0.0008 per tick")
+    }
+}
+
+// ---------------------------------------------------------------------------
+// R37 — tickShots with non-zero velocity shot that must travel to reach target
+// ---------------------------------------------------------------------------
+
+class TickShotsTravelTest {
+    private fun makeWorld(): ServerGameWorld = ServerGameWorld(ServerConfig(serverName = "test", port = 9999, targetFps = 10))
+
+    /**
+     * R37: place a shot with non-zero X velocity and a victim several pixels ahead.
+     * After enough ticks for the shot to travel the distance, the victim must be killed.
+     */
+    @Test
+    fun shotWithVelocityKillsTargetAfterTraveling() {
+        val world = makeWorld()
+
+        // Spawn victim in open space
+        val victim = world.spawnPlayer(1, "victim", "v", 0)
+        victim.plState = PlayerState.ALIVE
+        val startCx = world.world.cwidth / 2
+        val startCy = world.world.cheight / 2
+
+        // Place the shot some distance to the LEFT of the victim
+        // Shot moves right at shotSpeed pixels/tick; victim is at startPx + 20 pixels
+        val shotSpeed = GameConst.SHOT_SPEED.toFloat() // pixels/tick
+        val victimOffsetPx = 20f
+        val victimCx = startCx + (victimOffsetPx * ClickConst.CLICK).toInt()
+        victim.pos = ClPos(victimCx, startCy)
+
+        // Allocate and configure shot
+        val shot = world.pools.shots.allocate()!!
+        shot.pos = ClPos(startCx, startCy)
+        shot.vel = Vector(shotSpeed, 0f) // moving right at shot speed
+        shot.id = 0 // owned by session 0 (not victim's session 1)
+        shot.team = 0u
+        shot.life = 200f
+
+        // Tick until the shot reaches the victim or life runs out
+        var killed = false
+        val hitRadius = (GameConst.SHOT_RADIUS + GameConst.SHIP_SZ).toDouble()
+        // Number of ticks needed: victimOffsetPx / shotSpeed rounded up + 1
+        val ticksNeeded = (victimOffsetPx / shotSpeed).toInt() + 2
+        repeat(ticksNeeded) {
+            if (!killed) {
+                val kills = ServerPhysics.tickShots(world.pools, world.world, world.players)
+                if (kills.any { it.victimSessionId == 1 }) killed = true
+            }
+        }
+
+        assertTrue(killed, "Shot with velocity $shotSpeed px/tick must travel $victimOffsetPx px and kill victim")
     }
 }
 

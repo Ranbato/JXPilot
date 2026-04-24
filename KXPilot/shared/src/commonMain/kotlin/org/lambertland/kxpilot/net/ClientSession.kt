@@ -65,6 +65,9 @@ class ClientSession(
 
         /** Maximum bytes held in the reliable-retransmit buffer. */
         const val RELIABLE_BUF_SIZE: Int = 65_536
+
+        /** Retransmit timeout: resend reliable data if no ACK within this many ms. */
+        const val RETRANSMIT_TIMEOUT_MS: Long = 500L
     }
 
     // -----------------------------------------------------------------------
@@ -129,6 +132,27 @@ class ClientSession(
     var lastKeyChangeId: Int = -1
 
     // -----------------------------------------------------------------------
+    // RTT measurement (N4)
+    // -----------------------------------------------------------------------
+
+    /** Monotonic timestamp (ms) when the last reliable packet was sent. 0 = never sent. */
+    var lastReliableSentMs: Long = 0L
+
+    /** Last measured round-trip time in ms, or null if not yet measured. */
+    var rttMs: Int? = null
+
+    /**
+     * Record that a reliable packet was sent at [nowMs].
+     * Call this whenever a PKT_RELIABLE is transmitted to the client.
+     */
+    fun recordReliableSent(nowMs: Long) {
+        lastReliableSentMs = nowMs
+    }
+
+    /** Expose the last measured RTT (null if not yet measured). */
+    fun rttMs(): Int? = rttMs
+
+    // -----------------------------------------------------------------------
     // Lifecycle handlers
     // -----------------------------------------------------------------------
 
@@ -165,11 +189,18 @@ class ClientSession(
      *
      * Advances [reliableAckPos] if [pkt].bytePos is ahead of the current
      * position and within the range of written data.
+     * Also computes [rttMs] if [lastReliableSentMs] is set.
      */
-    fun handleAck(pkt: XpPacket.Ack) {
+    fun handleAck(
+        pkt: XpPacket.Ack,
+        nowMs: Long = 0L,
+    ) {
         val newAck = pkt.bytePos
         if (newAck > reliableAckPos && newAck <= reliableWritePos) {
             reliableAckPos = newAck
+        }
+        if (lastReliableSentMs > 0L && nowMs > 0L) {
+            rttMs = (nowMs - lastReliableSentMs).toInt().coerceAtLeast(0)
         }
     }
 
@@ -220,6 +251,9 @@ class ClientSession(
      * Returns `null` if everything has been acknowledged.
      * The returned packet covers all pending bytes in one shot (the caller
      * may need to fragment if the datagram would be too large — deferred to M3).
+     *
+     * **I8 — resolved**: `checkRetransmit` in `ServerController` now calls this
+     * method on ACK timeout and re-sends the result when non-null.
      */
     fun buildReliablePacket(): ByteArray? {
         if (reliablePending <= 0) return null
@@ -250,6 +284,17 @@ class ClientSession(
             else -> false
         }
     }
+
+    /**
+     * Returns `true` if there is unacknowledged reliable data and the retransmit
+     * timeout has elapsed since the last send.
+     *
+     * @param nowMs Current monotonic time in milliseconds.
+     */
+    fun shouldRetransmit(nowMs: Long): Boolean =
+        reliablePending > 0 &&
+            lastReliableSentMs > 0L &&
+            (nowMs - lastReliableSentMs) > RETRANSMIT_TIMEOUT_MS
 
     override fun toString(): String = "ClientSession(id=$id, addr=$addr, state=$state, user=$user, nick=$nick)"
 }

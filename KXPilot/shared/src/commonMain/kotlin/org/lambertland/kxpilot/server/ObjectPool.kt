@@ -28,9 +28,14 @@ class ObjectPool<T : GameObjectBase>(
     val capacity: Int,
     factory: (index: Int) -> T,
 ) {
-    /** Pre-allocated backing array; all slots always exist. */
+    /**
+     * Pre-allocated backing array.  Stored as `Array<GameObjectBase>` to
+     * avoid the JVM array covariance cast failure that occurs with
+     * `Array<Any> as Array<T>`.  All access sites cast back to `T` —
+     * safe because only [factory] ever writes to the array.
+     */
     @Suppress("UNCHECKED_CAST")
-    private val slots: Array<T> = Array<Any>(capacity) { factory(it) } as Array<T>
+    private val slots: Array<GameObjectBase> = Array(capacity) { factory(it) as GameObjectBase }
 
     /** Number of currently active (live) objects; active indices are `0 until count`. */
     private var _count: Int = 0
@@ -53,7 +58,8 @@ class ObjectPool<T : GameObjectBase>(
         if (_count >= capacity) return null
         val obj = slots[_count++]
         obj.reset()
-        return obj
+        @Suppress("UNCHECKED_CAST")
+        return obj as T
     }
 
     fun freeAt(index: Int) {
@@ -66,6 +72,17 @@ class ObjectPool<T : GameObjectBase>(
         slots[_count] = tmp
     }
 
+    /**
+     * Free [obj] by identity scan — O(n) in the number of active objects.
+     *
+     * **Prefer [forEachAlive]**: it frees in O(1) per element while iterating.
+     * Reserve this method for exceptional out-of-loop removals where you hold
+     * a direct reference but not the index.
+     */
+    @Deprecated(
+        message = "O(n) linear scan. Use forEachAlive { shouldFree } for hot-path frees.",
+        replaceWith = ReplaceWith("forEachAlive { it === obj }"),
+    )
     fun free(obj: T) {
         for (i in _count - 1 downTo 0) {
             if (slots[i] === obj) {
@@ -80,51 +97,58 @@ class ObjectPool<T : GameObjectBase>(
     // Iteration helpers (iterate only active slots)
     // ------------------------------------------------------------------
 
-    /** Iterate active objects. */
+    /**
+     * Iterate active objects.
+     *
+     * **Warning**: do NOT free elements from inside [action].  [forEach] increments
+     * the index unconditionally; freeing an object during iteration causes the
+     * element swapped into the freed slot to be skipped.  Use [forEachAlive] when
+     * you need to free elements while iterating (#17).
+     */
     fun forEach(action: (T) -> Unit) {
         var i = 0
-        while (i < _count) action(slots[i++])
+        @Suppress("UNCHECKED_CAST")
+        while (i < _count) action(slots[i++] as T)
     }
 
     /**
      * Iterate active objects with index.
-     *
-     * **Note:** if [action] calls [freeAt] with the supplied index, the
-     * slot is swapped and the same index will hold a different object next
-     * iteration.  Use [forEachAlive] for that pattern.
      */
     fun forEachIndexed(action: (index: Int, obj: T) -> Unit) {
         var i = 0
+        @Suppress("UNCHECKED_CAST")
         while (i < _count) {
-            action(i, slots[i])
+            action(i, slots[i] as T)
             i++
         }
     }
 
     /**
      * Iterate active objects, automatically handling swap-to-end frees.
-     *
-     * If [action] returns `true` the object is freed (via [freeAt]) and the
-     * index is NOT advanced — the swapped-in object is visited next.
-     * If [action] returns `false` the index advances normally.
-     *
-     * Mirrors the common C pattern:
-     * ```c
-     * for (i = 0; i < ObjCount; ) {
-     *     if (should_free(Obj[i])) Object_free_ind(i);
-     *     else i++;
-     * }
-     * ```
+     * If [action] returns `true` the object is freed; otherwise the index advances.
      */
     fun forEachAlive(action: (T) -> Boolean) {
         var i = 0
+        @Suppress("UNCHECKED_CAST")
         while (i < _count) {
-            if (action(slots[i])) freeAt(i) else i++
+            if (action(slots[i] as T)) freeAt(i) else i++
         }
     }
 
-    /** Return the active object at [index].  No bounds check in release. */
-    operator fun get(index: Int): T = slots[index]
+    /** Return the active object at [index].  No bounds check. */
+    @Suppress("UNCHECKED_CAST")
+    operator fun get(index: Int): T = slots[index] as T
+
+    /**
+     * Count active objects matching [predicate].
+     * O(n) in the number of active objects.
+     */
+    fun countActive(predicate: (T) -> Boolean): Int {
+        var n = 0
+        @Suppress("UNCHECKED_CAST")
+        for (i in 0 until _count) if (predicate(slots[i] as T)) n++
+        return n
+    }
 }
 
 // ---------------------------------------------------------------------------

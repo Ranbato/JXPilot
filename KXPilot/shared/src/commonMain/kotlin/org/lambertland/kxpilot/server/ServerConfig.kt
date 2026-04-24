@@ -15,6 +15,8 @@ import org.lambertland.kxpilot.common.GameConst
  * @param serverName      Human-readable server name broadcast to metaserver.
  * @param teamPlay        Whether team mode is enabled.
  * @param allowRobots     Whether the server spawns robot ships when human count is low.
+ *                        **Currently a no-op** — robot AI is not yet implemented.
+ *                        The field is parsed and stored for future use (I3).
  */
 data class ServerConfig(
     val port: Int = DEFAULT_PORT,

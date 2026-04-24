@@ -4,16 +4,16 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.staticCompositionLocalOf
 import org.lambertland.kxpilot.config.AppConfig
 import org.lambertland.kxpilot.config.LocalAppConfig
 import org.lambertland.kxpilot.model.KeyBinding
 import org.lambertland.kxpilot.model.defaultBindings
 import org.lambertland.kxpilot.resources.ShipShapeDef
+import org.lambertland.kxpilot.server.ServerController
 import org.lambertland.kxpilot.ui.screens.AboutScreen
 import org.lambertland.kxpilot.ui.screens.ConfigScreen
-import org.lambertland.kxpilot.ui.screens.DemoGameScreen
+import org.lambertland.kxpilot.ui.screens.GameScreen
 import org.lambertland.kxpilot.ui.screens.KeyBindingsScreen
 import org.lambertland.kxpilot.ui.screens.MainMenuScreen
 import org.lambertland.kxpilot.ui.screens.MotdScreen
@@ -28,27 +28,44 @@ val LocalNavigator =
         error("No Navigator provided — wrap with CompositionLocalProvider(LocalNavigator provides ...)")
     }
 
+/**
+ * Provides the application-lifetime [ServerController] to any composable in the tree.
+ *
+ * The controller must be created at the platform entry-point (e.g. [Main.kt]) with a
+ * coroutine scope tied to the application lifetime, not to any composition.
+ */
+val LocalServerController =
+    staticCompositionLocalOf<ServerController> {
+        error("No ServerController provided — wrap with CompositionLocalProvider(LocalServerController provides ...)")
+    }
+
 // ---------------------------------------------------------------------------
 // Root composable
 // ---------------------------------------------------------------------------
 
 /**
- * Application root.  Provides [Navigator] via [LocalNavigator] and renders
- * the appropriate screen for the current navigation state.
+ * Application root.  Provides [Navigator] and [ServerController] via composition
+ * locals and renders the appropriate screen for the current navigation state.
+ *
+ * All parameters are required — callers must be explicit.  No `remember {}` in
+ * default parameter expressions (those execute at the call-site, not inside the
+ * composition, and provide no memoization guarantee).
  *
  * @param navigator          Pre-configured navigator (e.g. with exitApplication wired).
  * @param config             Loaded app config (player name, ship, settings, colors).
+ * @param serverController   Application-lifetime server controller.  Must be created
+ *                           with a coroutine scope tied to the application lifetime,
+ *                           not to any [androidx.compose.runtime.rememberCoroutineScope].
  * @param onSaveConfig       Called with the full rc-file text whenever any setting changes.
- *                           Pass a no-op lambda (the default) in tests/previews.
- * @param onSaveBindings     Called with the serialised key-bindings block whenever the
- *                           user presses DONE in the key-bindings screen.
+ * @param onSaveBindings     Called with the serialised key-bindings block when DONE is pressed.
  * @param availableShips     Ship shapes available for selection on the main menu.
  * @param initialKeyBindings Key bindings loaded from disk; defaults to [defaultBindings].
  */
 @Composable
 fun App(
-    navigator: Navigator = remember { Navigator() },
-    config: AppConfig = remember { AppConfig.defaults() },
+    navigator: Navigator,
+    config: AppConfig,
+    serverController: ServerController,
     onSaveConfig: (String) -> Unit = {},
     onSaveBindings: (String) -> Unit = {},
     availableShips: List<ShipShapeDef> = emptyList(),
@@ -59,8 +76,9 @@ fun App(
     CompositionLocalProvider(
         LocalNavigator provides navigator,
         LocalAppConfig provides config,
+        LocalServerController provides serverController,
     ) {
-        when (currentScreen) {
+        when (val screen = currentScreen) {
             Screen.MainMenu -> {
                 MainMenuScreen(
                     onSaveConfig = onSaveConfig,
@@ -88,15 +106,14 @@ fun App(
             }
 
             is Screen.InGame -> {
-                val s = currentScreen as Screen.InGame
-                DemoGameScreen(
-                    serverHost = s.serverHost,
-                    serverPort = s.serverPort,
+                GameScreen(
+                    serverHost = screen.serverHost,
+                    serverPort = screen.serverPort,
                 )
             }
 
             Screen.ServerDashboard -> {
-                ServerDashboardScreen()
+                ServerDashboardScreen(controller = serverController)
             }
         }
     }

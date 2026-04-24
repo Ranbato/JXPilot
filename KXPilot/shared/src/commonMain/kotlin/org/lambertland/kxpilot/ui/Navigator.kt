@@ -1,5 +1,6 @@
 package org.lambertland.kxpilot.ui
 
+import androidx.compose.runtime.Stable
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -11,8 +12,8 @@ import kotlinx.coroutines.flow.asStateFlow
 /**
  * Owns a [Screen] back-stack and exposes the current screen as a [StateFlow].
  *
- * State holders receive a [Navigator] instance via constructor injection so they
- * can trigger navigation without holding a reference to any composable.
+ * Annotated [@Stable] so the Compose compiler can skip recomposition of subtrees
+ * that only read [LocalNavigator] when the navigator instance has not changed.
  *
  * Thread-safety: all mutations must happen on the Main dispatcher.
  *
@@ -21,6 +22,7 @@ import kotlinx.coroutines.flow.asStateFlow
  *                        (i.e. nothing to pop back to).  Desktop callers pass
  *                        `::exitApplication` here.
  */
+@Stable
 class Navigator(
     initial: Screen = Screen.MainMenu,
     private val onExitRequested: () -> Unit = {},

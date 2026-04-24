@@ -1,5 +1,6 @@
 package org.lambertland.kxpilot.ui.screens
 
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -18,14 +19,16 @@ import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import org.lambertland.kxpilot.AppInfo
+import org.lambertland.kxpilot.common.Item
 import org.lambertland.kxpilot.ui.LocalNavigator
 import org.lambertland.kxpilot.ui.components.GameButton
+import org.lambertland.kxpilot.ui.drawItemIcon
 import org.lambertland.kxpilot.ui.theme.KXPilotColors
 
 // ---------------------------------------------------------------------------
@@ -50,17 +53,27 @@ fun AboutScreen() {
                     .padding(horizontal = 16.dp, vertical = 10.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            Text(
-                "About KXPilot",
-                style =
-                    TextStyle(
-                        color = KXPilotColors.AccentBright,
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.Bold,
-                        fontFamily = FontFamily.Monospace,
-                    ),
-                modifier = Modifier.weight(1f),
-            )
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    "About KXPilot",
+                    style =
+                        TextStyle(
+                            color = KXPilotColors.AccentBright,
+                            fontSize = 18.sp,
+                            fontWeight = FontWeight.Bold,
+                            fontFamily = FontFamily.Monospace,
+                        ),
+                )
+                Text(
+                    AppInfo.VERSION_LABEL,
+                    style =
+                        TextStyle(
+                            color = KXPilotColors.OnSurface,
+                            fontSize = 11.sp,
+                            fontFamily = FontFamily.Monospace,
+                        ),
+                )
+            }
             GameButton("CLOSE", onClick = { navigator.pop() })
         }
 
@@ -198,13 +211,9 @@ private fun AboutDivider() {
 @Composable
 private fun BonusItemRow(item: AboutContent.BonusItem) {
     Row(verticalAlignment = Alignment.Top) {
-        // Placeholder icon — coloured square
-        Box(
-            modifier =
-                Modifier
-                    .size(20.dp)
-                    .background(item.iconColor),
-        )
+        Canvas(modifier = Modifier.size(20.dp)) {
+            drawItemIcon(itemType = item.itemType)
+        }
         Spacer(Modifier.width(12.dp))
         Column {
             Text(
@@ -236,34 +245,39 @@ private fun BonusItemRow(item: AboutContent.BonusItem) {
 // ---------------------------------------------------------------------------
 
 private object AboutContent {
+    /**
+     * @param itemType  The [Item] enum value — compile-time safe; no stringly-typed dispatch.
+     * @param name      Display name shown in the list.
+     * @param description  Short description of the item's effect.
+     */
     data class BonusItem(
+        val itemType: Item,
         val name: String,
         val description: String,
-        val iconColor: Color,
     )
 
     val bonusItems =
         listOf(
-            BonusItem("Fuel", "Extra fuel capacity.", Color(0xFF226622)),
-            BonusItem("Extra Shot", "Additional shot in flight at once.", Color(0xFFFFFFFF)),
-            BonusItem("Shot Speed", "Increases shot velocity.", Color(0xFFCCCCCC)),
-            BonusItem("Shot Power", "More damage per shot.", Color(0xFFFF8800)),
-            BonusItem("Missile", "Homing missile that tracks the nearest enemy.", Color(0xFFFF4444)),
-            BonusItem("Mine", "Stationary explosive — arm and leave in a corridor.", Color(0xFF00FFFF)),
-            BonusItem("Cloak", "Makes your ship invisible to enemies.", Color(0xFF444488)),
-            BonusItem("Sensor", "Reveals cloaked ships within detection range.", Color(0xFF88FF88)),
-            BonusItem("ECM", "Disrupts nearby enemy missiles and sensors.", Color(0xFFFFFF00)),
-            BonusItem("Transporter", "Steal items from nearby ships.", Color(0xFFFF88FF)),
-            BonusItem("Tractor Beam", "Pull nearby ships (or the ball) toward you.", Color(0xFF4488FF)),
-            BonusItem("Pressor Beam", "Push nearby ships away.", Color(0xFF44AAFF)),
-            BonusItem("Laser", "Continuous beam weapon — high power drain.", Color(0xFFFF2200)),
-            BonusItem("Deflector", "Redirects incoming shots away from your ship.", Color(0xFF888888)),
-            BonusItem("Hyperjump", "Teleport to a random location on the map.", Color(0xFF8800FF)),
-            BonusItem("Phasing", "Pass through walls briefly.", Color(0xFF00FFCC)),
-            BonusItem("Armor", "Absorbs damage from one shot.", Color(0xFF886600)),
-            BonusItem("Autopilot", "AI steers toward the nearest fuel depot.", Color(0xFF44FF44)),
-            BonusItem("Emergency Shield", "Automatically activates shield on incoming shot detection.", Color(0xFF4444FF)),
-            BonusItem("Tank", "Detachable fuel tank — acts as a shield or fuel reserve.", Color(0xFF664422)),
-            BonusItem("Nuclear Mine", "Large-radius explosive — handle with extreme caution.", Color(0xFFFF0000)),
+            BonusItem(Item.FUEL, "Fuel", "Extra fuel capacity."),
+            BonusItem(Item.WIDEANGLE, "Extra Shot", "Additional shot in flight at once."),
+            BonusItem(Item.REARSHOT, "Rear Shot", "Fires a shot directly behind the ship."),
+            BonusItem(Item.AFTERBURNER, "Shot Power", "More damage per shot."),
+            BonusItem(Item.MISSILE, "Missile", "Homing missile that tracks the nearest enemy."),
+            BonusItem(Item.MINE, "Mine", "Stationary explosive — arm and leave in a corridor."),
+            BonusItem(Item.CLOAK, "Cloak", "Makes your ship invisible to enemies."),
+            BonusItem(Item.SENSOR, "Sensor", "Reveals cloaked ships within detection range."),
+            BonusItem(Item.ECM, "ECM", "Disrupts nearby enemy missiles and sensors."),
+            BonusItem(Item.TRANSPORTER, "Transporter", "Steal items from nearby ships."),
+            BonusItem(Item.TRACTOR_BEAM, "Tractor Beam", "Pull nearby ships (or the ball) toward you."),
+            BonusItem(Item.EMERGENCY_THRUST, "Emergency Thrust", "Burst of speed to escape danger."),
+            BonusItem(Item.LASER, "Laser", "Continuous beam weapon — high power drain."),
+            BonusItem(Item.DEFLECTOR, "Deflector", "Redirects incoming shots away from your ship."),
+            BonusItem(Item.HYPERJUMP, "Hyperjump", "Teleport to a random location on the map."),
+            BonusItem(Item.PHASING, "Phasing", "Pass through walls briefly."),
+            BonusItem(Item.MIRROR, "Mirror", "Reflects shots back at the attacker."),
+            BonusItem(Item.ARMOR, "Armor", "Absorbs damage from one shot."),
+            BonusItem(Item.AUTOPILOT, "Autopilot", "AI steers toward the nearest fuel depot."),
+            BonusItem(Item.EMERGENCY_SHIELD, "Emergency Shield", "Automatically activates shield on incoming shot detection."),
+            BonusItem(Item.TANK, "Tank", "Detachable fuel tank — acts as a shield or fuel reserve."),
         )
 }

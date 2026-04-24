@@ -15,4 +15,7 @@ interface EngineTarget {
 
     /** Whether the ship's shield is currently active (used for hit feedback). */
     var shield: Boolean
+
+    /** Hit-points remaining.  When ≤ 0 the NPC is dead. */
+    var hp: Float
 }

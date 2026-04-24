@@ -7,20 +7,21 @@ import org.lambertland.kxpilot.common.GameConst
 import org.lambertland.kxpilot.common.Vector
 import org.lambertland.kxpilot.common.pixelToClick
 import org.lambertland.kxpilot.common.toCenterClPos
+import org.lambertland.kxpilot.engine.EngineConst
 import org.lambertland.kxpilot.server.AsteroidConcentrator
 import org.lambertland.kxpilot.server.Base
 import org.lambertland.kxpilot.server.Cannon
 import org.lambertland.kxpilot.server.CellType
 import org.lambertland.kxpilot.server.Check
+import org.lambertland.kxpilot.server.FrictionArea
 import org.lambertland.kxpilot.server.Fuel
 import org.lambertland.kxpilot.server.Grav
 import org.lambertland.kxpilot.server.ItemConcentrator
-import org.lambertland.kxpilot.server.FrictionArea
 import org.lambertland.kxpilot.server.Target
 import org.lambertland.kxpilot.server.Treasure
-import org.lambertland.kxpilot.server.Wormhole
-import org.lambertland.kxpilot.server.WormType
 import org.lambertland.kxpilot.server.World
+import org.lambertland.kxpilot.server.WormType
+import org.lambertland.kxpilot.server.Wormhole
 import org.lambertland.kxpilot.server.initGrid
 import kotlin.math.roundToInt
 import kotlin.math.sqrt
@@ -32,13 +33,11 @@ import kotlin.math.sqrt
 /**
  * Gravity force magnitude applied by a single gravity-tile cell (pixels/tick²).
  *
- * Matches the C server constant `GRAVS_POWER = 2.7` from `server/serverconst.h`.
- *
- * Note: the XPilot C source uses `GRAVS_POWER` (not `GRAVITY`) as the per-cell
- * gravity strength.  `GRAVITY` in that codebase is the *global* downward pull and
- * is a separate, unrelated constant.
+ * Mirrors [EngineConst.PULSAR_POWER] which is the single source of truth for
+ * this value (C: `GRAVS_POWER = 2.7`, server/serverconst.h:156).
+ * Kept as a local alias so that the map-loading code remains readable.
  */
-private const val GRAVS_POWER = 2.7f
+private val GRAVS_POWER = EngineConst.PULSAR_POWER.toFloat()
 
 /**
  * Convert a parsed [XPilotMap] into a runtime [World] ready for use by the game engine.
@@ -103,22 +102,23 @@ fun XPilotMap.toWorld(): World {
     // Positive "gravity" option = pull downward; Y-up means downward = negative Y.
     val globalGravY = -globalGravityUnits * GRAVS_POWER
 
-    val world = World().also { w ->
-        w.initGrid(cols, rows)
-        // Override the zero gravity set by initGrid with the global bias.
-        if (globalGravY != 0f) {
-            for (bx in 0 until cols) {
-                for (by in 0 until rows) {
-                    w.gravity[bx][by] = Vector(0f, globalGravY)
+    val world =
+        World().also { w ->
+            w.initGrid(cols, rows)
+            // Override the zero gravity set by initGrid with the global bias.
+            if (globalGravY != 0f) {
+                for (bx in 0 until cols) {
+                    for (by in 0 until rows) {
+                        w.gravity[bx][by] = Vector(0f, globalGravY)
+                    }
                 }
             }
+            w.name = name
+            w.author = author
+            val diagPx = sqrt((w.width.toDouble() * w.width) + (w.height.toDouble() * w.height))
+            w.diagonal = diagPx
+            w.hypotenuse = diagPx / 2.0
         }
-        w.name = name
-        w.author = author
-        val diagPx = sqrt((w.width.toDouble() * w.width) + (w.height.toDouble() * w.height))
-        w.diagonal = diagPx
-        w.hypotenuse = diagPx / 2.0
-    }
 
     // ---- Tiles (walls, diagonals, decor, grav tiles, etc.) ----
     for (tile in tiles) {
@@ -181,13 +181,22 @@ fun XPilotMap.toWorld(): World {
             val bcClicks = ClickConst.BLOCK_CLICKS
             val base = BlkVec(bx, by).toCenterClPos()
             val offset = bcClicks / 3
-            val (dx, dy) = when {
-                mc.dir == 0 -> Pair(offset, 0)                // RIGHT
-                mc.dir == GameConst.RES / 4 -> Pair(0, offset)      // UP
-                mc.dir == GameConst.RES / 2 -> Pair(-offset, 0)     // LEFT
-                mc.dir == 3 * GameConst.RES / 4 -> Pair(0, -offset) // DOWN
-                else -> Pair(0, 0)
-            }
+            val (dx, dy) =
+                when {
+                    mc.dir == 0 -> Pair(offset, 0)
+
+                    // RIGHT
+                    mc.dir == GameConst.RES / 4 -> Pair(0, offset)
+
+                    // UP
+                    mc.dir == GameConst.RES / 2 -> Pair(-offset, 0)
+
+                    // LEFT
+                    mc.dir == 3 * GameConst.RES / 4 -> Pair(0, -offset)
+
+                    // DOWN
+                    else -> Pair(0, 0)
+                }
             clPos = ClPos(base.cx + dx, base.cy + dy)
         }
         world.cannons +=
@@ -239,12 +248,13 @@ fun XPilotMap.toWorld(): World {
             clPos = BlkVec(bx, by).toCenterClPos()
             world.setBlock(bx, by, CellType.WORMHOLE)
         }
-        val wormType = when (mw.type.lowercase()) {
-            "in" -> WormType.IN
-            "out" -> WormType.OUT
-            "fixed" -> WormType.FIXED
-            else -> WormType.NORMAL
-        }
+        val wormType =
+            when (mw.type.lowercase()) {
+                "in" -> WormType.IN
+                "out" -> WormType.OUT
+                "fixed" -> WormType.FIXED
+                else -> WormType.NORMAL
+            }
         world.wormholes +=
             Wormhole(
                 pos = clPos,
@@ -457,7 +467,7 @@ private fun gravTypeToCellType(type: String): CellType =
         "down" -> CellType.DOWN_GRAV
         "right" -> CellType.RIGHT_GRAV
         "left" -> CellType.LEFT_GRAV
-        else -> CellType.POS_GRAV  // "pos" and default
+        else -> CellType.POS_GRAV // "pos" and default
     }
 
 /**
@@ -471,13 +481,23 @@ private fun gravTypeToCellType(type: String): CellType =
  */
 private fun gravTypeToVector(type: String): Vector =
     when (type.lowercase()) {
-        "pos" -> Vector(0f, -GRAVS_POWER)   // pulls downward
-        "neg" -> Vector(0f, GRAVS_POWER)    // pushes upward
+        "pos" -> Vector(0f, -GRAVS_POWER)
+
+        // pulls downward
+        "neg" -> Vector(0f, GRAVS_POWER)
+
+        // pushes upward
         "up" -> Vector(0f, GRAVS_POWER)
+
         "down" -> Vector(0f, -GRAVS_POWER)
+
         "right" -> Vector(GRAVS_POWER, 0f)
+
         "left" -> Vector(-GRAVS_POWER, 0f)
-        "cwise", "acwise" -> Vector.ZERO    // rotational: position-dependent; skip
+
+        "cwise", "acwise" -> Vector.ZERO
+
+        // rotational: position-dependent; skip
         else -> Vector.ZERO
     }
 
@@ -488,11 +508,17 @@ private fun gravTypeToVector(type: String): Vector =
 private fun gravityVector(bt: BlockType): Vector? =
     when (bt) {
         BlockType.POS_GRAV -> Vector(0f, -GRAVS_POWER)
+
         BlockType.NEG_GRAV -> Vector(0f, GRAVS_POWER)
+
         BlockType.UP_GRAV -> Vector(0f, GRAVS_POWER)
+
         BlockType.DOWN_GRAV -> Vector(0f, -GRAVS_POWER)
+
         BlockType.RIGHT_GRAV -> Vector(GRAVS_POWER, 0f)
+
         BlockType.LEFT_GRAV -> Vector(-GRAVS_POWER, 0f)
+
         // Rotational gravity (CWISE/ACWISE) is position-relative; handled per-entity
         // via world.gravs records rather than a fixed tile vector.
         else -> null
@@ -505,5 +531,4 @@ private fun gravityVector(bt: BlockType): Vector? =
  * Used for `.xp2` maps whose `dir` attribute is in degrees.
  * Formula: `round(degrees * RES / 360) mod RES`
  */
-private fun degreesToHeading(degrees: Int): Int =
-    ((degrees * GameConst.RES / 360.0).roundToInt()).rem(GameConst.RES)
+private fun degreesToHeading(degrees: Int): Int = ((degrees * GameConst.RES / 360.0).roundToInt()).rem(GameConst.RES)

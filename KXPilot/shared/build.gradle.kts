@@ -6,11 +6,27 @@ plugins {
 }
 
 kotlin {
-    androidTarget()
+    androidTarget {
+        compilations.all {
+            compileTaskProvider.configure {
+                compilerOptions {
+                    jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_11)
+                }
+            }
+        }
+    }
     jvm("desktop")
     wasmJs {
         browser()
     }
+
+    // The default hierarchy template does not generate a jvmMain intermediate for a
+    // named jvm("desktop") target (only plain jvm() triggers it).  We create jvmMain
+    // manually below and wire androidMain + desktopMain into it.  Calling
+    // applyDefaultHierarchyTemplate() here keeps the template active for the other
+    // standard intermediates (nativeMain, etc.) and suppresses the "template not
+    // applied" warning.
+    applyDefaultHierarchyTemplate()
 
     sourceSets {
         val commonMain by getting {
@@ -19,16 +35,31 @@ kotlin {
                 implementation(compose.foundation)
                 implementation(compose.material)
                 implementation(libs.kotlinx.coroutines.core)
+                implementation(libs.ktor.client.core)
+            }
+        }
+
+        val jvmMain by creating {
+            dependsOn(commonMain)
+            dependencies {
+                implementation(libs.ktor.client.cio)
             }
         }
 
         val androidMain by getting {
+            dependsOn(jvmMain)
             dependencies {
                 implementation(compose.ui)
+                // R46: use the Android-specific Ktor engine which delegates to
+                // OkHttp / Android's system CA store, rather than inheriting CIO
+                // from jvmMain.  CIO bypasses the Android system certificate store,
+                // which breaks TLS on devices with custom/enterprise CA roots.
+                implementation(libs.ktor.client.android)
             }
         }
 
         val desktopMain by getting {
+            dependsOn(jvmMain)
             dependencies {
                 implementation(compose.ui)
             }
@@ -62,7 +93,7 @@ android {
                 .toInt()
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
+        sourceCompatibility = JavaVersion.VERSION_11
+        targetCompatibility = JavaVersion.VERSION_11
     }
 }

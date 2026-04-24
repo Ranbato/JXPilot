@@ -4,6 +4,8 @@ package org.lambertland.kxpilot.model
 // Server / main-menu domain models (no Compose imports)
 // ---------------------------------------------------------------------------
 
+enum class ServerSource { LOCAL, INTERNET }
+
 data class ServerInfo(
     val host: String,
     val port: Int,
@@ -15,6 +17,8 @@ data class ServerInfo(
     val version: String,
     val pingMs: Int?, // null = not yet measured
     val status: String,
+    val players: List<String> = emptyList(), // player names; populated from local scan or ReportStatus reply
+    val source: ServerSource = ServerSource.INTERNET,
 )
 
 sealed class ServerBrowserState {
@@ -26,9 +30,12 @@ sealed class ServerBrowserState {
         val servers: List<ServerInfo>,
     ) : ServerBrowserState()
 
+    /**
+     * Detail view for a selected server.
+     * Player names are accessed via [server].players — no duplicate field.
+     */
     data class Detail(
         val server: ServerInfo,
-        val players: List<String>,
     ) : ServerBrowserState()
 
     data class Error(
@@ -52,14 +59,3 @@ sealed class ServerBrowserState {
 }
 
 enum class ServerTab { LOCAL, INTERNET }
-
-// ---------------------------------------------------------------------------
-// Stub data — replaced by real network calls later
-// ---------------------------------------------------------------------------
-
-val STUB_INTERNET_SERVERS =
-    listOf(
-        ServerInfo("xpilot.example.com", 15345, "dogfight", 8, 2, 16, 25, "4.7.3", 42, "running"),
-        ServerInfo("play.xpilot.net", 15345, "teamcup", 4, 0, 10, 30, "4.7.3", 110, "running"),
-        ServerInfo("slow.xpilot.org", 15345, "asteroids", 0, 0, 8, 20, "4.7.2", 390, "idle"),
-    )

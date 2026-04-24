@@ -5,6 +5,7 @@ import org.lambertland.kxpilot.net.ClientSession
 import org.lambertland.kxpilot.net.ConnState
 import org.lambertland.kxpilot.net.PacketEncoder
 import org.lambertland.kxpilot.net.UdpChannel
+import org.lambertland.kxpilot.server.Modifier
 
 // ---------------------------------------------------------------------------
 // FrameBroadcast
@@ -12,15 +13,21 @@ import org.lambertland.kxpilot.net.UdpChannel
 //
 // Sends one complete game-frame update to every PLAYING session.
 //
-// Per-client frame sequence (mirrors C netserver.c Send_self + Score_update):
-//   PKT_START  — frame begin, echoes lastKeyChange so client knows input lag
-//   PKT_SELF   — ship state for the *owning* client only
-//   PKT_SCORE  — one packet per player (all players, every frame)
-//   PKT_END    — frame complete
+// Per-client frame sequence (mirrors C netserver.c / frame.c):
+//   PKT_START      — frame begin, echoes lastKeyChange so client knows input lag
+//   PKT_SELF       — ship state for the *owning* client only
+//   PKT_SELF_ITEMS — item counts for the owning client
+//   PKT_MODIFIERS  — active modifier bank for the owning client
+//   PKT_SCORE      — one packet per player (all players, every frame)
+//   PKT_BALL       — one packet per live ball that is in the client's viewport
+//   PKT_END        — frame complete
 //
 // Called once per game tick from [ServerGameLoop] after physics has run.
 // All access is single-threaded with respect to [ServerGameWorld] (no mutex
 // needed here — the game loop is the sole writer during a tick).
+
+/** Client protocol version at which `F_BALLSTYLE` (style byte in PKT_BALL) is available. */
+private const val F_BALLSTYLE_VERSION_MIN: Int = 0x4F14
 
 /**
  * Sends per-frame game packets to all PLAYING sessions.
@@ -64,6 +71,23 @@ object FrameBroadcast {
         // Pre-build a Map<playerId, ConnectedPlayer> to avoid O(n) lookup per session (#7b).
         val cpById: Map<Int, ConnectedPlayer> = connectedPlayers.associateBy { it.id }
 
+        // Snapshot the live ball list once per frame; iterated per-client after viewport cull.
+        data class BallSnapshot(
+            val cx: Int,
+            val cy: Int,
+            val id: Int,
+            val style: Int,
+        )
+        val liveBalls: List<BallSnapshot> =
+            buildList {
+                gameWorld.pools.balls.forEach { ball ->
+                    add(BallSnapshot(ball.pos.cx, ball.pos.cy, ball.id.toInt(), ball.ballStyle.toInt() and 0xFF))
+                }
+            }
+
+        val worldCWidth = gameWorld.world.cwidth
+        val worldCHeight = gameWorld.world.cheight
+
         for ((loginPort, session) in sessions) {
             if (session.state != ConnState.PLAYING) continue
 
@@ -78,9 +102,11 @@ object FrameBroadcast {
                 port,
             )
 
-            // PKT_SELF — only for the owning player
+            // PKT_SELF — for ALIVE, KILLED, and APPEARING players.
+            // KILLED/APPEARING players need PKT_SELF so the client can display
+            // the respawn countdown; the status byte encodes the dead/respawn state.
             val pl = gameWorld.playerForSession(session.id)
-            if (pl != null && pl.isAlive()) {
+            if (pl != null && (pl.isAlive() || pl.isKilled() || pl.isAppearing())) {
                 val posX = pl.pos.cx.toPixel()
                 val posY = pl.pos.cy.toPixel()
                 val velX = pl.vel.x.toInt()
@@ -102,11 +128,79 @@ object FrameBroadcast {
                     addr,
                     port,
                 )
+                // PKT_SELF_ITEMS — item counts (I21)
+                transport.send(PacketEncoder.selfItems(pl.item), addr, port)
+                // PKT_MODIFIERS — active modifier bank (I21)
+                val mods = pl.modbank[0]
+                transport.send(
+                    PacketEncoder.modifiers(
+                        mini = mods.get(Modifier.Mini),
+                        nuclear = mods.get(Modifier.Nuclear),
+                        cluster = mods.get(Modifier.Cluster),
+                        implosion = mods.get(Modifier.Implosion),
+                        velocity = mods.get(Modifier.Velocity),
+                        spread = mods.get(Modifier.Spread),
+                        front = 0, // no Front modifier in current Modifier enum
+                        laser = mods.get(Modifier.Laser),
+                        target = 0, // no Target modifier in current Modifier enum
+                        itempf = 0,
+                    ),
+                    addr,
+                    port,
+                )
             }
 
             // PKT_SCORE — all players
             for (pkt in scorePackets) {
                 transport.send(pkt, addr, port)
+            }
+
+            // PKT_BALL — live balls that are within this client's viewport.
+            //
+            // Mirrors C Frame_shots() + clpos_inview() in server/frame.c.
+            // The C server iterates all objects and culls by viewport; we replicate
+            // the viewport test per-client here.
+            //
+            // hasBallStyle: the style byte is only present for clients with
+            // F_BALLSTYLE capability (client version >= 0x4F14).  Clients below
+            // that threshold expect a 7-byte packet without the style byte.
+            //
+            // Note: C `options.ballStyles` gate is not yet modelled in ServerConfig;
+            // we always send the real ball_style value (equivalent to ballStyles=true).
+            if (liveBalls.isNotEmpty()) {
+                val hasBallStyle = session.clientVersion >= F_BALLSTYLE_VERSION_MIN
+
+                // Build per-client viewport culler using the owning player's position.
+                // If the player is not found (e.g. spectator with no physical ship),
+                // fall back to a large viewport that admits all balls.
+                val culler: ViewportCuller =
+                    if (pl != null) {
+                        ViewportCuller.forClient(
+                            playerCx = pl.pos.cx,
+                            playerCy = pl.pos.cy,
+                            viewWidthPx = session.viewWidth,
+                            viewHeightPx = session.viewHeight,
+                            worldCWidth = worldCWidth,
+                            worldCHeight = worldCHeight,
+                        )
+                    } else {
+                        ViewportCuller.fullWorld(worldCWidth, worldCHeight)
+                    }
+
+                for (ball in liveBalls) {
+                    if (!culler.isInView(ball.cx, ball.cy)) continue
+                    transport.send(
+                        PacketEncoder.ball(
+                            posX = ball.cx.toPixel(),
+                            posY = ball.cy.toPixel(),
+                            id = ball.id,
+                            style = ball.style,
+                            hasBallStyle = hasBallStyle,
+                        ),
+                        addr,
+                        port,
+                    )
+                }
             }
 
             // PKT_END

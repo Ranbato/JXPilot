@@ -24,6 +24,7 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import org.lambertland.kxpilot.AppInfo
 import org.lambertland.kxpilot.model.MotdState
 import org.lambertland.kxpilot.ui.LocalNavigator
 import org.lambertland.kxpilot.ui.components.GameButton
@@ -32,6 +33,12 @@ import org.lambertland.kxpilot.ui.theme.KXPilotColors
 
 // ---------------------------------------------------------------------------
 // Screen composable
+// ---------------------------------------------------------------------------
+
+// ---------------------------------------------------------------------------
+// Demo-only stub MOTD — used when no live session is driving the MotdStateHolder.
+// In a real connection, the InGameScreen should create a MotdStateHolder and
+// feed it via appendChunk/onComplete as PKT_MOTD packets arrive from the server.
 // ---------------------------------------------------------------------------
 
 private val STUB_MOTD =
@@ -43,7 +50,7 @@ private val STUB_MOTD =
       - No lag cheating
       - Have fun
 
-    Server version: kxpilot-ng 0.1-alpha
+    Server version: kxpilot-ng ${AppInfo.VERSION_STRING}
     Map: classic.xp
     Max players: 16
     """.trimIndent()

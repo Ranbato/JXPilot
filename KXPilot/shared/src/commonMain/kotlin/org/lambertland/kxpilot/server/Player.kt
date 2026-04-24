@@ -2,7 +2,6 @@ package org.lambertland.kxpilot.server
 
 import org.lambertland.kxpilot.common.ClPos
 import org.lambertland.kxpilot.common.GameConst
-import org.lambertland.kxpilot.common.Item
 import org.lambertland.kxpilot.common.ShipShape
 import org.lambertland.kxpilot.common.Vector
 
@@ -197,173 +196,182 @@ class LockInfo {
  * Extends [GameObjectBase] (OBJECT_BASE fields) so the physics engine can
  * treat players and objects uniformly.
  *
+ * TODO (#20): decouple physics state (pos, vel, dir, fuel, shields, items, …)
+ *             from network/identity fields (sessionId, nick, team, score, …).
+ *             The current god-object design makes unit testing physics in
+ *             isolation unnecessarily difficult.
+ *
  * This is intentionally a mutable class — the server mutates player state
  * every frame.  [data class] would be wrong here.
  */
 class Player : GameObjectBase() {
-    // Identity
-    var plType: PlayerType = PlayerType.HUMAN
-    var plTypeMyChar: Char = ' '
-    var plOldStatus: UByte = 0u
+    // -----------------------------------------------------------------------
+    // Physics state — all per-tick movement/combat fields live here so
+    // ServerPhysics.tickPlayer can be tested without a full Player instance.
+    // (#20 decoupling)
+    // -----------------------------------------------------------------------
+    val physics: PhysicsState = PhysicsState()
+
+    // Delegating properties: forward reads/writes to physics so all existing
+    // call sites outside ServerPhysics continue to compile unchanged.
 
     // State
-    var plStatus: UShort = 0u
-    var plState: PlayerState = PlayerState.UNDEFINED
-    var plLife: Int = 0
-    var plDeathsSinceJoin: Int = 0
-    var plPrevTeam: UShort = 0u
+    // UShort/UByte use explicit get/set instead of `by physics::` delegation:
+    // property delegation for inline/unsigned types is unreliable on Kotlin/Native
+    // and Kotlin/JS due to differences in boxing through KMutableProperty0.
+    var plStatus: UShort
+        get() = physics.plStatus
+        set(v) {
+            physics.plStatus = v
+        }
+    var plState: PlayerState by physics::plState
+    var plOldStatus: UByte
+        get() = physics.plOldStatus
+        set(v) {
+            physics.plOldStatus = v
+        }
 
-    // Physics / movement
-    var turnspeed: Double = 0.0
-    var velocity: Double = 0.0
+    // Turning
+    var turnspeed: Double by physics::turnspeed
+    var turnresistance: Double by physics::turnresistance
+    var turnvel: Double by physics::turnvel
+    var oldTurnvel: Double by physics::oldTurnvel
+    var turnacc: Double by physics::turnacc
+    var wantedFloatDir: Double by physics::wantedFloatDir
+    var dir: Short by physics::dir
 
-    /**
-     * Current heading angle **in radians** (0 ≤ floatDir < 2π).
-     *
-     * **UNIT DIVERGENCE FROM C:** The C field `float_dir` is stored in RES-units
-     * (0 ≤ float_dir < 128), and `Player_set_float_dir` computes trig as
-     * `cos(float_dir * 2π / RES)`.  Kotlin stores radians directly, which is
-     * internally consistent — but any code ported from C that reads `float_dir`
-     * expecting a RES-unit value will be wrong if applied to this field without
-     * conversion.
-     *
-     * Use [floatDirInRes] to obtain the RES-unit equivalent (needed for
-     * wire-protocol code that serializes `float_dir`).
-     * Use [ServerGameWorld.radToDir] to get the discrete integer direction for
-     * normal game-logic use.
-     *
-     * **Invariant:** `floatDirCos == cos(floatDir)` and `floatDirSin == sin(floatDir)` at all times.
-     * Always use [setFloatDir] to update the heading — never assign `floatDir`,
-     * `floatDirCos`, or `floatDirSin` directly.
-     */
-    private var _floatDir: Double = 0.0
-    private var _floatDirCos: Double = 1.0
-    private var _floatDirSin: Double = 0.0
+    // Float direction — forward through physics
+    val floatDir: Double get() = physics.floatDir
+    val floatDirCos: Double get() = physics.floatDirCos
+    val floatDirSin: Double get() = physics.floatDirSin
 
-    val floatDir: Double get() = _floatDir
-    val floatDirCos: Double get() = _floatDirCos
-    val floatDirSin: Double get() = _floatDirSin
+    fun setFloatDir(angle: Double) = physics.setFloatDir(angle)
 
-    /**
-     * Set the float direction and atomically update the cached trig values.
-     *
-     * @param angle Heading in **radians**.  See [floatDir] for the unit-mismatch
-     *              note vs the C `float_dir` field.
-     */
-    fun setFloatDir(angle: Double) {
-        _floatDir = angle
-        _floatDirCos = kotlin.math.cos(angle)
-        _floatDirSin = kotlin.math.sin(angle)
-    }
+    fun floatDirInRes(): Double = physics.floatDirInRes()
 
-    /**
-     * Return [floatDir] converted to **RES units** (0 ≤ result < RES).
-     *
-     * This matches the range and semantics of C's `float_dir` field.  Use this
-     * whenever serializing the heading over the wire or comparing against C
-     * RES-unit values.
-     */
-    fun floatDirInRes(): Double {
-        val v = _floatDir / (2.0 * GameConst.PI_VALUE) * GameConst.RES
-        return ((v % GameConst.RES) + GameConst.RES) % GameConst.RES
-    }
+    // Thrust / power
+    var power: Double by physics::power
+    var powerS: Double by physics::powerS
+    var turnspeedS: Double by physics::turnspeedS
+    var turnresistanceS: Double by physics::turnresistanceS
+    var sensorRange: Double by physics::sensorRange
+    var velocity: Double by physics::velocity
 
-    var wantedFloatDir: Double = 0.0
-    var turnresistance: Double = 0.0
-    var turnvel: Double = 0.0
-    var oldTurnvel: Double = 0.0
-    var turnacc: Double = 0.0
-    var dir: Short = 0
+    // Fuel
+    val fuel: PlayerFuel get() = physics.fuel
+    var emptyMass: Double by physics::emptyMass
 
-    // Score / kills
-    var score: Double = 0.0
-    var updateScore: Boolean = false
-    var kills: Int = 0
-    var deaths: Int = 0
+    // Items / abilities
+    var have: Long by physics::have
+    var used: Long by physics::used
+    var shieldTime: Double by physics::shieldTime
+    var shots: Int by physics::shots
+    var missileRack: Int by physics::missileRack
+    var numPulses: Int by physics::numPulses
+    var emergencyThrustLeft: Double by physics::emergencyThrustLeft
+    var emergencyShieldLeft: Double by physics::emergencyShieldLeft
+    var phasingLeft: Double by physics::phasingLeft
+    var pauseCount: Double by physics::pauseCount
+    var recoveryCount: Double by physics::recoveryCount
+    var selfDestructCount: Double by physics::selfDestructCount
+    val item: IntArray get() = physics.item
+    val initialItem: IntArray get() = physics.initialItem
+    var loseItem: Int by physics::loseItem
+    var loseItemState: Int by physics::loseItemState
+    var autoPowerS: Double by physics::autoPowerS
+    var autoTurnspeedS: Double by physics::autoTurnspeedS
+    var autoTurnresistanceS: Double by physics::autoTurnresistanceS
+    val modbank: Array<Modifiers> get() = physics.modbank
 
-    // Equipment
+    // Weapon timing
+    var shotTime: Double by physics::shotTime
+    var laserTime: Double by physics::laserTime
+    var didShoot: Boolean by physics::didShoot
 
-    /**
-     * Bit-set of items/abilities this player currently **has**.
-     * Maps to C `unsigned int have` in player.h.
-     *
-     * **Wire-format note:** C serializes this field as a 4-byte unsigned integer.
-     * When writing to the network, truncate to 32 bits: `(have and 0xFFFFFFFFL).toInt()`.
-     * All defined [PlayerAbility] bit positions fit within bits 0–30, so no
-     * information is lost in the truncation.
-     */
-    var have: Long = 0L
+    // Input
+    val lastKeyv: BooleanArray get() = physics.lastKeyv
 
-    /**
-     * Bit-set of items/abilities this player is currently **using**.
-     * Maps to C `unsigned int used` in player.h.
-     *
-     * Same wire-format constraint as [have]: serialize as a 4-byte unsigned integer.
-     */
-    var used: Long = 0L
-    var shieldTime: Double = 0.0
-    var fuel: PlayerFuel = PlayerFuel()
-    var emptyMass: Double = 0.0
+    // Collision memory
+    var lastSafePos: ClPos by physics::lastSafePos
+    var lastWallTouch: Long by physics::lastWallTouch
 
-    var power: Double = 0.0
-    var powerS: Double = 0.0
-    var turnspeedS: Double = 0.0
-    var turnresistanceS: Double = 0.0
-    var sensorRange: Double = 0.0
+    // Refueling
+    var refuelTarget: Fuel? by physics::refuelTarget
 
-    var shots: Int = 0
-    var missileRack: Int = 0
-    var numPulses: Int = 0
+    // -----------------------------------------------------------------------
+    // Identity / network — delegated to PlayerIdentity (D1)
+    // -----------------------------------------------------------------------
 
-    var emergencyThrustLeft: Double = 0.0
-    var emergencyShieldLeft: Double = 0.0
-    var phasingLeft: Double = 0.0
+    /** Extracted identity/session data — see [PlayerIdentity] for field docs. */
+    val identity: PlayerIdentity = PlayerIdentity()
 
-    var pauseCount: Double = 0.0
-    var recoveryCount: Double = 0.0
-    var selfDestructCount: Double = 0.0
+    // Delegating properties: forward reads/writes to identity so all existing
+    // call sites outside PlayerIdentity continue to compile unchanged.
+    var myChar: Char by identity::myChar
+    var name: String by identity::name
+    var userName: String by identity::userName
+    var hostname: String by identity::hostname
+    var pseudoTeam: UShort
+        get() = identity.pseudoTeam
+        set(v) {
+            identity.pseudoTeam = v
+        }
+    var alliance: Int by identity::alliance
+    var invite: Int by identity::invite
+    var plType: PlayerType by identity::plType
+    var plTypeMyChar: Char by identity::plTypeMyChar
+    var version: UInt
+        get() = identity.version
+        set(v) {
+            identity.version = v
+        }
+    var muted: Boolean by identity::muted
+    var isOperator: Boolean by identity::isOperator
+    var wantAudio: Boolean by identity::wantAudio
+    var privs: Int by identity::privs
+    var rank: RankNode? by identity::rank
 
-    val item: IntArray = IntArray(Item.NUM_ITEMS)
-    val initialItem: IntArray = IntArray(Item.NUM_ITEMS)
-    var loseItem: Int = 0
-    var loseItemState: Int = 0
+    // -----------------------------------------------------------------------
+    // Score / bookkeeping — delegated to PlayerStats (BL-21)
+    // -----------------------------------------------------------------------
 
-    var autoPowerS: Double = 0.0
-    var autoTurnspeedS: Double = 0.0
-    var autoTurnresistanceS: Double = 0.0
+    /** Extracted score/bookkeeping data — see [PlayerStats] for field docs. */
+    val stats: PlayerStats = PlayerStats()
 
-    val modbank: Array<Modifiers> = Array(GameConst.NUM_MODBANKS) { Modifiers.ZERO }
+    // Delegating properties so all existing call sites compile unchanged.
+    var score: Double by stats::score
+    var updateScore: Boolean by stats::updateScore
+    var kills: Int by stats::kills
+    var deaths: Int by stats::deaths
 
-    var shotTime: Double = 0.0
-    var laserTime: Double = 0.0
-    var didShoot: Boolean = false
+    var plLife: Int by stats::plLife
+    var plDeathsSinceJoin: Int by stats::plDeathsSinceJoin
+    var plPrevTeam: UShort
+        get() = stats.plPrevTeam
+        set(v) {
+            stats.plPrevTeam = v
+        }
+
     var tractorIsPressor: Boolean = false
 
     var repairTarget: Int = 0
-    var fs: Int = 0
-    var check: Int = 0
-    var prevCheck: Int = 0
-    var time: Int = 0
-    var round: Int = 0
-    var prevRound: Int = 0
-    var bestLap: Int = 0
-    var lastLap: Int = 0
-    var lastLapTime: Int = 0
-    var lastCheckDir: Int = 0
-    var lastWallTouch: Long = 0L
-    var survivalTime: Double = 0.0
+    var fs: Int by stats::fs
+    var check: Int by stats::check
+    var prevCheck: Int by stats::prevCheck
+    var time: Int by stats::time
+    var round: Int by stats::round
+    var prevRound: Int by stats::prevRound
+    var bestLap: Int by stats::bestLap
+    var lastLap: Int by stats::lastLap
+    var lastLapTime: Int by stats::lastLapTime
+    var lastCheckDir: Int by stats::lastCheckDir
+    var survivalTime: Double by stats::survivalTime
 
     var homeBase: Base? = null
+
     var lock: LockInfo = LockInfo()
     val lockbank: IntArray = IntArray(LOCK_BANK_MAX)
 
-    var myChar: Char = ' '
-    var name: String = ""
-    var userName: String = ""
-    var hostname: String = ""
-    var pseudoTeam: UShort = 0u
-    var alliance: Int = 0
-    var invite: Int = 0
     var ball: BallObject? = null
 
     val shoveRecord: Array<Shove> = Array(MAX_RECORDED_SHOVES) { Shove() }
@@ -379,13 +387,9 @@ class Player : GameObjectBase() {
     var lastCannonUpdate: Int = 0
     var lastFuelUpdate: Int = 0
     var lastPolyStyleUpdate: Int = 0
-    var ecmCount: Int = 0
+    var ecmCount: Int by stats::ecmCount
 
-    /** Version of the connected XPilot client. */
-    var version: UInt = 0u
-
-    /** Key-press state bit-vector (size = Key.NUM_KEYS). */
-    val lastKeyv: BooleanArray = BooleanArray(org.lambertland.kxpilot.common.Key.NUM_KEYS)
+    /** Previous-frame key-press state (network/identity field — not in PhysicsState). */
     val prevKeyv: BooleanArray = BooleanArray(org.lambertland.kxpilot.common.Key.NUM_KEYS)
 
     var frameLastBusy: Long = 0L
@@ -393,18 +397,12 @@ class Player : GameObjectBase() {
     var playerFps: Int = 0
     var maxTurnsps: Int = 0
     var recType: Int = 0
-    var rank: RankNode? = null
 
     var pauseTime: Double = 0.0
     var idleTime: Double = 0.0
     var flooding: Int = 0
 
-    var muted: Boolean = false
-    var isOperator: Boolean = false
-    var wantAudio: Boolean = false
-    var privs: Int = 0
-
-    var snafuCount: Double = 0.0
+    var snafuCount: Double by stats::snafuCount
 
     var ship: ShipShape? = null
 
@@ -456,99 +454,44 @@ class Player : GameObjectBase() {
     override fun reset() {
         super.reset()
 
+        // Reset all physics fields via PhysicsState
+        physics.reset()
+
+        // Reset all score/bookkeeping fields via PlayerStats
+        stats.reset()
+
         // Identity
         plType = PlayerType.HUMAN
         plTypeMyChar = ' '
-        plOldStatus = 0u
 
-        // State
-        plStatus = 0u
-        plState = PlayerState.UNDEFINED
-        plLife = 0
-        plDeathsSinceJoin = 0
-        plPrevTeam = 0u
-
-        // Physics / movement
-        turnspeed = 0.0
-        velocity = 0.0
-        setFloatDir(0.0)
-        wantedFloatDir = 0.0
-        turnresistance = 0.0
-        turnvel = 0.0
-        oldTurnvel = 0.0
-        turnacc = 0.0
-        dir = 0
-
-        // Score / kills
-        score = 0.0
-        updateScore = false
-        kills = 0
-        deaths = 0
-
-        // Equipment
-        have = 0L
-        used = 0L
-        shieldTime = 0.0
-        fuel.reset()
-        emptyMass = 0.0
-        power = 0.0
-        powerS = 0.0
-        turnspeedS = 0.0
-        turnresistanceS = 0.0
-        sensorRange = 0.0
-        shots = 0
-        missileRack = 0
-        numPulses = 0
-        emergencyThrustLeft = 0.0
-        emergencyShieldLeft = 0.0
-        phasingLeft = 0.0
-        pauseCount = 0.0
-        recoveryCount = 0.0
-        selfDestructCount = 0.0
-        item.fill(0)
-        initialItem.fill(0)
-        loseItem = 0
-        loseItemState = 0
-        autoPowerS = 0.0
-        autoTurnspeedS = 0.0
-        autoTurnresistanceS = 0.0
-        for (i in modbank.indices) modbank[i] = Modifiers.ZERO
-
-        // Weapon timing
-        shotTime = 0.0
-        laserTime = 0.0
-        didShoot = false
+        // Non-physics combat flags
         tractorIsPressor = false
 
-        // Checkpoints / race
+        // Misc
         repairTarget = 0
-        fs = 0
-        check = 0
-        prevCheck = 0
-        time = 0
-        round = 0
-        prevRound = 0
-        bestLap = 0
-        lastLap = 0
-        lastLapTime = 0
-        lastCheckDir = 0
-        lastWallTouch = 0L
-        survivalTime = 0.0
 
         // Lock / base
         homeBase = null
         lock.reset()
         lockbank.fill(0)
-
-        // Identity / network
-        myChar = ' '
-        name = ""
-        userName = ""
-        hostname = ""
-        pseudoTeam = 0u
-        alliance = 0
-        invite = 0
         ball = null
+
+        // Identity (via PlayerIdentity)
+        identity.myChar = ' '
+        identity.name = ""
+        identity.userName = ""
+        identity.hostname = ""
+        identity.pseudoTeam = 0u
+        identity.alliance = 0
+        identity.invite = 0
+        identity.plType = PlayerType.HUMAN
+        identity.plTypeMyChar = ' '
+        identity.version = 0u
+        identity.muted = false
+        identity.isOperator = false
+        identity.wantAudio = false
+        identity.privs = 0
+        identity.rank = null
 
         // Shove record
         for (i in shoveRecord.indices) shoveRecord[i] = Shove()
@@ -566,25 +509,17 @@ class Player : GameObjectBase() {
         lastCannonUpdate = 0
         lastFuelUpdate = 0
         lastPolyStyleUpdate = 0
-        ecmCount = 0
+        // ecmCount and snafuCount reset via stats.reset() above
 
         // Network / session
-        version = 0u
-        lastKeyv.fill(false)
         prevKeyv.fill(false)
         frameLastBusy = 0L
         playerFps = 0
         maxTurnsps = 0
         recType = 0
-        rank = null
         pauseTime = 0.0
         idleTime = 0.0
         flooding = 0
-        muted = false
-        isOperator = false
-        wantAudio = false
-        privs = 0
-        snafuCount = 0.0
         ship = null
     }
 
@@ -597,51 +532,38 @@ class Player : GameObjectBase() {
      *
      * Mirrors C `Player_init_state` / `Player_death` patterns in server/player.c.
      */
+    // R26: resetForRespawn is called exclusively from the server game loop on the
+    // single game-loop coroutine.  No concurrent access occurs during reset, so no
+    // @Volatile or synchronisation is required.  If this invariant ever changes
+    // (e.g. admin commands resetting a live player from a different coroutine),
+    // plState must be made @Volatile or the whole reset sequence must be
+    // synchronised externally.
     fun resetForRespawn() {
+        // Set APPEARING *before* physics.reset() to ensure the state machine
+        // never transiently exposes UNDEFINED to a concurrent game-loop reader.
+        // (physics.reset() would set plState = UNDEFINED; we override it here first
+        //  so any concurrent reader between reset() and the explicit assignment below
+        //  always sees APPEARING, not UNDEFINED.)
+        plState = PlayerState.APPEARING
+
         // Reset base object fields (pos, vel, acc, life, mods, status, …)
         super.reset()
 
-        // State
+        // Reset all physics fields via PhysicsState.  plState was already set
+        // to APPEARING above; physics.reset() will overwrite it to UNDEFINED,
+        // so we re-assert APPEARING immediately after.
+        physics.reset()
+
+        // Re-assert correct post-reset state — physics.reset() zeroed plState.
         plStatus = 0u
-        plState = PlayerState.DEAD
+        plState = PlayerState.APPEARING
         plOldStatus = 0u
 
-        // Physics / movement
-        setFloatDir(0.0)
-        wantedFloatDir = 0.0
-        turnvel = 0.0
-        oldTurnvel = 0.0
-        turnacc = 0.0
-        dir = 0
-
-        // Equipment
-        have = 0L
-        used = 0L
-        shieldTime = 0.0
-        fuel.reset()
-        power = 0.0
-        powerS = 0.0
-        shots = 0
-        missileRack = 0
-        numPulses = 0
-        emergencyThrustLeft = 0.0
-        emergencyShieldLeft = 0.0
-        phasingLeft = 0.0
-        pauseCount = 0.0
-        recoveryCount = 0.0
-        selfDestructCount = 0.0
-        item.fill(0)
-        loseItem = 0
-        loseItemState = 0
-        for (i in modbank.indices) modbank[i] = Modifiers.ZERO
-
-        // Weapon timing
-        shotTime = 0.0
-        laserTime = 0.0
-        didShoot = false
+        // Non-physics combat flags
         tractorIsPressor = false
 
-        // Lock
+        // Lock / base
+        homeBase = null
         lock.reset()
         lockbank.fill(0)
         ball = null
@@ -655,7 +577,6 @@ class Player : GameObjectBase() {
         stunned = 0.0
 
         // Counters that should start fresh each life
-        lastWallTouch = 0L
         survivalTime = 0.0
         ecmCount = 0
         snafuCount = 0.0

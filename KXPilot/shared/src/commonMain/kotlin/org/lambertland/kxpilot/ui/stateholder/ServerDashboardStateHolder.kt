@@ -138,16 +138,22 @@ class ServerDashboardStateHolder(
 
     fun stopServer() = controller.stop()
 
-    fun kickPlayer(id: Int) = controller.kickPlayer(id)
+    fun kickPlayer(id: Int) {
+        scope.launch { controller.kickPlayer(id) }
+    }
 
     fun mutePlayer(id: Int) = controller.mutePlayer(id)
 
-    fun sendMessageAll(message: String) = controller.sendMessageAll(message)
+    fun sendMessageAll(message: String) {
+        scope.launch { controller.sendMessageAll(message) }
+    }
 
     fun sendMessageOne(
         id: Int,
         message: String,
-    ) = controller.sendMessageOne(id, message)
+    ) {
+        scope.launch { controller.sendMessageOne(id, message) }
+    }
 
     fun changeMap(path: String) {
         scope.launch { controller.changeMap(path) }

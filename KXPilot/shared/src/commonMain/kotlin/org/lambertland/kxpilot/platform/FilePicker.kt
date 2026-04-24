@@ -11,3 +11,17 @@ expect suspend fun showFilePicker(
     title: String,
     extension: String = "",
 ): String?
+
+/**
+ * Show a native save-file dialog and write [content] to the chosen path.
+ * Returns `true` on success, `false` if the user cancelled or an error occurred.
+ *
+ * @param title        Title for the save dialog.
+ * @param defaultName  Suggested filename (e.g. "kxpilot.log").
+ * @param content      Text to write.
+ */
+expect suspend fun saveTextFile(
+    title: String,
+    defaultName: String,
+    content: String,
+): Boolean

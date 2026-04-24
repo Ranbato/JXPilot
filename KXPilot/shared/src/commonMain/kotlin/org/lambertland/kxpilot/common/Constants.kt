@@ -46,6 +46,12 @@ object GameConst {
     const val MAX_PLAYER_TURNRESISTANCE: Double = 1.0
     const val MIN_PLAYER_TURNRESISTANCE: Double = 0.0
 
+    /**
+     * Default player ship mass.
+     * C default: options.shipMass = 20.0 (cmdline.c:142).
+     */
+    const val PLAYER_MASS: Double = 20.0
+
     // ------------------------------------------------------------------
     // Fuel
     // ------------------------------------------------------------------
@@ -84,11 +90,64 @@ object GameConst {
     const val TARGET_DAMAGE: Double = 250.0
     const val SELF_DESTRUCT_DELAY: Double = 150.0
 
+    /**
+     * Maximum spread level (0–[MODS_SPREAD_MAX]).
+     * C: MODS_SPREAD_MAX = 3 (server/modifiers.h).
+     */
+    const val MODS_SPREAD_MAX: Int = 3
+
     /** Collision-hit radius in pixels. */
     const val SHIP_SZ: Int = 16
+
+    /**
+     * World item (pick-up) sprite size in pixels.
+     * C: common/item.h:78 — `#define ITEM_SIZE 16`.
+     * Used for item pickup radius: effective radius = SHIP_SZ + ITEM_SIZE/2 = 24 px.
+     */
+    const val ITEM_SIZE: Int = 16
     const val VISIBILITY_DISTANCE: Double = 1000.0
     const val BALL_RADIUS: Int = 10
     const val MISSILE_LEN: Int = 15
+
+    // ------------------------------------------------------------------
+    // Shot physics (server/serverconst.h)
+    // ------------------------------------------------------------------
+
+    /**
+     * Default shot speed in pixels/tick (added to the firing player's velocity).
+     * C default: options.shotSpeed = 21.0 (cmdline.c:182). No Hz scaling (spatial speed).
+     * Note: there is no #define SHOT_SPEED 25 in C source; 25 was incorrect.
+     */
+    const val SHOT_SPEED: Double = 21.0
+
+    /**
+     * Default shot lifetime in ticks.
+     * C default: options.shotLife = 60.0 C-ticks at 12.5 Hz (cmdline.c:192).
+     * Scaled to 60 Hz: 60 * (60 / 12.5) = 288 ticks.
+     * Note: there is no #define SHOT_LIFE 90 in C source; 90 was incorrect.
+     */
+    const val SHOT_LIFE: Float = 288f
+
+    /**
+     * Collision detection radius for shots in pixels.
+     * From server/serverconst.h: `#define SHOT_RADIUS 2`.
+     */
+    const val SHOT_RADIUS: Double = 2.0
+
+    /**
+     * Maximum shots a player may have in flight simultaneously.
+     * C default: options.maxPlayerShots = 256 (cmdline.c:478).
+     * Note: there is no #define NUM_SHOTS 5 in C source; 5 was incorrect.
+     */
+    const val NUM_SHOTS: Int = 256
+
+    /**
+     * Minimum ticks between consecutive shots (fire repeat interval).
+     * C default: options.fireRepeatRate = 2.0 C-ticks (cmdline.c:243).
+     * Scaled to 60 Hz: 2.0 * (60 / 12.5) = 9.6 ≈ 10 ticks.
+     * Note: there is no #define SHOT_SPEED_FACTOR 15 in C source; 15 was incorrect.
+     */
+    const val SHOT_SPEED_FACTOR: Double = 9.6
 
     /**
      * Mass of a mine object.
@@ -278,8 +337,15 @@ object GameConst {
 // ---------------------------------------------------------------------------
 
 /**
- * Per-use fuel cost (negative = drain) for each weapon / device action.
- * Maps to `ED_*` constants in server/serverconst.h.
+ * Per-use fuel cost for each weapon / device action.
+ *
+ * **Sign convention (IMPORTANT):** all values are **negative** — they represent
+ * fuel *removed* from the tank.  Call sites add the constant directly:
+ *
+ *     pl.fuel.sum = (pl.fuel.sum + EnergyDrain.SHIELD).coerceAtLeast(0.0)
+ *
+ * Do **not** negate these values at the call site; doing so would accidentally
+ * refuel the player.  Maps to `ED_*` constants in server/serverconst.h.
  *
  * Note: [PL_CRASH] and [BALL_HIT] are option-dependent at runtime; the
  * values here are the default option values used at server startup.

@@ -5,6 +5,7 @@ import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
 import java.awt.FileDialog
 import java.awt.Frame
+import java.io.File
 import java.io.FilenameFilter
 import kotlin.coroutines.resume
 
@@ -41,6 +42,35 @@ actual suspend fun showFilePicker(
                 val dir = dialog.directory
                 val file = dialog.file
                 cont.resume(if (dir != null && file != null) dir + file else null)
+            }
+        }
+    }
+
+actual suspend fun saveTextFile(
+    title: String,
+    defaultName: String,
+    content: String,
+): Boolean =
+    withContext(Dispatchers.IO) {
+        suspendCancellableCoroutine { cont ->
+            java.awt.EventQueue.invokeLater {
+                val dialog = FileDialog(null as Frame?, title, FileDialog.SAVE)
+                dialog.directory = System.getProperty("user.dir")
+                dialog.file = defaultName
+                dialog.isVisible = true
+
+                val dir = dialog.directory
+                val file = dialog.file
+                if (dir != null && file != null) {
+                    try {
+                        File(dir + file).writeText(content)
+                        cont.resume(true)
+                    } catch (_: Exception) {
+                        cont.resume(false)
+                    }
+                } else {
+                    cont.resume(false) // user cancelled
+                }
             }
         }
     }
