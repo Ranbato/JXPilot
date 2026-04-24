@@ -166,4 +166,9 @@ class Cannon(
      * initial delay; using a full cooldown is a safe conservative default.
      */
     var fireTimer: Double = GameConst.SHOT_SPEED_FACTOR,
+    /**
+     * Weapon type this cannon fires.  C: cannon_t.weapon field (cannon.h).
+     * Defaults to [CannonWeapon.SHOT] (plain bullet) if not set by the map loader.
+     */
+    var weapon: CannonWeapon = CannonWeapon.SHOT,
 )

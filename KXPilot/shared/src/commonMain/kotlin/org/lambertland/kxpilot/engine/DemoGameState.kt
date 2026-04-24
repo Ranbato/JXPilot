@@ -35,6 +35,14 @@ object RenderConst {
 // ---------------------------------------------------------------------------
 
 /**
+ * NPC ids are offset by this value so they never equal [GameConst.NO_ID] (0)
+ * or the player id (1), and always fit in a Short (≤ 32 767) for
+ * [ShotData.ownerId].  With a maximum of ~100 bases per map the upper bound is
+ * far from the Short limit.
+ */
+const val NPC_ID_BASE = 100
+
+/**
  * An NPC ship in the demo/local world.
  *
  * Plain `class` (not `data class`) — fields are mutated every tick, so the
@@ -55,10 +63,47 @@ class DemoShip(
     /** Rotation speed in heading-units/tick. */
     var rotSpeed: Float,
     override var shield: Boolean = false,
+    /** Fuel used as health (no separate HP concept in C; matches EngineConst.NPC_INITIAL_HP). */
+    override var hp: Float = EngineConst.NPC_INITIAL_HP,
+    /**
+     * Desired velocity set by NPC AI each tick (pixels/tick).
+     * [DemoGameState.tick] blends this into [vx]/[vy], allowing external forces
+     * (tractor/pressor beams, wall bounces) to add on top before integration.
+     * The AI writes [desiredVx]/[desiredVy]; physics reads and integrates [vx]/[vy].
+     */
+    var desiredVx: Float = 0f,
+    var desiredVy: Float = 0f,
     /** Optional ship shape loaded from shipshapes.json; null = default triangle. */
     var shapeDef: ShipShapeDef? = null,
+    /**
+     * Id of the ball this NPC is currently carrying (connected via its tether).
+     * Sentinel value [BallData.NO_PLAYER] (-1) means no ball is attached.
+     * Mirrors [BallData.connectedPlayerId] — the engine keeps both in sync.
+     */
+    var carryingBallId: Int = BallData.NO_PLAYER,
+    /**
+     * CTF score — incremented each time this NPC delivers a ball to the opposing goal.
+     * Matches C's per-robot score field (robotdef.c).
+     */
+    var score: Double = 0.0,
+    // --- BL-20: weapon items ---
+    /**
+     * Number of missile items held. C: pl->item[ITEM_MISSILE].
+     * When > 0, the NPC may fire smart/heat/torpedo missiles.
+     */
+    var missileCount: Int = 0,
+    /**
+     * Number of mine items held. C: pl->item[ITEM_MINE].
+     * When > 0, the NPC may drop proximity mines.
+     */
+    var mineCount: Int = 0,
+    /**
+     * Whether the NPC has a shield item. C: BIT(pl->have, HAS_SHIELD).
+     * When true, the NPC activates its shield while low on HP.
+     */
+    var hasShieldItem: Boolean = false,
 ) : EngineTarget {
-    override fun toString(): String = "DemoShip(id=$id, label=$label, x=$x, y=$y, heading=$heading)"
+    override fun toString(): String = "DemoShip(id=$id, label=$label, x=$x, y=$y, heading=$heading, hp=$hp)"
 }
 
 // ---------------------------------------------------------------------------
@@ -76,12 +121,18 @@ class DemoGameState(
     /** Advance simulation by one frame. */
     fun tick() {
         for (s in ships) {
+            // Blend AI-desired velocity into actual velocity.  Any external forces
+            // (tractor/pressor beams, wall bounces) have already been applied to
+            // s.vx/vy by engine.tick(); blending at 0.85 lets them persist briefly
+            // instead of being instantly wiped by the next AI decision.
+            s.vx += (s.desiredVx - s.vx) * 0.85f
+            s.vy += (s.desiredVy - s.vy) * 0.85f
             if (engine != null) {
-                val (nx, ny, vel) = engine.sweepMovePixels(s.x, s.y, s.vx, s.vy)
-                s.x = nx
-                s.y = ny
-                s.vx = vel.first
-                s.vy = vel.second
+                val result = engine.sweepMovePixels(s.x, s.y, s.vx, s.vy)
+                s.x = result.first
+                s.y = result.second
+                s.vx = result.third.first
+                s.vy = result.third.second
             } else {
                 s.x = wrap(s.x + s.vx, worldW)
                 s.y = wrap(s.y + s.vy, worldH)
@@ -164,10 +215,16 @@ fun buildNpcShipsFromBases(
         // Deterministic rotation speed: alternates CW / CCW per ship
         val rotSpeed = if (idx % 2 == 0) 0.4f else -0.3f
 
+        val npcId = idx + NPC_ID_BASE
         val teamLabel = if (base.team > 0) "T${base.team}" else "Bot"
-        state.ships +=
+        val shape = pickShape(idx)
+
+        // Factory: returns a fresh DemoShip at home position with full HP.
+        // Captured variables (px, py, heading, vx, vy, rotSpeed, shape) are
+        // immutable for this NPC — safe to close over.
+        val factory: () -> EngineTarget = {
             DemoShip(
-                id = idx,
+                id = npcId,
                 label = "$teamLabel-$idx",
                 x = px,
                 y = py,
@@ -175,7 +232,25 @@ fun buildNpcShipsFromBases(
                 vx = vx,
                 vy = vy,
                 rotSpeed = rotSpeed,
-                shapeDef = pickShape(idx),
+                shapeDef = shape,
+            )
+        }
+        engine.registerNpcFactory(npcId, factory)
+
+        state.ships +=
+            DemoShip(
+                // NPC ids are offset by NPC_ID_BASE to avoid colliding with
+                // player.id (== 1). Must never equal GameConst.NO_ID (0) or
+                // player.id (1), and must fit in a Short (≤ 32767) for ownerId.
+                id = npcId,
+                label = "$teamLabel-$idx",
+                x = px,
+                y = py,
+                heading = base.dir.toFloat(),
+                vx = vx,
+                vy = vy,
+                rotSpeed = rotSpeed,
+                shapeDef = shape,
             )
     }
 

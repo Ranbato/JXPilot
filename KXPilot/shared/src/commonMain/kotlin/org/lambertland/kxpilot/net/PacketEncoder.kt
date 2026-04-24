@@ -467,6 +467,65 @@ object PacketEncoder {
     // -----------------------------------------------------------------------
 
     /**
+     * PKT_BALL packet — position and carrier-player id of one live ball.
+     *
+     * Mirrors C `netserver.c Send_ball`.  Two wire formats exist depending on
+     * the `F_BALLSTYLE` capability negotiated with the client (version ≥ 0x4F14):
+     *
+     * **Long form** (`hasBallStyle = true`, 8 bytes — default for modern clients):
+     * ```
+     * byte   : PKT_BALL (17)
+     * int16  : posX  (pixels, CLICK_TO_PIXEL(pos.cx))
+     * int16  : posY  (pixels, CLICK_TO_PIXEL(pos.cy))
+     * int16  : id    (carrier player id, or NO_ID = -1 if ball is free)
+     * byte   : style (BallObject.ballStyle, or 0xFF when options.ballStyles is false)
+     * ```
+     *
+     * **Short form** (`hasBallStyle = false`, 7 bytes — for clients < 0x4F14):
+     * ```
+     * byte   : PKT_BALL (17)
+     * int16  : posX
+     * int16  : posY
+     * int16  : id
+     * ```
+     *
+     * **`id` semantics:** this is `OBJECT_BASE.id` on the ball, which stores the
+     * **player id of whoever is carrying the ball** (i.e. `pl->id` from C).
+     * It is set to `NO_ID (-1)` when no player holds the ball.  It is *not* a
+     * stable ball index.
+     *
+     * @param posX        Ball X position in pixels.
+     * @param posY        Ball Y position in pixels.
+     * @param id          Carrier player id, or -1 (`NO_ID`) if the ball is free.
+     * @param style       Ball poly-style byte (ignored when [hasBallStyle] is false).
+     * @param hasBallStyle True (default) for clients with `F_BALLSTYLE` (version ≥ 0x4F14).
+     *                     False sends the 7-byte short form without the style byte.
+     */
+    fun ball(
+        posX: Int,
+        posY: Int,
+        id: Int,
+        style: Int,
+        hasBallStyle: Boolean = true,
+    ): ByteArray =
+        if (hasBallStyle) {
+            val w = XpWriter(8)
+            w.writeByte(PktType.BALL)
+            w.writeShort(posX)
+            w.writeShort(posY)
+            w.writeShort(id)
+            w.writeByte(style)
+            w.toByteArray()
+        } else {
+            val w = XpWriter(7)
+            w.writeByte(PktType.BALL)
+            w.writeShort(posX)
+            w.writeShort(posY)
+            w.writeShort(id)
+            w.toByteArray()
+        }
+
+    /**
      * PKT_MOTD packet — a chunk of the server's message-of-the-day.
      *
      * Wire format (from C `netserver.c Send_motd`):

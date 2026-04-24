@@ -331,30 +331,41 @@ class Player : GameObjectBase() {
     var privs: Int by identity::privs
     var rank: RankNode? by identity::rank
 
-    var plLife: Int = 0
-    var plDeathsSinceJoin: Int = 0
-    var plPrevTeam: UShort = 0u
+    // -----------------------------------------------------------------------
+    // Score / bookkeeping — delegated to PlayerStats (BL-21)
+    // -----------------------------------------------------------------------
 
-    // Score / kills
-    var score: Double = 0.0
-    var updateScore: Boolean = false
-    var kills: Int = 0
-    var deaths: Int = 0
+    /** Extracted score/bookkeeping data — see [PlayerStats] for field docs. */
+    val stats: PlayerStats = PlayerStats()
+
+    // Delegating properties so all existing call sites compile unchanged.
+    var score: Double by stats::score
+    var updateScore: Boolean by stats::updateScore
+    var kills: Int by stats::kills
+    var deaths: Int by stats::deaths
+
+    var plLife: Int by stats::plLife
+    var plDeathsSinceJoin: Int by stats::plDeathsSinceJoin
+    var plPrevTeam: UShort
+        get() = stats.plPrevTeam
+        set(v) {
+            stats.plPrevTeam = v
+        }
 
     var tractorIsPressor: Boolean = false
 
     var repairTarget: Int = 0
-    var fs: Int = 0
-    var check: Int = 0
-    var prevCheck: Int = 0
-    var time: Int = 0
-    var round: Int = 0
-    var prevRound: Int = 0
-    var bestLap: Int = 0
-    var lastLap: Int = 0
-    var lastLapTime: Int = 0
-    var lastCheckDir: Int = 0
-    var survivalTime: Double = 0.0
+    var fs: Int by stats::fs
+    var check: Int by stats::check
+    var prevCheck: Int by stats::prevCheck
+    var time: Int by stats::time
+    var round: Int by stats::round
+    var prevRound: Int by stats::prevRound
+    var bestLap: Int by stats::bestLap
+    var lastLap: Int by stats::lastLap
+    var lastLapTime: Int by stats::lastLapTime
+    var lastCheckDir: Int by stats::lastCheckDir
+    var survivalTime: Double by stats::survivalTime
 
     var homeBase: Base? = null
 
@@ -376,7 +387,7 @@ class Player : GameObjectBase() {
     var lastCannonUpdate: Int = 0
     var lastFuelUpdate: Int = 0
     var lastPolyStyleUpdate: Int = 0
-    var ecmCount: Int = 0
+    var ecmCount: Int by stats::ecmCount
 
     /** Previous-frame key-press state (network/identity field — not in PhysicsState). */
     val prevKeyv: BooleanArray = BooleanArray(org.lambertland.kxpilot.common.Key.NUM_KEYS)
@@ -391,7 +402,7 @@ class Player : GameObjectBase() {
     var idleTime: Double = 0.0
     var flooding: Int = 0
 
-    var snafuCount: Double = 0.0
+    var snafuCount: Double by stats::snafuCount
 
     var ship: ShipShape? = null
 
@@ -446,35 +457,18 @@ class Player : GameObjectBase() {
         // Reset all physics fields via PhysicsState
         physics.reset()
 
+        // Reset all score/bookkeeping fields via PlayerStats
+        stats.reset()
+
         // Identity
         plType = PlayerType.HUMAN
         plTypeMyChar = ' '
-        plLife = 0
-        plDeathsSinceJoin = 0
-        plPrevTeam = 0u
-
-        // Score / kills
-        score = 0.0
-        updateScore = false
-        kills = 0
-        deaths = 0
 
         // Non-physics combat flags
         tractorIsPressor = false
 
-        // Checkpoints / race
+        // Misc
         repairTarget = 0
-        fs = 0
-        check = 0
-        prevCheck = 0
-        time = 0
-        round = 0
-        prevRound = 0
-        bestLap = 0
-        lastLap = 0
-        lastLapTime = 0
-        lastCheckDir = 0
-        survivalTime = 0.0
 
         // Lock / base
         homeBase = null
@@ -515,7 +509,7 @@ class Player : GameObjectBase() {
         lastCannonUpdate = 0
         lastFuelUpdate = 0
         lastPolyStyleUpdate = 0
-        ecmCount = 0
+        // ecmCount and snafuCount reset via stats.reset() above
 
         // Network / session
         prevKeyv.fill(false)
@@ -526,7 +520,6 @@ class Player : GameObjectBase() {
         pauseTime = 0.0
         idleTime = 0.0
         flooding = 0
-        snafuCount = 0.0
         ship = null
     }
 

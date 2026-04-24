@@ -43,6 +43,11 @@ object PktType {
     // Wire value 0x0E = 14 — PKT_PLAYER in packet.h (used to announce a new ship to all)
     const val PLAYER: Int = 14
 
+    // Game objects (server → client)
+
+    /** PKT_BALL — wire value 17 (0x11).  Sent every frame for each live ball. */
+    const val BALL: Int = 17
+
     // Misc
     const val SHUTDOWN: Int = 19
     const val FAILURE: Int = 101

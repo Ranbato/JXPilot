@@ -2,17 +2,31 @@ package org.lambertland.kxpilot.ui
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.withFrameMillis
 import androidx.compose.ui.Alignment
@@ -36,11 +50,14 @@ import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.text.TextMeasurer
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.drawText
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
+import kotlinx.coroutines.launch
+import org.lambertland.kxpilot.AppLogger
 import org.lambertland.kxpilot.client.KeyState
 import org.lambertland.kxpilot.common.GameConst
 import org.lambertland.kxpilot.common.Key
@@ -49,8 +66,10 @@ import org.lambertland.kxpilot.config.LocalAppConfig
 import org.lambertland.kxpilot.config.XpOptionRegistry
 import org.lambertland.kxpilot.engine.DemoGameState
 import org.lambertland.kxpilot.engine.DemoShip
+import org.lambertland.kxpilot.engine.EngineTarget
 import org.lambertland.kxpilot.engine.GameEngine
 import org.lambertland.kxpilot.engine.GameEngineFactory
+import org.lambertland.kxpilot.engine.NpcAiManager
 import org.lambertland.kxpilot.engine.RenderConst
 import org.lambertland.kxpilot.engine.buildNpcShipsFromBases
 import org.lambertland.kxpilot.model.GameAction
@@ -58,6 +77,7 @@ import org.lambertland.kxpilot.model.MessageColor
 import org.lambertland.kxpilot.model.MessageEntry
 import org.lambertland.kxpilot.model.PlayerInfo
 import org.lambertland.kxpilot.model.TalkResult
+import org.lambertland.kxpilot.platform.saveTextFile
 import org.lambertland.kxpilot.resources.BlockType
 import org.lambertland.kxpilot.resources.ShipShapeDef
 import org.lambertland.kxpilot.resources.XPilotMap
@@ -65,6 +85,7 @@ import org.lambertland.kxpilot.resources.parseShipShapes
 import org.lambertland.kxpilot.resources.parseXPilotMap
 import org.lambertland.kxpilot.resources.readResourceText
 import org.lambertland.kxpilot.server.currentTimeMs
+import org.lambertland.kxpilot.ui.components.GameButton
 import org.lambertland.kxpilot.ui.components.MessageLog
 import org.lambertland.kxpilot.ui.components.RadarMinimap
 import org.lambertland.kxpilot.ui.components.ScoreOverlay
@@ -167,6 +188,9 @@ private val COL_MAP_FUEL = Color(0xFF226622)
 private val COL_MAP_BASE = Color(0xFF664422)
 private val COL_MAP_CANNON = Color(0xFF662222)
 
+/** Debris color. C: color = RED for OBJ_DEBRIS (shot.c:1214). */
+private val COL_DEBRIS = Color(0xFFFF3333)
+
 /** Team index → ball colour.  Team 0 = neutral white. */
 private val TEAM_COLORS =
     arrayOf(
@@ -187,11 +211,11 @@ private fun loadShipShapes(): List<ShipShapeDef> =
         if (text != null) {
             parseShipShapes(text)
         } else {
-            println("KXPilot: resource /data/shipshapes.json not found")
+            AppLogger.log("KXPilot: resource /data/shipshapes.json not found")
             emptyList()
         }
     } catch (e: Exception) {
-        println("KXPilot: failed to load ship shapes: ${e::class.simpleName}: ${e.message}")
+        AppLogger.log("KXPilot: failed to load ship shapes: ${e::class.simpleName}: ${e.message}")
         emptyList()
     }
 
@@ -201,11 +225,11 @@ private fun loadMap(resourcePath: String): XPilotMap? =
         if (text != null) {
             parseXPilotMap(text)
         } else {
-            println("KXPilot: map resource $resourcePath not found")
+            AppLogger.log("KXPilot: map resource $resourcePath not found")
             null
         }
     } catch (e: Exception) {
-        println("KXPilot: failed to load map $resourcePath: ${e::class.simpleName}: ${e.message}")
+        AppLogger.log("KXPilot: failed to load map $resourcePath: ${e::class.simpleName}: ${e.message}")
         null
     }
 
@@ -263,6 +287,7 @@ fun InGameScreen() {
     }
     val shipPathCache = remember { HashMap<ShipShapeDef?, Path>() }
     val textMeasurer = rememberTextMeasurer()
+    var showLog by remember { mutableStateOf(false) }
 
     // nowMs updated every 100ms (not every frame) to throttle MessageLog recomposition
     var nowMs by remember { mutableLongStateOf(currentTimeMs()) }
@@ -283,6 +308,7 @@ fun InGameScreen() {
         }
     val keys = remember { KeyState() }
     val keyBindings = remember { KeyBindingsStateHolder() }
+    val npcAiManager = remember { NpcAiManager(engine.world.width.toFloat(), engine.world.height.toFloat()) }
     val camera =
         remember {
             Camera(worldW = engine.world.width.toFloat(), worldH = engine.world.height.toFloat())
@@ -295,6 +321,9 @@ fun InGameScreen() {
     LaunchedEffect(engine) {
         engine.spawnAtBase(0)
         gameState = buildNpcShipsFromBases(engine, allShapes)
+        // Register all NPC ships with the AI manager
+        npcAiManager.clear()
+        gameState.ships.forEach { npcAiManager.register(it) }
         shipPathCache.clear()
     }
 
@@ -313,8 +342,31 @@ fun InGameScreen() {
             tickAccum += delta
             while (tickAccum >= tickMs) {
                 val gs = gameState
-                engine.tick(keys, gs.ships)
+                // Remove NPCs that were killed in the previous tick BEFORE engine.tick()
+                // so the engine never sees dead NPCs during collision / mine-trigger passes.
+                val removed = gs.ships.filter { it.hp <= 0f }
+                if (removed.isNotEmpty()) {
+                    gs.ships.removeAll { it.hp <= 0f }
+                    removed.forEach { npcAiManager.remove(it.id) }
+                }
+                // #B Clear stale lock if locked NPC was removed
+                if (engine.lockedNpcId >= 0 && gs.ships.none { it.id == engine.lockedNpcId }) {
+                    engine.clearLock()
+                }
+                engine.tick(keys, @Suppress("UNCHECKED_CAST") (gs.ships as MutableList<EngineTarget>))
                 keys.advanceTick()
+                // NPC AI tick: update NPC headings/velocities and collect weapon events
+                val npcEvents =
+                    npcAiManager.tickAll(
+                        npcs = gs.ships,
+                        playerX = engine.playerPixelX,
+                        playerY = engine.playerPixelY,
+                        playerVx = engine.player.vel.x,
+                        playerVy = engine.player.vel.y,
+                        playerAlive = engine.player.isAlive(),
+                        treasureGoals = engine.treasureGoals,
+                    )
+                engine.dispatchNpcWeaponEvents(npcEvents, gs.ships)
                 camera.follow(engine.playerPixelX, engine.playerPixelY)
                 gameState.tick()
                 tickAccum -= tickMs
@@ -520,7 +572,7 @@ fun InGameScreen() {
                         .toFloat()
                 if (camera.isVisible(px, py)) {
                     val sc = camera.worldToScreen(px, py)
-                    val mineColor = if (mine.armTicks > 0) Color(0xFF888888) else Color(0xFFFF4444)
+                    val mineColor = Color(0xFFFF4444) // mines are always armed (no arming delay, C default)
                     drawCircle(color = mineColor, radius = 5f, center = sc, style = Stroke(width = 1.5f))
                     // 4 spikes at NSEW
                     for (ang in MINE_SPIKE_ANGLES) {
@@ -533,6 +585,25 @@ fun InGameScreen() {
                             strokeWidth = 1.5f,
                         )
                     }
+                }
+            }
+
+            // Debris: small red dots (C color = RED for OBJ_DEBRIS, shot.c:1214)
+            for (d in engine.debris.toList()) {
+                val px =
+                    d.pos.cx
+                        .toPixel()
+                        .toFloat()
+                val py =
+                    d.pos.cy
+                        .toPixel()
+                        .toFloat()
+                if (camera.isVisible(px, py)) {
+                    drawCircle(
+                        color = COL_DEBRIS,
+                        radius = 2f,
+                        center = camera.worldToScreen(px, py),
+                    )
                 }
             }
 
@@ -637,8 +708,105 @@ fun InGameScreen() {
             TalkOverlay(state = inGameState.talkState)
         }
 
+        // Bottom-left: LOG toggle button
+        Box(modifier = Modifier.align(Alignment.BottomStart).padding(12.dp)) {
+            GameButton(label = if (showLog) "LOG ×" else "LOG", onClick = { showLog = !showLog })
+        }
+
+        // Log overlay (shown when showLog is true)
+        if (showLog) {
+            LogOverlay(onClose = { showLog = false })
+        }
+
         // Platform-specific input overlay (empty on desktop/web, touch controls on Android)
         PlatformControls(keys = keys)
+    }
+}
+
+// ---------------------------------------------------------------------------
+// Log overlay
+// ---------------------------------------------------------------------------
+
+/**
+ * Semi-transparent overlay showing the last [AppLogger.MAX_ENTRIES] log lines.
+ * Live-updates as new entries arrive via [AppLogger.entries] StateFlow.
+ * A "SAVE" button triggers a platform save-file dialog.
+ */
+@Composable
+private fun LogOverlay(onClose: () -> Unit) {
+    val entries by AppLogger.entries.collectAsState()
+    val listState = rememberLazyListState()
+    val coroutineScope = rememberCoroutineScope()
+
+    // Auto-scroll to bottom whenever entries change
+    LaunchedEffect(entries.size) {
+        if (entries.isNotEmpty()) {
+            listState.animateScrollToItem(entries.size - 1)
+        }
+    }
+
+    Box(
+        modifier =
+            Modifier
+                .fillMaxSize()
+                .background(Color(0xCC000000)),
+    ) {
+        Column(
+            modifier =
+                Modifier
+                    .align(Alignment.Center)
+                    .fillMaxWidth(fraction = 0.85f)
+                    .heightIn(max = 500.dp)
+                    .background(Color(0xEE0A0A0A))
+                    .border(width = 1.dp, color = Color(0xFF334466))
+                    .padding(12.dp),
+        ) {
+            // Header row
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    text = "LOG  (${entries.size}/${AppLogger.MAX_ENTRIES})",
+                    color = Color(0xFF88AAFF),
+                    style =
+                        TextStyle(
+                            fontFamily = FontFamily.Monospace,
+                            fontSize = 13.sp,
+                        ),
+                    modifier = Modifier.weight(1f),
+                )
+                GameButton(label = "SAVE", onClick = {
+                    val snap = AppLogger.dump()
+                    coroutineScope.launch {
+                        saveTextFile(
+                            title = "Save KXPilot Log",
+                            defaultName = "kxpilot.log",
+                            content = snap,
+                        )
+                    }
+                })
+                Spacer(modifier = Modifier.width(8.dp))
+                GameButton(label = "CLEAR", onClick = { AppLogger.clear() })
+                Spacer(modifier = Modifier.width(8.dp))
+                GameButton(label = "CLOSE", onClick = onClose)
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            // Scrollable log entries
+            LazyColumn(state = listState, modifier = Modifier.fillMaxWidth()) {
+                items(entries) { line ->
+                    Text(
+                        text = line,
+                        color = Color(0xFFCCCCCC),
+                        style =
+                            TextStyle(
+                                fontFamily = FontFamily.Monospace,
+                                fontSize = 11.sp,
+                            ),
+                        modifier = Modifier.fillMaxWidth().padding(vertical = 1.dp),
+                    )
+                }
+            }
+        }
     }
 }
 
@@ -1026,7 +1194,9 @@ private fun DrawScope.drawEnginePlayer(
     val label = if (alive) "$playerName (${px.toInt()},${py.toInt()})" else "KILLED — press R"
 
     translate(left = screenPos.x, top = screenPos.y) {
-        drawCircle(color = COL_SHIELD, radius = RenderConst.SHIP_RADIUS, center = Offset.Zero, style = Stroke(width = 2f))
+        if (engine.shieldActive) {
+            drawCircle(color = COL_SHIELD, radius = RenderConst.SHIP_RADIUS, center = Offset.Zero, style = Stroke(width = 2f))
+        }
         if (alive) {
             rotate(degrees = angleDeg, pivot = Offset.Zero) {
                 if (engine.player.isThrusting()) {

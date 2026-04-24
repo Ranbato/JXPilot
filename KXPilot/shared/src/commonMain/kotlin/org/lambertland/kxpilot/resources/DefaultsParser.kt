@@ -1,5 +1,7 @@
 package org.lambertland.kxpilot.resources
 
+import org.lambertland.kxpilot.AppLogger
+
 /**
  * Parser for XPilot `defaults.txt` key:value config format.
  *
@@ -57,7 +59,7 @@ fun parseDefaults(text: String): GameDefaults {
                 if (i < lines.size) {
                     i++ // consume endMarker line
                 } else {
-                    println(
+                    AppLogger.log(
                         "parseDefaults: define block '$name' end marker '$endMarker' not found — reached EOF",
                     )
                 }
