@@ -59,7 +59,6 @@ import org.lambertland.kxpilot.config.XpOptionRegistry
 import org.lambertland.kxpilot.model.ServerBrowserState
 import org.lambertland.kxpilot.model.ServerInfo
 import org.lambertland.kxpilot.model.ServerSource
-import org.lambertland.kxpilot.model.ServerTab
 import org.lambertland.kxpilot.net.fetchMetaserverList
 import org.lambertland.kxpilot.resources.ShipShapeDef
 import org.lambertland.kxpilot.server.ServerConfig
@@ -152,6 +151,7 @@ class MainMenuStateHolder(
 
     var playerName by mutableStateOf("Player")
     var shipName by mutableStateOf("")
+    var metaserverUrl by mutableStateOf(XpOptionRegistry.metaserverUrl.defaultValue)
 
     /**
      * Sync config values into this holder.  Must be called from a [LaunchedEffect],
@@ -160,13 +160,13 @@ class MainMenuStateHolder(
     fun syncConfig(config: AppConfig) {
         playerName = config.get(XpOptionRegistry.nickName)
         shipName = config.get(XpOptionRegistry.shipName)
+        metaserverUrl = config.get(XpOptionRegistry.metaserverUrl)
     }
 
     // -----------------------------------------------------------------------
     // Server browser state
     // -----------------------------------------------------------------------
 
-    var tab by mutableStateOf(ServerTab.LOCAL)
     var browserState by mutableStateOf<ServerBrowserState>(ServerBrowserState.Idle)
 
     /**
@@ -193,18 +193,6 @@ class MainMenuStateHolder(
     // -----------------------------------------------------------------------
     // Actions
     // -----------------------------------------------------------------------
-
-    fun scanLocal() {
-        fetchAll()
-    }
-
-    /**
-     * Fetch the internet server list.  Delegates to [fetchAll] so that both local
-     * and internet servers are returned in a single combined list.
-     */
-    fun fetchInternet() {
-        fetchAll()
-    }
 
     /**
      * Fetch both local and internet servers simultaneously and merge them into a
@@ -243,7 +231,7 @@ class MainMenuStateHolder(
             // Internet: fetch metaserver
             val internetList: List<ServerInfo> =
                 try {
-                    fetchMetaserverList().map { it.copy(source = ServerSource.INTERNET) }
+                    fetchMetaserverList(metaserverUrl).map { it.copy(source = ServerSource.INTERNET) }
                 } catch (e: Exception) {
                     if (e is kotlinx.coroutines.CancellationException) throw e
                     emptyList()
@@ -400,14 +388,7 @@ fun MainMenuScreen(
 
                 Spacer(Modifier.height(12.dp))
 
-                TabButton("LOCAL", state.tab == ServerTab.LOCAL) {
-                    state.tab = ServerTab.LOCAL
-                    state.fetchAll()
-                }
-                TabButton("INTERNET", state.tab == ServerTab.INTERNET) {
-                    state.tab = ServerTab.INTERNET
-                    state.fetchAll()
-                }
+                GameButton("CONNECT", onClick = { state.fetchAll() }, modifier = Modifier.fillMaxWidth())
 
                 Spacer(Modifier.weight(1f))
 
@@ -441,9 +422,7 @@ fun MainMenuScreen(
             ) {
                 when (val bs = state.browserState) {
                     ServerBrowserState.Idle -> {
-                        IdlePanel(state.tab) {
-                            if (state.tab == ServerTab.LOCAL) state.scanLocal() else state.fetchInternet()
-                        }
+                        IdlePanel { state.fetchAll() }
                     }
 
                     ServerBrowserState.Scanning -> {
@@ -469,20 +448,10 @@ fun MainMenuScreen(
                         ErrorPanel(bs.message)
                     }
 
+                    // ConnectLocal is unused by the CONNECT flow but still a sealed subtype;
+                    // fall back to Idle so the browser doesn't render a blank panel.
                     is ServerBrowserState.ConnectLocal -> {
-                        ConnectLocalPanel(
-                            connectState = bs,
-                            directHost = state.directHost,
-                            directPort = state.directPort,
-                            canConnect = state.canConnectDirect,
-                            onHostChange = { state.directHost = it },
-                            onPortChange = { state.directPort = it },
-                            onConnect = {
-                                state.join(state.directHost.trim(), state.directPortInt ?: ServerConfig.DEFAULT_PORT)
-                            },
-                            onConnectLocal = { s -> state.join(s.host, s.port) },
-                            onScanAgain = { state.scanLocal() },
-                        )
+                        IdlePanel { state.fetchAll() }
                     }
                 }
             }
@@ -616,18 +585,14 @@ private fun OverlayRow(
 // Sub-panels
 // ---------------------------------------------------------------------------
 
-// Note: IdlePanel and ScanningPanel are only reachable from the INTERNET tab.
-// The LOCAL tab transitions directly to ConnectLocal via scanLocal().
+// Note: IdlePanel and ScanningPanel are only reachable after CONNECT is pressed.
 
 @Composable
-private fun IdlePanel(
-    tab: ServerTab,
-    onScan: () -> Unit,
-) {
+private fun IdlePanel(onScan: () -> Unit) {
     Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
         Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(12.dp)) {
             Text(
-                if (tab == ServerTab.LOCAL) "Scan for local servers" else "Fetch internet server list",
+                "Fetch server list",
                 style = TextStyle(color = KXPilotColors.OnSurfaceDim, fontSize = 13.sp, fontFamily = FontFamily.Monospace),
             )
             GameButton("SCAN", onClick = onScan)
@@ -652,12 +617,7 @@ private fun ErrorPanel(message: String) {
     }
 }
 
-/**
- * Panel shown when the LOCAL tab is active.
- *
- * All mutable state is owned by the caller; this composable only reads and
- * fires callbacks, making it independently testable and previewable.
- */
+@Suppress("UNUSED") // kept for future use
 @Composable
 private fun ConnectLocalPanel(
     connectState: ServerBrowserState.ConnectLocal,
@@ -858,28 +818,6 @@ private fun ServerDetailPanel(
 // ---------------------------------------------------------------------------
 // Small reusable row/cell helpers
 // ---------------------------------------------------------------------------
-
-@Composable
-private fun TabButton(
-    label: String,
-    selected: Boolean,
-    onClick: () -> Unit,
-) {
-    val borderColor = if (selected) KXPilotColors.Accent else KXPilotColors.SurfaceVariant
-    val textColor = if (selected) KXPilotColors.Accent else KXPilotColors.OnSurfaceDim
-    Box(
-        contentAlignment = Alignment.Center,
-        modifier =
-            Modifier
-                .fillMaxWidth()
-                .background(KXPilotColors.Surface)
-                .border(1.dp, borderColor)
-                .clickable(onClick = onClick)
-                .padding(horizontal = 8.dp, vertical = 6.dp),
-    ) {
-        Text(label, style = TextStyle(color = textColor, fontSize = 12.sp, fontFamily = FontFamily.Monospace))
-    }
-}
 
 @Composable
 private fun ServerRow(

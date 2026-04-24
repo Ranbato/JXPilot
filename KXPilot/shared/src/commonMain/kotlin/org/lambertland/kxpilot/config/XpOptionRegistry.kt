@@ -184,6 +184,20 @@ object XpOptionRegistry {
             "",
         )
 
+    /**
+     * Metaserver URL for internet server list fetches.
+     * KXPilot uses HTTP GET to a CGI endpoint; the default mirrors AppInfo.METASERVER_URL.
+     * C XPilot-NG used raw TCP/UDP to meta.xpilot.org:5500 / meta2.xpilot.org:5500
+     * (metaserver.h) — architecturally different; not applicable here.
+     */
+    val metaserverUrl =
+        XpOptionDef.Str(
+            "metaserverUrl",
+            "URL for internet server list (HTTP GET).",
+            setOf(CONFIG_DEFAULT),
+            "https://xpilot.sourceforge.io/cgi-bin/metaserver.cgi",
+        )
+
     // ---- Color index options (CONFIG_COLORS tab) ----
     val hudColor = XpOptionDef.ColorIndex("hudColor", "HUD text color.", 3)
     val radarColor = XpOptionDef.ColorIndex("radarColor", "Radar overlay color.", 5)
@@ -264,6 +278,7 @@ object XpOptionRegistry {
             dirPrediction,
             nickName,
             shipName,
+            metaserverUrl,
             // color options
             hudColor,
             radarColor,

@@ -243,6 +243,18 @@ private fun loadMap(resourcePath: String): XPilotMap? =
 /**
  * Full-window in-game screen.  Lean composable — all UI state is owned by
  * [InGameStateHolder]; Canvas rendering is delegated to private functions.
+ *
+ * NOTE: This screen currently runs **demo mode only** — a local offline simulation
+ * driven by [GameEngine] and NPC AI.  The [serverHost]/[serverPort] passed via
+ * [Screen.InGame] are intentionally unused (see [Screen.InGame] @Suppress).
+ *
+ * TODO (network client): To support real multiplayer, the following would be needed:
+ *  1. A UDP/TCP client that connects to serverHost:serverPort and sends input packets.
+ *  2. A server-frame decoder that maps XPilot-NG protocol frames to [InGameStateHolder]
+ *     state (player positions, shots, items, scores, chat messages).
+ *  3. A render path that draws from server-supplied state rather than local [GameEngine].
+ *  4. The local [GameEngine] + [DemoGameState] loop below would be replaced or
+ *     conditionally disabled when a real server connection is active.
  */
 @Composable
 fun InGameScreen() {

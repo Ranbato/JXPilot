@@ -21,6 +21,7 @@ import org.lambertland.kxpilot.server.ConnectedPlayer
 import org.lambertland.kxpilot.server.ObjectPools
 import org.lambertland.kxpilot.server.PhysicsState
 import org.lambertland.kxpilot.server.Player
+import org.lambertland.kxpilot.server.PlayerAbility
 import org.lambertland.kxpilot.server.PlayerState
 import org.lambertland.kxpilot.server.ScoreSystem
 import org.lambertland.kxpilot.server.ServerConfig
@@ -115,6 +116,10 @@ class I16I17TeamImmunityTest {
         val cy = world.world.cheight / 2
         shooter.pos = ClPos(cx, cy)
         victim.pos = ClPos(cx, cy) // same pixel — guaranteed hit
+        // Disarm the spawn-shield so the shot is not silently absorbed.
+        // Spawn initialises pl.used = SHIELD|COMPASS; clear SHIELD here since
+        // these tests are not testing shield absorption behaviour.
+        victim.used = victim.used and PlayerAbility.SHIELD.inv()
 
         // Allocate a shot from session 0 at victim's position
         val shot = world.pools.shots.allocate()!!

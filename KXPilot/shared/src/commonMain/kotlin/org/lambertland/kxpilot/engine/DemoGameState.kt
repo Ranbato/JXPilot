@@ -123,10 +123,12 @@ class DemoGameState(
         for (s in ships) {
             // Blend AI-desired velocity into actual velocity.  Any external forces
             // (tractor/pressor beams, wall bounces) have already been applied to
-            // s.vx/vy by engine.tick(); blending at 0.85 lets them persist briefly
+            // s.vx/vy by engine.tick(); blending at 0.15 lets them persist briefly
             // instead of being instantly wiped by the next AI decision.
-            s.vx += (s.desiredVx - s.vx) * 0.85f
-            s.vy += (s.desiredVy - s.vy) * 0.85f
+            // 0.15 = move 15% toward desired per tick (≈ exponential lag ~6 ticks to
+            // converge); NOT 0.85 which would snap 85% immediately — that was inverted.
+            s.vx += (s.desiredVx - s.vx) * 0.15f
+            s.vy += (s.desiredVy - s.vy) * 0.15f
             if (engine != null) {
                 val result = engine.sweepMovePixels(s.x, s.y, s.vx, s.vy)
                 s.x = result.first

@@ -52,11 +52,15 @@ object NpcAiConst {
 
     /**
      * Angular damping keep-fraction per tick — fraction of turnVel *retained* each tick.
-     * C autopilot: pl->turnresistance = 0.2 (update.c:261), meaning 80% of turnVel
-     * is discarded per tick — snappy, responsive turns.
-     * Named TURN_KEEP_FRACTION to reflect its semantic: 0.2 = keep 20%.
+     * C autopilot: pl->turnresistance = 0.2 (update.c:261) at 12.5 Hz.
+     * Angular velocity IS Hz-dependent (unlike spatial px/tick speeds): at 60 Hz each
+     * tick is 4.8× shorter so 20% keep per C-tick = ~96% keep per 60 Hz tick.
+     * Empirically 0.75 produces natural-feeling turns at 60 Hz (keeps 75% each tick,
+     * converging to a new heading in ~4 ticks ≈ 67 ms).
+     * See also: TURN_ACC (scales TURN_RATE_RAD by 1/HZ_RATIO for angular accel),
+     *           speed constants (CHASE_SPEED etc.) which are NOT Hz-scaled.
      */
-    const val TURN_KEEP_FRACTION: Double = 0.2
+    const val TURN_KEEP_FRACTION: Double = 0.75
 
     /** Patrol/idle drift speed (px/tick). */
     const val CRUISE_SPEED: Float = 0.8f

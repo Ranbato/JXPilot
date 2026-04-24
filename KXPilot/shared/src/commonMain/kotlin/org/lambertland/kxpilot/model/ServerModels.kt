@@ -57,5 +57,3 @@ sealed class ServerBrowserState {
         val scanning: Boolean = false,
     ) : ServerBrowserState()
 }
-
-enum class ServerTab { LOCAL, INTERNET }

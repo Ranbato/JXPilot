@@ -97,6 +97,18 @@ object ServerPhysics {
         val thrusting = phys.lastKeyv[Key.KEY_THRUST.ordinal]
         val turnLeft = phys.lastKeyv[Key.KEY_TURN_LEFT.ordinal]
         val turnRight = phys.lastKeyv[Key.KEY_TURN_RIGHT.ordinal]
+        val shieldKey = phys.lastKeyv[Key.KEY_SHIELD.ordinal]
+
+        // Update SHIELD used-bit from the current key state.
+        // C: event.c KEY_SHIELD press sets USES_SHIELD; release clears it (event.c:740-744, 1089).
+        // Mapping: lastKeyv mirrors hold-state — shield is active exactly while the key is held.
+        // toggleShield is a client-side option that inverts the key before sending;
+        // the server sees only the resulting held/released state.
+        if (shieldKey) {
+            phys.used = phys.used or PlayerAbility.SHIELD
+        } else {
+            phys.used = phys.used and PlayerAbility.SHIELD.inv()
+        }
 
         // Update THRUSTING status bit
         val statusInt = base.objStatus.toInt()

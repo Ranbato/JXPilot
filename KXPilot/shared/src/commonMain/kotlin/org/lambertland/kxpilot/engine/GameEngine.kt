@@ -1752,6 +1752,10 @@ class GameEngine(
         if (!player.isAlive()) {
             // #19 respawn delay countdown
             if (deathTicksRemaining > 0) deathTicksRemaining--
+            // Shots, missiles, mines, debris, and other projectiles must continue to
+            // tick even while the player is dead so they don't freeze on screen during
+            // the 180-tick (~3 s) death/respawn delay.
+            tickProjectiles(npcShips)
             return
         }
 
@@ -2066,347 +2070,16 @@ class GameEngine(
         }
 
         // --- 12. Update shots ---
-        val shieldRadius = GameConst.SHIP_SZ + RenderConst.SHIP_RADIUS.toDouble()
-        val shotIter = shots.iterator()
-        while (shotIter.hasNext()) {
-            val shot = shotIter.next()
-
-            // BL-03: shots bounce off walls
-            val (sp, bounced, newVx, newVy) = sweepMoveShotBounce(shot.pos, shot.vel.x.toDouble(), shot.vel.y.toDouble())
-            if (bounced) {
-                shot.life *= EngineConst.BOUNCE_LIFE_FACTOR
-                shot.vel =
-                    Vector(
-                        (newVx * EngineConst.BOUNCE_BRAKE_FACTOR).toFloat(),
-                        (newVy * EngineConst.BOUNCE_BRAKE_FACTOR).toFloat(),
-                    )
-            }
-            shot.pos = sp
-
-            shot.life -= 1f
-            if (shot.life <= 0f) {
-                shotIter.remove()
-                continue
-            }
-
-            if (shot.ownerId == player.id) {
-                shot.freshTick = false
-                // Player-fired shots: check NPC ship collision
-                var hitNpc = false
-                for (npc in npcShips) {
-                    val npx = npc.x.toDouble().pixelToClickInt()
-                    val npy = npc.y.toDouble().pixelToClickInt()
-                    val npcClick = ClPos(world.wrapXClick(npx), world.wrapYClick(npy))
-                    if (checkCollision(shot.pos, npcClick, EngineConst.SHOT_RADIUS + GameConst.SHIP_SZ)) {
-                        if (npc.hp > 0f) { // #C guard: only score once per NPC death
-                            npc.hp -= EngineConst.NPC_SHOT_HP_DAMAGE
-                            if (npc.hp <= 0f) {
-                                player.score += 1.0
-                            }
-                        }
-                        npc.shield = false // hit visual feedback
-                        hitNpc = true
-                        break
-                    }
-                }
-                if (hitNpc) {
-                    shotIter.remove()
-                }
-                continue
-            }
-            shot.freshTick = false
-
-            // Shield blocks the shot — C: when shielded, apply ED_SHOT_HIT drain directly;
-            // if fuel hits 0 the shield drops but the player survives (no instant death).
-            // (collision.c: Player_add_fuel(pl, drain); if (pl->fuel.sum <= 0) CLR_BIT(HAS_SHIELD))
-            val effectiveShieldForShot = shieldActive || emergencyShieldActive
-            if (effectiveShieldForShot && checkCollision(shot.pos, player.pos, shieldRadius)) {
-                fuel = (fuel + EnergyDrain.SHOT_HIT).coerceAtLeast(0.0)
-                if (fuel <= 0.0) shieldActive = false
-                if (emergencyShieldActive) emergencyShieldBlockedHit = true
-                shotIter.remove()
-                continue
-            }
-
-            if (!phasingActive && checkCollision(shot.pos, player.pos, EngineConst.SHOT_RADIUS + GameConst.SHIP_SZ)) {
-                killPlayer()
-                shotIter.remove()
-            }
-        }
+        tickShots(npcShips)
 
         // --- 13. Update missiles ---
-        val missIter = missiles.iterator()
-        while (missIter.hasNext()) {
-            val m = missIter.next()
-            m.life -= 1f
-            // Decrement confusion countdown alongside life, so re-acquisition happens
-            // on the tick AFTER the countdown reaches zero (matches C: shot.c:1618–1624).
-            if (m.confusedTicks > 0f) m.confusedTicks -= 1f
-            if (m.life <= 0f) {
-                missIter.remove()
-                continue
-            }
-
-            // Homing guidance: steer toward LOOK_AH-tick predicted position of target.
-            // C: smart shot uses look-ahead of SMART_SHOT_LOOK_AH ticks (serverconst.h:178).
-            // Suppress guidance while ECM-confused (C: smart_count > 0 skips lock-on).
-            // SP-SIMPLIFICATION: C re-locks missile to a random player each
-            // CONFUSED_UPDATE_GRANULARITY frames while confused, then probabilistically
-            // re-locks to smart_relock_id on expiry (shot.c:1618). Single-player has one
-            // NPC pool so the original targetNpcId is retained instead.
-            // NPC missiles use targetNpcId == player.id to home on the player (BL-20).
-            val npcTargetingPlayer = m.ownerId != player.id && m.targetNpcId == player.id.toInt()
-            // BL-13: if player is cloaked and missile targets the player, apply visibility roll
-            if (npcTargetingPlayer && cloakActive && m.confusedTicks <= 0f) {
-                if (!canSeePlayerWhenCloaked()) {
-                    m.confusedTicks = WeaponConst.CONFUSED_TIME
-                }
-            }
-            val targetNpc =
-                if (m.confusedTicks <= 0f && m.targetNpcId >= 0 &&
-                    !npcTargetingPlayer
-                ) {
-                    npcShips.firstOrNull { it.id == m.targetNpcId }
-                } else {
-                    null
-                }
-            val homingTargetX: Double?
-            val homingTargetY: Double?
-            if (npcTargetingPlayer && m.confusedTicks <= 0f && player.isAlive()) {
-                // NPC missile homes on the player
-                homingTargetX = playerPixelX.toDouble() + player.vel.x * EngineConst.SMART_SHOT_LOOK_AH
-                homingTargetY = playerPixelY.toDouble() + player.vel.y * EngineConst.SMART_SHOT_LOOK_AH
-            } else if (targetNpc != null) {
-                homingTargetX = targetNpc.x.toDouble() + targetNpc.vx * EngineConst.SMART_SHOT_LOOK_AH
-                homingTargetY = targetNpc.y.toDouble() + targetNpc.vy * EngineConst.SMART_SHOT_LOOK_AH
-            } else {
-                homingTargetX = null
-                homingTargetY = null
-            }
-            if (homingTargetX != null && homingTargetY != null) {
-                val mx =
-                    m.pos.cx
-                        .toPixel()
-                        .toDouble()
-                val my =
-                    m.pos.cy
-                        .toPixel()
-                        .toDouble()
-                // Predicted target position (look-ahead)
-                val desired = atan2(homingTargetY - my, homingTargetX - mx)
-                val diff = wrapAngle(desired - m.headingRad + PI) - PI
-                val prevHeading = m.headingRad
-                m.headingRad = wrapAngle(m.headingRad + diff.coerceIn(-EngineConst.MISSILE_TURN_RATE, EngineConst.MISSILE_TURN_RATE))
-                // Speed ramp: C SMART_SHOT_ACC ramp toward MISSILE_SPEED.
-                // On overshoot (turned more than diff), divide speed by SMART_SHOT_DECFACT.
-                val turned = wrapAngle(m.headingRad - prevHeading + PI) - PI
-                val overshot = kotlin.math.abs(turned) < kotlin.math.abs(diff) * 0.5
-                m.speed =
-                    if (overshot) {
-                        (m.speed / EngineConst.SMART_SHOT_DECFACT).coerceAtLeast(EngineConst.SMART_SHOT_MIN_SPEED)
-                    } else {
-                        (m.speed + EngineConst.SMART_SHOT_ACC).coerceAtMost(EngineConst.MISSILE_SPEED)
-                    }
-            } else {
-                // Unguided: still ramp speed up to max
-                m.speed = (m.speed + EngineConst.SMART_SHOT_ACC).coerceAtMost(EngineConst.MISSILE_SPEED)
-            }
-
-            val mvx = cos(m.headingRad) * m.speed
-            val mvy = sin(m.headingRad) * m.speed
-            val (mp, mHitWall) = sweepMoveShot(m.pos, mvx, mvy)
-            if (mHitWall) {
-                missIter.remove()
-                continue
-            }
-            m.pos = mp
-
-            // Hit NPC ships
-            var hitNpc = false
-            for (npc in npcShips) {
-                val npx = npc.x.toDouble().pixelToClickInt()
-                val npy = npc.y.toDouble().pixelToClickInt()
-                val npcClick = ClPos(world.wrapXClick(npx), world.wrapYClick(npy))
-                if (checkCollision(m.pos, npcClick, EngineConst.MISSILE_RADIUS + GameConst.SHIP_SZ)) {
-                    if (npc.hp > 0f) { // #C guard: only score once per NPC death
-                        npc.hp -= EngineConst.NPC_MISSILE_HP_DAMAGE
-                        if (npc.hp <= 0f) {
-                            player.score += 1.0
-                        }
-                    }
-                    npc.shield = false
-                    hitNpc = true
-                    break
-                }
-            }
-            if (hitNpc) {
-                missIter.remove()
-                continue
-            }
-
-            // Shield blocks missile — C: apply Missile_hit_drain (= ED_SMART_SHOT_HIT for default
-            // mods) directly; if fuel hits 0 the shield drops but the player survives.
-            // (collision.c: drain = Missile_hit_drain(missile); Player_add_fuel(pl, drain);
-            //  if (pl->fuel.sum <= 0) CLR_BIT(HAS_SHIELD))
-            val effectiveShieldForMissile = shieldActive || emergencyShieldActive
-            if (effectiveShieldForMissile && checkCollision(m.pos, player.pos, shieldRadius)) {
-                fuel = (fuel + EnergyDrain.SMART_SHOT_HIT).coerceAtLeast(0.0)
-                if (fuel <= 0.0) shieldActive = false
-                if (emergencyShieldActive) emergencyShieldBlockedHit = true
-                missIter.remove()
-                continue
-            }
-            // Own missiles never harm the player
-            if (m.ownerId != player.id) {
-                if (!phasingActive && checkCollision(m.pos, player.pos, EngineConst.MISSILE_RADIUS + GameConst.SHIP_SZ)) {
-                    killPlayer()
-                    missIter.remove()
-                }
-            }
-        }
+        tickMissiles(npcShips)
 
         // --- 14. Update mines ---
-        val mineIter = mines.iterator()
-        while (mineIter.hasNext()) {
-            val mine = mineIter.next()
-            mine.life -= 1f
-            if (mine.life <= 0f) {
-                mineIter.remove()
-                continue
-            }
-
-            // Arm countdown: suppress proximity detection until the mine is armed.
-            // KXPilot-specific: MINE_ARM_TICKS grace window after drop.
-            if (mine.armTicksRemaining > 0) {
-                mine.armTicksRemaining--
-                continue
-            }
-
-            // C: mine->pl_range = MINE_RANGE. A single radius is used for both proximity
-            // detection and the collision that kills the player.  No separate blast radius.
-            var detonated = false
-
-            // --- Sensing check (Phase 2e) ---
-            // Outer sensing range: MINE_SENSE_BASE_RANGE + sensor * MINE_SENSE_RANGE_FACTOR.
-            // When the player enters this radius the mine is "sensed" (HUD can warn).
-            // C: frame.c:733 — used to decide whether to send ownership info to client.
-            val senseRadius =
-                WeaponConst.MINE_SENSE_BASE_RANGE +
-                    WeaponConst.MINE_SENSE_RANGE_FACTOR * playerItems.sensor
-            mine.sensed = checkCollision(mine.pos, player.pos, senseRadius)
-
-            // Check NPC ships (owner-immune logic not applied to NPCs — they are never owners)
-            for (npc in npcShips) {
-                if (npc.hp <= 0f) continue // dead NPCs cannot trigger a mine
-                val npx = npc.x.toDouble().pixelToClickInt()
-                val npy = npc.y.toDouble().pixelToClickInt()
-                val npcClick = ClPos(world.wrapXClick(npx), world.wrapYClick(npy))
-                if (checkCollision(mine.pos, npcClick, EngineConst.MINE_TRIGGER_RADIUS)) {
-                    detonated = true
-                    break
-                }
-            }
-
-            // Check player — owner-immune: own mines never trigger on player (C default fuse=-1)
-            if (!detonated && !phasingActive && !(mine.ownerImmune && mine.ownerId == player.id)) {
-                if (checkCollision(mine.pos, player.pos, EngineConst.MINE_TRIGGER_RADIUS)) {
-                    detonated = true
-                }
-            }
-
-            if (detonated) {
-                // Spawn C-authentic debris with a random count each detonation.
-                // C: num_debris = (int)(intensity * num_modv * (0.20 + 0.10*rfrac()))
-                //   = (int)(512 * 1 * (0.20 + 0.10*rfrac())) → range [102, 153]  (shot.c:1248)
-                // C: Make_debris(..., type=OBJ_DEBRIS, mass=DEBRIS_MASS, color=RED, radius=6,
-                //     num_debris, min_dir=0, max_dir=RES-1,
-                //     min_speed=20, max_speed=128, min_life=8, max_life=256)  (shot.c:1264-1276)
-                // Each fragment: dir = uniform in [0, RES-1]; speed = uniform [20, 128] px/tick.
-                // (ship.c:573-610)
-                val intensity = 512
-                val numDebris = (intensity * (0.20 + 0.10 * rng.nextDouble())).toInt()
-
-                val mineVx = 0f // mines are stationary
-                val mineVy = 0f
-                repeat(numDebris) {
-                    val dir = rng.nextDouble(0.0, 2.0 * PI)
-                    val speed =
-                        EngineConst.MINE_DEBRIS_MIN_SPEED +
-                            rng.nextDouble() *
-                            (EngineConst.MINE_DEBRIS_MAX_SPEED - EngineConst.MINE_DEBRIS_MIN_SPEED)
-                    val dvx = (mineVx + cos(dir) * speed).toFloat()
-                    val dvy = (mineVy + sin(dir) * speed).toFloat()
-                    val life =
-                        EngineConst.MINE_DEBRIS_MIN_LIFE +
-                            rng.nextFloat() *
-                            (EngineConst.MINE_DEBRIS_MAX_LIFE - EngineConst.MINE_DEBRIS_MIN_LIFE)
-                    debris +=
-                        DebrisData(
-                            pos = mine.pos,
-                            vel = Vector(dvx, dvy),
-                            life = life,
-                            ownerId = mine.ownerId,
-                        )
-                }
-                mineIter.remove()
-            }
-        }
+        tickMines(npcShips)
 
         // --- 15. Update debris ---
-        // C: Player_collides_with_debris — collision_cost(mass, speed) = mass*speed/128.0 fuel drain.
-        // Normal HAS_SHIELD does NOT protect from debris (only HAS_EMERGENCY_SHIELD does).
-        val debrisIter = debris.iterator()
-        while (debrisIter.hasNext()) {
-            val d = debrisIter.next()
-            d.life -= 1f
-            if (d.life <= 0f) {
-                debrisIter.remove()
-                continue
-            }
-
-            // Move debris — destroyed on wall contact (same as shots)
-            val (dp, hitWall) = sweepMoveShot(d.pos, d.vel.x.toDouble(), d.vel.y.toDouble())
-            if (hitWall) {
-                debrisIter.remove()
-                continue
-            }
-            d.pos = dp
-
-            val debrisSpeed = hypot(d.vel.x.toDouble(), d.vel.y.toDouble())
-            val cost = d.mass * debrisSpeed / 128.0 // collision_cost(mass, speed)
-
-            // Hit NPC ships — one fragment hits at most one target, then is destroyed
-            var hitSomething = false
-            for (npc in npcShips) {
-                if (npc.hp <= 0f) continue
-                val npx = npc.x.toDouble().pixelToClickInt()
-                val npy = npc.y.toDouble().pixelToClickInt()
-                val npcClick = ClPos(world.wrapXClick(npx), world.wrapYClick(npy))
-                if (checkCollision(d.pos, npcClick, EngineConst.MINE_DEBRIS_HIT_RADIUS)) {
-                    npc.hp -= cost.toFloat()
-                    if (npc.hp <= 0f) player.score += 1.0
-                    hitSomething = true
-                    break
-                }
-            }
-            if (hitSomething) {
-                debrisIter.remove()
-                continue
-            }
-
-            // Hit player — shield does NOT protect from debris (C: only HAS_EMERGENCY_SHIELD bypasses)
-            if (player.isAlive() && checkCollision(d.pos, player.pos, EngineConst.MINE_DEBRIS_HIT_RADIUS)) {
-                if (emergencyShieldActive) {
-                    // Emergency shield blocks debris (C: HAS_EMERGENCY_SHIELD in collision.c:974)
-                    emergencyShieldBlockedHit = true
-                    debrisIter.remove()
-                } else {
-                    fuel = (fuel - cost).coerceAtLeast(0.0)
-                    if (fuel <= 0.0) killPlayer()
-                    debrisIter.remove()
-                }
-            }
-        }
+        tickDebris(npcShips)
 
         // --- 16. Update balls ---
         // BL-15: process emergency shield timer after all collision checks
@@ -2840,7 +2513,9 @@ class GameEngine(
         // connector physics at world-centre before the key-release path fires.
         balls.forEach { if (it.connectedPlayerId == player.id.toInt()) it.connectedPlayerId = BallData.NO_PLAYER }
         fuel = fuelMax
-        shieldActive = false
+        // Start with shield active so the player has a moment to orient.
+        // C: pl->used |= HAS_SHIELD in player.c spawn path.
+        shieldActive = true
         deflectorActive = false
         cloakActive = false
         phasingActive = false
@@ -2884,7 +2559,9 @@ class GameEngine(
         debris.clear()
         balls.forEach { if (it.connectedPlayerId == player.id.toInt()) it.connectedPlayerId = BallData.NO_PLAYER }
         fuel = fuelMax
-        shieldActive = false
+        // Start with shield active so the player has a moment to orient.
+        // C: pl->used |= HAS_SHIELD in player.c spawn path.
+        shieldActive = true
         lockedNpcId = -1
         lockDirRad = Double.NaN
         lockDistPx = 0.0
@@ -3744,6 +3421,384 @@ class GameEngine(
                     sensor = playerItems.sensor + 1,
                 )
             fuel = (fuel - WeaponConst.TRANSPORTER_FUEL_COST).coerceAtLeast(0.0)
+        }
+    }
+
+    // -----------------------------------------------------------------------
+    // Projectile tick — runs every frame regardless of player alive/dead state
+    // so shots, missiles, mines, and debris don't freeze on screen during the
+    // death/respawn delay.
+    // -----------------------------------------------------------------------
+
+    /**
+     * Advance all projectiles (shots, missiles, mines, debris, torpedoes,
+     * heat-seekers, cluster mines, nukes) by one tick.
+     *
+     * Called unconditionally from [tick] — including during the death countdown —
+     * so in-flight objects keep moving and can still damage NPC ships.
+     */
+    private fun tickProjectiles(npcShips: MutableList<EngineTarget>) {
+        tickShots(npcShips)
+        tickMissiles(npcShips)
+        tickMines(npcShips)
+        tickDebris(npcShips)
+        tickTorpedoes(npcShips)
+        tickHeatSeekers(npcShips)
+        tickClusterMines(npcShips)
+        tickNukes(npcShips)
+    }
+
+    /** Advance and resolve all regular shots (section 12 of the main tick). */
+    private fun tickShots(npcShips: MutableList<EngineTarget>) {
+        val shieldRadius = GameConst.SHIP_SZ + RenderConst.SHIP_RADIUS.toDouble()
+        val shotIter = shots.iterator()
+        while (shotIter.hasNext()) {
+            val shot = shotIter.next()
+
+            // BL-03: shots bounce off walls
+            val (sp, bounced, newVx, newVy) = sweepMoveShotBounce(shot.pos, shot.vel.x.toDouble(), shot.vel.y.toDouble())
+            if (bounced) {
+                shot.life *= EngineConst.BOUNCE_LIFE_FACTOR
+                shot.vel =
+                    Vector(
+                        (newVx * EngineConst.BOUNCE_BRAKE_FACTOR).toFloat(),
+                        (newVy * EngineConst.BOUNCE_BRAKE_FACTOR).toFloat(),
+                    )
+            }
+            shot.pos = sp
+
+            shot.life -= 1f
+            if (shot.life <= 0f) {
+                shotIter.remove()
+                continue
+            }
+
+            if (shot.ownerId == player.id) {
+                shot.freshTick = false
+                // Player-fired shots: check NPC ship collision
+                var hitNpc = false
+                for (npc in npcShips) {
+                    val npx = npc.x.toDouble().pixelToClickInt()
+                    val npy = npc.y.toDouble().pixelToClickInt()
+                    val npcClick = ClPos(world.wrapXClick(npx), world.wrapYClick(npy))
+                    if (checkCollision(shot.pos, npcClick, EngineConst.SHOT_RADIUS + GameConst.SHIP_SZ)) {
+                        if (npc.hp > 0f) { // #C guard: only score once per NPC death
+                            npc.hp -= EngineConst.NPC_SHOT_HP_DAMAGE
+                            if (npc.hp <= 0f) {
+                                player.score += 1.0
+                            }
+                        }
+                        npc.shield = false // hit visual feedback
+                        hitNpc = true
+                        break
+                    }
+                }
+                if (hitNpc) {
+                    shotIter.remove()
+                }
+                continue
+            }
+            shot.freshTick = false
+
+            // Shield blocks the shot — C: when shielded, apply ED_SHOT_HIT drain directly;
+            // if fuel hits 0 the shield drops but the player survives (no instant death).
+            // (collision.c: Player_add_fuel(pl, drain); if (pl->fuel.sum <= 0) CLR_BIT(HAS_SHIELD))
+            val effectiveShieldForShot = shieldActive || emergencyShieldActive
+            if (effectiveShieldForShot && checkCollision(shot.pos, player.pos, shieldRadius)) {
+                fuel = (fuel + EnergyDrain.SHOT_HIT).coerceAtLeast(0.0)
+                if (fuel <= 0.0) shieldActive = false
+                if (emergencyShieldActive) emergencyShieldBlockedHit = true
+                shotIter.remove()
+                continue
+            }
+
+            if (!phasingActive && checkCollision(shot.pos, player.pos, EngineConst.SHOT_RADIUS + GameConst.SHIP_SZ)) {
+                killPlayer()
+                shotIter.remove()
+            }
+        }
+    }
+
+    /** Advance and resolve all smart missiles (section 13 of the main tick). */
+    private fun tickMissiles(npcShips: MutableList<EngineTarget>) {
+        val shieldRadius = GameConst.SHIP_SZ + RenderConst.SHIP_RADIUS.toDouble()
+        val missIter = missiles.iterator()
+        while (missIter.hasNext()) {
+            val m = missIter.next()
+            m.life -= 1f
+            // Decrement confusion countdown alongside life, so re-acquisition happens
+            // on the tick AFTER the countdown reaches zero (matches C: shot.c:1618–1624).
+            if (m.confusedTicks > 0f) m.confusedTicks -= 1f
+            if (m.life <= 0f) {
+                missIter.remove()
+                continue
+            }
+
+            // Homing guidance: steer toward LOOK_AH-tick predicted position of target.
+            // C: smart shot uses look-ahead of SMART_SHOT_LOOK_AH ticks (serverconst.h:178).
+            // Suppress guidance while ECM-confused (C: smart_count > 0 skips lock-on).
+            // SP-SIMPLIFICATION: C re-locks missile to a random player each
+            // CONFUSED_UPDATE_GRANULARITY frames while confused, then probabilistically
+            // re-locks to smart_relock_id on expiry (shot.c:1618). Single-player has one
+            // NPC pool so the original targetNpcId is retained instead.
+            // NPC missiles use targetNpcId == player.id to home on the player (BL-20).
+            val npcTargetingPlayer = m.ownerId != player.id && m.targetNpcId == player.id.toInt()
+            // BL-13: if player is cloaked and missile targets the player, apply visibility roll
+            if (npcTargetingPlayer && cloakActive && m.confusedTicks <= 0f) {
+                if (!canSeePlayerWhenCloaked()) {
+                    m.confusedTicks = WeaponConst.CONFUSED_TIME
+                }
+            }
+            val targetNpc =
+                if (m.confusedTicks <= 0f && m.targetNpcId >= 0 &&
+                    !npcTargetingPlayer
+                ) {
+                    npcShips.firstOrNull { it.id == m.targetNpcId }
+                } else {
+                    null
+                }
+            val homingTargetX: Double?
+            val homingTargetY: Double?
+            if (npcTargetingPlayer && m.confusedTicks <= 0f && player.isAlive()) {
+                // NPC missile homes on the player
+                homingTargetX = playerPixelX.toDouble() + player.vel.x * EngineConst.SMART_SHOT_LOOK_AH
+                homingTargetY = playerPixelY.toDouble() + player.vel.y * EngineConst.SMART_SHOT_LOOK_AH
+            } else if (targetNpc != null) {
+                homingTargetX = targetNpc.x.toDouble() + targetNpc.vx * EngineConst.SMART_SHOT_LOOK_AH
+                homingTargetY = targetNpc.y.toDouble() + targetNpc.vy * EngineConst.SMART_SHOT_LOOK_AH
+            } else {
+                homingTargetX = null
+                homingTargetY = null
+            }
+            if (homingTargetX != null && homingTargetY != null) {
+                val mx =
+                    m.pos.cx
+                        .toPixel()
+                        .toDouble()
+                val my =
+                    m.pos.cy
+                        .toPixel()
+                        .toDouble()
+                // Predicted target position (look-ahead)
+                val desired = atan2(homingTargetY - my, homingTargetX - mx)
+                val diff = wrapAngle(desired - m.headingRad + PI) - PI
+                val prevHeading = m.headingRad
+                m.headingRad = wrapAngle(m.headingRad + diff.coerceIn(-EngineConst.MISSILE_TURN_RATE, EngineConst.MISSILE_TURN_RATE))
+                // Speed ramp: C SMART_SHOT_ACC ramp toward MISSILE_SPEED.
+                // On overshoot (turned more than diff), divide speed by SMART_SHOT_DECFACT.
+                val turned = wrapAngle(m.headingRad - prevHeading + PI) - PI
+                val overshot = kotlin.math.abs(turned) < kotlin.math.abs(diff) * 0.5
+                m.speed =
+                    if (overshot) {
+                        (m.speed / EngineConst.SMART_SHOT_DECFACT).coerceAtLeast(EngineConst.SMART_SHOT_MIN_SPEED)
+                    } else {
+                        (m.speed + EngineConst.SMART_SHOT_ACC).coerceAtMost(EngineConst.MISSILE_SPEED)
+                    }
+            } else {
+                // Unguided: still ramp speed up to max
+                m.speed = (m.speed + EngineConst.SMART_SHOT_ACC).coerceAtMost(EngineConst.MISSILE_SPEED)
+            }
+
+            val mvx = cos(m.headingRad) * m.speed
+            val mvy = sin(m.headingRad) * m.speed
+            val (mp, mHitWall) = sweepMoveShot(m.pos, mvx, mvy)
+            if (mHitWall) {
+                missIter.remove()
+                continue
+            }
+            m.pos = mp
+
+            // Hit NPC ships
+            var hitNpc = false
+            for (npc in npcShips) {
+                val npx = npc.x.toDouble().pixelToClickInt()
+                val npy = npc.y.toDouble().pixelToClickInt()
+                val npcClick = ClPos(world.wrapXClick(npx), world.wrapYClick(npy))
+                if (checkCollision(m.pos, npcClick, EngineConst.MISSILE_RADIUS + GameConst.SHIP_SZ)) {
+                    if (npc.hp > 0f) { // #C guard: only score once per NPC death
+                        npc.hp -= EngineConst.NPC_MISSILE_HP_DAMAGE
+                        if (npc.hp <= 0f) {
+                            player.score += 1.0
+                        }
+                    }
+                    npc.shield = false
+                    hitNpc = true
+                    break
+                }
+            }
+            if (hitNpc) {
+                missIter.remove()
+                continue
+            }
+
+            // Shield blocks missile — C: apply Missile_hit_drain (= ED_SMART_SHOT_HIT for default
+            // mods) directly; if fuel hits 0 the shield drops but the player survives.
+            // (collision.c: drain = Missile_hit_drain(missile); Player_add_fuel(pl, drain);
+            //  if (pl->fuel.sum <= 0) CLR_BIT(HAS_SHIELD))
+            val effectiveShieldForMissile = shieldActive || emergencyShieldActive
+            if (effectiveShieldForMissile && checkCollision(m.pos, player.pos, shieldRadius)) {
+                fuel = (fuel + EnergyDrain.SMART_SHOT_HIT).coerceAtLeast(0.0)
+                if (fuel <= 0.0) shieldActive = false
+                if (emergencyShieldActive) emergencyShieldBlockedHit = true
+                missIter.remove()
+                continue
+            }
+            // Own missiles never harm the player
+            if (m.ownerId != player.id) {
+                if (!phasingActive && checkCollision(m.pos, player.pos, EngineConst.MISSILE_RADIUS + GameConst.SHIP_SZ)) {
+                    killPlayer()
+                    missIter.remove()
+                }
+            }
+        }
+    }
+
+    /** Advance and resolve all proximity mines (section 14 of the main tick). */
+    private fun tickMines(npcShips: MutableList<EngineTarget>) {
+        val mineIter = mines.iterator()
+        while (mineIter.hasNext()) {
+            val mine = mineIter.next()
+            mine.life -= 1f
+            if (mine.life <= 0f) {
+                mineIter.remove()
+                continue
+            }
+
+            // Arm countdown: suppress proximity detection until the mine is armed.
+            // KXPilot-specific: MINE_ARM_TICKS grace window after drop.
+            if (mine.armTicksRemaining > 0) {
+                mine.armTicksRemaining--
+                continue
+            }
+
+            // C: mine->pl_range = MINE_RANGE. A single radius is used for both proximity
+            // detection and the collision that kills the player.  No separate blast radius.
+            var detonated = false
+
+            // --- Sensing check (Phase 2e) ---
+            // Outer sensing range: MINE_SENSE_BASE_RANGE + sensor * MINE_SENSE_RANGE_FACTOR.
+            // When the player enters this radius the mine is "sensed" (HUD can warn).
+            // C: frame.c:733 — used to decide whether to send ownership info to client.
+            val senseRadius =
+                WeaponConst.MINE_SENSE_BASE_RANGE +
+                    WeaponConst.MINE_SENSE_RANGE_FACTOR * playerItems.sensor
+            mine.sensed = checkCollision(mine.pos, player.pos, senseRadius)
+
+            // Check NPC ships (owner-immune logic not applied to NPCs — they are never owners)
+            for (npc in npcShips) {
+                if (npc.hp <= 0f) continue // dead NPCs cannot trigger a mine
+                val npx = npc.x.toDouble().pixelToClickInt()
+                val npy = npc.y.toDouble().pixelToClickInt()
+                val npcClick = ClPos(world.wrapXClick(npx), world.wrapYClick(npy))
+                if (checkCollision(mine.pos, npcClick, EngineConst.MINE_TRIGGER_RADIUS)) {
+                    detonated = true
+                    break
+                }
+            }
+
+            // Check player — owner-immune: own mines never trigger on player (C default fuse=-1)
+            if (!detonated && !phasingActive && !(mine.ownerImmune && mine.ownerId == player.id)) {
+                if (checkCollision(mine.pos, player.pos, EngineConst.MINE_TRIGGER_RADIUS)) {
+                    detonated = true
+                }
+            }
+
+            if (detonated) {
+                // Spawn C-authentic debris with a random count each detonation.
+                // C: num_debris = (int)(intensity * num_modv * (0.20 + 0.10*rfrac()))
+                //   = (int)(512 * 1 * (0.20 + 0.10*rfrac())) → range [102, 153]  (shot.c:1248)
+                // C: Make_debris(..., type=OBJ_DEBRIS, mass=DEBRIS_MASS, color=RED, radius=6,
+                //     num_debris, min_dir=0, max_dir=RES-1,
+                //     min_speed=20, max_speed=128, min_life=8, max_life=256)  (shot.c:1264-1276)
+                // Each fragment: dir = uniform in [0, RES-1]; speed = uniform [20, 128] px/tick.
+                // (ship.c:573-610)
+                val intensity = 512
+                val numDebris = (intensity * (0.20 + 0.10 * rng.nextDouble())).toInt()
+
+                val mineVx = 0f // mines are stationary
+                val mineVy = 0f
+                repeat(numDebris) {
+                    val dir = rng.nextDouble(0.0, 2.0 * PI)
+                    val speed =
+                        EngineConst.MINE_DEBRIS_MIN_SPEED +
+                            rng.nextDouble() *
+                            (EngineConst.MINE_DEBRIS_MAX_SPEED - EngineConst.MINE_DEBRIS_MIN_SPEED)
+                    val dvx = (mineVx + cos(dir) * speed).toFloat()
+                    val dvy = (mineVy + sin(dir) * speed).toFloat()
+                    val life =
+                        EngineConst.MINE_DEBRIS_MIN_LIFE +
+                            rng.nextFloat() *
+                            (EngineConst.MINE_DEBRIS_MAX_LIFE - EngineConst.MINE_DEBRIS_MIN_LIFE)
+                    debris +=
+                        DebrisData(
+                            pos = mine.pos,
+                            vel = Vector(dvx, dvy),
+                            life = life,
+                            ownerId = mine.ownerId,
+                        )
+                }
+                mineIter.remove()
+            }
+        }
+    }
+
+    /**
+     * Advance and resolve all debris fragments (section 15 of the main tick).
+     * C: Player_collides_with_debris — collision_cost(mass, speed) = mass*speed/128.0 fuel drain.
+     * Normal HAS_SHIELD does NOT protect from debris (only HAS_EMERGENCY_SHIELD does).
+     */
+    private fun tickDebris(npcShips: MutableList<EngineTarget>) {
+        val debrisIter = debris.iterator()
+        while (debrisIter.hasNext()) {
+            val d = debrisIter.next()
+            d.life -= 1f
+            if (d.life <= 0f) {
+                debrisIter.remove()
+                continue
+            }
+
+            // Move debris — destroyed on wall contact (same as shots)
+            val (dp, hitWall) = sweepMoveShot(d.pos, d.vel.x.toDouble(), d.vel.y.toDouble())
+            if (hitWall) {
+                debrisIter.remove()
+                continue
+            }
+            d.pos = dp
+
+            val debrisSpeed = hypot(d.vel.x.toDouble(), d.vel.y.toDouble())
+            val cost = d.mass * debrisSpeed / 128.0 // collision_cost(mass, speed)
+
+            // Hit NPC ships — one fragment hits at most one target, then is destroyed
+            var hitSomething = false
+            for (npc in npcShips) {
+                if (npc.hp <= 0f) continue
+                val npx = npc.x.toDouble().pixelToClickInt()
+                val npy = npc.y.toDouble().pixelToClickInt()
+                val npcClick = ClPos(world.wrapXClick(npx), world.wrapYClick(npy))
+                if (checkCollision(d.pos, npcClick, EngineConst.MINE_DEBRIS_HIT_RADIUS)) {
+                    npc.hp -= cost.toFloat()
+                    if (npc.hp <= 0f) player.score += 1.0
+                    hitSomething = true
+                    break
+                }
+            }
+            if (hitSomething) {
+                debrisIter.remove()
+                continue
+            }
+
+            // Hit player — shield does NOT protect from debris (C: only HAS_EMERGENCY_SHIELD bypasses)
+            if (player.isAlive() && checkCollision(d.pos, player.pos, EngineConst.MINE_DEBRIS_HIT_RADIUS)) {
+                if (emergencyShieldActive) {
+                    // Emergency shield blocks debris (C: HAS_EMERGENCY_SHIELD in collision.c:974)
+                    emergencyShieldBlockedHit = true
+                    debrisIter.remove()
+                } else {
+                    fuel = (fuel - cost).coerceAtLeast(0.0)
+                    if (fuel <= 0.0) killPlayer()
+                    debrisIter.remove()
+                }
+            }
         }
     }
 

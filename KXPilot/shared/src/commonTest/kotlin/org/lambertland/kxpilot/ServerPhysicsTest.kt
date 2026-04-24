@@ -9,6 +9,7 @@ import org.lambertland.kxpilot.server.CellType
 import org.lambertland.kxpilot.server.ObjStatus
 import org.lambertland.kxpilot.server.ObjectPools
 import org.lambertland.kxpilot.server.Player
+import org.lambertland.kxpilot.server.PlayerAbility
 import org.lambertland.kxpilot.server.PlayerDefaults
 import org.lambertland.kxpilot.server.PlayerState
 import org.lambertland.kxpilot.server.ServerConfig
@@ -379,6 +380,10 @@ class TickShotsTravelTest {
         val victimOffsetPx = 20f
         val victimCx = startCx + (victimOffsetPx * ClickConst.CLICK).toInt()
         victim.pos = ClPos(victimCx, startCy)
+        // Disarm the spawn-shield so the shot is not absorbed.
+        // Spawn sets pl.used = SHIELD|COMPASS; clear SHIELD since this test
+        // is not exercising shield absorption behaviour.
+        victim.used = victim.used and PlayerAbility.SHIELD.inv()
 
         // Allocate and configure shot
         val shot = world.pools.shots.allocate()!!

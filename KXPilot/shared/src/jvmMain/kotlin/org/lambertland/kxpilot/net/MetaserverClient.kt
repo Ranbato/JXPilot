@@ -45,11 +45,11 @@ fun closeHttpClient() {
  * R21: [CancellationException] is re-thrown so coroutine cancellation propagates
  * correctly instead of being swallowed by the catch-all.
  */
-actual suspend fun fetchMetaserverList(): List<ServerInfo> =
+actual suspend fun fetchMetaserverList(url: String): List<ServerInfo> =
     try {
         val text =
             httpClient
-                .get(AppInfo.METASERVER_URL) {
+                .get(url) {
                     header("User-Agent", AppInfo.USER_AGENT)
                 }.bodyAsText()
         parseMetaserverResponse(text)

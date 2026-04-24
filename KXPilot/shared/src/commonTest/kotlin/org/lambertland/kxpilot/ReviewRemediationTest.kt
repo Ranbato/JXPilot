@@ -13,6 +13,7 @@ import kotlinx.coroutines.test.runTest
 import org.lambertland.kxpilot.common.ClPos
 import org.lambertland.kxpilot.common.ClickConst
 import org.lambertland.kxpilot.common.GameConst
+import org.lambertland.kxpilot.common.Key
 import org.lambertland.kxpilot.server.Cannon
 import org.lambertland.kxpilot.server.CellType
 import org.lambertland.kxpilot.server.Fuel
@@ -763,6 +764,8 @@ class ShieldFuelExhaustionTest {
         pl.used = pl.used or PlayerAbility.SHIELD
         pl.shieldTime = 0.0 // no timer — relies on fuel drain to deactivate
         pl.fuel.sum = 0.001 // nearly empty — one tick's drain should exhaust it
+        // Hold the shield key so the shield bit is set going into useItems()
+        pl.lastKeyv[Key.KEY_SHIELD.ordinal] = true
 
         ServerPhysics.tickPlayer(pl, world.world, 1L)
 
@@ -780,12 +783,14 @@ class ShieldFuelExhaustionTest {
         pl.used = pl.used or PlayerAbility.SHIELD
         pl.shieldTime = 0.0
         pl.fuel.sum = pl.fuel.max // full tank
+        // Hold the shield key — in C, USES_SHIELD is set while KEY_SHIELD is pressed.
+        pl.lastKeyv[Key.KEY_SHIELD.ordinal] = true
 
         ServerPhysics.tickPlayer(pl, world.world, 1L)
 
         assertFalse(
             (pl.used and PlayerAbility.SHIELD) == 0L,
-            "Shield should remain active when tank has fuel",
+            "Shield should remain active when tank has fuel and key is held",
         )
     }
 }

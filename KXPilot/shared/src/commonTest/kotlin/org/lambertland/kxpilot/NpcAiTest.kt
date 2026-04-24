@@ -846,8 +846,9 @@ class NpcVelocityOwnershipTest {
 
     @Test
     fun externalForcePreservedForOneTick() {
-        // If a tractor beam gives the NPC +10f vx, and then the AI blend factor is 0.85,
-        // the resulting velocity should retain ~15% of the beam impulse.
+        // If a tractor beam gives the NPC +10f vx, and then the AI blend factor is 0.15,
+        // only 15% of the gap to desired (0) is closed per tick.
+        // new_vx = 10 + (0 - 10) * 0.15 = 8.5 → beam impulse is largely preserved.
         val bot = npc(idOffset = 51, x = 300f, y = 300f)
         bot.desiredVx = 0f // AI wants the NPC to stand still (for simplicity)
         bot.desiredVy = 0f
@@ -864,10 +865,10 @@ class NpcVelocityOwnershipTest {
         ds.ships += bot
         ds.tick()
 
-        // After blend at 0.85, vx should be ~10 * 0.15 = 1.5 (not 0, not 10)
+        // After blend at 0.15, vx = 10 * (1 - 0.15) = 8.5 (beam impulse is 85% preserved)
         assertTrue(
-            bot.vx in 1.0f..2.5f,
-            "After blend, some beam impulse (≈15%) should remain; got vx=${bot.vx}",
+            bot.vx in 8.0f..9.0f,
+            "After blend, most beam impulse should remain (≈85%); got vx=${bot.vx}",
         )
     }
 }

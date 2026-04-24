@@ -54,45 +54,45 @@ class MainMenuStateHolderTest {
     }
 
     // -----------------------------------------------------------------------
-    // scanLocal / fetchAll
+    // fetchAll
     // -----------------------------------------------------------------------
 
     @Test
-    fun scanLocal_transitionsAwayFromIdle() =
+    fun fetchAll_transitionsAwayFromIdle() =
         runTest {
             val holder = makeHolder(testScheduler)
             assertEquals(ServerBrowserState.Idle::class, holder.browserState::class)
-            holder.scanLocal()
+            holder.fetchAll()
             advanceUntilIdle()
-            // State must not still be Idle after scanLocal() is called.
+            // State must not still be Idle after fetchAll() is called.
             // It will be Scanning (coroutine launched but HTTP not yet resolved) or
             // Loaded/Error (if the coroutine completes synchronously in the test scheduler).
             val bs = holder.browserState
             assertTrue(
                 bs !is ServerBrowserState.Idle,
-                "scanLocal() should leave Idle state, got $bs",
+                "fetchAll() should leave Idle state, got $bs",
             )
         }
 
     @Test
-    fun scanLocal_stubLeavesScanning_false() =
+    fun fetchAll_stubLeavesScanning_false() =
         runTest {
             val holder = makeHolder(testScheduler)
-            holder.scanLocal()
+            holder.fetchAll()
             advanceUntilIdle()
             // State must not still be Idle; Scanning is acceptable while HTTP is in flight.
             val bs = holder.browserState
             assertFalse(
                 bs is ServerBrowserState.Idle,
-                "scanLocal() should leave Idle state",
+                "fetchAll() should leave Idle state",
             )
         }
 
     @Test
-    fun scanLocal_noLocalServerWhenServerStopped() =
+    fun fetchAll_noLocalServerWhenServerStopped() =
         runTest {
             val holder = makeHolder(testScheduler)
-            holder.scanLocal()
+            holder.fetchAll()
             advanceUntilIdle()
             // When no server is running, local server must not appear in the loaded list
             val bs = holder.browserState
@@ -342,25 +342,25 @@ class MainMenuStateHolderTest {
     }
 
     // -----------------------------------------------------------------------
-    // fetchInternet — async, observable Scanning → Loaded transition
+    // fetchAll — async, observable Scanning → Loaded transition
     // -----------------------------------------------------------------------
 
     @Test
-    fun fetchInternet_producesLoadedState() =
+    fun fetchAll_producesLoadedState() =
         runTest {
-            // fetchInternet() launches a coroutine that sets Scanning then Loaded.
+            // fetchAll() launches a coroutine that sets Scanning then Loaded.
             // With a real HTTP backend the I/O runs on Dispatchers.IO which is outside
             // the test scheduler; we verify the state machine reaches Loaded by
             // driving the scheduler and accepting that the result may be empty
             // (network unavailable in CI / test environments).
             val holder = makeHolder(testScheduler)
-            holder.fetchInternet()
+            holder.fetchAll()
             advanceUntilIdle()
             // State is either still Scanning (real I/O pending) or Loaded (completed).
             // Either is acceptable — what matters is it is not Idle.
             assertTrue(
                 holder.browserState !is ServerBrowserState.Idle,
-                "fetchInternet must leave state as Scanning or Loaded, not Idle",
+                "fetchAll must leave state as Scanning or Loaded, not Idle",
             )
         }
 
@@ -392,13 +392,13 @@ class MainMenuStateHolderTest {
     }
 
     @Test
-    fun fetchInternet_scanningStateObservableBeforeCompletion() =
+    fun fetchAll_scanningStateObservableBeforeCompletion() =
         runTest {
             // StandardTestDispatcher: launched coroutines do not run until the scheduler
-            // advances.  After fetchInternet() returns, the coroutine body (which sets
+            // advances.  After fetchAll() returns, the coroutine body (which sets
             // Scanning as its first action) has been scheduled but not yet run.
             val holder = makeHolder(testScheduler)
-            holder.fetchInternet()
+            holder.fetchAll()
             // Coroutine body has not run yet — state is still Idle
             assertIs<ServerBrowserState.Idle>(
                 holder.browserState,
