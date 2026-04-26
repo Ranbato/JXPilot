@@ -202,8 +202,14 @@ class NpcAiBehaviorTest {
         // Must be in EVADE state
         assertEquals(NpcBehavior.EVADE, manager.getBehavior(bot.id), "Low-HP NPC should enter EVADE")
 
-        // Desired velocity must point AWAY from player (player is to the left, so desiredVx > 0)
-        assertTrue(bot.desiredVx > 0f, "Low-HP NPC should flee to the right (away from player at left), got desiredVx=${bot.desiredVx}")
+        // NPC must be thrusting away from player.
+        // With the new thrust-physics model the AI sets thrusting=true and the heading
+        // points away from the player (player is to the left → heading angle ≈ 0, i.e. rightward).
+        // We verify heading is roughly rightward (heading in [0, 32) or (96, 128)) and thrusting.
+        assertTrue(bot.thrusting, "Low-HP NPC in EVADE should be thrusting")
+        // heading 0 = right; player is to the left so expected heading is ~0 (rightward).
+        val headingToRight = bot.heading < 32f || bot.heading > 96f
+        assertTrue(headingToRight, "Low-HP NPC should face away from player (heading ≈ 0 = right), got heading=${bot.heading}")
 
         // Should NOT fire while evading
         val npcShots = engine.shots.filter { it.ownerId != engine.player.id.toShort() }
@@ -816,46 +822,47 @@ class BallDisconnectOnRespawnTest {
 }
 
 // ---------------------------------------------------------------------------
-// Velocity ownership — AI desired velocity vs physics integration
+// Velocity ownership — thrust physics model
 // ---------------------------------------------------------------------------
 
 class NpcVelocityOwnershipTest {
     @Test
-    fun aiWritesDesiredVelocityNotActualVelocity() {
-        // After an AI tick, desiredVx/desiredVy should be non-zero (NPC has a heading),
-        // while vx/vy may still be 0 until DemoGameState.tick() blends them.
+    fun aiSetsThrustingFlagNotDirectVelocity() {
+        // After an AI tick on a PATROL NPC, the NPC should have thrusting set
+        // (it was stationary and needs to start moving).
+        // vx/vy must NOT be written directly by the AI — only DemoGameState.tick()
+        // may change velocity (by applying thrust acceleration).
         val engine = makeEngine()
         val cx = engine.world.width / 2
         val cy = engine.world.height / 2
-        // PATROL NPC (far from player) — AI sets a patrol heading/speed
+        // PATROL NPC (far from player) — AI should enable thrusting to start moving
         val bot = npc(idOffset = 50, x = cx.toFloat() + NpcAiConst.DETECT_RANGE_PX * 2, y = cy.toFloat())
         bot.vx = 0f
         bot.vy = 0f
-        bot.desiredVx = 0f
-        bot.desiredVy = 0f
+        bot.thrusting = false
         val npcs = mutableListOf(bot)
         val manager = makeAiManager(engine)
         manager.register(bot)
 
         tickAi(manager, engine, npcs)
 
-        // AI must have written a non-trivial desired velocity
-        val desiredSpeed = kotlin.math.hypot(bot.desiredVx.toDouble(), bot.desiredVy.toDouble())
-        assertTrue(desiredSpeed > 0.0, "AI should set non-zero desiredVx/desiredVy for PATROL NPC")
+        // AI must have enabled thrusting (NPC starts at rest, speed < SPEED_NORMAL/2)
+        assertTrue(bot.thrusting, "AI should set thrusting=true for a stationary PATROL NPC")
+        // vx/vy must still be 0 — DemoGameState.tick() hasn't run yet
+        assertEquals(0f, bot.vx, "AI must not write vx directly; only DemoGameState.tick() applies thrust")
+        assertEquals(0f, bot.vy, "AI must not write vy directly; only DemoGameState.tick() applies thrust")
     }
 
     @Test
-    fun externalForcePreservedForOneTick() {
-        // If a tractor beam gives the NPC +10f vx, and then the AI blend factor is 0.15,
-        // only 15% of the gap to desired (0) is closed per tick.
-        // new_vx = 10 + (0 - 10) * 0.15 = 8.5 → beam impulse is largely preserved.
+    fun externalForcePreservedAcrossTicks() {
+        // If a tractor beam gives the NPC +10f vx, and the NPC is not thrusting,
+        // the velocity is preserved unchanged (frictionless space — no blend/decay).
         val bot = npc(idOffset = 51, x = 300f, y = 300f)
-        bot.desiredVx = 0f // AI wants the NPC to stand still (for simplicity)
-        bot.desiredVy = 0f
+        bot.thrusting = false
         bot.vx = 10f // beam applied this frame
         bot.vy = 0f
 
-        // Simulate one DemoGameState.tick() blend (no engine — use simple path)
+        // Simulate one DemoGameState.tick() (no engine — use simple wrap path)
         val ds =
             org.lambertland.kxpilot.engine.DemoGameState(
                 worldW = 800f,
@@ -865,11 +872,8 @@ class NpcVelocityOwnershipTest {
         ds.ships += bot
         ds.tick()
 
-        // After blend at 0.15, vx = 10 * (1 - 0.15) = 8.5 (beam impulse is 85% preserved)
-        assertTrue(
-            bot.vx in 8.0f..9.0f,
-            "After blend, most beam impulse should remain (≈85%); got vx=${bot.vx}",
-        )
+        // Without thrust, velocity is preserved exactly (frictionless; no blend-to-zero).
+        assertEquals(10f, bot.vx, "External-force velocity must be preserved when not thrusting")
     }
 }
 

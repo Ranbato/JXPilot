@@ -57,22 +57,38 @@ object NpcAiConst {
      * tick is 4.8× shorter so 20% keep per C-tick = ~96% keep per 60 Hz tick.
      * Empirically 0.75 produces natural-feeling turns at 60 Hz (keeps 75% each tick,
      * converging to a new heading in ~4 ticks ≈ 67 ms).
-     * See also: TURN_ACC (scales TURN_RATE_RAD by 1/HZ_RATIO for angular accel),
-     *           speed constants (CHASE_SPEED etc.) which are NOT Hz-scaled.
+     * See also: TURN_ACC (scales TURN_RATE_RAD by 1/HZ_RATIO for angular accel).
      */
     const val TURN_KEEP_FRACTION: Double = 0.75
 
-    /** Patrol/idle drift speed (px/tick). */
-    const val CRUISE_SPEED: Float = 0.8f
+    /**
+     * Speed thresholds for thrust on/off decisions (px/tick at 60 Hz).
+     * C: robot_normal_speed=6.0, robot_attack_speed=15.0, robot_max_speed=30.0
+     * (robotdef.c:268-278, normal mode, px/game-tick at timeStep=1).
+     * Scaled to 60 Hz: × (12.5 / 60).
+     *
+     * The robot thrusts when below the lower band, coasts when above the upper band.
+     * C Check_robot_target() uses these as band limits (robotdef.c:973-1021):
+     *   PATROL/close:  thrust if speed < NORMAL/2,    coast if speed > NORMAL
+     *   CHASE/ATTACK:  thrust if speed < ATTACK/2,    coast if speed > ATTACK
+     *   FULL_SPEED:    thrust if speed < MAX-NORMAL,  coast if speed > MAX
+     */
+    const val SPEED_NORMAL: Float = (6.0 * 12.5 / 60.0).toFloat() // ≈ 1.25 px/tick
+    const val SPEED_ATTACK: Float = (15.0 * 12.5 / 60.0).toFloat() // ≈ 3.125 px/tick
+    const val SPEED_MAX: Float = (30.0 * 12.5 / 60.0).toFloat() // ≈ 6.25 px/tick
 
-    /** Speed when closing on a detected player (px/tick). */
-    const val CHASE_SPEED: Float = 2.2f
+    // Legacy aliases kept for NPC shot lead-time calculation (px/tick at 60 Hz).
+    @Deprecated("Use SPEED_NORMAL", ReplaceWith("SPEED_NORMAL"))
+    const val CRUISE_SPEED: Float = SPEED_NORMAL
 
-    /** Speed during combat manoeuvres (px/tick). */
-    const val ATTACK_SPEED: Float = 1.6f
+    @Deprecated("Use SPEED_ATTACK", ReplaceWith("SPEED_ATTACK"))
+    const val CHASE_SPEED: Float = SPEED_ATTACK
 
-    /** Speed when fleeing (px/tick). */
-    const val EVADE_SPEED: Float = 3.5f
+    @Deprecated("Use SPEED_ATTACK", ReplaceWith("SPEED_ATTACK"))
+    const val ATTACK_SPEED: Float = SPEED_ATTACK
+
+    @Deprecated("Use SPEED_MAX", ReplaceWith("SPEED_MAX"))
+    const val EVADE_SPEED: Float = SPEED_MAX
 
     /** Duration of an evasion burst in ticks (≈ 1.5 s). */
     const val EVADE_DURATION_TICKS: Int = 90
@@ -471,7 +487,7 @@ class NpcAiManager(
                 val goal = treasureGoals.firstOrNull { it.team != npcTeam }
                 if (goal != null) {
                     val (gdx, gdy) = toroidalDelta(npc.x, npc.y, goal.x, goal.y)
-                    Pair(atan2(gdy, gdx), NpcAiConst.CHASE_SPEED)
+                    Pair(atan2(gdy, gdx), NpcAiConst.SPEED_ATTACK)
                 } else {
                     null
                 }
@@ -479,17 +495,19 @@ class NpcAiManager(
                 null
             }
 
-        val (desiredAngleRad, desiredSpeed) =
+        // desiredAngleRad: heading the NPC wants to face.
+        // speedTarget: C robot speed threshold — thrust ON below half, OFF above full.
+        val (desiredAngleRad, speedTarget) =
             ballGoalOverride
                 ?: when (state.behavior) {
                     NpcBehavior.PATROL -> {
                         // Slowly rotate patrol direction
                         state.patrolAngleRad += 0.004
-                        Pair(state.patrolAngleRad, NpcAiConst.CRUISE_SPEED)
+                        Pair(state.patrolAngleRad, NpcAiConst.SPEED_NORMAL)
                     }
 
                     NpcBehavior.CHASE -> {
-                        Pair(atan2(dy, dx), NpcAiConst.CHASE_SPEED)
+                        Pair(atan2(dy, dx), NpcAiConst.SPEED_ATTACK)
                     }
 
                     NpcBehavior.ATTACK -> {
@@ -497,12 +515,12 @@ class NpcAiManager(
                         val travelTicks = dist / NpcAiConst.NPC_SHOT_SPEED
                         val leadX = dx + (target?.vx ?: 0f) * travelTicks * NpcAiConst.AIM_LEAD_FACTOR
                         val leadY = dy + (target?.vy ?: 0f) * travelTicks * NpcAiConst.AIM_LEAD_FACTOR
-                        Pair(atan2(leadY, leadX), NpcAiConst.ATTACK_SPEED)
+                        Pair(atan2(leadY, leadX), NpcAiConst.SPEED_ATTACK)
                     }
 
                     NpcBehavior.EVADE -> {
                         // Flee directly away from player
-                        Pair(atan2(-dy, -dx), NpcAiConst.EVADE_SPEED)
+                        Pair(atan2(-dy, -dx), NpcAiConst.SPEED_MAX)
                     }
                 }
 
@@ -521,11 +539,16 @@ class NpcAiManager(
         newHeadingRad = ((newHeadingRad % (2.0 * PI)) + 2.0 * PI) % (2.0 * PI)
         npc.heading = (newHeadingRad / (2.0 * PI) * 128.0).toFloat() % 128.0f
 
-        // --- Write desired velocity (owned by AI; physics blends in DemoGameState.tick) ---
-        // Do NOT write npc.vx/vy directly — that would discard tractor/pressor beam
-        // effects applied by engine.tick() earlier in the same frame.
-        npc.desiredVx = (cos(newHeadingRad) * desiredSpeed).toFloat()
-        npc.desiredVy = (sin(newHeadingRad) * desiredSpeed).toFloat()
+        // --- Thrust decision (mirrors C Check_robot_target logic) ---
+        // C: thrust ON when speed < speedTarget/2, OFF when speed > speedTarget.
+        // Between the two bands: keep the previous state (hysteresis).
+        val currentSpeed = hypot(npc.vx.toDouble(), npc.vy.toDouble()).toFloat()
+        if (currentSpeed < speedTarget / 2f) {
+            npc.thrusting = true
+        } else if (currentSpeed > speedTarget) {
+            npc.thrusting = false
+        }
+        // else: hysteresis — leave npc.thrusting unchanged
 
         // --- Weapon fire priority (ATTACK state only) ---
         // Matches C robotdef.c Robot_default_play weapon dispatch order:
@@ -547,8 +570,8 @@ class NpcAiManager(
                 x = npc.x,
                 y = npc.y,
                 headingRad = newHeadingRad,
-                npcVx = npc.desiredVx,
-                npcVy = npc.desiredVy,
+                npcVx = npc.vx,
+                npcVy = npc.vy,
             )
 
         // Shield: activate while low HP (C: HAS_EMERGENCY_SHIELD or low fuel → raise shield)
@@ -561,8 +584,8 @@ class NpcAiManager(
                         x = npc.x,
                         y = npc.y,
                         headingRad = newHeadingRad,
-                        npcVx = npc.desiredVx,
-                        npcVy = npc.desiredVy,
+                        npcVx = npc.vx,
+                        npcVy = npc.vy,
                         active = true,
                     )
             }
@@ -574,8 +597,8 @@ class NpcAiManager(
                     x = npc.x,
                     y = npc.y,
                     headingRad = newHeadingRad,
-                    npcVx = npc.desiredVx,
-                    npcVy = npc.desiredVy,
+                    npcVx = npc.vx,
+                    npcVy = npc.vy,
                     active = false,
                 )
         }
@@ -593,8 +616,8 @@ class NpcAiManager(
                             x = npc.x,
                             y = npc.y,
                             headingRad = newHeadingRad,
-                            npcVx = npc.desiredVx,
-                            npcVy = npc.desiredVy,
+                            npcVx = npc.vx,
+                            npcVy = npc.vy,
                         )
                 }
 
@@ -610,8 +633,8 @@ class NpcAiManager(
                             x = npc.x,
                             y = npc.y,
                             headingRad = newHeadingRad,
-                            npcVx = npc.desiredVx,
-                            npcVy = npc.desiredVy,
+                            npcVx = npc.vx,
+                            npcVy = npc.vy,
                         )
                 }
 

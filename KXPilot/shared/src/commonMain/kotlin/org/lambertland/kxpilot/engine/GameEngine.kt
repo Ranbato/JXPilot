@@ -85,10 +85,14 @@ internal object EngineConst {
 
     /**
      * Shot initial speed (pixels/tick, relative to player velocity).
-     * C default: options.shotSpeed = 21.0 px/C-tick (cmdline.c:182).
-     * This is a spatial speed (px per game tick), so no Hz scaling needed.
+     * C default: options.shotSpeed = 21.0 (cmdline.c:182).
+     * In C, shot velocity is in units where the position update is:
+     *   pos += FLOAT_TO_CLICK(vel * timeStep)  where timeStep = gameSpeed/FPS = 12.5/50 = 0.25
+     * So at C defaults a shot moves 21 * 0.25 = 5.25 px/frame at 50 FPS = 262.5 px/sec.
+     * At 60 Hz the equivalent px/tick is: 262.5 / 60 = 4.375.
+     * Scaled: GameConst.SHOT_SPEED * (C_GAME_SPEED / HZ_RATIO / C_FPS) = 21 * 12.5 / 60 ≈ 4.375.
      */
-    const val SHOT_SPEED: Double = GameConst.SHOT_SPEED
+    const val SHOT_SPEED: Double = GameConst.SHOT_SPEED * 12.5 / 60.0 // ≈ 4.375 px/tick at 60 Hz
 
     /** Shot collision radius in pixels (for shot–ship tests). */
     const val SHOT_RADIUS: Double = 2.0
@@ -319,6 +323,13 @@ internal object EngineConst {
      * Matches the player respawn delay (3 s at 60 Hz = 180 ticks).
      */
     const val NPC_RESPAWN_DELAY_TICKS: Int = 180
+
+    /**
+     * NPC speed cap (px/tick at 60 Hz).
+     * C robot_max_speed = 30.0 px/game-tick (robotdef.c:276, normal mode).
+     * Scaled to 60 Hz: 30.0 * 12.5 / 60 ≈ 6.25 px/tick.
+     */
+    const val NPC_MAX_SPEED: Double = 30.0 * 12.5 / 60.0 // ≈ 6.25 px/tick
 
     // --- Ball / treasure ---
 
@@ -1752,6 +1763,9 @@ class GameEngine(
         if (!player.isAlive()) {
             // #19 respawn delay countdown
             if (deathTicksRemaining > 0) deathTicksRemaining--
+            // C: server auto-respawns the player after RECOVERY_DELAY ticks.
+            // Mirror that: when the countdown hits 0, automatically respawn at base.
+            if (deathTicksRemaining == 0) spawnAtBase()
             // Shots, missiles, mines, debris, and other projectiles must continue to
             // tick even while the player is dead so they don't freeze on screen during
             // the 180-tick (~3 s) death/respawn delay.
@@ -3455,15 +3469,11 @@ class GameEngine(
         while (shotIter.hasNext()) {
             val shot = shotIter.next()
 
-            // BL-03: shots bounce off walls
-            val (sp, bounced, newVx, newVy) = sweepMoveShotBounce(shot.pos, shot.vel.x.toDouble(), shot.vel.y.toDouble())
-            if (bounced) {
-                shot.life *= EngineConst.BOUNCE_LIFE_FACTOR
-                shot.vel =
-                    Vector(
-                        (newVx * EngineConst.BOUNCE_BRAKE_FACTOR).toFloat(),
-                        (newVy * EngineConst.BOUNCE_BRAKE_FACTOR).toFloat(),
-                    )
+            // C default (shotsWallBounce = false): shots are destroyed on wall contact.
+            val (sp, hitWall) = sweepMoveShot(shot.pos, shot.vel.x.toDouble(), shot.vel.y.toDouble())
+            if (hitWall) {
+                shotIter.remove()
+                continue
             }
             shot.pos = sp
 
@@ -4015,8 +4025,8 @@ class GameEngine(
                 val angleStep = 2.0 * PI / count
                 repeat(count) { i ->
                     val dir = i * angleStep
-                    val svx = (cos(dir) * GameConst.SHOT_SPEED).toFloat()
-                    val svy = (sin(dir) * GameConst.SHOT_SPEED).toFloat()
+                    val svx = (cos(dir) * EngineConst.SHOT_SPEED).toFloat()
+                    val svy = (sin(dir) * EngineConst.SHOT_SPEED).toFloat()
                     shots +=
                         ShotData(
                             pos = cm.pos,

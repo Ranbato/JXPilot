@@ -4,6 +4,7 @@ import org.lambertland.kxpilot.common.toPixel
 import org.lambertland.kxpilot.resources.ShipShapeDef
 import kotlin.math.PI
 import kotlin.math.cos
+import kotlin.math.hypot
 import kotlin.math.sin
 
 // ---------------------------------------------------------------------------
@@ -66,13 +67,12 @@ class DemoShip(
     /** Fuel used as health (no separate HP concept in C; matches EngineConst.NPC_INITIAL_HP). */
     override var hp: Float = EngineConst.NPC_INITIAL_HP,
     /**
-     * Desired velocity set by NPC AI each tick (pixels/tick).
-     * [DemoGameState.tick] blends this into [vx]/[vy], allowing external forces
-     * (tractor/pressor beams, wall bounces) to add on top before integration.
-     * The AI writes [desiredVx]/[desiredVy]; physics reads and integrates [vx]/[vy].
+     * Whether the NPC AI is currently thrusting this tick.
+     * C: robots call Thrust(pl, true/false); the common physics loop then applies
+     * acc = power/mass * heading-direction and integrates into velocity.
+     * NpcAi.tick() writes this; DemoGameState.tick() reads it.
      */
-    var desiredVx: Float = 0f,
-    var desiredVy: Float = 0f,
+    var thrusting: Boolean = false,
     /** Optional ship shape loaded from shipshapes.json; null = default triangle. */
     var shapeDef: ShipShapeDef? = null,
     /**
@@ -121,14 +121,21 @@ class DemoGameState(
     /** Advance simulation by one frame. */
     fun tick() {
         for (s in ships) {
-            // Blend AI-desired velocity into actual velocity.  Any external forces
-            // (tractor/pressor beams, wall bounces) have already been applied to
-            // s.vx/vy by engine.tick(); blending at 0.15 lets them persist briefly
-            // instead of being instantly wiped by the next AI decision.
-            // 0.15 = move 15% toward desired per tick (≈ exponential lag ~6 ticks to
-            // converge); NOT 0.85 which would snap 85% immediately — that was inverted.
-            s.vx += (s.desiredVx - s.vx) * 0.15f
-            s.vy += (s.desiredVy - s.vy) * 0.15f
+            // C: robots call Thrust(pl, true/false); physics loop applies acc = power/mass.
+            // Mirror that: if thrusting, apply acceleration in the current heading direction.
+            // EngineConst.THRUST_POWER = MAX_PLAYER_POWER / PLAYER_MASS / HZ_RATIO ≈ 0.573 px/tick².
+            if (s.thrusting) {
+                val headingRad = s.heading / RenderConst.HEADING_MAX.toDouble() * 2.0 * PI
+                s.vx += (cos(headingRad) * EngineConst.THRUST_POWER).toFloat()
+                s.vy += (sin(headingRad) * EngineConst.THRUST_POWER).toFloat()
+                // Clamp to NPC_MAX_SPEED only after thrust (mirrors C robot_max_speed threshold).
+                val spd = hypot(s.vx.toDouble(), s.vy.toDouble())
+                if (spd > EngineConst.NPC_MAX_SPEED) {
+                    val scale = (EngineConst.NPC_MAX_SPEED / spd).toFloat()
+                    s.vx *= scale
+                    s.vy *= scale
+                }
+            }
             if (engine != null) {
                 val result = engine.sweepMovePixels(s.x, s.y, s.vx, s.vy)
                 s.x = result.first

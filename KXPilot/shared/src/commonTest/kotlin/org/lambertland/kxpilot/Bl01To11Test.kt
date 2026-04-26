@@ -207,6 +207,7 @@ class Bl03BounceShotsTest {
 
     @Test
     fun shotBouncesOffWall() {
+        // XPilot default: shotsWallBounce=false — shots are destroyed on wall contact, not bounced.
         val engine = makeEngineWithWall()
         engine.player.setFloatDir(0.0) // heading right
         val keys = keysDown(Key.KEY_FIRE_SHOT)
@@ -219,40 +220,33 @@ class Bl03BounceShotsTest {
         assertTrue(initialVelX > 0, "Initial shot vel.x should be positive")
 
         val noKeys = noKeys()
-        var bounced = false
+        var destroyed = false
         repeat(30) {
-            if (engine.shots.isNotEmpty() && engine.shots
-                    .first()
-                    .vel.x < 0
-            ) {
-                bounced = true
-            }
             engine.tick(noKeys)
             noKeys.advanceTick()
+            if (engine.shots.isEmpty()) destroyed = true
         }
-        assertTrue(bounced, "Shot should bounce (vel.x reverses) after hitting FILLED wall")
+        assertTrue(destroyed, "Shot should be destroyed (not bounced) after hitting FILLED wall")
     }
 
     @Test
     fun shotLifeReducesAfterBounce() {
+        // XPilot default: shots are destroyed on wall contact — no shot remains after hitting wall.
         val engine = makeEngineWithWall()
         engine.player.setFloatDir(0.0)
         val keys = keysDown(Key.KEY_FIRE_SHOT)
         engine.tick(keys)
         keys.advanceTick()
-        val originalLife = engine.shots.first().life
 
         val noKeys = noKeys()
-        repeat(20) {
+        var destroyed = false
+        repeat(30) {
             engine.tick(noKeys)
             noKeys.advanceTick()
+            if (engine.shots.isEmpty()) destroyed = true
         }
-
-        // After a bounce the life should have been multiplied by BOUNCE_LIFE_FACTOR
-        val life = engine.shots.firstOrNull()?.life
-        if (life != null) {
-            assertTrue(life < originalLife, "Shot life should decrease after bounce")
-        }
+        // Shot must be removed when it hits the wall (life not relevant — it's gone).
+        assertTrue(destroyed, "Shot should be destroyed after hitting FILLED wall")
     }
 }
 
